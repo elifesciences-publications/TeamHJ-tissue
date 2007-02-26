@@ -1,0 +1,48 @@
+# -*- python -*-
+#
+# Filename     : SConstruct
+# Description  : Compilation script using scons
+# Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+# Created      : April 2006
+# Revision     : $Id$
+#
+
+env = Environment()
+#env['CXXFLAGS']     = ['-O3', '-DNDEBUG']
+#env['LINKFLAGS']    = ['-O3', '-DNDEBUG']
+
+#Including all assert calls
+env['CXXFLAGS']     = ['-O3', '-ansi', '-pedantic', '-Wall']
+env['LINKFLAGS']    = ['-O3', '-ansi', '-pedantic', '-Wall']
+
+#For compiling to the cluster
+#env['CXXFLAGS']     = ['-O3']
+#env['LINKFLAGS']    = ['-O3 -static -all-static']
+
+#To get all warnings
+#env['CXXFLAGS']     = ['-O3', '-Wall']
+#env['LINKFLAGS']    = ['-O3', '-Wall']
+
+#for gprof time testing
+#env['CXXFLAGS']     = ['-O3', '-pg']
+#env['LINKFLAGS']    = ['-O3', '-pg']
+
+#env['CPPPATH']      = ['~/include']
+#env['LIBPATH']      = ['~/lib']
+
+#env.Program(target="../bin/createInitFromSphereFile",source=["createInitFromSphereFile.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","network.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc"])
+#env.Program(target="../bin/createInitFromVoronoiFile",source=["createInitFromVoronoiFile.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","network.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc"])
+#env.Program(target="../bin/testTissue",source=["testTissue.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc"])
+
+s = ["simulatorRk2.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc"]
+env.Program(target="../bin/simulatorRk2",source=s)
+
+s = ["simulatorRk4.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc"]
+env.Program(target="../bin/simulatorRk4",source=s)
+
+s = ["findCellPeaks.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc"]
+env.Program(target="../bin/findCellPeaks",source=s)
+
+
+
+
