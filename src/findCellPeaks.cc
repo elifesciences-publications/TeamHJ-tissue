@@ -35,4 +35,10 @@ int main(int argc,char *argv[]) {
   std::vector<size_t> cellMax;
   std::vector<size_t> flag; 
   T.findPeaksGradientAscent( cellData, col, cellMax, flag );
+
+	std::cerr << cellMax.size() << " cell maxima found in column "
+						<< col << std::endl;
+	for( size_t i=0; i<cellMax.size(); ++i )
+		std::cout << cellMax[i] << std::endl; 
+
 }

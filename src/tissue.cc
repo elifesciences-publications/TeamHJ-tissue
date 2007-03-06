@@ -2733,8 +2733,8 @@ void Tissue::checkConnectivity(size_t verbose)
 
 unsigned int Tissue::
 findPeaksGradientAscent( std::vector< std::vector<double> > &cellData, 
-			 size_t col, std::vector<size_t> &cellMax,
-			 std::vector<size_t> &flag )
+												 size_t col, std::vector<size_t> &cellMax,
+												 std::vector<size_t> &flag )
 {
   assert(cellData.size() == numCell() );
   assert( cellData[0].size()>col );
@@ -2759,22 +2759,22 @@ findPeaksGradientAscent( std::vector< std::vector<double> > &cellData,
     //find the max by walking uphill (greedy)
     if( !flag[i] ) {
       do {
-	newValue=value=cellData[i][col];
-	size_t newI=i;
-	//Check all neighboring cells
-	for(size_t k=0 ; k<cell(i).numWall() ; k++ ) {
-	  size_t j = cell(i).wall(k)->cell1()->index();
-	  if( j==i )
-	    j = cell(i).wall(k)->cell2()->index();
-	  if( j != background()->index() ) {
-	    if( cellData[j][col]>newValue ) {
-	      newValue=cellData[j][col];
-	      newI=j;
-	    }
-	  }
-	}
-	i=newI;
-	walkTmp.push_back( i );
+				newValue=value=cellData[i][col];
+				size_t newI=i;
+				//Check all neighboring cells
+				for(size_t k=0 ; k<cell(i).numWall() ; k++ ) {
+					size_t j = cell(i).wall(k)->cell1()->index();
+					if( j==i )
+						j = cell(i).wall(k)->cell2()->index();
+					if( j != background()->index() ) {
+						if( cellData[j][col]>newValue ) {
+							newValue=cellData[j][col];
+							newI=j;
+						}
+					}
+				}
+				i=newI;
+				walkTmp.push_back( i );
       } while( newValue>value && !flag[i] );
     }
     //Collect the path data and add one visit for the maximum
@@ -2783,14 +2783,14 @@ findPeaksGradientAscent( std::vector< std::vector<double> > &cellData,
       numTmp.push_back(1);
       unsigned int n=count++;//cellTmp.size();
       for( size_t a=0 ; a<walkTmp.size() ; a++ )
-	flag[ walkTmp[a] ] = n;
+				flag[ walkTmp[a] ] = n;
     }
     else { //old maximum or background
       size_t n = flag[i];
       for( size_t a=0 ; a<walkTmp.size() ; a++ )
-	flag[ walkTmp[a] ] = n;
+				flag[ walkTmp[a] ] = n;
       if( flag[i]>0 )//old maxima
-	numTmp[n-1]++;
+				numTmp[n-1]++;
     }
   }
   //No threshold checking...
