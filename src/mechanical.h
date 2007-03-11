@@ -66,6 +66,24 @@ class VertexFromEpidermalWallSpringAsymmetric : public BaseReaction {
 	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
+//!Updates vertices from an asymmetric epidermal wall spring potential
+class VertexFromEpidermalCellWallSpringAsymmetric : public BaseReaction {
+  
+ public:
+  
+  VertexFromEpidermalCellWallSpringAsymmetric(std::vector<double> &paraValue, 
+																							std::vector< std::vector<size_t> > 
+																							&indValue );
+  
+  void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
+};
+
 //!Updates vertices from a cell pressure potential
 class VertexFromCellPressure : public BaseReaction {
   

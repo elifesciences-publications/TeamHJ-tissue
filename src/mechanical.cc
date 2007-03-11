@@ -192,7 +192,6 @@ derivs(Tissue &T,
   }
 }
 
-//!Constructor for the SpringAsymmetric class
 VertexFromEpidermalWallSpringAsymmetric::
 VertexFromEpidermalWallSpringAsymmetric(std::vector<double> &paraValue, 
 					std::vector< std::vector<size_t> > 
@@ -243,8 +242,89 @@ derivs(Tissue &T,
   size_t wallLengthIndex = variableIndex(0,0);
   
   for( size_t i=0 ; i<numWalls ; ++i ) {
-    if( T.wall(i).cell1() != T.background() &&
-				T.wall(i).cell2() != T.background() ) {
+    if( !( T.wall(i).cell1() != T.background() &&
+					 T.wall(i).cell2() != T.background() ) ) {
+      size_t v1 = T.wall(i).vertex1()->index();
+      size_t v2 = T.wall(i).vertex2()->index();
+      size_t dimension = vertexData[v1].size();
+      assert( vertexData[v2].size()==dimension );
+      //Calculate shared factors
+      double distance=0.0;
+      for( size_t d=0 ; d<dimension ; d++ )
+				distance += (vertexData[v1][d]-vertexData[v2][d])*
+					(vertexData[v1][d]-vertexData[v2][d]);
+      distance = std::sqrt(distance);
+      double wallLength=wallData[i][wallLengthIndex];
+      double coeff = parameter(0)*(1.-(wallLength/distance));
+      if( distance <= 0.0 && wallLength <=0.0 ) {
+				//std::cerr << i << " - " << wallLength << " " << distance << std::endl;
+				coeff = 0.0;
+      }
+      if( distance>wallLength )
+				coeff *=parameter(1);
+      
+      //Update both vertices for each dimension
+      for(size_t d=0 ; d<dimension ; d++ ) {
+				double div = (vertexData[v1][d]-vertexData[v2][d])*coeff;
+				vertexDerivs[v1][d] -= div;
+				vertexDerivs[v2][d] += div;
+      }
+    }
+  }
+}
+
+VertexFromEpidermalCellWallSpringAsymmetric::
+VertexFromEpidermalCellWallSpringAsymmetric(std::vector<double> &paraValue, 
+																						std::vector< std::vector<size_t> > 
+																						&indValue ) 
+{  
+  //Do some checks on the parameters and variable indeces
+  //////////////////////////////////////////////////////////////////////
+  if( paraValue.size()!=2 ) {
+    std::cerr << "VertexFromEpidermalCellWallSpringAsymmetric::"
+							<< "VertexFromEpidermalCellWallSpringAsymmetric() "
+							<< "Uses two parameters K_force frac_adhesion.\n";
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+    std::cerr << "VertexFromEpidermalCellWallSpringAsymmetric::"
+							<< "VertexFromEpidermalCellWallSpringAsymmetric() "
+							<< "Wall length index given.\n";
+    exit(0);
+  }
+  //Set the variable values
+  //////////////////////////////////////////////////////////////////////
+  setId("VertexFromEpidermalCellWallSpringAsymmetric");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //////////////////////////////////////////////////////////////////////
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "K_force";
+  tmp[1] = "frac_adh";
+  setParameterId( tmp );
+}
+
+void VertexFromEpidermalCellWallSpringAsymmetric::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{
+  
+  //Do the update for each wall
+  size_t numWalls = T.numWall();
+  size_t wallLengthIndex = variableIndex(0,0);
+  
+  for( size_t i=0 ; i<numWalls ; ++i ) {
+    if( T.wall(i).cell1() == T.background() ||
+				T.wall(i).cell1()->isNeighbor(T.background()) ||
+				T.wall(i).cell2() == T.background() || 
+				T.wall(i).cell2()->isNeighbor(T.background()) ) {
       size_t v1 = T.wall(i).vertex1()->index();
       size_t v2 = T.wall(i).vertex2()->index();
       size_t dimension = vertexData[v1].size();
