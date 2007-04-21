@@ -34,6 +34,9 @@ env['LINKFLAGS']    = ['-O3', '-ansi', '-pedantic', '-Wall']
 #env.Program(target="../bin/createInitFromVoronoiFile",source=["createInitFromVoronoiFile.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","network.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc"])
 #env.Program(target="../bin/testTissue",source=["testTissue.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc"])
 
+s = ["simulator.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","myConfig.cc","myFiles.cc"]
+env.Program(target="../bin/simulator",source=s)
+
 s = ["simulatorRk2.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc"]
 env.Program(target="../bin/simulatorRk2",source=s)
 

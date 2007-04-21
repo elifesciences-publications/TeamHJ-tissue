@@ -275,6 +275,57 @@ void Tissue::readInit( std::string initFile, int verbose ) {
   readInit(IN,verbose);
 }
 
+void Tissue::readMerryInit( const char *initFile, int verbose ) 
+{
+  std::ifstream IN(initFile);
+  if( !IN ) {
+    std::cerr << "Tissue::readMerryInit(char*) - "
+							<< "Cannot open file " << initFile 
+							<< std::endl; 
+		exit(-1);
+	}
+  unsigned int numVertexVal,dimension;
+  IN >> numVertexVal;
+	IN >> dimension;
+  setNumVertex( numVertexVal );
+	for( size_t i=0 ; i<numVertexVal ; ++i )
+    vertex(i).setIndex(i);
+	
+	std::vector<double> pos(dimension);
+	std::vector<size_t> cellName;
+	for( size_t i=0 ; i<numVertexVal ; ++i ) {
+		int tmp,numVertexCell;
+		IN >> tmp;
+		for( size_t dim=0 ; dim<dimension ; ++dim )
+			IN >> pos[0];
+		vertex(i).setPosition(pos);
+		IN >> numVertexCell;
+		for( size_t j=0 ; j<numVertexVal ; ++j ) {
+			size_t tmpCellIndex,cellIndex=numCell(),newCellFlag=1;
+			IN >> tmpCellIndex;
+			for( size_t c=0 ; c<cellName.size() ; ++c ) {
+				if( tmpCellIndex==cellName[c] ) {
+					cellIndex=c;
+					newCellFlag=0;
+					break;
+				}
+			}
+			if( newCellFlag ) {
+				Cell tmpCell(cellIndex,"");
+				cellName.push_back(tmpCellIndex);
+				addCell(tmpCell);
+			}
+			vertex(i).addCell(&(cell(cellIndex)));
+			cell(cellIndex).addVertex(&(vertex(i)));
+		}
+	}
+	IN.close();
+
+	// Extract walls
+	//assert( c1==static_cast<size_t>(-1) || c1<numCell() );
+
+}
+
 //!Reads a model from an open file
 void Tissue::readModel(std::ifstream &IN,int verbose) {
   
