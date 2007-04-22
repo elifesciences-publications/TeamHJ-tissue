@@ -44,6 +44,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromWallSpringPolarized(paraValue,indValue);
   else if(idValue=="VertexFromEpidermalWallSpringAsymmetric")
     return new VertexFromEpidermalWallSpringAsymmetric(paraValue,indValue);
+  else if(idValue=="VertexFromEpidermalCellWallSpringAsymmetric")
+    return new VertexFromEpidermalCellWallSpringAsymmetric(paraValue,indValue);
   else if(idValue=="VertexFromCellPowerdiagram")
     return new VertexFromCellPowerdiagram(paraValue,indValue);
   else if(idValue=="VertexFromCellPressure")

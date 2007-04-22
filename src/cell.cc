@@ -162,6 +162,23 @@ double Cell::calculateVolume( std::vector< std::vector<double> >
 }
 
 //!Calculates the cell position from average vertex position
+std::vector<double> Cell::positionFromVertex() 
+{
+	assert( numVertex() );
+  size_t dimension=vertex(0)->numPosition();
+  std::vector<double> pos( dimension );
+  for( size_t i=0 ; i<numVertex() ; ++i ) {
+    for( size_t d=0 ; d<dimension ; ++d ) {
+      pos[d] += vertex(i)->position(d);
+    }
+  }
+  for( size_t d=0 ; d<dimension ; ++d )
+    pos[d] /= numVertex();
+  
+  return pos;
+}
+
+//!Calculates the cell position from average vertex position
 std::vector<double> Cell::positionFromVertex( std::vector< 
 					      std::vector<double> > &vertexData ) {
   

@@ -249,7 +249,7 @@ void Tissue::readInit(std::ifstream &IN,int verbose) {
 	//Sort all cellWalls and cellVertices to comply with area calculations
 	//and plotting
 	sortCellWallAndCellVertex();
-	checkConnectivity(1);
+	checkConnectivity(verbose);
 }
 
 void Tissue::readInit( const char *initFile, int verbose ) {
@@ -294,13 +294,13 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 	std::vector<double> pos(dimension);
 	std::vector<size_t> cellName;
 	for( size_t i=0 ; i<numVertexVal ; ++i ) {
-		int tmp,numVertexCell;
+		size_t tmp,numVertexCell;
 		IN >> tmp;
 		for( size_t dim=0 ; dim<dimension ; ++dim )
-			IN >> pos[0];
+			IN >> pos[dim];
 		vertex(i).setPosition(pos);
 		IN >> numVertexCell;
-		for( size_t j=0 ; j<numVertexVal ; ++j ) {
+		for( size_t j=0 ; j<numVertexCell ; ++j ) {
 			size_t tmpCellIndex,cellIndex=numCell(),newCellFlag=1;
 			IN >> tmpCellIndex;
 			for( size_t c=0 ; c<cellName.size() ; ++c ) {
@@ -320,10 +320,136 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 		}
 	}
 	IN.close();
+	
+	if( verbose>1 ) {
+		std::cerr << "Vertices:" << std::endl;
+		for (size_t i=0; i<numVertex(); ++i) {
+			std::cerr << vertex(i).index() << "\t";
+			for (size_t dim=0; dim<vertex(i).numPosition(); ++dim)
+				std::cerr << vertex(i).position(dim) << " ";
+			std::cerr << "\t";
+			for (size_t k=0; k<vertex(i).numCell(); ++k)
+				std::cerr << vertex(i).cell(k)->index() << " ";
+			std::cerr << std::endl;
+		}
 
-	// Extract walls
+		std::cerr << "Cells:" << std::endl;
+		for (size_t i=0; i<numCell(); ++i) {
+			std::cerr << cell(i).index() << "\t";
+			for (size_t k=0; k<cell(i).numVertex(); ++k)
+				std::cerr << cell(i).vertex(k)->index() << " ";
+			std::cerr << std::endl;
+		}
+	}
+	
+	// Extract internal walls
+	for (size_t i=0; i<numCell(); ++i) {
+		for (size_t ii=i+1; ii<numCell(); ++ii) {
+			std::vector<Vertex*> commonVertex;
+			for (size_t j=0; j<cell(i).numVertex(); ++j)
+				for (size_t jj=0; jj<cell(ii).numVertex(); ++jj)
+					if (cell(i).vertex(j)==cell(ii).vertex(jj))
+						commonVertex.push_back(cell(i).vertex(j));
+			if (commonVertex.size()==2) {
+				//cell i and ii joined by wall connected to vertices j and jj
+				size_t numWallBefore=numWall();
+				Wall wallTmp;
+				wallTmp.setIndex(numWallBefore);
+				wallTmp.setCell(&cell(i),&cell(ii));
+				wallTmp.setVertex(commonVertex[0],commonVertex[1]);
+				double length=0.0;
+				for (size_t dim=0; dim<commonVertex[0]->numPosition(); ++dim)
+					length += ( commonVertex[0]->position(dim)-commonVertex[1]->position(dim) ) *
+						( commonVertex[0]->position(dim)-commonVertex[1]->position(dim) );
+				length = std::sqrt(length);
+				wallTmp.setLength(length);
+				if( verbose>1 )
+					std::cerr << "wall " << numWallBefore << " added with length "
+										<< wallTmp.length() << " and connected to cells"
+										<< cell(i).index() << "," << cell(ii).index() << " and vertices "
+										<< commonVertex[0]->index() << "," << commonVertex[1]->index()
+										<< std::endl; 
+				addWall(wallTmp);
+				// Add wall to cells and vertices
+				cell(i).addWall( &(wall(numWallBefore)) );
+				cell(ii).addWall( &(wall(numWallBefore)) );
+				commonVertex[0]->addWall( &(wall(numWallBefore)) );
+				commonVertex[1]->addWall( &(wall(numWallBefore)) );
+			}
+		}
+	}
+	// Extract walls towards boundary
 	//assert( c1==static_cast<size_t>(-1) || c1<numCell() );
-
+	for (size_t i=0; i<numCell(); ++i) {
+		if (cell(i).numVertex() != cell(i).numWall()) {
+			//Sort vertices
+			size_t Nv = cell(i).numVertex();
+			std::vector<double> cellCenter = cell(i).positionFromVertex();
+			std::vector<double> theta(Nv);
+			std::vector<size_t> vI(Nv);
+			for (size_t k=0; k<Nv; ++k) {				
+				vI[k]=k;
+				theta[k] = std::atan2( cell(i).vertex(k)->position(1)-cellCenter[1],
+															 cell(i).vertex(k)->position(0)-cellCenter[0] );
+			}
+			for (size_t k=0; k<Nv; ++k)	
+				for (size_t kk=k+1; kk<Nv; ++kk)				
+					if (theta[kk]<theta[k]) {
+						size_t tmpvI=vI[kk];
+						double tmpTheta=theta[kk];
+						vI[kk]=vI[k];
+						theta[kk]=theta[k];
+						vI[k]=tmpvI;
+						theta[k]=tmpTheta;
+					}
+			for (size_t k=0; k<Nv; ++k) {
+				size_t vI1 = vI[k];
+				size_t vI2 = vI[(k+1)%Nv];
+				//check if neigh vertices has wall inbetween
+				size_t hasWall=0;
+				for (size_t v=0; v<cell(i).vertex(vI1)->numWall(); ++v)
+					for (size_t vv=0; vv<cell(i).vertex(vI2)->numWall(); ++vv)
+						if (cell(i).vertex(vI1)->wall(v) == cell(i).vertex(vI2)->wall(vv) )
+							hasWall++;
+				assert(hasWall<=1);
+				if (!hasWall) {
+					//Add wall between vertices and add cell and bg
+					size_t numWallBefore=numWall();
+					Wall tmpWall;
+					tmpWall.setIndex(numWallBefore);
+					tmpWall.setCell(&cell(i),background());
+					tmpWall.setVertex(cell(i).vertex(vI1),cell(i).vertex(vI2));
+					double length=0.0;
+					for (size_t dim=0; dim<cell(i).vertex(vI1)->numPosition(); ++dim)
+						length += ( cell(i).vertex(vI1)->position(dim)-
+												cell(i).vertex(vI2)->position(dim) ) *
+							( cell(i).vertex(vI1)->position(dim)-
+								cell(i).vertex(vI2)->position(dim) );
+					length = std::sqrt(length);
+					tmpWall.setLength(length);
+					if (verbose>1)
+						std::cerr << "wall " << numWallBefore << " added with length "
+											<< tmpWall.length() << " and connected to cells "
+											<< cell(i).index() << "," << background()->index() 
+											<< " and vertices "
+											<< cell(i).vertex(vI1)->index() << "," 
+											<< cell(i).vertex(vI2)->index()
+											<< std::endl; 
+					addWall(tmpWall);
+					// Add wall to cells and vertices
+					cell(i).addWall( &(wall(numWallBefore)) );
+					cell(i).vertex(vI1)->addWall( &(wall(numWallBefore)) );
+					cell(i).vertex(vI2)->addWall( &(wall(numWallBefore)) );					
+				}
+			}
+		}
+	}
+	if (verbose)
+		std::cerr << numCell() << " cells and " << numVertex() 
+							<< " vertices and " << numWall() << " walls extracted by "
+							<< "readMerryInit()" << std::endl;
+	sortCellWallAndCellVertex();
+	checkConnectivity(verbose);
 }
 
 //!Reads a model from an open file
@@ -2535,14 +2661,14 @@ void Tissue::checkConnectivity(size_t verbose)
   for (size_t i=0; i<numVertex(); ++i) {
     if( verbose ) {
       if( vertex(i).index() != i ) {
-	std::cerr << "Tissue::checkConnectivity() "
-		  << "Vertex " << i << " has index " << vertex(i).index()
-		  << std::endl;
-	exitFlag++;
+				std::cerr << "Tissue::checkConnectivity() "
+									<< "Vertex " << i << " has index " << vertex(i).index()
+									<< std::endl;
+				exitFlag++;
       }
     }
     else
-      assert( cell(i).index() == i );
+      assert( vertex(i).index() == i );
   }
   //Make sure all cellVertex(Wall) are real vertices(walls) via index
   //////////////////////////////////////////////////////////////////////

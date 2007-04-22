@@ -21,6 +21,7 @@ int main(int argc,char *argv[]) {
 	myConfig::registerOption("help", 0);
 	myConfig::registerOption("merry_init", 0);
 	
+	size_t verbose=1;
 	std::string configFile(getenv("HOME"));
 	configFile.append("/.tissue");
 	myConfig::initConfig(argc, argv, configFile);
@@ -62,12 +63,11 @@ int main(int argc,char *argv[]) {
   Tissue T;
   T.readModel(modelFile.c_str());
 	if (!myConfig::getBooleanValue("merry_init")) 
-		T.readInit(initFile.c_str(),1);
+		T.readInit(initFile.c_str(),verbose);
 	else {
 		std::cerr << "Using merryproj init file format" << std::endl;
-		T.readMerryInit(initFile.c_str(),1);
+		T.readMerryInit(initFile.c_str(),verbose);
 	}
-
 	if (!myConfig::getBooleanValue("rk2")) 
 		T.simulateRk4(startTime,endTime,step,printNum);
 	else

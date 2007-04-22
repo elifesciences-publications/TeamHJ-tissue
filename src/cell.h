@@ -8,12 +8,13 @@
 #ifndef CELL_H
 #define CELL_H
 
-#include<vector>
+#include<assert.h>
+#include<cmath>
+#include<fstream>
+#include<iostream>
 #include<list>
 #include<string>
-#include<iostream>
-#include<fstream>
-#include<cmath>
+#include<vector>
 
 #include"wall.h"
 
@@ -77,8 +78,9 @@ class Cell {
 
   double calculateVolume( std::vector< std::vector<double> > 
 													&vertexData );
+  std::vector<double> positionFromVertex();
   std::vector<double> 
-		positionFromVertex( std::vector< std::vector<double> > &vertexData );
+	positionFromVertex( std::vector< std::vector<double> > &vertexData );
 	
 };
 
