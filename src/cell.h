@@ -71,6 +71,7 @@ class Cell {
   inline void setVertex( std::vector<Vertex*> &val );
 	inline void setVertex( size_t index,Vertex* val);
   inline void addVertex( Vertex* val );
+  inline void setVariable( size_t index,double val );
   inline void addVariable( double val );
   inline int isNeighbor( Cell *neighbor );
   
@@ -232,6 +233,12 @@ inline void Cell::setVertex( size_t index,Vertex* val)
 inline void Cell::addVertex( Vertex* val ) 
 {
   vertex_.push_back(val);
+}
+
+//!Adds a variable to the variable vector
+inline void Cell::setVariable( size_t index,double val ) 
+{
+  variable_[index]=val;
 }
 
 //!Adds a variable to the variable vector

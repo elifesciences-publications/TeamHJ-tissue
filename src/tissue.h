@@ -106,6 +106,7 @@ class Tissue {
   inline const std::vector<Vertex> & vertex() const;
   inline const Vertex & vertex(size_t i) const;
   inline Vertex & vertex(size_t i);
+	inline size_t numDimension();
   inline void addVertex( Vertex val );
   inline void removeVertex( size_t index );
   inline BaseReaction* reaction(size_t i) const;
@@ -136,6 +137,8 @@ class Tissue {
   void simulateRk4(double startTime=0.0,double endTime=1.0,
 		   double step=0.01,size_t printNum=10);
   
+	void initiateReactions();
+	void updateReactions(double step);
   void checkCompartmentChange( std::vector< std::vector<double> > &cellData,
 			       std::vector< std::vector<double> > &wallData,
 			       std::vector< std::vector<double> > &vertexData,
@@ -298,6 +301,11 @@ inline const Vertex & Tissue::vertex(size_t i) const { return vertex_[i]; }
 
 //!Returns a reference to vertex i 
 inline Vertex & Tissue::vertex(size_t i) { return vertex_[i]; }
+
+inline size_t Tissue::numDimension() 
+{
+	return vertex(0).numPosition();
+}
 
 //!Adds a vertex to the vector
 inline void Tissue::addVertex( Vertex val ) { vertex_.push_back(val);}

@@ -8,7 +8,6 @@
 #include"network.h"
 #include"baseReaction.h"
 
-//!Constructor
 AuxinModelSimple1::
 AuxinModelSimple1(std::vector<double> &paraValue, 
 			       std::vector< std::vector<size_t> > 

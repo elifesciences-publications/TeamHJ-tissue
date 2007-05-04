@@ -42,6 +42,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromWallSpringAsymmetric(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringPolarized")
     return new VertexFromWallSpringPolarized(paraValue,indValue);
+  else if(idValue=="VertexFromWallSpringMT")
+    return new VertexFromWallSpringMT(paraValue,indValue);
   else if(idValue=="VertexFromEpidermalWallSpringAsymmetric")
     return new VertexFromEpidermalWallSpringAsymmetric(paraValue,indValue);
   else if(idValue=="VertexFromEpidermalCellWallSpringAsymmetric")
@@ -129,14 +131,12 @@ derivs(Tissue &T,std::vector< std::vector<double> > &cellData,
   exit(0);
 }  
 
-void BaseReaction::update( double h ) {
-  std::cerr << "BaseReaction::update() should not be used. "
-	    << "Should always be mapped onto one of the real types.\n";
-  exit(0);
-}
+void BaseReaction::initiate(Tissue &T) {}
+
+void BaseReaction::update(Tissue &T,double h) {}
 
 void BaseReaction::print( std::ofstream &os ) {
   std::cerr << "BaseReaction::print(ofstream) should not be used. "
-	    << "Should always be mapped onto one of the real types.\n";
+						<< "Should always be mapped onto one of the real types.\n";
   exit(0);
 }

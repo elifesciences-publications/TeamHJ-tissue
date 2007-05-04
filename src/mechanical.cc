@@ -192,6 +192,205 @@ derivs(Tissue &T,
   }
 }
 
+VertexFromWallSpringMT::
+VertexFromWallSpringMT(std::vector<double> &paraValue, 
+											 std::vector< std::vector<size_t> > 
+											 &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=3 ) {
+    std::cerr << "VertexFromWallSpringMT::"
+							<< "VertexFromWallSpringMT() "
+							<< "Uses two parameters K_force^min K_force^max "
+							<< "frac_adhesion.\n";
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 2 ) {
+    std::cerr << "VertexFromWallSpringMT::"
+							<< "VertexFromWallSpringMT() "
+							<< "Wall length index and cell MT direction start index"
+							<< "given." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  setId("VertexFromWallSpringMT");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "K_force^min";
+  tmp[1] = "K_force^max";
+  tmp[2] = "frac_adh";
+  setParameterId( tmp );	
+}
+
+void VertexFromWallSpringMT::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{  
+	assert( directionalWall_.size() == T.numCell() );
+  //Do the update for each wall
+  size_t numWalls = T.numWall();
+  size_t wallLengthIndex = variableIndex(0,0);
+	size_t dimension = vertexData[0].size();
+  
+  for( size_t i=0 ; i<numWalls ; ++i ) {
+    size_t v1 = T.wall(i).vertex1()->index();
+    size_t v2 = T.wall(i).vertex2()->index();
+    assert( vertexData[v2].size()==dimension );
+    //Calculate shared factors
+    double distance=0.0,c1Norm=0.0,c2Norm=0.0;
+		std::vector<double> n_w(dimension),n_c1(dimension),n_c2(dimension);
+    for( size_t d=0 ; d<dimension ; d++ ) {
+			n_w[d] = vertexData[v2][d]-vertexData[v1][d];
+			distance += n_w[d]*n_w[d];
+			if( T.wall(i).cell1() != T.background() && 
+					directionalWall_[T.wall(i).cell1()->index()] <
+					T.wall(i).cell1()->numWall() ) {
+				n_c1[d] = vertexData[T.wall(i).cell1()->wall(directionalWall_[T.wall(i).cell1()->index()])->vertex2()->index()][d] - 
+					vertexData[T.wall(i).cell1()->wall(directionalWall_[T.wall(i).cell1()->index()])->vertex1()->index()][d];
+				c1Norm += n_c1[d]*n_c1[d];
+			}
+			if( T.wall(i).cell2() != T.background() &&
+					directionalWall_[T.wall(i).cell2()->index()] <
+					T.wall(i).cell2()->numWall() ) {
+				n_c2[d] = vertexData[T.wall(i).cell2()->wall(directionalWall_[T.wall(i).cell2()->index()])->vertex2()->index()][d] - 
+					vertexData[T.wall(i).cell2()->wall(directionalWall_[T.wall(i).cell2()->index()])->vertex1()->index()][d];				
+				c2Norm += n_c2[d]*n_c2[d];			
+			}
+		}
+    distance = std::sqrt( distance );
+		c1Norm = std::sqrt( c1Norm );
+		c2Norm = std::sqrt( c2Norm );
+		double c1Fac=0.0,c2Fac=0.0;
+		if( T.wall(i).cell1() != T.background() &&
+				directionalWall_[T.wall(i).cell1()->index()] <
+				T.wall(i).cell1()->numWall() ) {
+			for( size_t d=0 ; d<dimension ; d++ )		
+				c1Fac += n_c1[d]*n_w[d]/(c1Norm*distance);
+		}
+		else
+			c1Fac = 0.5;
+		if( T.wall(i).cell2() != T.background() &&
+				directionalWall_[T.wall(i).cell2()->index()] <
+				T.wall(i).cell2()->numWall() ) {
+			for( size_t d=0 ; d<dimension ; d++ )		
+				c2Fac += n_c2[d]*n_w[d]/(c2Norm*distance);
+		}
+		else
+			c2Fac = 0.5;
+		
+    double wallLength=wallData[i][wallLengthIndex];
+    double coeff = (parameter(0)+parameter(1)*(2.0-c1Fac-c2Fac))*
+			(1.-(wallLength/distance));
+    if( distance <= 0.0 && wallLength <=0.0 ) {
+      //std::cerr << i << " - " << wallLength << " " << distance << std::endl;
+      coeff = 0.0;
+    }
+    if( distance>wallLength )
+      coeff *=parameter(1);
+    
+    //Update both vertices for each dimension
+    for(size_t d=0 ; d<dimension ; d++ ) {
+      double div = (vertexData[v1][d]-vertexData[v2][d])*coeff;
+      vertexDerivs[v1][d] -= div;
+      vertexDerivs[v2][d] += div;
+    }
+  }
+	// Update all direction variables for cells
+	for (size_t i=0; i<directionalWall_.size(); ++i) {
+		if (directionalWall_[i]<T.cell(i).numWall()) {
+			std::vector<double> tmpN(dimension);
+			double normW=0.0;
+			for (size_t dim=0; dim<dimension; ++dim) {
+				tmpN[dim] = T.cell(i).wall(directionalWall_[i])->vertex2()->position(dim) -
+					T.cell(i).wall(directionalWall_[i])->vertex1()->position(dim);
+				normW += tmpN[dim]*tmpN[dim];
+			}
+			normW = std::sqrt(normW);
+			if( normW<=0.0 ) {
+				std::cerr << "VertexFromWallSpringMT::derivs Wrong norm factor"
+									<< std::endl;
+				exit(-1);
+			}
+			normW = 1.0/normW;
+			for (size_t dim=0; dim<dimension; ++dim) {
+				tmpN[dim] *= normW;
+				cellData[i][dim+variableIndex(0,1)] = tmpN[dim];
+			}
+		}
+	}
+}
+
+void VertexFromWallSpringMT::initiate(Tissue &T)
+{
+	// Find walls with direction closest to given direction
+	size_t dimension = T.numDimension();
+	directionalWall_.resize(T.numCell());
+	std::vector<double> tmpN(dimension);
+
+	for (size_t i=0; i<T.numCell(); ++i) {
+		if ( T.cell(i).variable(variableIndex(0,1)+dimension) > 0.0 ) {
+			double normW = 0.0;
+			for (size_t dim=0; dim<dimension; ++dim) {
+				tmpN[dim] = T.cell(i).wall(0)->vertex1()->position(dim) -
+					T.cell(i).wall(0)->vertex2()->position(dim);
+				normW += tmpN[dim]*tmpN[dim];
+			}
+			normW = std::sqrt( normW );
+			if (normW<=0.0) {
+				std::cerr << "VertexFromWallSpringMT::initiate Normalization=0!"
+									<< std::endl;
+				exit(-1);
+			}
+			normW = 1.0/normW;
+			double prod=0.0;
+			for (size_t dim=0; dim<dimension; ++dim) {
+				tmpN[dim] *= normW;
+				prod += tmpN[dim]*T.cell(i).variable(dim+variableIndex(0,1));
+			}
+			size_t maxK=0;
+			double maxProd = std::fabs(prod);
+			
+			for (size_t k=1; k<T.cell(i).numWall(); ++k) {
+				normW = 0.0;
+				for (size_t dim=0; dim<dimension; ++dim) {
+					tmpN[dim] = T.cell(i).wall(k)->vertex1()->position(dim) -
+						T.cell(i).wall(k)->vertex2()->position(dim);
+					normW += tmpN[dim]*tmpN[dim];
+				}
+				normW = std::sqrt( normW );
+				if (normW<=0.0) {
+					std::cerr << "VertexFromWallSpringMT::initiate Normalization=0!"
+										<< std::endl;
+					exit(-1);
+				}
+				normW = 1.0/normW;
+				prod=0.0;
+				for (size_t dim=0; dim<dimension; ++dim) {
+					tmpN[dim] *= normW;
+					prod += tmpN[dim]*T.cell(i).variable(dim+variableIndex(0,1));
+				}
+				if( prod>maxProd ) {
+					maxProd=prod;
+					maxK=k;
+				}
+			}
+			directionalWall_[i] = maxK;
+		}
+		else
+			directionalWall_[i] = static_cast<size_t>(-1);
+	}	
+}
+
+//void VertexFromWallSpringMT::update(Tissue &T,double step) {}
+
 VertexFromEpidermalWallSpringAsymmetric::
 VertexFromEpidermalWallSpringAsymmetric(std::vector<double> &paraValue, 
 					std::vector< std::vector<size_t> > 

@@ -1327,6 +1327,9 @@ void Tissue::simulateRk2(double startTime,double endTime,double step,
   if( printFlag )
     std::cout << numPrint << std::endl;
   
+	// Initiate reactions for those where it is applicable
+  initiateReactions();
+	
   //Do the simulation
   //////////////////////////////////////////////////////////////////////
   double time=startTime;
@@ -1370,15 +1373,16 @@ void Tissue::simulateRk2(double startTime,double endTime,double step,
     time += step;
     //Check for discrete updates
     //////////////////////////////////////////////////////////////////////
+		updateReactions(step);
     checkCompartmentChange(cellData,wallData,vertexData,
-			   cellDeriv,wallDeriv,vertexDeriv );
+													 cellDeriv,wallDeriv,vertexDeriv );
     
   }
   //Print if applicable
   if( printFlag ) {
     printVertexAndCell(cellData,vertexData);  
     std::cerr << ++numPrinted << " " << time << " " << numCell() << " "
-	      << numWall() << " " << numVertex() << std::endl;
+							<< numWall() << " " << numVertex() << std::endl;
   }
 }
 
@@ -1443,7 +1447,10 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
   //Print number of time points
   if( printFlag )
     std::cout << numPrint << std::endl;
-  
+
+	// Initiate reactions for those where it is applicable
+  initiateReactions();
+	
   //Do the simulation
   //////////////////////////////////////////////////////////////////////
   double time=startTime;
@@ -1455,55 +1462,55 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
       printTime += printDeltaTime;
       printVertexAndCell(cellData,vertexData);  
       std::cerr << ++numPrinted << " " << time << " " << numCell() << " "
-		<< numWall() << " " << numVertex() << std::endl;
+								<< numWall() << " " << numVertex() << std::endl;
     }
-
-
+		
+		
     // Do a Rk4 step
     //////////////////////////////////////////////////////////////////////
-
+		
     //Take first half step
     derivs(cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv);
     for( size_t i=0 ; i<cData.size() ; ++i )
       for( size_t j=0 ; j<cData[i].size() ; ++j )
-	cData[i][j] = cellData[i][j] + stepD2*cellDeriv[i][j];
+				cData[i][j] = cellData[i][j] + stepD2*cellDeriv[i][j];
     for( size_t i=0 ; i<wData.size() ; ++i )
       for( size_t j=0 ; j<wData[i].size() ; ++j )
-	wData[i][j] = wallData[i][j] + stepD2*wallDeriv[i][j];
+				wData[i][j] = wallData[i][j] + stepD2*wallDeriv[i][j];
     for( size_t i=0 ; i<vData.size() ; ++i )
       for( size_t j=0 ; j<vData[i].size() ; ++j )
-	vData[i][j] = vertexData[i][j] + stepD2*vertexDeriv[i][j];
+				vData[i][j] = vertexData[i][j] + stepD2*vertexDeriv[i][j];
     
     //Take second half step
     derivs(cData,wData,vData,cDeriv,wDeriv,vDeriv);    
     for( size_t i=0 ; i<cData.size() ; ++i )
       for( size_t j=0 ; j<cData[i].size() ; ++j )
-	cData[i][j] = cellData[i][j] + stepD2*cDeriv[i][j];
+				cData[i][j] = cellData[i][j] + stepD2*cDeriv[i][j];
     for( size_t i=0 ; i<wData.size() ; ++i )
       for( size_t j=0 ; j<wData[i].size() ; ++j )
-	wData[i][j] = wallData[i][j] + stepD2*wDeriv[i][j];
+				wData[i][j] = wallData[i][j] + stepD2*wDeriv[i][j];
     for( size_t i=0 ; i<vData.size() ; ++i )
       for( size_t j=0 ; j<vData[i].size() ; ++j )
-	vData[i][j] = vertexData[i][j] + stepD2*vDeriv[i][j];
+				vData[i][j] = vertexData[i][j] + stepD2*vDeriv[i][j];
     
     //Take temporary 'full' step
     derivs(cData,wData,vData,c2Deriv,w2Deriv,v2Deriv);
     for( size_t i=0 ; i<cellData.size() ; ++i )
       for( size_t j=0 ; j<cellData[i].size() ; ++j ) {
-	cData[i][j] = cellData[i][j] + step*c2Deriv[i][j];
-	c2Deriv[i][j] += cDeriv[i][j];
+				cData[i][j] = cellData[i][j] + step*c2Deriv[i][j];
+				c2Deriv[i][j] += cDeriv[i][j];
       }
     for( size_t i=0 ; i<wallData.size() ; ++i )
       for( size_t j=0 ; j<wallData[i].size() ; ++j ) {
-	wData[i][j] = wallData[i][j] + step*w2Deriv[i][j];
-	w2Deriv[i][j] += wDeriv[i][j];
+				wData[i][j] = wallData[i][j] + step*w2Deriv[i][j];
+				w2Deriv[i][j] += wDeriv[i][j];
       }
     for( size_t i=0 ; i<vertexData.size() ; ++i )
       for( size_t j=0 ; j<vertexData[i].size() ; ++j ) {
-	vData[i][j] = vertexData[i][j] + step*v2Deriv[i][j];
-	v2Deriv[i][j] = vDeriv[i][j];
+				vData[i][j] = vertexData[i][j] + step*v2Deriv[i][j];
+				v2Deriv[i][j] = vDeriv[i][j];
       }
-
+		
     //Take full step
     derivs(cData,wData,vData,cDeriv,wDeriv,vDeriv);
     for( size_t i=0 ; i<cellData.size() ; ++i )
@@ -1521,11 +1528,12 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
     
     time += step;
 		
-    //Check for discrete updates
+    //Check for discrete and reaction updates
     //////////////////////////////////////////////////////////////////////
+		updateReactions(step);
     checkCompartmentChange(cellData,wallData,vertexData,
 													 cellDeriv,wallDeriv,vertexDeriv );
-
+		
     //Resize temporary containers as well
     if(cellData.size() != cData.size() ) {
       cData.resize( cellData.size(), cData[0] );
@@ -1558,6 +1566,18 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
 	printInit(cellData,wallData,vertexData,INIT);
 	INIT.close();
 	
+}
+
+void::Tissue::initiateReactions() 
+{
+	for (size_t i=0; i<numReaction(); ++i)
+		reaction(i)->initiate(*this);
+}
+
+void::Tissue::updateReactions(double step) 
+{
+	for (size_t i=0; i<numReaction(); ++i)
+		reaction(i)->update(*this,step);	
 }
 
 void Tissue::

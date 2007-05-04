@@ -37,11 +37,14 @@ env['LINKFLAGS']    = ['-O3', '-ansi', '-pedantic', '-Wall']
 s = ["simulator.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","myConfig.cc","myFiles.cc"]
 env.Program(target="../bin/simulator",source=s)
 
-s = ["simulatorRk2.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc"]
-env.Program(target="../bin/simulatorRk2",source=s)
+s = ["addCellDirectionsFromData.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","myConfig.cc","myFiles.cc"]
+env.Program(target="../bin/addCellDirectionsFromData",source=s)
 
-s = ["simulatorRk4.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc"]
-env.Program(target="../bin/simulatorRk4",source=s)
+#s = ["simulatorRk2.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc"]
+#env.Program(target="../bin/simulatorRk2",source=s)
+
+#s = ["simulatorRk4.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc"]
+#env.Program(target="../bin/simulatorRk4",source=s)
 
 s = ["findCellPeaks.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc"]
 env.Program(target="../bin/findCellPeaks",source=s)
