@@ -105,10 +105,10 @@ int main(int argc,char *argv[]) {
 			norm = 1.0/norm;
 			for (size_t dim=0; dim<dimension; ++dim)
 				direction[d][dim] *= norm;
-		}
+		}		
 	}
 	IN.close();
-
+	
 	//Find cells connected to directions
 	for (size_t d=0; d<numDirection; ++d) {
 		double distance=0.0;
@@ -142,6 +142,9 @@ int main(int argc,char *argv[]) {
 	}
 	for (size_t d=0; d<numDirection; ++d) {
 		size_t tmpCellI=directionCell[d];
+		for (size_t dim=0; dim<dimension; ++dim)
+			std::cerr << direction[d][dim] << " ";
+		std::cerr << std::endl;
 		for (size_t dim=0; dim<dimension; ++dim)
 			T.cell(tmpCellI).setVariable(dim+numOldVar,direction[d][dim]);
 		T.cell(tmpCellI).setVariable(numOldVar+dimension,1.0);
