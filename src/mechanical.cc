@@ -5,6 +5,7 @@
  * Created      : April 2006
  * Revision     : $Id:$
  */
+#include <utility>
 #include"mechanical.h"
 #include"baseReaction.h"
 #include"tissue.h"
@@ -1686,8 +1687,8 @@ derivs(Tissue &T,
 	(vertexData[i][posIndex]-parameter(1));
     }
     else if( parameter(2)<0 && vertexData[i][posIndex]<parameter(1) ) {
-      vertexDerivs[i][posIndex] -= parameter(0)*
-	(vertexData[i][posIndex]-parameter(1));
+	    vertexDerivs[i][posIndex] -= parameter(0)*
+		    (vertexData[i][posIndex]-parameter(1));
     }
   }
 }
@@ -1768,4 +1769,82 @@ derivs(Tissue &T,
   }
 }
 
+VertexFromPressureExperimental::VertexFromPressureExperimental(std::vector<double> &paraValue, 
+												   std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 1) {
+		std::cerr << "VertexFromPressureExperimental::VertexFromPressureExperimental() "
+				<< "Uses one parameter: k" << std::endl;
+		exit(EXIT_FAILURE);
+	}
 
+	if (indValue.size() != 1 || indValue[0].size() != 1) {
+		std::cerr << "VertexFromPressureExperimental::VertexFromPressureExperimental() "
+				<< "Wall length index given.\n";
+		exit(EXIT_FAILURE);
+	}
+
+	setId("VertexFromPressureExperimental");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp[0] = "k";
+	setParameterId(tmp);
+}
+
+void VertexFromPressureExperimental::derivs(Tissue &T,
+								    std::vector< std::vector<double> > &cellData,
+								    std::vector< std::vector<double> > &wallData,
+								    std::vector< std::vector<double> > &vertexData,
+								    std::vector< std::vector<double> > &cellDerivs,
+								    std::vector< std::vector<double> > &wallDerivs,
+								    std::vector< std::vector<double> > &vertexDerivs)
+{
+	// ATTENTION! This function assume two dimensions (x, y) and that
+	// the vertices are sorted in a clock-wise order.
+
+	assert(T.vertex(0).numPosition());
+
+	double area;
+	for (size_t n = 0; n < T.numCell(); ++n) {
+		Cell cell = T.cell(n);
+		std::vector< std::pair<double, double> > vertices;
+		for (size_t i = 0; i < cell.numVertex(); ++i) {
+			std::pair<double, double> vertex;
+			vertex.first = vertexData[cell.vertex(i)->index()][0];
+			vertex.second = vertexData[cell.vertex(i)->index()][1];
+			vertices.push_back(vertex);
+		}
+		area = fabs(polygonArea(vertices));
+
+		for (size_t i = 1; i < (cell.numVertex() + 1); ++i) {
+			Vertex *vertex = cell.vertex(i % cell.numVertex()); // Current vertex in polygon.
+			Vertex *pvertex = cell.vertex((i - 1) % cell.numVertex()); // Previous vertex in polygon.
+			Vertex *nvertex = cell.vertex((i + 1) % cell.numVertex()); // Next vertex in polygon.
+
+			double px = vertexData[pvertex->index()][0];
+			double py = vertexData[pvertex->index()][1];
+			double nx = vertexData[nvertex->index()][0];
+			double ny = vertexData[nvertex->index()][1];
+ 
+			double dAdx = 0.5 * (-py + ny);
+			double dAdy = 0.5 * (px - nx);
+
+			vertexDerivs[vertex->index()][0] += parameter(0) * (1 - area / cellData[n][variableIndex(0, 0)]) * dAdx;
+			vertexDerivs[vertex->index()][1] += parameter(0) * (1 - area / cellData[n][variableIndex(0, 0)]) * dAdy;
+		}
+	}
+}
+ 
+double VertexFromPressureExperimental::polygonArea(std::vector< std::pair<double, double> > vertices)
+{
+	double area = 0.0;
+	size_t N = vertices.size();
+	for (size_t n = 0; n < N; ++n) {
+		area += vertices[n].first * vertices[(n + 1) % N].second;
+		area -= vertices[(n + 1) % N].first * vertices[n].second;
+	}
+	area *= 0.5;
+	return area;
+}
