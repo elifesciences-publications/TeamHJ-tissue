@@ -1871,7 +1871,6 @@ VertexFromWallSpringExperimental::VertexFromWallSpringExperimental(std::vector<d
 	std::vector<std::string> tmp(numParameter());
 	tmp[0] = "k";
 	setParameterId(tmp);
-
 }
 
 void VertexFromWallSpringExperimental::derivs(Tissue &T,
@@ -1894,12 +1893,74 @@ void VertexFromWallSpringExperimental::derivs(Tissue &T,
 		}
 		distance = std::sqrt(distance);
 
-		for (size_t d = 0; d < dimensions; ++d) {
+ 		for (size_t d = 0; d < dimensions; ++d) {
 			double dx1dt = parameter(0) * (vertexData[vertex2Index][d] - vertexData[vertex1Index][d])
 				* (1.0/wallData[i][variableIndex(0, 0)] - 1.0/distance);
 
 			vertexDerivs[vertex1Index][d] += dx1dt;
 			vertexDerivs[vertex2Index][d] -= dx1dt;
 		}
+	}
+}
+
+CellVolumeExperimental::CellVolumeExperimental(std::vector<double> &paraValue,
+									  std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 4) {
+		std::cerr << "CellVolumeExperimental::CellVolumeExperimental() "
+				<< "Uses four parameters: k_p, P_max, k_pp, k_w" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	if (indValue.size() != 1 || indValue[0].size() != 2) {
+		std::cerr << "VertexFromPressureExperimental::VertexFromPressureExperimental() "
+				<< "Wall length index and cell volume index given.\n";
+		exit(EXIT_FAILURE);
+	}
+
+	setId("VertexFromWallSpringExperimental");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp[0] = "k_p";
+	tmp[1] = "P_max";
+	tmp[2] = "k_pp";
+	tmp[3] = "k_w";
+
+	setParameterId(tmp);
+}
+
+void CellVolumeExperimental::derivs(Tissue &T,
+							 std::vector< std::vector<double> > &cellData,
+							 std::vector< std::vector<double> > &wallData,
+							 std::vector< std::vector<double> > &vertexData,
+							 std::vector< std::vector<double> > &cellDerivs,
+							 std::vector< std::vector<double> > &wallDerivs,
+							 std::vector< std::vector<double> > &vertexDerivs)
+{
+	for (size_t n = 0; n < T.numCell(); ++n) {
+		Cell cell = T.cell(n);
+		
+		double P = 0.0;
+		double sum = 0.0;
+		for (size_t i = 0; i < cell.numWall(); ++i) {
+			size_t vertex1Index = cell.wall(i)->vertex1()->index();
+			size_t vertex2Index = cell.wall(i)->vertex2()->index();
+			size_t dimensions = vertexData[vertex1Index].size();
+
+			double distance = 0.0;
+			for (size_t d = 0; d < dimensions; ++d) {
+				distance += (vertexData[vertex1Index][d] - vertexData[vertex2Index][d])
+					* (vertexData[vertex1Index][d] - vertexData[vertex2Index][d]);
+			}
+			distance = std::sqrt(distance);
+
+			P += (distance / wallData[cell.wall(i)->index()][variableIndex(0, 0)]) - 1.0;					   
+			sum += distance;
+		}
+		P *= parameter(2) * parameter(3);
+		
+		cellDerivs[cell.index()][variableIndex(0, 1)] += parameter(0) * (parameter(1) - P) * sum;
 	}
 }

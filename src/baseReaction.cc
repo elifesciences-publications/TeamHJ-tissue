@@ -78,6 +78,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new VertexFromPressureExperimental(paraValue, indValue);
   else if (idValue == "VertexFromWallSpringExperimental")
 	  return new VertexFromWallSpringExperimental(paraValue, indValue);
+  else if (idValue == "CellVolumeExperimental")
+	  return new CellVolumeExperimental(paraValue, indValue);
 
 	//network.h,network.cc
   else if(idValue=="AuxinModelSimple1")
