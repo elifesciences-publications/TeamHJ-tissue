@@ -332,3 +332,56 @@ derivs(Tissue &T,
 	}
 }
 
+WallLengthGrowExperimental::WallLengthGrowExperimental(std::vector<double> &paraValue,
+											std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 3) {
+		std::cerr << "WallLengthGrowExperimental::WallLengthGrowExperimental() "
+				<< "Uses three parameters: k_L, k_w and phi" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	if (indValue.size() != 1 || indValue[0].size() != 1) {
+		std::cerr << "VertexFromPressureExperimental::VertexFromPressureExperimental() "
+				<< "Wall length index given.\n";
+		exit(EXIT_FAILURE);
+	}
+
+	setId("VertexFromWallSpringExperimental");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp[0] = "k_L";
+	tmp[1] = "k_w";
+	tmp[2] = "phi";
+
+	setParameterId(tmp);
+}
+
+void WallLengthGrowExperimental::derivs(Tissue &T,
+								std::vector< std::vector<double> > &cellData,
+								std::vector< std::vector<double> > &wallData,
+								std::vector< std::vector<double> > &vertexData,
+								std::vector< std::vector<double> > &cellDerivs,
+								std::vector< std::vector<double> > &wallDerivs,
+								std::vector< std::vector<double> > &vertexDerivs)
+{
+	for (size_t i = 0; i < T.numWall(); ++i) {
+		size_t vertex1Index = T.wall(i).vertex1()->index();
+		size_t vertex2Index = T.wall(i).vertex2()->index();
+		size_t dimensions = vertexData[vertex1Index].size();
+		
+		double distance = 0.0;
+		for (size_t d = 0; d < dimensions; ++d) {
+			distance += (vertexData[vertex1Index][d] - vertexData[vertex2Index][d])
+				* (vertexData[vertex1Index][d] - vertexData[vertex2Index][d]);
+		}
+		distance = std::sqrt(distance);
+		
+		double arg = parameter(1) * (distance - wallData[T.wall(i).index()][variableIndex(0, 0)]) - parameter(2);
+		if (arg > 0)
+			wallDerivs[T.wall(i).index()][variableIndex(0, 0)] += parameter(0) * arg;
+	}
+}
+

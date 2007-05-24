@@ -35,6 +35,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new WallGrowthConstantStressEpidermalAsymmetric(paraValue,indValue);
   else if(idValue=="MoveVertexRadially")
     return new MoveVertexRadially(paraValue,indValue);
+  else if (idValue == "WallLengthGrowExperimental")
+	  return new WallLengthGrowExperimental(paraValue, indValue);
 
   //Mechanical interactions between vertices
   //mechanical.h,mechanical.cc
