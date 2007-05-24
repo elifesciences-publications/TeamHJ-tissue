@@ -353,8 +353,23 @@ class VertexFromPressureExperimental : public BaseReaction
 			  std::vector< std::vector<double> > &vertexData,
 			  std::vector< std::vector<double> > &cellDerivs,
 			  std::vector< std::vector<double> > &wallDerivs,
-			  std::vector< std::vector<double> > &vertexDerivs );
+			  std::vector< std::vector<double> > &vertexDerivs);
 	double polygonArea(std::vector< std::pair<double, double> > vertices);
+};
+
+class VertexFromWallSpringExperimental : public BaseReaction
+{
+ public:
+	VertexFromWallSpringExperimental(std::vector<double> &paraValue,
+							   std::vector< std::vector<size_t> > &indValue);
+
+	void derivs(Tissue &T,
+			  std::vector< std::vector<double> > &cellData,
+			  std::vector< std::vector<double> > &wallData,
+			  std::vector< std::vector<double> > &vertexData,
+			  std::vector< std::vector<double> > &cellDerivs,
+			  std::vector< std::vector<double> > &wallDerivs,
+			  std::vector< std::vector<double> > &vertexDerivs);
 };
 
 #endif

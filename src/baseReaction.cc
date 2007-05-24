@@ -76,6 +76,9 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new EpidermalVertexForce(paraValue,indValue); 
   else if (idValue == "VertexFromPressureExperimental")
 	  return new VertexFromPressureExperimental(paraValue, indValue);
+  else if (idValue == "VertexFromWallSpringExperimental")
+	  return new VertexFromWallSpringExperimental(paraValue, indValue);
+
 	//network.h,network.cc
   else if(idValue=="AuxinModelSimple1")
     return new AuxinModelSimple1(paraValue,indValue); 

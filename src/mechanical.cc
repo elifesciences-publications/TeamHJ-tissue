@@ -1848,3 +1848,58 @@ double VertexFromPressureExperimental::polygonArea(std::vector< std::pair<double
 	area *= 0.5;
 	return area;
 }
+
+VertexFromWallSpringExperimental::VertexFromWallSpringExperimental(std::vector<double> &paraValue,
+													  std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 1) {
+		std::cerr << "VertexFromWallSpringExperimental::VertexFromWallSpringExperimental() "
+				<< "Uses one parameter: k" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	if (indValue.size() != 1 || indValue[0].size() != 1) {
+		std::cerr << "VertexFromPressureExperimental::VertexFromPressureExperimental() "
+				<< "Wall length index given.\n";
+		exit(EXIT_FAILURE);
+	}
+
+	setId("VertexFromWallSpringExperimental");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp[0] = "k";
+	setParameterId(tmp);
+
+}
+
+void VertexFromWallSpringExperimental::derivs(Tissue &T,
+									 std::vector< std::vector<double> > &cellData,
+									 std::vector< std::vector<double> > &wallData,
+									 std::vector< std::vector<double> > &vertexData,
+									 std::vector< std::vector<double> > &cellDerivs,
+									 std::vector< std::vector<double> > &wallDerivs,
+									 std::vector< std::vector<double> > &vertexDerivs)
+{
+	for (size_t i = 0; i < T.numWall(); ++i) {
+		size_t vertex1Index = T.wall(i).vertex1()->index();
+		size_t vertex2Index = T.wall(i).vertex2()->index();
+		size_t dimensions = vertexData[vertex1Index].size();
+
+		double distance = 0.0;
+		for (size_t d = 0; d < dimensions; ++d) {
+			distance += (vertexData[vertex1Index][d] - vertexData[vertex2Index][d])
+				* (vertexData[vertex1Index][d] - vertexData[vertex2Index][d]);
+		}
+		distance = std::sqrt(distance);
+
+		for (size_t d = 0; d < dimensions; ++d) {
+			double dx1dt = parameter(0) * (vertexData[vertex2Index][d] - vertexData[vertex1Index][d])
+				* (1.0/wallData[i][variableIndex(0, 0)] - 1.0/distance);
+
+			vertexDerivs[vertex1Index][d] += dx1dt;
+			vertexDerivs[vertex2Index][d] -= dx1dt;
+		}
+	}
+}
