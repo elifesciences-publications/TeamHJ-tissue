@@ -1772,9 +1772,9 @@ derivs(Tissue &T,
 VertexFromPressureExperimental::VertexFromPressureExperimental(std::vector<double> &paraValue, 
 												   std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 1) {
+	if (paraValue.size() != 2) {
 		std::cerr << "VertexFromPressureExperimental::VertexFromPressureExperimental() "
-				<< "Uses one parameter: k" << std::endl;
+				<< "Uses two parameter: k no_contraction_flag" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
@@ -1790,6 +1790,7 @@ VertexFromPressureExperimental::VertexFromPressureExperimental(std::vector<doubl
 	
 	std::vector<std::string> tmp(numParameter());
 	tmp[0] = "k";
+	tmp[1] = "no_contraction_flag";
 	setParameterId(tmp);
 }
 
@@ -1817,6 +1818,9 @@ void VertexFromPressureExperimental::derivs(Tissue &T,
 			vertices.push_back(vertex);
 		}
 		area = fabs(polygonArea(vertices));
+
+		if (parameter(1) != 0.0 && cellData[n][variableIndex(0, 0)] - area < 0)
+			continue;
 
 		for (size_t i = 1; i < (cell.numVertex() + 1); ++i) {
 			Vertex *vertex = cell.vertex(i % cell.numVertex()); // Current vertex in polygon.
