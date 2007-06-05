@@ -1817,7 +1817,9 @@ void VertexFromPressureExperimental::derivs(Tissue &T,
 			vertex.second = vertexData[cell.vertex(i)->index()][1];
 			vertices.push_back(vertex);
 		}
-		area = fabs(polygonArea(vertices));
+		area = polygonArea(vertices);
+		double sa = area < 0 ? -1 : +1;
+		area = std::fabs(area);
 
 		if (parameter(1) != 0.0 && cellData[n][variableIndex(0, 0)] - area < 0)
 			continue;
@@ -1832,8 +1834,8 @@ void VertexFromPressureExperimental::derivs(Tissue &T,
 			double nx = vertexData[nvertex->index()][0];
 			double ny = vertexData[nvertex->index()][1];
  
-			double dAdx = 0.5 * (-py + ny);
-			double dAdy = 0.5 * (px - nx);
+			double dAdx = sa * 0.5 * (-py + ny);
+			double dAdy = sa * 0.5 * (px - nx);
 
 			vertexDerivs[vertex->index()][0] += parameter(0) * (1 - area / cellData[n][variableIndex(0, 0)]) * dAdx;
 			vertexDerivs[vertex->index()][1] += parameter(0) * (1 - area / cellData[n][variableIndex(0, 0)]) * dAdy;
