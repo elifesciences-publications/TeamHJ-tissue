@@ -155,24 +155,14 @@ class Tissue {
 		  std::vector< std::vector<double> > &vertexDeriv );			
   //! Updates topology and variables for cell division
   void divideCell( Cell *divCell, size_t w1, size_t w2, 
-		   std::vector<double> &v1Pos,
-		   std::vector<double> &v2Pos,
-		   std::vector< std::vector<double> > &cellData,
-		   std::vector< std::vector<double> > &wallData,
-		   std::vector< std::vector<double> > &vertexData,
-		   std::vector< std::vector<double> > &cellDeriv,
-		   std::vector< std::vector<double> > &wallDeriv,
-		   std::vector< std::vector<double> > &vertexDeriv );
-  //! Updates topology and variables for cell division
-  void divideCellNew( Cell *divCell, size_t w1, size_t w2, 
-		      std::vector<double> &v1Pos,
-		      std::vector<double> &v2Pos,
-		      std::vector< std::vector<double> > &cellData,
-		      std::vector< std::vector<double> > &wallData,
-		      std::vector< std::vector<double> > &vertexData,
-		      std::vector< std::vector<double> > &cellDeriv,
-		      std::vector< std::vector<double> > &wallDeriv,
-		      std::vector< std::vector<double> > &vertexDeriv );
+									 std::vector<double> &v1Pos,
+									 std::vector<double> &v2Pos,
+									 std::vector< std::vector<double> > &cellData,
+									 std::vector< std::vector<double> > &wallData,
+									 std::vector< std::vector<double> > &vertexData,
+									 std::vector< std::vector<double> > &cellDeriv,
+									 std::vector< std::vector<double> > &wallDeriv,
+									 std::vector< std::vector<double> > &vertexDeriv );
   
   //!Sorts cell.wall and cell.vertex vectors to be cyclic 
   void sortCellWallAndCellVertex();

@@ -217,8 +217,8 @@ update(Tissue *T,size_t i,
 	size_t numWallTmp=wallData.size();
 	assert( numWallTmp==T->numWall() );
 	//Divide
-	T->divideCellNew(divCell,wI,w3I,v1Pos,v2Pos,cellData,wallData,vertexData,
-									 cellDeriv,wallDeriv,vertexDeriv);
+	T->divideCell(divCell,wI,w3I,v1Pos,v2Pos,cellData,wallData,vertexData,
+								cellDeriv,wallDeriv,vertexDeriv);
 	assert( numWallTmp+3 == T->numWall() );
 
 	//Change length of new wall between the divided daugther cells 
@@ -453,7 +453,7 @@ update(Tissue *T,size_t i,
 	size_t numWallTmp=wallData.size();
 	assert( numWallTmp==T->numWall() );
 	//Divide
-	T->divideCellNew(divCell,wI,w3I,v1Pos,v2Pos,cellData,wallData,vertexData,
+	T->divideCell(divCell,wI,w3I,v1Pos,v2Pos,cellData,wallData,vertexData,
 									 cellDeriv,wallDeriv,vertexDeriv);
 	assert( numWallTmp+3 == T->numWall() );
 	
@@ -800,8 +800,8 @@ update(Tissue *T,size_t cellI,
 	size_t numWallTmp=wallData.size();
 	assert( numWallTmp==T->numWall() );
 	//Divide
-	T->divideCellNew(divCell,wI[0],wI[1],v1Pos,v2Pos,cellData,wallData,vertexData,
-									 cellDeriv,wallDeriv,vertexDeriv);
+	T->divideCell(divCell,wI[0],wI[1],v1Pos,v2Pos,cellData,wallData,vertexData,
+								cellDeriv,wallDeriv,vertexDeriv);
 	assert( numWallTmp+3 == T->numWall() );
 
 	//Change length of new wall between the divided daugther cells 
