@@ -1882,7 +1882,8 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 												 std::vector< std::vector<double> > &vertexData,
 												 std::vector< std::vector<double> > &cellDeriv,
 												 std::vector< std::vector<double> > &wallDeriv,
-												 std::vector< std::vector<double> > &vertexDeriv ) 
+												 std::vector< std::vector<double> > &vertexDeriv,
+												 std::vector<size_t> &volumeChangeList) 
 {	
 	size_t Nc=numCell(),Nw=numWall(),Nv=numVertex();
 	size_t i = divCell->index();
@@ -2161,7 +2162,7 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
     }
   }
   else {
-    std::cerr << "DivisionVolumeViaLongestWall::update "
+    std::cerr << "Tissue::divideCell() "
 							<< "First wall not connected to dividing cell" << std::endl;
     std::cerr << i << " " << cell(i).index() << "\t" 
 							<< wall( cell(i).wall(wI)->index() ).cell1()->index() << " "
@@ -2227,7 +2228,7 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
     }    
   }
   else {
-    std::cerr << "DivisionVolumeViaLongestWall::update "
+    std::cerr << "Tissue::divideCell() "
 							<< "Second wall not connected to dividing cell" << std::endl;
     for( size_t k=0 ; k<cell(i).numWall() ; ++k ) {
       size_t v1w3Itmp = cell(i).wall(k)->vertex1()->index();
@@ -2258,7 +2259,7 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 				tmpCell.push_back( cell(i).wall(wI)->cell1() );
       else if( cell(i).wall(wI)->cell1()->index() != i &&
 							 cell(i).wall(wI)->cell2()->index() != i ){
-				std::cerr << "DivisionVolumeViaLongestWall::update "
+				std::cerr << "Tissue::divideCell() "
 									<< "Wall wI not connected to dividing cell" 
 									<< std::endl;
 				exit(-1);
@@ -2283,7 +2284,7 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 					tmpCell.push_back( cell(i).wall(w3I)->cell1() );
 			}
       else {
-				std::cerr << "DivisionVolumeViaLongestWall::update "
+				std::cerr << "Tissue::divideCell() "
 									<< "Wall w3I not connected to dividing cell" 
 									<< std::endl;
 				exit(-1);
@@ -2363,6 +2364,20 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
   cell(Nc).setVertex(tmpV);
 	assert( wall(Nw).cell1()->index()==i );
   assert( wall(Nw).cell2()->index()==Nc );
+	
+	// Update the volume dependent variables for each cell variable index 
+	// given in volumeChangeList
+	if (volumeChangeList.size()) {
+		double Vi = cell(i).calculateVolume(vertexData);
+		double Vn = cell(Nc).calculateVolume(vertexData);
+		double fi = Vi/(Vi+Vn);
+		double fn = Vn/(Vi+Vn);
+		
+		for (size_t k=0; k<volumeChangeList.size(); ++k) {
+			cellData[i][volumeChangeList[k]] *= fi;
+			cellData[Nc][volumeChangeList[k]] *= fn;
+		}
+	}		
 	checkConnectivity(1);
 }
 

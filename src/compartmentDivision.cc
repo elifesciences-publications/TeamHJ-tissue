@@ -22,10 +22,11 @@ DivisionVolumeViaLongestWall(std::vector<double> &paraValue,
 							<< "Two parameters used V_threshold, LWall_frac\n";
     exit(0);
   }
-  if( indValue.size() != 0 ) {
+  if( indValue.size() != 1 ) {
     std::cerr << "DivisionVolumeViaLongestWall::"
 							<< "DivisionVolumeViaLongestWall() "
-							<< "No variable index is used.\n";
+							<< "Variable indices for volume dependent cell "
+							<< "variables is used.\n";
     exit(0);
   }
   //Set the variable values
@@ -218,7 +219,7 @@ update(Tissue *T,size_t i,
 	assert( numWallTmp==T->numWall() );
 	//Divide
 	T->divideCell(divCell,wI,w3I,v1Pos,v2Pos,cellData,wallData,vertexData,
-								cellDeriv,wallDeriv,vertexDeriv);
+								cellDeriv,wallDeriv,vertexDeriv,variableIndex(0));
 	assert( numWallTmp+3 == T->numWall() );
 
 	//Change length of new wall between the divided daugther cells 
@@ -242,10 +243,11 @@ DivisionVolumeViaLongestWall3D(std::vector<double> &paraValue,
 							<< "Two parameters used V_threshold, LWall_frac\n";
     exit(0);
   }
-  if( indValue.size() != 0 ) {
+  if( indValue.size() != 1 ) {
     std::cerr << "DivisionVolumeViaLongestWall3D::"
 							<< "DivisionVolumeViaLongestWall3D() "
-							<< "No variable index is used.\n";
+							<< "Variable indices for volume dependent cell "
+							<< "variables is used.\n";
     exit(0);
   }
   //Set the variable values
@@ -454,7 +456,7 @@ update(Tissue *T,size_t i,
 	assert( numWallTmp==T->numWall() );
 	//Divide
 	T->divideCell(divCell,wI,w3I,v1Pos,v2Pos,cellData,wallData,vertexData,
-									 cellDeriv,wallDeriv,vertexDeriv);
+									 cellDeriv,wallDeriv,vertexDeriv,variableIndex(0));
 	assert( numWallTmp+3 == T->numWall() );
 	
 	//Change length of new wall between the divided daugther cells 
@@ -478,10 +480,11 @@ DivisionVolumeViaStrain(std::vector<double> &paraValue,
 							<< "Two parameters used V_threshold, LWall_frac\n";
     exit(0);
   }
-  if( indValue.size() != 0 ) {
+  if( indValue.size() != 1 ) {
     std::cerr << "DivisionVolumeViaStrain::"
 							<< "DivisionVolumeViaStrain() "
-							<< "No variable index is used.\n";
+							<< "Variable indices for volume dependent cell "
+							<< "variables is used.\n";
     exit(0);
   }
   //Set the variable values
@@ -801,7 +804,7 @@ update(Tissue *T,size_t cellI,
 	assert( numWallTmp==T->numWall() );
 	//Divide
 	T->divideCell(divCell,wI[0],wI[1],v1Pos,v2Pos,cellData,wallData,vertexData,
-								cellDeriv,wallDeriv,vertexDeriv);
+								cellDeriv,wallDeriv,vertexDeriv,variableIndex(0));
 	assert( numWallTmp+3 == T->numWall() );
 
 	//Change length of new wall between the divided daugther cells 

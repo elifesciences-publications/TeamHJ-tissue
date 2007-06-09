@@ -127,32 +127,32 @@ class Tissue {
   
   //Functions related to model simulations
   void derivs( std::vector< std::vector<double> > &cellData,
-	       std::vector< std::vector<double> > &wallData,
-	       std::vector< std::vector<double> > &vertexData,
-	       std::vector< std::vector<double> > &cellDeriv,
-	       std::vector< std::vector<double> > &wallDeriv,
-	       std::vector< std::vector<double> > &vertexDeriv );
+							 std::vector< std::vector<double> > &wallData,
+							 std::vector< std::vector<double> > &vertexData,
+							 std::vector< std::vector<double> > &cellDeriv,
+							 std::vector< std::vector<double> > &wallDeriv,
+							 std::vector< std::vector<double> > &vertexDeriv );
   void simulateRk2(double startTime=0.0,double endTime=1.0,
-		   double step=0.01,size_t printNum=10);
+									 double step=0.01,size_t printNum=10);
   void simulateRk4(double startTime=0.0,double endTime=1.0,
-		   double step=0.01,size_t printNum=10);
+									 double step=0.01,size_t printNum=10);
   
 	void initiateReactions();
 	void updateReactions(double step);
   void checkCompartmentChange( std::vector< std::vector<double> > &cellData,
-			       std::vector< std::vector<double> > &wallData,
-			       std::vector< std::vector<double> > &vertexData,
-			       std::vector< std::vector<double> > &cellDeriv,
-			       std::vector< std::vector<double> > &wallDeriv,
-			       std::vector< std::vector<double> > &vertexDeriv );
+															 std::vector< std::vector<double> > &wallData,
+															 std::vector< std::vector<double> > &vertexData,
+															 std::vector< std::vector<double> > &cellDeriv,
+															 std::vector< std::vector<double> > &wallDeriv,
+															 std::vector< std::vector<double> > &vertexDeriv );
   //!Updates topology and variables for a cell removal
   void removeCell(size_t cellIndex,
-		  std::vector< std::vector<double> > &cellData,
-		  std::vector< std::vector<double> > &wallData,
-		  std::vector< std::vector<double> > &vertexData,
-		  std::vector< std::vector<double> > &cellDeriv,
-		  std::vector< std::vector<double> > &wallDeriv,
-		  std::vector< std::vector<double> > &vertexDeriv );			
+									std::vector< std::vector<double> > &cellData,
+									std::vector< std::vector<double> > &wallData,
+									std::vector< std::vector<double> > &vertexData,
+									std::vector< std::vector<double> > &cellDeriv,
+									std::vector< std::vector<double> > &wallDeriv,
+									std::vector< std::vector<double> > &vertexDeriv );			
   //! Updates topology and variables for cell division
   void divideCell( Cell *divCell, size_t w1, size_t w2, 
 									 std::vector<double> &v1Pos,
@@ -162,7 +162,8 @@ class Tissue {
 									 std::vector< std::vector<double> > &vertexData,
 									 std::vector< std::vector<double> > &cellDeriv,
 									 std::vector< std::vector<double> > &wallDeriv,
-									 std::vector< std::vector<double> > &vertexDeriv );
+									 std::vector< std::vector<double> > &vertexDeriv,
+									 std::vector<size_t> &volumeChangeList);
   
   //!Sorts cell.wall and cell.vertex vectors to be cyclic 
   void sortCellWallAndCellVertex();
@@ -177,9 +178,9 @@ class Tissue {
   //Print functions
   void printInit(std::ostream &os=std::cout);
   void printInit(std::vector< std::vector<double> > &cellData,
-		 std::vector< std::vector<double> > &wallData,
-		 std::vector< std::vector<double> > &vertexData,
-		 std::ostream &os);
+								 std::vector< std::vector<double> > &wallData,
+								 std::vector< std::vector<double> > &vertexData,
+								 std::ostream &os);
   void printVertex(std::ostream &os=std::cout);
   void printWall(std::ostream &os=std::cout);
   void printVertexAndCell(std::ostream &os=std::cout);

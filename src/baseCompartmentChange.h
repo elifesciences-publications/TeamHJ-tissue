@@ -60,6 +60,7 @@ class BaseCompartmentChange {
   inline double& parameterAddress(size_t i);
   inline std::string parameterId(size_t i) const;
   inline size_t variableIndex(size_t i,size_t j) const;
+  inline std::vector<size_t>& variableIndex(size_t i);
   
   // Set values
   inline void setId(std::string value);
@@ -131,6 +132,11 @@ inline std::string BaseCompartmentChange::parameterId(size_t i) const {
 //!Returns the index of variable used in the update equation
 inline size_t BaseCompartmentChange::variableIndex(size_t i,size_t j) const {
   return variableIndex_[i][j];
+}
+
+//!Returns the index vector of variables used in the update equation
+inline std::vector<size_t>& BaseCompartmentChange::variableIndex(size_t i) {
+  return variableIndex_[i];
 }
 
 //!Sets the id string
