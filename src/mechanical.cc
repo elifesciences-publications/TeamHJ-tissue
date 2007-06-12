@@ -13,31 +13,32 @@
 //!Constructor for the SpringAsymmetric class
 VertexFromWallSpringAsymmetric::
 VertexFromWallSpringAsymmetric(std::vector<double> &paraValue, 
-			       std::vector< std::vector<size_t> > 
-			       &indValue ) {
-  
-  //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+															 std::vector< std::vector<size_t> > 
+															 &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
   if( paraValue.size()!=2 ) {
     std::cerr << "VertexFromWallSpringAsymmetric::"
-	      << "VertexFromWallSpringAsymmetric() "
-	      << "Uses two parameters K_force frac_adhesion.\n";
+							<< "VertexFromWallSpringAsymmetric() "
+							<< "Uses two parameters K_force frac_adhesion.\n";
     exit(0);
   }
-  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+  if( indValue.size() < 1 || indValue.size() > 2 
+			|| indValue[0].size() != 1 
+			|| (indValue.size()==2 && indValue[1].size() != 1) ) {
     std::cerr << "VertexFromWallSpringAsymmetric::"
-	      << "VertexFromWallSpringAsymmetric() "
-	      << "Wall length index given.\n";
+							<< "VertexFromWallSpringAsymmetric() "
+							<< "Wall length index given in first level,"
+							<< " and optionally wall variable save index in second.\n";
     exit(0);
   }
-  //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+
+  // Set the variable values
   setId("VertexFromWallSpringAsymmetric");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
-  //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  // Set the parameter identities
   std::vector<std::string> tmp( numParameter() );
   tmp[0] = "K_force";
   tmp[1] = "frac_adh";
@@ -79,6 +80,10 @@ derivs(Tissue &T,
     }
     if( distance>wallLength )
       coeff *=parameter(1);
+
+		//Save force in wall variable if appropriate
+		if( numVariableIndexLevel()>1 )
+			wallData[i][variableIndex(1,0)] = coeff;
     
     //Update both vertices for each dimension
     for(size_t d=0 ; d<dimension ; d++ ) {
@@ -104,10 +109,13 @@ VertexFromWallSpringPolarized(std::vector<double> &paraValue,
 							<< "frac_adhesion.\n";
     exit(0);
   }
-  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+  if( indValue.size() < 1 || indValue.size() > 2 
+			|| indValue[0].size() != 1 
+			|| (indValue.size()==2 && indValue[1].size() != 1) ) {
     std::cerr << "VertexFromWallSpringPolarized::"
 							<< "VertexFromWallSpringPolarized() "
-							<< "Wall length index given.\n";
+							<< "Wall length index given in first level,"
+							<< " and optionally wall variable save index in second.\n";
     exit(0);
   }
   //Set the variable values
@@ -184,6 +192,10 @@ derivs(Tissue &T,
     if( distance>wallLength )
       coeff *=parameter(1);
     
+		//Save force in wall variable if appropriate
+		if( numVariableIndexLevel()>1 )
+			wallData[i][variableIndex(1,0)] = coeff;
+
     //Update both vertices for each dimension
     for(size_t d=0 ; d<dimension ; d++ ) {
       double div = (vertexData[v1][d]-vertexData[v2][d])*coeff;
@@ -206,11 +218,14 @@ VertexFromWallSpringMT(std::vector<double> &paraValue,
 							<< "frac_adhesion.\n";
     exit(0);
   }
-  if( indValue.size() != 1 || indValue[0].size() != 2 ) {
+  if( indValue.size() < 1 || indValue.size() > 2 
+			|| indValue[0].size() != 2 
+			|| (indValue.size()==2 && indValue[1].size() != 1) ) {
     std::cerr << "VertexFromWallSpringMT::"
 							<< "VertexFromWallSpringMT() "
 							<< "Wall length index and cell MT direction start index"
-							<< "given." << std::endl;
+							<< "given at first level,"
+							<< " and optionally wall variable save index in second.\n";
     exit(0);
   }
   //Set the variable values
@@ -297,6 +312,10 @@ derivs(Tissue &T,
     if( distance>wallLength )
       coeff *=parameter(1);
     
+		//Save force in wall variable if appropriate
+		if( numVariableIndexLevel()>1 )
+			wallData[i][variableIndex(1,0)] = coeff;
+
     //Update both vertices for each dimension
     for(size_t d=0 ; d<dimension ; d++ ) {
       double div = (vertexData[v1][d]-vertexData[v2][d])*coeff;
@@ -304,7 +323,9 @@ derivs(Tissue &T,
       vertexDerivs[v2][d] += div;
     }
   }
+
 	// Update all direction variables for cells
+	// Caveat: should this be done here?
 	for (size_t i=0; i<directionalWall_.size(); ++i) {
 		if (directionalWall_[i]<T.cell(i).numWall()) {
 			std::vector<double> tmpN(dimension);
@@ -405,10 +426,14 @@ VertexFromEpidermalWallSpringAsymmetric(std::vector<double> &paraValue,
 	      << "Uses two parameters K_force frac_adhesion.\n";
     exit(0);
   }
-  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+
+  if( indValue.size() < 1 || indValue.size() > 2 
+			|| indValue[0].size() != 1 
+			|| (indValue.size()==2 && indValue[1].size() != 1) ) {
     std::cerr << "VertexFromEpidermalWallSpringAsymmetric::"
-	      << "VertexFromEpidermalWallSpringAsymmetric() "
-	      << "Wall length index given.\n";
+							<< "VertexFromEpidermalWallSpringAsymmetric() "
+							<< "Wall length index given in first level,"
+							<< " and optionally wall variable save index in second.\n";
     exit(0);
   }
   //Set the variable values
@@ -462,6 +487,10 @@ derivs(Tissue &T,
       }
       if( distance>wallLength )
 				coeff *=parameter(1);
+
+			//Save force in wall variable if appropriate
+			if( numVariableIndexLevel()>1 )
+				wallData[i][variableIndex(1,0)] = coeff;
       
       //Update both vertices for each dimension
       for(size_t d=0 ; d<dimension ; d++ ) {
@@ -486,10 +515,13 @@ VertexFromEpidermalCellWallSpringAsymmetric(std::vector<double> &paraValue,
 							<< "Uses two parameters K_force frac_adhesion.\n";
     exit(0);
   }
-  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+  if( indValue.size() < 1 || indValue.size() > 2 
+			|| indValue[0].size() != 1 
+			|| (indValue.size()==2 && indValue[1].size() != 1) ) {
     std::cerr << "VertexFromEpidermalCellWallSpringAsymmetric::"
 							<< "VertexFromEpidermalCellWallSpringAsymmetric() "
-							<< "Wall length index given.\n";
+							<< "Wall length index given in first level,"
+							<< " and optionally wall variable save index in second.\n";
     exit(0);
   }
   //Set the variable values
@@ -544,6 +576,10 @@ derivs(Tissue &T,
       if( distance>wallLength )
 				coeff *=parameter(1);
       
+			//Save force in wall variable if appropriate
+			if( numVariableIndexLevel()>1 )
+				wallData[i][variableIndex(1,0)] = coeff;
+			
       //Update both vertices for each dimension
       for(size_t d=0 ; d<dimension ; d++ ) {
 				double div = (vertexData[v1][d]-vertexData[v2][d])*coeff;
