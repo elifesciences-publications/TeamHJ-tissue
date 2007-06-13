@@ -379,7 +379,8 @@ void WallLengthGrowExperimental::derivs(Tissue &T,
 		}
 		distance = std::sqrt(distance);
 		
-		double arg = parameter(1) * (distance - wallData[T.wall(i).index()][variableIndex(0, 0)]) - parameter(2);
+		double F = parameter(1) / wallData[T.wall(i).index()][variableIndex(0, 0)] * (distance - wallData[T.wall(i).index()][variableIndex(0, 0)]);
+		double arg = F - parameter(2);
 		if (arg > 0)
 			wallDerivs[T.wall(i).index()][variableIndex(0, 0)] += parameter(0) * arg;
 	}
