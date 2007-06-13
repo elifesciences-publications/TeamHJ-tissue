@@ -2374,8 +2374,8 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 	// Update the volume dependent variables for each cell variable index 
 	// given in volumeChangeList
 	if (volumeChangeList.size()) {
-		//		cell(i).sortWallAndVertex();
-		//		cell(Nc).sortWallAndVertex();
+		cell(i).sortWallAndVertex();
+		cell(Nc).sortWallAndVertex();
 		double Vi = cell(i).calculateVolume(vertexData);
 		double Vn = cell(Nc).calculateVolume(vertexData);
 		double fi = Vi/(Vi+Vn);
