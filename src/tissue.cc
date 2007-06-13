@@ -221,11 +221,17 @@ void Tissue::readInit(std::ifstream &IN,int verbose) {
   IN >> numVar;
   assert( numWallTmp==numWall() );
   assert( numLength==1 );
-  assert( numVar==0 );
   double length;
-  for( size_t i=0 ; i<numWall() ; ++i ) {
-    IN >> length;
-    wall(i).setLength(length);
+  double value;
+  for (size_t i = 0; i < numWall(); ++i) {
+	  IN >> length;
+	  wall(i).setLength(length);
+	  std::vector<double> variable;
+	  for (size_t j = 0; j < numVar; ++j) {
+		  IN >> value;
+		  variable.push_back(value);
+	  }
+	  wall(i).setVariable(variable);
   }
 
   //Read cell variables
@@ -2368,6 +2374,8 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 	// Update the volume dependent variables for each cell variable index 
 	// given in volumeChangeList
 	if (volumeChangeList.size()) {
+		//		cell(i).sortWallAndVertex();
+		//		cell(Nc).sortWallAndVertex();
 		double Vi = cell(i).calculateVolume(vertexData);
 		double Vn = cell(Nc).calculateVolume(vertexData);
 		double fi = Vi/(Vi+Vn);

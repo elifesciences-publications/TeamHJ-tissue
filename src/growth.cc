@@ -333,56 +333,58 @@ derivs(Tissue &T,
 }
 
 WallLengthGrowExperimental::WallLengthGrowExperimental(std::vector<double> &paraValue,
-											std::vector< std::vector<size_t> > &indValue)
+                                                       std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 3) {
+     if (paraValue.size() != 2) {
 		std::cerr << "WallLengthGrowExperimental::WallLengthGrowExperimental() "
-				<< "Uses three parameters: k_L, k_w and phi" << std::endl;
-		exit(EXIT_FAILURE);
-	}
+                    << "Uses two parameters: k_L and phi" << std::endl;
+          exit(EXIT_FAILURE);
+     }
 
-	if (indValue.size() != 1 || indValue[0].size() != 1) {
-		std::cerr << "VertexFromPressureExperimental::VertexFromPressureExperimental() "
-				<< "Wall length index given.\n";
-		exit(EXIT_FAILURE);
-	}
+     if (indValue.size() != 2 || indValue[0].size() != 1) {
+		std::cerr << "WallLengthGrowExperimental::WallLengthGrowExperimental() "
+                    << "Wall length index must be given in first level.\n"
+                    << "Wall force indices must be given in second level.\n";
+          exit(EXIT_FAILURE);
+     }
 
-	setId("VertexFromWallSpringExperimental");
-	setParameter(paraValue);  
-	setVariableIndex(indValue);
-	
+     setId("VertexFromWallSpringExperimental");
+     setParameter(paraValue);
+     setVariableIndex(indValue);
+
 	std::vector<std::string> tmp(numParameter());
-	tmp[0] = "k_L";
-	tmp[1] = "k_w";
-	tmp[2] = "phi";
+     tmp[0] = "k_L";
+     tmp[1] = "phi";
 
-	setParameterId(tmp);
+     setParameterId(tmp);
 }
 
 void WallLengthGrowExperimental::derivs(Tissue &T,
-								std::vector< std::vector<double> > &cellData,
-								std::vector< std::vector<double> > &wallData,
-								std::vector< std::vector<double> > &vertexData,
-								std::vector< std::vector<double> > &cellDerivs,
-								std::vector< std::vector<double> > &wallDerivs,
-								std::vector< std::vector<double> > &vertexDerivs)
+                                        std::vector< std::vector<double> > &cellData,
+                                        std::vector< std::vector<double> > &wallData,
+                                        std::vector< std::vector<double> > &vertexData,
+                                        std::vector< std::vector<double> > &cellDerivs,
+                                        std::vector< std::vector<double> > &wallDerivs,
+                                        std::vector< std::vector<double> > &vertexDerivs)
 {
-	for (size_t i = 0; i < T.numWall(); ++i) {
-		size_t vertex1Index = T.wall(i).vertex1()->index();
-		size_t vertex2Index = T.wall(i).vertex2()->index();
-		size_t dimensions = vertexData[vertex1Index].size();
-		
-		double distance = 0.0;
-		for (size_t d = 0; d < dimensions; ++d) {
-			distance += (vertexData[vertex1Index][d] - vertexData[vertex2Index][d])
-				* (vertexData[vertex1Index][d] - vertexData[vertex2Index][d]);
-		}
-		distance = std::sqrt(distance);
-		
-		double F = parameter(1) / wallData[T.wall(i).index()][variableIndex(0, 0)] * (distance - wallData[T.wall(i).index()][variableIndex(0, 0)]);
-		double arg = F - parameter(2);
-		if (arg > 0)
-			wallDerivs[T.wall(i).index()][variableIndex(0, 0)] += parameter(0) * arg;
-	}
-}
+     for (size_t i = 0; i < T.numWall(); ++i) {
+          size_t vertex1Index = T.wall(i).vertex1()->index();
+          size_t vertex2Index = T.wall(i).vertex2()->index();
+          size_t dimensions = vertexData[vertex1Index].size();
 
+          double distance = 0.0;
+          for (size_t d = 0; d < dimensions; ++d) {
+               distance += (vertexData[vertex1Index][d] - vertexData[vertex2Index][d])
+                    * (vertexData[vertex1Index][d] - vertexData[vertex2Index][d]);
+          }
+          distance = std::sqrt(distance);
+
+          double F = 0.0;
+          for (size_t j = 0; j < numVariableIndex(1); ++j)
+               F += wallData[T.wall(i).index()][variableIndex(1, j)];
+
+          double arg = F - parameter(1);
+          if (arg > 0)
+               wallDerivs[T.wall(i).index()][variableIndex(0, 0)] += parameter(0) * arg;
+     }
+}

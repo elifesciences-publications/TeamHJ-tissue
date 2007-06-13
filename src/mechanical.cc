@@ -1900,11 +1900,17 @@ VertexFromWallSpringExperimental::VertexFromWallSpringExperimental(std::vector<d
 		exit(EXIT_FAILURE);
 	}
 
-	if (indValue.size() != 1 || indValue[0].size() != 1) {
-		std::cerr << "VertexFromPressureExperimental::VertexFromPressureExperimental() "
-				<< "Wall length index given.\n";
-		exit(EXIT_FAILURE);
-	}
+     if (indValue.size() == 0 || indValue.size() > 2 || indValue[0].size() != 1) {
+		std::cerr << "VertexFromWallSpringExperimental::VertexFromWallSpringExperimental() "
+                    << "Wall length index given.\n";
+          exit(EXIT_FAILURE);
+     }
+
+     if (indValue.size() == 1 && indValue[0].size() != 1) {
+		std::cerr << "VertexFromWallSpringExperimental::VertexFromWallSpringExperimental() -"
+                    << "Second level of indices gives index for storage of force.\n";
+          exit(EXIT_FAILURE);
+     }
 
 	setId("VertexFromWallSpringExperimental");
 	setParameter(paraValue);  
@@ -1942,67 +1948,74 @@ void VertexFromWallSpringExperimental::derivs(Tissue &T,
 			vertexDerivs[vertex1Index][d] += dx1dt;
 			vertexDerivs[vertex2Index][d] -= dx1dt;
 		}
-	}
+          if (numVariableIndexLevel() == 2) {
+               wallData[T.wall(i).index()][variableIndex(1, 0)] = (parameter(0) / wallData[T.wall(i).index()][variableIndex(0, 0)]);
+			wallData[T.wall(i).index()][variableIndex(1, 0)] *= (distance - wallData[T.wall(i).index()][variableIndex(0, 0)]);
+          }
+ 	}
 }
 
 CellVolumeExperimental::CellVolumeExperimental(std::vector<double> &paraValue,
-									  std::vector< std::vector<size_t> > &indValue)
+                                               std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 4) {
+     if (paraValue.size() != 3) {
 		std::cerr << "CellVolumeExperimental::CellVolumeExperimental() "
-				<< "Uses four parameters: k_p, P_max, k_pp, k_w" << std::endl;
-		exit(EXIT_FAILURE);
-	}
+                    << "Uses three parameters: k_p, P_max and k_pp" << std::endl;
+          exit(EXIT_FAILURE);
+     }
 
-	if (indValue.size() != 1 || indValue[0].size() != 2) {
-		std::cerr << "VertexFromPressureExperimental::VertexFromPressureExperimental() "
-				<< "Wall length index and cell volume index given.\n";
-		exit(EXIT_FAILURE);
-	}
+     if (indValue.size() != 2 || indValue[0].size() != 2) {
+		std::cerr << "CellVolumeExperimental::CellVolumeExperimental() "
+                    << "Wall length index and cell volume index must be given in first level.\n"
+                    << "Force indices must ge given in second level.\n";
+          exit(EXIT_FAILURE);
+     }
 
-	setId("VertexFromWallSpringExperimental");
-	setParameter(paraValue);  
-	setVariableIndex(indValue);
-	
+     setId("VertexFromWallSpringExperimental");
+     setParameter(paraValue);
+     setVariableIndex(indValue);
+
 	std::vector<std::string> tmp(numParameter());
-	tmp[0] = "k_p";
-	tmp[1] = "P_max";
-	tmp[2] = "k_pp";
-	tmp[3] = "k_w";
+     tmp[0] = "k_p";
+     tmp[1] = "P_max";
+     tmp[2] = "k_pp";
 
-	setParameterId(tmp);
+     setParameterId(tmp);
 }
 
 void CellVolumeExperimental::derivs(Tissue &T,
-							 std::vector< std::vector<double> > &cellData,
-							 std::vector< std::vector<double> > &wallData,
-							 std::vector< std::vector<double> > &vertexData,
-							 std::vector< std::vector<double> > &cellDerivs,
-							 std::vector< std::vector<double> > &wallDerivs,
-							 std::vector< std::vector<double> > &vertexDerivs)
+                                    std::vector< std::vector<double> > &cellData,
+                                    std::vector< std::vector<double> > &wallData,
+                                    std::vector< std::vector<double> > &vertexData,
+                                    std::vector< std::vector<double> > &cellDerivs,
+                                    std::vector< std::vector<double> > &wallDerivs,
+                                    std::vector< std::vector<double> > &vertexDerivs)
 {
-	for (size_t n = 0; n < T.numCell(); ++n) {
-		Cell cell = T.cell(n);
-		
-		double P = 0.0;
-		double sum = 0.0;
-		for (size_t i = 0; i < cell.numWall(); ++i) {
-			size_t vertex1Index = cell.wall(i)->vertex1()->index();
-			size_t vertex2Index = cell.wall(i)->vertex2()->index();
-			size_t dimensions = vertexData[vertex1Index].size();
+     for (size_t n = 0; n < T.numCell(); ++n) {
+          Cell cell = T.cell(n);
 
-			double distance = 0.0;
-			for (size_t d = 0; d < dimensions; ++d) {
-				distance += (vertexData[vertex1Index][d] - vertexData[vertex2Index][d])
-					* (vertexData[vertex1Index][d] - vertexData[vertex2Index][d]);
-			}
-			distance = std::sqrt(distance);
+          double P = 0.0;
+          double sum = 0.0;
+          for (size_t i = 0; i < cell.numWall(); ++i) {
+               size_t vertex1Index = cell.wall(i)->vertex1()->index();
+               size_t vertex2Index = cell.wall(i)->vertex2()->index();
+               size_t dimensions = vertexData[vertex1Index].size();
 
-			P += (distance / wallData[cell.wall(i)->index()][variableIndex(0, 0)]) - 1.0;					   
-			sum += distance;
-		}
-		P *= parameter(2) * parameter(3);
-		
-		cellDerivs[cell.index()][variableIndex(0, 1)] += parameter(0) * (parameter(1) - P) * sum;
-	}
+               double distance = 0.0;
+               for (size_t d = 0; d < dimensions; ++d) {
+                    distance += (vertexData[vertex1Index][d] - vertexData[vertex2Index][d])
+                         * (vertexData[vertex1Index][d] - vertexData[vertex2Index][d]);
+               }
+               distance = std::sqrt(distance);
+
+               for (size_t j = 0; j < numVariableIndex(1); ++j)
+                    P += wallData[cell.wall(i)->index()][variableIndex(1, j)];
+               sum += distance;
+          }
+          P *= parameter(2);
+
+          cellDerivs[cell.index()][variableIndex(0, 1)] += parameter(0) * (parameter(1) - P) * sum;
+     }
 }
+
+

@@ -48,6 +48,8 @@ class Wall {
   inline size_t numVariable() const;
   inline double variable(size_t i) const;
 
+  inline void setVariable(std::vector<double> variable);
+
   inline void setIndex( size_t value );
   inline void setCell(Cell *v1,Cell *v2);
   inline void setCell1(Cell *v1);
@@ -98,6 +100,11 @@ inline size_t Wall::numVariable() const { return variable_.size(); }
 
 //!Returns variable i
 inline double Wall::variable(size_t i) const { return variable_[i];}
+
+inline void Wall::setVariable(std::vector<double> variable)
+{
+	variable_ = variable;
+}
 
 
 //!Sets the index variable
