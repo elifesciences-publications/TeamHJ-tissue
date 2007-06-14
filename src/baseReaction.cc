@@ -46,6 +46,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromWallSpringPolarized(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringMT")
     return new VertexFromWallSpringMT(paraValue,indValue);
+  else if(idValue=="VertexFromWallSpringMTNew")
+    return new VertexFromWallSpringMTNew(paraValue,indValue);
   else if(idValue=="VertexFromEpidermalWallSpringAsymmetric")
     return new VertexFromEpidermalWallSpringAsymmetric(paraValue,indValue);
   else if(idValue=="VertexFromEpidermalCellWallSpringAsymmetric")

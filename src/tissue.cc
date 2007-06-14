@@ -461,10 +461,14 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 //!Reads a model from an open file
 void Tissue::readModel(std::ifstream &IN,int verbose) {
   
-  unsigned int numReactionVal,numCompartmentChangeVal;
+  unsigned int numReactionVal,numCompartmentChangeVal,numDirection;
 
+	if( verbose )
+		std::cerr << "Reading model file:\n";
   IN >> numReactionVal;
   IN >> numCompartmentChangeVal;
+	IN >> numDirection;
+	assert(numDirection==0 || numDirection==1);
 
   //Read Reactions
   //////////////////////////////////////////////////////////////////////
@@ -472,23 +476,40 @@ void Tissue::readModel(std::ifstream &IN,int verbose) {
   if( numReaction() ) 
     reaction_.resize(0);
   
+	if( verbose )
+		std::cerr << "reactions...\n"; 
   for( size_t i=0 ; i<numReactionVal ; i++ )
     if( addReaction(IN) )
       std::cerr << "Tissue::ReadModel(ifstream) "
-		<< "Warning Adding reaction failed for "
-		<< "tissue " << id() << " (index " << i << ")\n";
-
+								<< "Warning Adding reaction failed for "
+								<< "tissue " << id() << " (index " << i << ")\n";
+	
   //Read compartmentChanges
   //////////////////////////////////////////////////////////////////////
   //Remove any present compartmentChanges before adding
   if( numCompartmentChange() ) 
     compartmentChange_.resize(0);
   
+	if( verbose )
+		std::cerr << "compartment changes...\n";
   for( size_t i=0 ; i<numCompartmentChangeVal ; i++ )
     if( addCompartmentChange(IN) )
       std::cerr << "Tissue::ReadModel(ifstream) "
-		<< "Warning Adding compartmentChange failed for "
-		<< "tissue " << id() << " (index " << i << ")\n";  
+								<< "Warning Adding compartmentChange failed for "
+								<< "tissue " << id() << " (index " << i << ")\n";  
+
+	// Read direction if applicable
+	if( verbose )
+		std::cerr << "direction...\n";
+	if( numDirection ) {
+		if( direction()->readDirection(IN) ) {
+      std::cerr << "Tissue::ReadModel(ifstream) "
+								<< "Adding direction failed." << std::endl;
+			exit(-1);
+		}
+	}			
+	if( verbose )
+		std::cerr << "Done\n\n";
 }
 
 //!Reads a model from a file
@@ -498,7 +519,7 @@ void Tissue::readModel(const char *fileName, int verbose) {
   if( !IN ) {
     std::cerr << "Tissue::readModel(char*) - "
 	      << "Cannot open file " << fileName << "\n\n\7";exit(-1);}
-  readModel(IN);
+  readModel(IN,verbose);
 }
 
 //!Reads a model from file 
@@ -508,8 +529,10 @@ void Tissue::readModel(std::string fileName, int verbose) {
   std::ifstream IN(fName);
   if( !IN ) {
     std::cerr << "Tissue::readModel(std::string) - "
-	      << "Cannot open file " << fileName << "\n\n\7";exit(-1);}
-  readModel(IN);
+							<< "Cannot open file " << fileName << "\n\n\7";
+		exit(-1);
+	}
+  readModel(IN,verbose);
 }
 
 size_t wallFromCellPair(std::vector< std::pair<size_t,size_t> > &wallCell,
@@ -1333,8 +1356,10 @@ void Tissue::simulateRk2(double startTime,double endTime,double step,
   if( printFlag )
     std::cout << numPrint << std::endl;
   
-	// Initiate reactions for those where it is applicable
+	// Initiate reactions and direction for those where it is applicable
   initiateReactions();
+	initiateDirection(cellData,wallData,vertexData,cellDeriv,wallDeriv,
+										vertexDeriv);
 	
   //Do the simulation
   //////////////////////////////////////////////////////////////////////
@@ -1380,9 +1405,10 @@ void Tissue::simulateRk2(double startTime,double endTime,double step,
     //Check for discrete updates
     //////////////////////////////////////////////////////////////////////
 		updateReactions(step);
+		updateDirection(step,cellData,wallData,vertexData,cellDeriv,
+										wallDeriv,vertexDeriv);
     checkCompartmentChange(cellData,wallData,vertexData,
-													 cellDeriv,wallDeriv,vertexDeriv );
-    
+													 cellDeriv,wallDeriv,vertexDeriv );    
   }
   //Print if applicable
   if( printFlag ) {
@@ -1393,10 +1419,11 @@ void Tissue::simulateRk2(double startTime,double endTime,double step,
 }
 
 void Tissue::simulateRk4(double startTime,double endTime,double step,
-			 size_t numPrint) {
-  
-  //Initiate data structure
-  //////////////////////////////////////////////////////////////////////
+												 size_t numPrint) 
+{
+  //
+  // Initiate data structure
+  //
   std::vector< std::vector<double> > 
     cellData(numCell()),cellDeriv(numCell()),
     wallData(numWall()),wallDeriv(numWall()),
@@ -1408,7 +1435,7 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
     for( size_t j=0 ; j<cellData[i].size() ; ++j )
       cellData[i][j]=cell(i).variable(j);
   }
-
+	
   for( size_t i=0 ; i<numWall() ; ++i ) {
     wallData[i].resize(wall(i).numVariable()+1);
     wallDeriv[i].resize(wall(i).numVariable()+1);
@@ -1431,9 +1458,10 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
   
   double stepD2 = 0.5*step;
   double stepD6 = step/6.0;
-
-  // Initiate print times
-  //////////////////////////////////////////////////////////////////////
+	
+	//
+  // Initiate print times and reactions
+  //
   double tiny = 1e-10;
   double printTime=endTime+tiny;
   double printDeltaTime=endTime+2.0*tiny;
@@ -1450,20 +1478,23 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
     printTime=startTime-tiny;
     printDeltaTime=(endTime-startTime)/double(numPrint-1);
   }
-  //Print number of time points
+  // Print number of time points
   if( printFlag )
     std::cout << numPrint << std::endl;
-
-	// Initiate reactions for those where it is applicable
-  initiateReactions();
 	
-  //Do the simulation
-  //////////////////////////////////////////////////////////////////////
+	// Initiate reactions and directions for those where it is applicable
+  initiateReactions();
+	initiateDirection(cellData,wallData,vertexData,cellDeriv,wallDeriv,
+										vertexDeriv);
+
+	//
+  // Do the simulation
+  //
   double time=startTime;
 	derivs(cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv);
   while( time<endTime ) {
     
-    //Print if applicable 
+    // Print if applicable 
     if( printFlag && time >= printTime ) {
       printTime += printDeltaTime;
       printVertexAndCell(cellData,vertexData);  
@@ -1471,11 +1502,10 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
 								<< numWall() << " " << numVertex() << std::endl;
     }
 		
-		
+		//
     // Do a Rk4 step
-    //////////////////////////////////////////////////////////////////////
-		
-    //Take first half step
+    //		
+    // Take first half step
     derivs(cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv);
     for( size_t i=0 ; i<cData.size() ; ++i )
       for( size_t j=0 ; j<cData[i].size() ; ++j )
@@ -1487,7 +1517,7 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
       for( size_t j=0 ; j<vData[i].size() ; ++j )
 				vData[i][j] = vertexData[i][j] + stepD2*vertexDeriv[i][j];
     
-    //Take second half step
+    // Take second half step
     derivs(cData,wData,vData,cDeriv,wDeriv,vDeriv);    
     for( size_t i=0 ; i<cData.size() ; ++i )
       for( size_t j=0 ; j<cData[i].size() ; ++j )
@@ -1499,7 +1529,7 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
       for( size_t j=0 ; j<vData[i].size() ; ++j )
 				vData[i][j] = vertexData[i][j] + stepD2*vDeriv[i][j];
     
-    //Take temporary 'full' step
+    // Take temporary 'full' step
     derivs(cData,wData,vData,c2Deriv,w2Deriv,v2Deriv);
     for( size_t i=0 ; i<cellData.size() ; ++i )
       for( size_t j=0 ; j<cellData[i].size() ; ++j ) {
@@ -1517,7 +1547,7 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
 				v2Deriv[i][j] = vDeriv[i][j];
       }
 		
-    //Take full step
+    // Take full step
     derivs(cData,wData,vData,cDeriv,wDeriv,vDeriv);
     for( size_t i=0 ; i<cellData.size() ; ++i )
       for( size_t j=0 ; j<cellData[i].size() ; ++j )
@@ -1534,13 +1564,16 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
     
     time += step;
 		
-    //Check for discrete and reaction updates
-    //////////////////////////////////////////////////////////////////////
+		//
+    // Check for discrete and reaction updates
+    //
 		updateReactions(step);
+		updateDirection(step,cellData,wallData,vertexData,cellDeriv,
+										wallDeriv,vertexDeriv);
     checkCompartmentChange(cellData,wallData,vertexData,
 													 cellDeriv,wallDeriv,vertexDeriv );
 		
-    //Resize temporary containers as well
+    // Resize temporary containers as well
     if(cellData.size() != cData.size() ) {
       cData.resize( cellData.size(), cData[0] );
       wData.resize( wallData.size(), wData[0] );
@@ -1554,14 +1587,14 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
     }
   }
   
-  //Print if applicable
+  // Print if applicable
   if( printFlag ) {
     printVertexAndCell(cellData,vertexData);  
     std::cerr << ++numPrinted << " " << time << " " << numCell() << " "
 	      << numWall() << " " << numVertex() << std::endl;
   }
 
-	//Print final state in init format
+	// Print final state in init format
 	const char* initFile="final.tinit";
 	std::ofstream INIT(initFile);
 	if (!INIT) {
@@ -1570,8 +1603,7 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
 		exit(-1);
 	}	
 	printInit(cellData,wallData,vertexData,INIT);
-	INIT.close();
-	
+	INIT.close();	
 }
 
 void::Tissue::initiateReactions() 
@@ -1584,6 +1616,44 @@ void::Tissue::updateReactions(double step)
 {
 	for (size_t i=0; i<numReaction(); ++i)
 		reaction(i)->update(*this,step);	
+}
+
+void::Tissue::
+initiateDirection(std::vector< std::vector<double> > &cellData,
+									std::vector< std::vector<double> > &wallData,
+									std::vector< std::vector<double> > &vertexData,
+									std::vector< std::vector<double> > &cellDerivs,
+									std::vector< std::vector<double> > &wallDerivs,
+									std::vector< std::vector<double> > &vertexDerivs ) 
+{
+	direction()->initiate(*this,cellData,wallData,vertexData,cellDerivs,
+												wallDerivs,vertexDerivs);
+}
+
+void::Tissue::
+updateDirection(double step,
+								std::vector< std::vector<double> > &cellData,
+								std::vector< std::vector<double> > &wallData,
+								std::vector< std::vector<double> > &vertexData,
+								std::vector< std::vector<double> > &cellDerivs,
+								std::vector< std::vector<double> > &wallDerivs,
+								std::vector< std::vector<double> > &vertexDerivs) 
+{
+	direction()->update(*this,step,cellData,wallData,vertexData,cellDerivs,
+											wallDerivs,vertexDerivs);	
+}
+
+void::Tissue::
+updateDirectionDivision(size_t cellI,
+												std::vector< std::vector<double> > &cellData,
+												std::vector< std::vector<double> > &wallData,
+												std::vector< std::vector<double> > &vertexData,
+												std::vector< std::vector<double> > &cellDerivs,
+												std::vector< std::vector<double> > &wallDerivs,
+												std::vector< std::vector<double> > &vertexDerivs) 
+{
+	direction()->divide(*this,cellI,cellData,wallData,vertexData,
+											cellDerivs,wallDerivs,vertexDerivs);	
 }
 
 void Tissue::
@@ -1601,6 +1671,7 @@ checkCompartmentChange( std::vector< std::vector<double> > &cellData,
 				//If cell division, sort walls and vertices for cell plus 
         //divided cell plus their neighbors
 				//Get list of potential cells to be sorted
+				//Also add division rule for directions
 				if( compartmentChange(k)->numChange()==1 ) {
 					std::set<size_t> sortCell;
 					sortCell.insert(i);
@@ -1627,7 +1698,7 @@ checkCompartmentChange( std::vector< std::vector<double> > &cellData,
 					//std::cerr << "to be sorted" << std::endl;
 					for( std::set<size_t>::iterator k=sortCell.begin() ; 
 							 k!=sortCell.end() ; ++k )
-						cell(*k).sortWallAndVertex();
+						cell(*k).sortWallAndVertex(*this);
 				}	
 				else if( compartmentChange(k)->numChange()==-1 )
 					i--;
@@ -1894,7 +1965,14 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 	size_t Nc=numCell(),Nw=numWall(),Nv=numVertex();
 	size_t i = divCell->index();
   size_t dimension = vertexData[0].size();
-	
+
+	Wall* tmpDirectionalWall;
+	if( numDirectionalWall() && cell(i).numWall()>directionalWall(i) ) {
+		tmpDirectionalWall = cell(i).wall(directionalWall(i));
+		//std::cerr << i << " " << directionalWall(i) << " " 
+		//				<< cell(i).wall(directionalWall(i))->index() << std::endl; 
+		//std::cerr << "Cell division." << std::endl;
+	}	
 	//Create the new data structure and set indices in the tissue vectors
 	//////////////////////////////////////////////////////////////////////
 	//Add the new cell
@@ -2371,11 +2449,31 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 	assert( wall(Nw).cell1()->index()==i );
   assert( wall(Nw).cell2()->index()==Nc );
 	
+	//Update directional wall vector if applicable
+	if( numDirectionalWall() ) {
+		//std::cerr << i << " " << directionalWall(i) << " "; 
+		//if( cell(i).numWall()>directionalWall(i) ) {
+		//std::cerr << cell(i).wall(directionalWall(i))->index();
+		//}
+		//std::cerr << std::endl << "Direction division." << std::endl;
+		updateDirectionDivision(i,cellData,wallData,vertexData,
+														cellDeriv,wallDeriv,vertexDeriv);
+		//std::cerr << i << " " << directionalWall(i) << " ";
+		//if( cell(i).numWall()>directionalWall(i) ) { 
+		//std::cerr << cell(i).wall(directionalWall(i))->index();
+		//}
+		//std::cerr << std::endl;
+		//std::cerr << Nc << " " << directionalWall(Nc) << " ";
+		//if( cell(Nc).numWall()>directionalWall(Nc) ) { 
+		//std::cerr << cell(Nc).wall(directionalWall(Nc))->index(); 
+		//}
+		//std::cerr << std::endl;
+	}
 	// Update the volume dependent variables for each cell variable index 
 	// given in volumeChangeList
 	if (volumeChangeList.size()) {
-		cell(i).sortWallAndVertex();
-		cell(Nc).sortWallAndVertex();
+		cell(i).sortWallAndVertex(*this);
+		cell(Nc).sortWallAndVertex(*this);
 		double Vi = cell(i).calculateVolume(vertexData);
 		double Vn = cell(Nc).calculateVolume(vertexData);
 		double fi = Vi/(Vi+Vn);
@@ -2392,7 +2490,7 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 void Tissue::sortCellWallAndCellVertex() 
 {	
 	for (size_t i=0; i<numCell(); ++i)
-		cell(i).sortWallAndVertex();
+		cell(i).sortWallAndVertex(*this);
 }
 
 void Tissue::checkConnectivity(size_t verbose) 

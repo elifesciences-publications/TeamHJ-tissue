@@ -20,6 +20,7 @@
 
 //class Wall;
 class Vertex;
+class Tissue;
 
 //!Describes the properties of a two-dimensional cell
 /*!*/ 
@@ -75,7 +76,7 @@ class Cell {
   inline void addVariable( double val );
   inline int isNeighbor( Cell *neighbor );
   
-	void sortWallAndVertex();
+	void sortWallAndVertex(Tissue &T);
 
   double calculateVolume( std::vector< std::vector<double> > 
 													&vertexData );

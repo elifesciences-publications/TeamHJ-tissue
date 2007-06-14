@@ -6,9 +6,11 @@
  * Revision     : $Id:$
  */
 
-#include<assert.h>
-#include"cell.h"
-#include"vertex.h"
+#include <assert.h>
+#include "cell.h"
+#include "tissue.h"
+#include "vertex.h"
+
 
 //!The empty cel constructor
 Cell::Cell() {
@@ -35,7 +37,7 @@ Cell::Cell(size_t indexVal,std::string idVal) {
 
 Cell::~Cell() {}
 
-void Cell::sortWallAndVertex() {
+void Cell::sortWallAndVertex(Tissue &T) {
 	
 	assert( numWall()==numVertex() );
 	
@@ -46,6 +48,12 @@ void Cell::sortWallAndVertex() {
 	//std::cerr << wall(i)->index() << "\t" << wall(i)->vertex1()->index() << " "
 	//					<< wall(i)->vertex2()->index() << std::endl; 
 	
+	size_t directionalWallFlag=0;
+	Wall* tmpDirectionalWall;
+	if( T.numDirectionalWall() && T.directionalWall(index())<numWall() ) {
+		directionalWallFlag=1;
+		tmpDirectionalWall = wall(T.directionalWall(index()));
+	}
 	std::vector<Wall*> tmpWall( numWall() );
 	std::vector<Vertex*> tmpVertex( numVertex() );
 	size_t wallIndex=0;
@@ -98,6 +106,22 @@ void Cell::sortWallAndVertex() {
 	setWall( tmpWall );
 	setVertex( tmpVertex );
 	
+	if( directionalWallFlag ) {
+		//Find the wall in the new list
+		size_t foundWall=0;
+		for( size_t k=0; k<numWall(); ++k )
+			if( wall(k)==tmpDirectionalWall ) {
+				foundWall++;
+				T.setDirectionalWall(index(),k);
+			}
+		if( foundWall != 1 ) {
+			std::cerr << "Cell::sortWallAndVertex() Wrong number of "
+								<< "directional walls found (." << foundWall 
+								<< ")." << std::endl;
+			exit(-1);
+		}
+		assert( numWall()>T.directionalWall(index()) );
+	}
 	//std::cerr << "Cell " << index() << std::endl;
 	//for( size_t i=0 ; i<numVertex() ; ++i )
 	//std::cerr << vertex(i)->index() << std::endl; 

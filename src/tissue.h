@@ -8,20 +8,18 @@
 #ifndef TISSUE_H
 #define TISSUE_H
 
-#include<assert.h>
-#include<fstream>
-#include<iostream>
-#include<list>
-#include<string>
-#include<vector>
-#include"cell.h"
-#include"wall.h"
-#include"vertex.h"
-#include"baseReaction.h"
-#include"baseCompartmentChange.h"
-
-class BaseReaction;
-class BaseCompartmentChange;
+#include <assert.h>
+#include <fstream>
+#include <iostream>
+#include <list>
+#include <string>
+#include <vector>
+#include "baseReaction.h"
+#include "baseCompartmentChange.h"
+#include "cell.h"
+#include "direction.h"
+#include "vertex.h"
+#include "wall.h"
 
 //!Describes the properties of a two-dimensional cell tissue
 /*!*/ 
@@ -35,10 +33,13 @@ class Tissue {
   std::vector<Wall> wall_;
   std::vector<Vertex> vertex_;
   Cell background_;
+	Direction direction_;
   std::vector<BaseReaction*> reaction_;
   std::vector<BaseCompartmentChange*> compartmentChange_;
 	//std::vector< std::vector<double> > tmpCellData_;
 
+	std::vector<size_t> directionalWall_;
+	
  public:
   
   Tissue();
@@ -76,7 +77,9 @@ class Tissue {
   inline size_t numVertex() const;
   inline size_t numReaction() const;
   inline size_t numCompartmentChange() const;
+	inline size_t numDirectionalWall() const;
 
+	inline size_t directionalWall(size_t i) const;
   inline const std::vector<Cell> & cell() const;
   inline const Cell & cell(size_t i) const;
   inline Cell & cell(size_t i);
@@ -98,6 +101,7 @@ class Tissue {
 				      double radialThreshold,double max,
 				      size_t direction);
   inline Cell* background();
+	inline Direction* direction();
   inline const std::vector<Wall> & wall() const;
   inline const Wall & wall(size_t i) const;
   inline Wall & wall(size_t i);
@@ -116,14 +120,15 @@ class Tissue {
   inline void setNumCell(size_t val);
   inline void setNumWall(size_t val);
   inline void setNumVertex(size_t val);
-  
+  inline void setNumDirectionalWall(size_t val);
+
   //inline const std::vector< std::vector<double> > & tmpCellData() const;
   //inline void setTmpCellData(std::vector< std::vector<double> > &val);
   
   inline void setWallLengthFromVertexPosition();
+	inline void setDirectionalWall(size_t i,size_t val);
   int addReaction( std::istream &IN );
   int addCompartmentChange( std::istream &IN );
-  
   
   //Functions related to model simulations
   void derivs( std::vector< std::vector<double> > &cellData,
@@ -139,12 +144,32 @@ class Tissue {
   
 	void initiateReactions();
 	void updateReactions(double step);
-  void checkCompartmentChange( std::vector< std::vector<double> > &cellData,
+	void initiateDirection(std::vector< std::vector<double> > &cellData,
+												 std::vector< std::vector<double> > &wallData,
+												 std::vector< std::vector<double> > &vertexData,
+												 std::vector< std::vector<double> > &cellDerivs,
+												 std::vector< std::vector<double> > &wallDerivs,
+												 std::vector< std::vector<double> > &vertexDerivs );
+	void updateDirection(double step,							
+											 std::vector< std::vector<double> > &cellData,
+											 std::vector< std::vector<double> > &wallData,
+											 std::vector< std::vector<double> > &vertexData,
+											 std::vector< std::vector<double> > &cellDerivs,
+											 std::vector< std::vector<double> > &wallDerivs,
+											 std::vector< std::vector<double> > &vertexDerivs );
+	void updateDirectionDivision(size_t cellI,
+															 std::vector< std::vector<double> > &cellData,
 															 std::vector< std::vector<double> > &wallData,
 															 std::vector< std::vector<double> > &vertexData,
-															 std::vector< std::vector<double> > &cellDeriv,
-															 std::vector< std::vector<double> > &wallDeriv,
-															 std::vector< std::vector<double> > &vertexDeriv );
+															 std::vector< std::vector<double> > &cellDerivs,
+															 std::vector< std::vector<double> > &wallDerivs,
+															 std::vector< std::vector<double> > &vertexDerivs);
+  void checkCompartmentChange(std::vector< std::vector<double> > &cellData,
+															std::vector< std::vector<double> > &wallData,
+															std::vector< std::vector<double> > &vertexData,
+															std::vector< std::vector<double> > &cellDeriv,
+															std::vector< std::vector<double> > &wallDeriv,
+															std::vector< std::vector<double> > &vertexDeriv );
   //!Updates topology and variables for a cell removal
   void removeCell(size_t cellIndex,
 									std::vector< std::vector<double> > &cellData,
@@ -208,6 +233,18 @@ inline size_t Tissue::numReaction() const { return reaction_.size(); }
 inline size_t Tissue::numCompartmentChange() const 
 { return compartmentChange_.size(); }
 
+//!Number of directional walls
+inline size_t Tissue::numDirectionalWall() const 
+{ 
+	return directionalWall_.size(); 
+}
+
+//!Returns the directional wall for cell i
+inline size_t Tissue::directionalWall(size_t i) const 
+{ 
+	return directionalWall_[i];
+}
+
 //!Returns a reference to the cell vector
 inline const std::vector<Cell> & Tissue::cell() const { return cell_; }
 
@@ -245,6 +282,9 @@ inline void Tissue::removeCell( size_t index ) {
 
 //!Returns a pointer to the background
 inline Cell* Tissue::background() { return &background_;}
+
+//!Returns a pointer to the direction
+inline Direction* Tissue::direction() { return &direction_;}
 
 //!Returns a reference to the wall vector
 inline const std::vector<Wall> & Tissue::wall() const { return wall_; }
@@ -365,6 +405,18 @@ inline void Tissue::setNumWall(size_t val) {
 //!Resizes the vertex_ vector
 inline void Tissue::setNumVertex(size_t val) {
   vertex_.resize(val);
+}
+
+//!Resizes the directionalWall_ vector
+inline void Tissue::setNumDirectionalWall(size_t val) 
+{
+  directionalWall_.resize(val);
+}
+
+//!Sets a directional wall for cell i
+inline void Tissue::setDirectionalWall(size_t i,size_t val) 
+{
+  directionalWall_[i]=val;
 }
 
 //inline const std::vector< std::vector<double> > & Tissue::

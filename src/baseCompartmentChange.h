@@ -12,7 +12,6 @@
 #include<string>
 #include<iostream>
 #include<fstream>
-#include"tissue.h"
 
 class Tissue;
 

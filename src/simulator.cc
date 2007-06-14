@@ -61,7 +61,7 @@ int main(int argc,char *argv[]) {
 	std::string modelFile = myConfig::argv(1);
   std::string initFile = myConfig::argv(2);
   Tissue T;
-  T.readModel(modelFile.c_str());
+  T.readModel(modelFile.c_str(),verbose);
 	if (!myConfig::getBooleanValue("merry_init")) 
 		T.readInit(initFile.c_str(),verbose);
 	else {
