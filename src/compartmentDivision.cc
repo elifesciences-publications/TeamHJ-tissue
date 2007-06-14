@@ -135,7 +135,7 @@ update(Tissue *T,size_t i,
 				fac = 1.0/fac;
 				//double s = fac*(b*e-c*d);
 				double t = fac*(a*e-b*d);//fac*(a*e-b*d)
-				if( t>=0.0 && t<1.0 ) {//within wall
+				if( t>0.0 && t<=1.0 ) {//within wall
 					//double dx0 = w0[0] +fac*((b*e-c*d)*nW2[0]+()*w3[0]); 					
 					flag++;
 					w3I = k;
