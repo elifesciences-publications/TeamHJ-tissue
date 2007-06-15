@@ -2469,17 +2469,6 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 			cellData[Nc][volumeChangeList[k]] *= fn;
 		}
 	}		
-	std::cerr << "* " << i << " " << cell(i).calculateVolume(vertexData) << "  ";
-	for (size_t k=0; k<volumeChangeList.size(); ++k)
-		std::cerr << cellData[i][volumeChangeList[k]] << " ";
-	std::cerr << std::endl;
-	std::cerr << "* " << Nc << " " << cell(Nc).calculateVolume(vertexData) << "  ";
-	for (size_t k=0; k<volumeChangeList.size(); ++k)
-		std::cerr << cellData[Nc][volumeChangeList[k]] << " ";
-	std::cerr << std::endl;
-	
-	if( cell(i).calculateVolume(vertexData) > 2.0 )
-		exit(-1);
 	checkConnectivity(1);
 }
 
