@@ -359,32 +359,34 @@ WallLengthGrowExperimental::WallLengthGrowExperimental(std::vector<double> &para
      setParameterId(tmp);
 }
 
-void WallLengthGrowExperimental::derivs(Tissue &T,
-                                        std::vector< std::vector<double> > &cellData,
-                                        std::vector< std::vector<double> > &wallData,
-                                        std::vector< std::vector<double> > &vertexData,
-                                        std::vector< std::vector<double> > &cellDerivs,
-                                        std::vector< std::vector<double> > &wallDerivs,
-                                        std::vector< std::vector<double> > &vertexDerivs)
+void WallLengthGrowExperimental::
+derivs(Tissue &T,
+			 std::vector< std::vector<double> > &cellData,
+			 std::vector< std::vector<double> > &wallData,
+			 std::vector< std::vector<double> > &vertexData,
+			 std::vector< std::vector<double> > &cellDerivs,
+			 std::vector< std::vector<double> > &wallDerivs,
+			 std::vector< std::vector<double> > &vertexDerivs)
 {
-     for (size_t i = 0; i < T.numWall(); ++i) {
-          size_t vertex1Index = T.wall(i).vertex1()->index();
-          size_t vertex2Index = T.wall(i).vertex2()->index();
-          size_t dimensions = vertexData[vertex1Index].size();
-
-          double distance = 0.0;
-          for (size_t d = 0; d < dimensions; ++d) {
-               distance += (vertexData[vertex1Index][d] - vertexData[vertex2Index][d])
-                    * (vertexData[vertex1Index][d] - vertexData[vertex2Index][d]);
-          }
-          distance = std::sqrt(distance);
-
-          double F = 0.0;
-          for (size_t j = 0; j < numVariableIndex(1); ++j)
-               F += wallData[T.wall(i).index()][variableIndex(1, j)];
-
-          double arg = F - parameter(1);
-          if (arg > 0)
-               wallDerivs[T.wall(i).index()][variableIndex(0, 0)] += parameter(0) * arg;
-     }
+	for (size_t i = 0; i < T.numWall(); ++i) {
+		size_t vertex1Index = T.wall(i).vertex1()->index();
+		size_t vertex2Index = T.wall(i).vertex2()->index();
+		size_t dimensions = vertexData[vertex1Index].size();
+		
+		double distance = 0.0;
+		for (size_t d = 0; d < dimensions; ++d) {
+			distance += (vertexData[vertex1Index][d] - vertexData[vertex2Index][d])
+				* (vertexData[vertex1Index][d] - vertexData[vertex2Index][d]);
+		}
+		distance = std::sqrt(distance);
+		
+		double F = 0.0;
+		for (size_t j = 0; j < numVariableIndex(1); ++j)
+			F += wallData[T.wall(i).index()][variableIndex(1, j)];
+		
+		double arg = F - parameter(1);
+		if (arg > 0)
+			wallDerivs[T.wall(i).index()][variableIndex(0, 0)] 
+				+= parameter(0) * arg;
+	}
 }

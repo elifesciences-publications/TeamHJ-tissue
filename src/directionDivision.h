@@ -16,11 +16,11 @@
 ///
 /// @brief The direction stays the same
 ///
-class StaticDirection : public BaseDirectionDivision {
+class ParallellDirection : public BaseDirectionDivision {
   
  public:
   
-  StaticDirection(std::vector<double> &paraValue, 
+  ParallellDirection(std::vector<double> &paraValue, 
 									std::vector< std::vector<size_t> > 
 									&indValue );
   

@@ -21,8 +21,8 @@ BaseDirectionDivision::createDirectionDivision(std::vector<double> &paraValue,
 																					 std::string idValue ) 
 {  
   // All directionDivision classes are in directionDivision.cc .h
-  if(idValue=="StaticDirection")
-    return new StaticDirection(paraValue,indValue);
+  if(idValue=="ParallellDirection")
+    return new ParallellDirection(paraValue,indValue);
   else if(idValue=="PerpendicularDirection")
     return new PerpendicularDirection(paraValue,indValue);
   //Default, if nothing found

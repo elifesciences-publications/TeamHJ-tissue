@@ -9,8 +9,8 @@
 #include"baseDirectionDivision.h"
 
 //!Constructor
-StaticDirection::
-StaticDirection(std::vector<double> &paraValue, 
+ParallellDirection::
+ParallellDirection(std::vector<double> &paraValue, 
 								std::vector< std::vector<size_t> > 
 								&indValue ) 
 {  
@@ -18,20 +18,20 @@ StaticDirection(std::vector<double> &paraValue,
   // Do some checks on the parameters and variable indeces
   //
   if( paraValue.size()!=0 ) {
-    std::cerr << "StaticDirection::"
-							<< "StaticDirection() "
+    std::cerr << "ParallellDirection::"
+							<< "ParallellDirection() "
 							<< "No parameters used.\n";
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size() != 1 ) {
-    std::cerr << "StaticDirection::"
-							<< "StaticDirection() "
+    std::cerr << "ParallellDirection::"
+							<< "ParallellDirection() "
 							<< "One variable index is used (start of cell direction).\n";
     exit(0);
   }
   //Set the variable values
   //////////////////////////////////////////////////////////////////////
-  setId("StaticDirection");
+  setId("ParallellDirection");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
@@ -43,7 +43,7 @@ StaticDirection(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-void StaticDirection::
+void ParallellDirection::
 update(Tissue &T,size_t cellI,
 			 std::vector< std::vector<double> > &cellData,
 			 std::vector< std::vector<double> > &wallData,
@@ -78,7 +78,7 @@ update(Tissue &T,size_t cellI,
 					}
 					normW = std::sqrt( normW );
 					if (normW<=0.0) {
-						std::cerr << "StaticDirection::update() Normalization=0!"
+						std::cerr << "ParallellDirection::update() Normalization=0!"
 											<< std::endl;
 						exit(-1);
 					}
@@ -101,7 +101,7 @@ update(Tissue &T,size_t cellI,
 						}
 						normW = std::sqrt( normW );
 						if (normW<=0.0) {
-							std::cerr << "StaticDirection::update() Normalization=0!"
+							std::cerr << "ParallellDirection::update() Normalization=0!"
 												<< std::endl;
 							exit(-1);
 						}
@@ -123,7 +123,7 @@ update(Tissue &T,size_t cellI,
 		}
 	}
 	else if( T.numDirectionalWall() ) {
-		std::cerr << "StaticDirection::update() Strange number of directions."
+		std::cerr << "ParallellDirection::update() Strange number of directions."
 							<< std::endl;
 		exit(-1);
 	}
@@ -174,7 +174,7 @@ update(Tissue &T,size_t cellI,
 			 std::vector< std::vector<double> > &vertexDerivs ) {
 
 	// Extract the perpendicular direction
-	size_t cellNI=T.numDirectionalWall();
+	size_t cellNI=cellData.size()-1;
 	size_t dimension = vertexData[0].size();
 	assert( dimension==2 );
 	std::vector<double> tmpDirection(dimension);
@@ -210,7 +210,7 @@ update(Tissue &T,size_t cellI,
 					}
 					normW = std::sqrt( normW );
 					if (normW<=0.0) {
-						std::cerr << "StaticDirection::update() Normalization=0!"
+						std::cerr << "PerpendicularDirection::update() Normalization=0!"
 											<< std::endl;
 						exit(-1);
 					}
@@ -233,7 +233,7 @@ update(Tissue &T,size_t cellI,
 						}
 						normW = std::sqrt( normW );
 						if (normW<=0.0) {
-							std::cerr << "StaticDirection::update() Normalization=0!"
+							std::cerr << "PerpendicularDirection::update() Normalization=0!"
 												<< std::endl;
 							exit(-1);
 						}
@@ -255,7 +255,7 @@ update(Tissue &T,size_t cellI,
 		}
 	}
 	else if( T.numDirectionalWall() ) {
-		std::cerr << "StaticDirection::update() Strange number of directions."
+		std::cerr << "PerpendicularDirection::update() Strange number of directions."
 							<< std::endl;
 		exit(-1);
 	}

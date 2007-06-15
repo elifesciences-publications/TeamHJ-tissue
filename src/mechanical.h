@@ -30,62 +30,17 @@ class VertexFromWallSpringAsymmetric : public BaseReaction {
 	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
-//!Updates vertices from an spatially asymmetric wall spring potential
-class VertexFromWallSpringPolarized : public BaseReaction {
-  
- public:
-  
-  VertexFromWallSpringPolarized(std::vector<double> &paraValue, 
-				 std::vector< std::vector<size_t> > 
-				 &indValue );
-  
-  void derivs(Tissue &T,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );
-};
-
 ///
 /// @brief Updates vertices from an spatially asymmetric wall spring potential
 /// given by microtubule directions
 ///
 class VertexFromWallSpringMT : public BaseReaction {
   
-private:
-
-	std::vector<size_t> directionalWall_;
-
 public:
   
   VertexFromWallSpringMT(std::vector<double> &paraValue, 
 												 std::vector< std::vector<size_t> > 
 												 &indValue );
-  
-  void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
-	void initiate(Tissue &T);
-	//void update(Tissue &T,double step);
-};
-
-///
-/// @brief Updates vertices from an spatially asymmetric wall spring potential
-/// given by microtubule directions
-///
-class VertexFromWallSpringMTNew : public BaseReaction {
-  
-public:
-  
-  VertexFromWallSpringMTNew(std::vector<double> &paraValue, 
-														std::vector< std::vector<size_t> > 
-														&indValue );
   
   void derivs(Tissue &T,
 							std::vector< std::vector<double> > &cellData,

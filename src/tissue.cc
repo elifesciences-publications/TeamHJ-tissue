@@ -478,12 +478,14 @@ void Tissue::readModel(std::ifstream &IN,int verbose) {
   
 	if( verbose )
 		std::cerr << "reactions...\n"; 
-  for( size_t i=0 ; i<numReactionVal ; i++ )
+  for( size_t i=0 ; i<numReactionVal ; i++ ) {
     if( addReaction(IN) )
       std::cerr << "Tissue::ReadModel(ifstream) "
 								<< "Warning Adding reaction failed for "
 								<< "tissue " << id() << " (index " << i << ")\n";
-	
+		else if( verbose )
+			std::cerr << reaction(numReaction()-1)->id() << std::endl;
+	}
   //Read compartmentChanges
   //////////////////////////////////////////////////////////////////////
   //Remove any present compartmentChanges before adding
@@ -492,12 +494,15 @@ void Tissue::readModel(std::ifstream &IN,int verbose) {
   
 	if( verbose )
 		std::cerr << "compartment changes...\n";
-  for( size_t i=0 ; i<numCompartmentChangeVal ; i++ )
-    if( addCompartmentChange(IN) )
+  for( size_t i=0 ; i<numCompartmentChangeVal ; i++ ) {
+    if( addCompartmentChange(IN) ) 
       std::cerr << "Tissue::ReadModel(ifstream) "
 								<< "Warning Adding compartmentChange failed for "
 								<< "tissue " << id() << " (index " << i << ")\n";  
-
+		else if( verbose )
+			std::cerr << compartmentChange(numCompartmentChange()-1)->id() 
+								<< std::endl;
+	}
 	// Read direction if applicable
 	if( verbose )
 		std::cerr << "direction...\n";
@@ -507,6 +512,9 @@ void Tissue::readModel(std::ifstream &IN,int verbose) {
 								<< "Adding direction failed." << std::endl;
 			exit(-1);
 		}
+		else if( verbose )
+			std::cerr << direction()->directionUpdate()->id() << std::endl
+								<< direction()->directionDivision()->id() << std::endl;
 	}			
 	if( verbose )
 		std::cerr << "Done\n\n";
@@ -1966,13 +1974,6 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 	size_t i = divCell->index();
   size_t dimension = vertexData[0].size();
 
-	Wall* tmpDirectionalWall;
-	if( numDirectionalWall() && cell(i).numWall()>directionalWall(i) ) {
-		tmpDirectionalWall = cell(i).wall(directionalWall(i));
-		//std::cerr << i << " " << directionalWall(i) << " " 
-		//				<< cell(i).wall(directionalWall(i))->index() << std::endl; 
-		//std::cerr << "Cell division." << std::endl;
-	}	
 	//Create the new data structure and set indices in the tissue vectors
 	//////////////////////////////////////////////////////////////////////
 	//Add the new cell
@@ -2450,25 +2451,9 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
   assert( wall(Nw).cell2()->index()==Nc );
 	
 	//Update directional wall vector if applicable
-	if( numDirectionalWall() ) {
-		//std::cerr << i << " " << directionalWall(i) << " "; 
-		//if( cell(i).numWall()>directionalWall(i) ) {
-		//std::cerr << cell(i).wall(directionalWall(i))->index();
-		//}
-		//std::cerr << std::endl << "Direction division." << std::endl;
-		updateDirectionDivision(i,cellData,wallData,vertexData,
-														cellDeriv,wallDeriv,vertexDeriv);
-		//std::cerr << i << " " << directionalWall(i) << " ";
-		//if( cell(i).numWall()>directionalWall(i) ) { 
-		//std::cerr << cell(i).wall(directionalWall(i))->index();
-		//}
-		//std::cerr << std::endl;
-		//std::cerr << Nc << " " << directionalWall(Nc) << " ";
-		//if( cell(Nc).numWall()>directionalWall(Nc) ) { 
-		//std::cerr << cell(Nc).wall(directionalWall(Nc))->index(); 
-		//}
-		//std::cerr << std::endl;
-	}
+	updateDirectionDivision(i,cellData,wallData,vertexData,
+													cellDeriv,wallDeriv,vertexDeriv);
+
 	// Update the volume dependent variables for each cell variable index 
 	// given in volumeChangeList
 	if (volumeChangeList.size()) {
@@ -2484,6 +2469,17 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 			cellData[Nc][volumeChangeList[k]] *= fn;
 		}
 	}		
+	std::cerr << "* " << i << " " << cell(i).calculateVolume(vertexData) << "  ";
+	for (size_t k=0; k<volumeChangeList.size(); ++k)
+		std::cerr << cellData[i][volumeChangeList[k]] << " ";
+	std::cerr << std::endl;
+	std::cerr << "* " << Nc << " " << cell(Nc).calculateVolume(vertexData) << "  ";
+	for (size_t k=0; k<volumeChangeList.size(); ++k)
+		std::cerr << cellData[Nc][volumeChangeList[k]] << " ";
+	std::cerr << std::endl;
+	
+	if( cell(i).calculateVolume(vertexData) > 2.0 )
+		exit(-1);
 	checkConnectivity(1);
 }
 

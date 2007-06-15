@@ -112,7 +112,7 @@ update(Tissue *T,size_t i,
   //double minDist,w3s;
 	std::vector<size_t> w3Tmp;
 	std::vector<double> w3tTmp;
-  int flag=0;
+  int flag=0,vertexFlag=0;
   for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
     if( k!=wI ) {
       size_t v1w3Itmp = divCell->wall(k)->vertex1()->index();
@@ -131,13 +131,15 @@ update(Tissue *T,size_t i,
 				e += w3[dim]*w0[dim];
       }
       double fac=a*c-b*b;//a*c-b*b
-      if( fac>0.0 ) {//else parallell and not applicable
+      if( fac>1e-10 ) {//else parallell and not applicable
 				fac = 1.0/fac;
 				//double s = fac*(b*e-c*d);
 				double t = fac*(a*e-b*d);//fac*(a*e-b*d)
 				if( t>0.0 && t<=1.0 ) {//within wall
 					//double dx0 = w0[0] +fac*((b*e-c*d)*nW2[0]+()*w3[0]); 					
 					flag++;
+					if( t==1.0 )
+						vertexFlag++;
 					w3I = k;
 					w3Tmp.push_back(k);
 					w3tTmp.push_back(t);
@@ -146,11 +148,12 @@ update(Tissue *T,size_t i,
     }
   }
   assert( w3I != divCell->numWall() && w3I != wI );
-	if( flag != 1 ) {
+	if( flag != 1 && !(flag==2 && vertexFlag) ) {
 		std::cerr << "divideVolumeViaLongestWall::update Warning"
 							<< " more than one wall possible as connection "
 							<< "for cell " 
 							<< i << std::endl; 
+		std::cerr << flag << " " << vertexFlag << std::endl; 
 		for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
 			std::cerr << "0 " 
 								<< vertexData[divCell->wall(k)->vertex1()->index()][0]
