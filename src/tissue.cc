@@ -1968,11 +1968,71 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 												 std::vector< std::vector<double> > &cellDeriv,
 												 std::vector< std::vector<double> > &wallDeriv,
 												 std::vector< std::vector<double> > &vertexDeriv,
-												 std::vector<size_t> &volumeChangeList) 
+												 std::vector<size_t> &volumeChangeList,
+												 double threshold) 
+
 {	
 	size_t Nc=numCell(),Nw=numWall(),Nv=numVertex();
 	size_t i = divCell->index();
   size_t dimension = vertexData[0].size();
+
+	//Move new vertices if closer than threshold to old vertex
+	if( threshold>=0.0 ) {
+		Wall* w1=divCell->wall(wI),w2=divCell->wall(w3I);
+		double w1L=0.0,w2L=0.0,t1=0.0,t2=0.0;
+		for( size_t dim=0; dim<dimension; ++dim ) {
+			w1L += (vertexData[w1->vertex1()->index()][dim]-
+							vertexData[w1->vertex2()->index()][dim]) *
+				(vertexData[w1->vertex1()->index()][dim] -
+				 vertexData[w1->vertex2()->index()][dim]);
+			w2L += (vertexData[w2->vertex1()->index()][dim]-
+							vertexData[w2->vertex2()->index()][dim]) *
+				(vertexData[w2->vertex1()->index()][dim] -
+				 vertexData[w2->vertex2()->index()][dim]);
+			t1 += (v1Pos[dim]-vertexData[w1->vertex2()->index()][dim])*
+				(v1Pos[dim]-vertexData[w1->vertex2()->index()][dim]);
+			t2 += (v1Pos[dim]-vertexData[w2->vertex2()->index()][dim])*
+				(v1Pos[dim]-vertexData[w2->vertex2()->index()][dim]);
+		}
+		w1L = std::sqrt(w1L);
+		w2L = std::sqrt(w2L);
+		t1 = std::sqrt(t1)/w1L;
+		t2 = std::sqrt(t2)/w2L;
+		assert( t1>=0.0 && t1<=1.0 );
+		assert( t2>=0.0 && t2<=1.0 );
+		if( t1<threshold ) {
+			t1=threshold;
+			for( size_t dim=0; dim<dimension; ++dim ) {
+				v1Pos[dim] = vertexData[w1->vertex2()->index()][dim] +
+					t1*(vertexData[w1->vertex1()->index()][dim]-
+							vertexData[w1->vertex2()->index()][dim]);
+			}
+		}
+		else if( t1>(1.0-threshold) ) {
+			t1 = threshold;
+			for( size_t dim=0; dim<dimension; ++dim ) {
+				v1Pos[dim] = vertexData[w1->vertex1()->index()][dim] +
+					t1*(vertexData[w1->vertex2()->index()][dim]-
+							vertexData[w1->vertex1()->index()][dim]);
+			}
+		}
+		if( t2<threshold ) {
+			t2=threshold;
+			for( size_t dim=0; dim<dimension; ++dim ) {
+				v2Pos[dim] = vertexData[w2->vertex2()->index()][dim] +
+					t2*(vertexData[w2->vertex1()->index()][dim]-
+							vertexData[w2->vertex2()->index()][dim]);
+			}
+		}
+		else if( t2>(1.0-threshold) ) {
+			t2 = threshold;
+			for( size_t dim=0; dim<dimension; ++dim ) {
+				v2Pos[dim] = vertexData[w2->vertex1()->index()][dim] +
+					t1*(vertexData[w2->vertex2()->index()][dim]-
+							vertexData[w2->vertex1()->index()][dim]);
+			}
+		}		
+	}
 
 	//Create the new data structure and set indices in the tissue vectors
 	//////////////////////////////////////////////////////////////////////

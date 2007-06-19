@@ -30,6 +30,8 @@ createCompartmentChange(std::vector<double> &paraValue,
     return new DivisionVolumeViaLongestWall3D(paraValue,indValue);
 	else if(idValue=="DivisionVolumeViaStrain")
     return new DivisionVolumeViaStrain(paraValue,indValue);
+	else if(idValue=="DivisionVolumeViaDirection")
+    return new DivisionVolumeViaDirection(paraValue,indValue);
 	//compartmentRemoval.h,compartmentRemoval.cc
   else if(idValue=="RemovalOutsideRadius")
     return new RemovalOutsideRadius(paraValue,indValue);

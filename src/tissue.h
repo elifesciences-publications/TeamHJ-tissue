@@ -188,7 +188,8 @@ class Tissue {
 									 std::vector< std::vector<double> > &cellDeriv,
 									 std::vector< std::vector<double> > &wallDeriv,
 									 std::vector< std::vector<double> > &vertexDeriv,
-									 std::vector<size_t> &volumeChangeList);
+									 std::vector<size_t> &volumeChangeList,
+									 double threshold=0.0);
   
   //!Sorts cell.wall and cell.vertex vectors to be cyclic 
   void sortCellWallAndCellVertex();
