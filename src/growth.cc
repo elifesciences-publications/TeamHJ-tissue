@@ -387,6 +387,6 @@ derivs(Tissue &T,
 		double arg = F - parameter(1);
 		if (arg > 0)
 			wallDerivs[T.wall(i).index()][variableIndex(0, 0)] 
-				+= parameter(0) * arg;
+				+= parameter(0) * arg * wallData[T.wall(i).index()][variableIndex(0, 0)];
 	}
 }

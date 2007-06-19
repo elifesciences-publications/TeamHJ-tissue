@@ -97,5 +97,60 @@ class DivisionVolumeViaStrain : public BaseCompartmentChange {
 							std::vector< std::vector<double> > &vertexDerivs );  
 };
 
+//!Divides a cell when volume above a threshold
+/*!Divides a cell when volume above a threshold. New wall is created
+  prependicular to direction given as cell variable.
+ */
+class DivisionVolumeViaDirection : public BaseCompartmentChange {
+  
+ public:
+  
+  DivisionVolumeViaDirection(std::vector<double> &paraValue, 
+														 std::vector< std::vector<size_t> > 
+														 &indValue );
+  
+  int flag(Tissue *T,size_t i,
+					 std::vector< std::vector<double> > &cellData,
+					 std::vector< std::vector<double> > &wallData,
+					 std::vector< std::vector<double> > &vertexData,
+					 std::vector< std::vector<double> > &cellDerivs,
+					 std::vector< std::vector<double> > &wallDerivs,
+					 std::vector< std::vector<double> > &vertexDerivs );
+  void update(Tissue* T,size_t i,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );  
+};
+
+//!Divides a cell when volume above a threshold
+/*!Divides a cell when volume above a threshold. New wall is created
+  in a random direction through center of mass.
+ */
+class DivisionVolumeRandomDirection : public BaseCompartmentChange {
+  
+ public:
+  
+  DivisionVolumeRandomDirection(std::vector<double> &paraValue, 
+														 std::vector< std::vector<size_t> > 
+														 &indValue );
+  
+  int flag(Tissue *T,size_t i,
+					 std::vector< std::vector<double> > &cellData,
+					 std::vector< std::vector<double> > &wallData,
+					 std::vector< std::vector<double> > &vertexData,
+					 std::vector< std::vector<double> > &cellDerivs,
+					 std::vector< std::vector<double> > &wallDerivs,
+					 std::vector< std::vector<double> > &vertexDerivs );
+  void update(Tissue* T,size_t i,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );  
+};
 
 #endif

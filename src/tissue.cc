@@ -6,14 +6,15 @@
  * Revision     : $Id:$
  */
 
-#include<algorithm>
-#include<assert.h>
-#include<cmath>
-#include<set>
-#include<string>
-#include<utility>
-#include<vector>
-#include"tissue.h"
+#include <algorithm>
+#include <assert.h>
+#include <cmath>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
+#include "tissue.h"
+#include "wall.h"
 
 Tissue::Tissue() {  
   cell_.reserve(10000);
@@ -1978,7 +1979,7 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 
 	//Move new vertices if closer than threshold to old vertex
 	if( threshold>=0.0 ) {
-		Wall* w1=divCell->wall(wI),w2=divCell->wall(w3I);
+		Wall *w1 = divCell->wall(wI), *w2 = divCell->wall(w3I);
 		double w1L=0.0,w2L=0.0,t1=0.0,t2=0.0;
 		for( size_t dim=0; dim<dimension; ++dim ) {
 			w1L += (vertexData[w1->vertex1()->index()][dim]-
@@ -1991,8 +1992,8 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 				 vertexData[w2->vertex2()->index()][dim]);
 			t1 += (v1Pos[dim]-vertexData[w1->vertex2()->index()][dim])*
 				(v1Pos[dim]-vertexData[w1->vertex2()->index()][dim]);
-			t2 += (v1Pos[dim]-vertexData[w2->vertex2()->index()][dim])*
-				(v1Pos[dim]-vertexData[w2->vertex2()->index()][dim]);
+			t2 += (v2Pos[dim]-vertexData[w2->vertex2()->index()][dim])*
+				(v2Pos[dim]-vertexData[w2->vertex2()->index()][dim]);
 		}
 		w1L = std::sqrt(w1L);
 		w2L = std::sqrt(w2L);
@@ -2001,6 +2002,8 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 		assert( t1>=0.0 && t1<=1.0 );
 		assert( t2>=0.0 && t2<=1.0 );
 		if( t1<threshold ) {
+			std::cerr << "Tissue::divideCell() Moving vertex 1 from "
+								<< t1 << " to " << threshold << std::endl;
 			t1=threshold;
 			for( size_t dim=0; dim<dimension; ++dim ) {
 				v1Pos[dim] = vertexData[w1->vertex2()->index()][dim] +
@@ -2009,6 +2012,8 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 			}
 		}
 		else if( t1>(1.0-threshold) ) {
+			std::cerr << "Tissue::divideCell() Moving vertex 1 from "
+								<< t1 << " to " << 1.0-threshold << std::endl;
 			t1 = threshold;
 			for( size_t dim=0; dim<dimension; ++dim ) {
 				v1Pos[dim] = vertexData[w1->vertex1()->index()][dim] +
@@ -2017,6 +2022,8 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 			}
 		}
 		if( t2<threshold ) {
+			std::cerr << "Tissue::divideCell() Moving vertex 2 from "
+								<< t2 << " to " << threshold << std::endl;
 			t2=threshold;
 			for( size_t dim=0; dim<dimension; ++dim ) {
 				v2Pos[dim] = vertexData[w2->vertex2()->index()][dim] +
@@ -2025,10 +2032,12 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 			}
 		}
 		else if( t2>(1.0-threshold) ) {
+			std::cerr << "Tissue::divideCell() Moving vertex 2 from "
+								<< t2 << " to " << 1.0-threshold << std::endl;
 			t2 = threshold;
 			for( size_t dim=0; dim<dimension; ++dim ) {
 				v2Pos[dim] = vertexData[w2->vertex1()->index()][dim] +
-					t1*(vertexData[w2->vertex2()->index()][dim]-
+					t2*(vertexData[w2->vertex2()->index()][dim]-
 							vertexData[w2->vertex1()->index()][dim]);
 			}
 		}		

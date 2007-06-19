@@ -40,10 +40,10 @@ env['LINKFLAGS']    = ['-O3', '-Wall', '-ansi', '-pedantic', '-g']
 #env.Program(target="../bin/createInitFromVoronoiFile",source=["createInitFromVoronoiFile.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","network.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc"])
 #env.Program(target="../bin/testTissue",source=["testTissue.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc"])
 
-s = ["simulator.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","direction.cc","baseDirectionUpdate.cc","baseDirectionDivision.cc","directionUpdate.cc","directionDivision.cc","myConfig.cc","myFiles.cc"]
+s = ["simulator.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","direction.cc","baseDirectionUpdate.cc","baseDirectionDivision.cc","directionUpdate.cc","directionDivision.cc","myConfig.cc","myFiles.cc","myRandom.cc"]
 env.Program(target="../bin/simulator",source=s)
 
-s = ["addCellDirectionsFromData.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","direction.cc","baseDirectionUpdate.cc","baseDirectionDivision.cc","directionUpdate.cc","directionDivision.cc","myConfig.cc","myFiles.cc"]
+s = ["addCellDirectionsFromData.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","direction.cc","baseDirectionUpdate.cc","baseDirectionDivision.cc","directionUpdate.cc","directionDivision.cc","myConfig.cc","myFiles.cc","myRandom.cc"]
 env.Program(target="../bin/addCellDirectionsFromData",source=s)
 
 #s = ["simulatorRk2.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc"]
