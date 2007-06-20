@@ -123,7 +123,7 @@ void Tissue::readInit(std::ifstream &IN,int verbose) {
   //////////////////////////////////////////////////////////////////////
   if( verbose )
     std::cerr << "Tissue::readInit(IN) - reading connectivity topology" << std::endl;
-  size_t wI,c1I,c2I,v1I,v2I;
+  int wI,c1I,c2I,v1I,v2I;
   size_t w,c1,c2,v1,v2;
   for( size_t nW=0 ; nW<numWall() ; ++nW ) {
     //Read the connections
