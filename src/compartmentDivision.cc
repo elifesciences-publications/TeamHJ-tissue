@@ -832,15 +832,15 @@ update(Tissue *T,size_t cellI,
 //!Constructor
 DivisionVolumeViaDirection::
 DivisionVolumeViaDirection(std::vector<double> &paraValue, 
-			     std::vector< std::vector<size_t> > 
-			     &indValue ) {
+													 std::vector< std::vector<size_t> > 
+													 &indValue ) {
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
   if( paraValue.size()!=3 ) {
     std::cerr << "DivisionVolumeViaDirection::"
 							<< "DivisionVolumeViaDirection() "
-							<< "Two parameters used V_threshold, LWall_frac, and "
+							<< "Three parameters used V_threshold, LWall_frac, and "
 							<< "Lwall_threshold" << std::endl;
     exit(0);
   }
@@ -889,7 +889,7 @@ flag(Tissue *T,size_t i,
   return 0;
 }
 
-//! Updates the dividing cell by adding a prependicular wall from the longest
+//! Updates the dividing cell by adding a prependicular wall from the defined direction
 /*! 
  */
 void DivisionVolumeViaDirection::
@@ -914,18 +914,22 @@ update(Tissue *T,size_t cellI,
 		xMean[0] += vertexData[vI][0];
 		xMean[1] += vertexData[vI][1];
 	}
+	xMean[0] /= numV;
+	xMean[1] /= numV;
 	
 	std::vector<double> n(dimension);
-	if( cellData[divCell->index()][variableIndex(0,0)+dimension] ) {
-		n[0]=cellData[divCell->index()][variableIndex(0,0)+1];
-		n[1]=-cellData[divCell->index()][variableIndex(0,0)];
+	if( cellData[cellI][variableIndex(0,0)+dimension] ) {
+		//Perpendicular to given direction
+		n[0]=cellData[cellI][variableIndex(0,0)+1];
+		n[1]=-cellData[cellI][variableIndex(0,0)];
 	}
 	else {
+		//Random
 		double phi=2*3.14*myRandom::Rnd();
 		n[0] = std::sin(phi);
 		n[1] = std::cos(phi);
 	}
-
+	
 	//Find two (and two only) intersecting walls
 	//////////////////////////////////////////////////////////////////////
   std::vector<size_t> wI(2);
@@ -937,13 +941,15 @@ update(Tissue *T,size_t cellI,
 	std::vector<size_t> w3Tmp;
 	std::vector<double> w3tTmp;
   int flag=0;
+	std::cerr << "Dividing cell has " << divCell->numWall() << " walls."
+						<< std::endl;
   for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
 		size_t v1Tmp = divCell->wall(k)->vertex1()->index();
 		size_t v2Tmp = divCell->wall(k)->vertex2()->index();
 		std::vector<double> w3(dimension),w0(dimension);
-		for( size_t d=0 ; d<dimension ; ++d ) {
-			w3[d] = vertexData[v2Tmp][d]-vertexData[v1Tmp][d];
-			w0[d] = xMean[d]-vertexData[v1Tmp][d];
+		for( size_t dim=0 ; dim<dimension ; ++dim ) {
+			w3[dim] = vertexData[v2Tmp][dim]-vertexData[v1Tmp][dim];
+			w0[dim] = xMean[dim]-vertexData[v1Tmp][dim];
 		}
 		double a=0.0,b=0.0,c=0.0,d=0.0,e=0.0;//a=1.0
 		for( size_t dim=0 ; dim<dimension ; ++dim ) {
@@ -954,7 +960,7 @@ update(Tissue *T,size_t cellI,
 			e += w3[dim]*w0[dim];
 		}
 		double fac=a*c-b*b;//a*c-b*b
-		if( fac>0.0 ) {//else parallell and not applicable
+		if( fac>1e-10 ) {//else parallell and not applicable
 			fac = 1.0/fac;
 			//double s = fac*(b*e-c*d);
 			double t = fac*(a*e-b*d);//fac*(a*e-b*d)
@@ -970,13 +976,21 @@ update(Tissue *T,size_t cellI,
 				}				
 				flag++;
 			}
+			else {
+				std::cerr << "Dividing cell " << divCell->index() << " not via wall "
+									<< k << " at t=" << t << std::endl;
+			}
+		}		
+		else {
+			std::cerr << "Dividing cell " << divCell->index() << " not via wall "
+								<< k << " since parallell." << std::endl;
 		}
 	}
   assert( wI[1] != divCell->numWall() && wI[0] != wI[1] );
 	if( flag != 2 ) {
-		std::cerr << "divideVolumeVisStrain::update Warning"
-							<< " not two walls possible as connection "
-							<< "for cell " 
+		std::cerr << "divideVolumeViaDirection::update() Warning:"
+							<< " not two, but " << flag << " walls chosen as "
+							<< "connection for cell " 
 							<< cellI << std::endl; 
 		for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
 			std::cerr << "0 " 
