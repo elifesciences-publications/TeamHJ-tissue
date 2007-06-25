@@ -254,7 +254,7 @@ update(Tissue &T, double h,
 			 std::vector< std::vector<double> > &wallDerivs,
 			 std::vector< std::vector<double> > &vertexDerivs ) {
   
-}
+} 
 
 //!Constructor
 GradientDirection::
@@ -313,5 +313,81 @@ update(Tissue &T, double h,
 			 std::vector< std::vector<double> > &vertexDerivs ) {
   
 }
+
+ForceDirection::ForceDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 0) {
+		std::cerr << "ForceDirection::ForceDirection() " 
+				<< "No parameters are used.\n";
+		exit(EXIT_FAILURE);
+	}
+
+	if (indValue.size() != 1 || indValue[0].size() != 2) {
+		std::cerr << "ForceDirection::ForceDirection() "
+				<< "Wall force index and start of cell direction index are used.\n";
+		exit(EXIT_FAILURE);
+	}
+
+	setId("ForceDirection");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize(numParameter());
+	setParameterId(tmp);
+
+}
+  
+void ForceDirection::initiate(Tissue &T,
+						std::vector< std::vector<double> > &cellData,
+						std::vector< std::vector<double> > &wallData,
+						std::vector< std::vector<double> > &vertexData,
+						std::vector< std::vector<double> > &cellDerivs,
+						std::vector< std::vector<double> > &wallDerivs,
+						std::vector< std::vector<double> > &vertexDerivs)
+{
+	// No initialization
+}
+
+void ForceDirection::update(Tissue &T, double h,
+					   std::vector< std::vector<double> > &cellData,
+					   std::vector< std::vector<double> > &wallData,
+					   std::vector< std::vector<double> > &vertexData,
+					   std::vector< std::vector<double> > &cellDerivs,
+					   std::vector< std::vector<double> > &wallDerivs,
+					   std::vector< std::vector<double> > &vertexDerivs)
+{
+	for (size_t n = 0; n < T.numCell(); ++n) {
+		Cell cell = T.cell(n);
+		double x = 0.0;
+		double y = 0.0;
+
+		if (cellData[cell.index()][variableIndex(0, 1) + 2] == 0)
+			continue;
+
+		for (size_t i = 0; i < cell.numWall(); ++i) {
+			Wall *wall = cell.wall(i);
+			double wx = wall->vertex1()->position(0) - wall->vertex2()->position(0);
+			double wy = wall->vertex1()->position(1) - wall->vertex2()->position(1);
+			double Aw = std::sqrt(wx * wx  + wy * wy);
+			if (wx > 0) {
+				wx = wx / Aw;
+				wy = wy / Aw;
+			} else {
+				wx = -1 * wx / Aw;
+				wy = -1 * wy / Aw;
+			}
+			double force = wallData[wall->index()][variableIndex(0, 1)];
+
+			x += wx * force;
+			y += wy * force;
+		}
+		
+		double A = std::sqrt(x * x + y * y);
+		cellData[cell.index()][variableIndex(0, 1)] = x / A;
+		cellData[cell.index()][variableIndex(0, 1) + 1] = y / A;
+	}
+}
+
 
 

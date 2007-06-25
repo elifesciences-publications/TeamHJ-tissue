@@ -29,11 +29,13 @@ BaseDirectionUpdate::createDirectionUpdate(std::vector<double> &paraValue,
     return new StrainDirection(paraValue,indValue);
   else if(idValue=="GradientDirection")
     return new GradientDirection(paraValue,indValue);
+  else if (idValue == "ForceDirection")
+	  return new ForceDirection(paraValue, indValue);
   //Default, if nothing found
   else {
-    std::cerr << "\nBaseDirectionUpdate::createDirectionUpdate() WARNING: DirectionUpdatetype " 
-							<< idValue << " not known, no directionUpdate created.\n\7";
-    exit(-1);
+	  std::cerr << "\nBaseDirectionUpdate::createDirectionUpdate() WARNING: DirectionUpdatetype " 
+			  << idValue << " not known, no directionUpdate created.\n\7";
+	  exit(-1);
   }
 }
 
