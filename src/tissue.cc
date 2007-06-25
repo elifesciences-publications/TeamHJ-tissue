@@ -2915,11 +2915,20 @@ void Tissue::printInit(std::ostream &os) {
   os << numCell() << " " << numWall() << " " << numVertex() << std::endl;
 
   //Print the connectivity from walls
-  for( size_t i=0 ; i<numWall() ; ++i )
-    os << i << " " << wall(i).cell1()->index() << " " 
-       << wall(i).cell2()->index() << " " << wall(i).vertex1()->index() 
-       << " " << wall(i).vertex2()->index() << std::endl;
-  os << std::endl;
+  for( size_t i=0 ; i<numWall() ; ++i ) {
+    os << i << " ";
+		if( wall(i).cell1()->index()<numCell() )
+			os << wall(i).cell1()->index() << " " ;
+		else
+			os << "-1 ";
+		if( wall(i).cell2()->index()<numCell() )
+			os << wall(i).cell2()->index() << " ";
+		else
+			os << "-1 ";
+		os << wall(i).vertex1()->index() 
+			 << " " << wall(i).vertex2()->index() << std::endl;
+	}
+	os << std::endl;
   
   //Print the vertex positions
   os << numVertex() << " " << vertex(0).numPosition() << std::endl;
@@ -2964,10 +2973,19 @@ void Tissue::printInit(std::vector< std::vector<double> > &cellData,
   os << numCell() << " " << numWall() << " " << numVertex() << std::endl;
 	
   //Print the connectivity from walls
-  for( size_t i=0 ; i<numWall() ; ++i )
-    os << i << " " << wall(i).cell1()->index() << " " 
-       << wall(i).cell2()->index() << " " << wall(i).vertex1()->index() 
-       << " " << wall(i).vertex2()->index() << std::endl;
+  for( size_t i=0 ; i<numWall() ; ++i ) {
+    os << i << " ";
+		if( wall(i).cell1()->index()<numCell() )
+			os << wall(i).cell1()->index() << " " ;
+		else
+			os << "-1 ";
+		if( wall(i).cell2()->index()<numCell() )
+			os << wall(i).cell2()->index() << " ";
+		else
+			os << "-1 ";
+		os << wall(i).vertex1()->index() 
+			 << " " << wall(i).vertex2()->index() << std::endl;
+	}
   os << std::endl;
   
   //Print the vertex positions
