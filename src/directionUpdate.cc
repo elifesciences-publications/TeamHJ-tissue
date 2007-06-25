@@ -208,10 +208,11 @@ StrainDirection(std::vector<double> &paraValue,
 	//
   // Do some checks on the parameters and variable indeces
   //
-  if( paraValue.size()!=0 ) {
+  if( paraValue.size()!=1 ) {
     std::cerr << "StrainDirection::"
 							<< "StrainDirection() "
-							<< "No parameters used.\n";
+							<< "One parameter used flag_perpendicular."
+							<< std::endl;
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size() != 1 ) {
@@ -230,7 +231,7 @@ StrainDirection(std::vector<double> &paraValue,
   //////////////////////////////////////////////////////////////////////
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
-  //tmp[0] = "k_growth";
+  tmp[0] = "flag_perpendicular";
   setParameterId( tmp );
 }
 
@@ -252,8 +253,118 @@ update(Tissue &T, double h,
 			 std::vector< std::vector<double> > &vertexData,
 			 std::vector< std::vector<double> > &cellDerivs,
 			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs ) {
-  
+			 std::vector< std::vector<double> > &vertexDerivs ) 
+{
+  size_t dimension = vertexData[0].size();
+	assert( dimension==2 );
+	
+	//
+	//Calculate strain directions and print walls and strain vectors
+	//by using x,x+dt*dx/dt as two points
+	//
+	T.derivs(cellData,wallData,vertexData,
+					 cellDerivs,wallDerivs,vertexDerivs);
+	
+	//
+	// Update all cells
+	//
+	for (size_t cellI=0; cellI<T.numCell(); ++cellI) {
+		//Create temporary x,y,dx positions
+		size_t numV = T.cell(cellI).numVertex(); 
+		std::vector< std::vector<double> > x(numV),y(numV),dx(numV),
+			xM(numV),yM(numV),dxM(numV);
+	
+		double dt=1.0;
+		std::vector<double> xMean(dimension),yMean(dimension),
+			dxMean(dimension);
+	
+		for( size_t i=0 ; i<numV ; ++i ) {
+			size_t vI = T.cell(cellI).vertex(i)->index();
+			x[i] = vertexData[vI];
+			dx[i] = vertexDerivs[vI];
+			std::vector<double> tmp(dimension);
+			tmp[0] = x[i][0]+dt*dx[i][0];
+			tmp[1] = x[i][1]+dt*dx[i][1];
+			y[i] = tmp;
+			xMean[0] += x[i][0];
+			xMean[1] += x[i][1];
+			yMean[0] += y[i][0];
+			yMean[1] += y[i][1];
+			dxMean[0] += dx[i][0];			
+			dxMean[1] += dx[i][1];			
+		}
+		xMean[0] /=numV;
+		xMean[1] /=numV;
+		yMean[0] /=numV;
+		yMean[1] /=numV;
+		dxMean[0] /=numV;
+		dxMean[1] /=numV;
+		for( size_t i=0 ; i<numV ; ++i ) {
+			xM[i].resize(dimension);
+			xM[i][0] =x[i][0]-xMean[0];
+			xM[i][1] =x[i][1]-xMean[1];
+			yM[i].resize(dimension);
+			yM[i][0] =y[i][0]-yMean[0];
+			yM[i][1] =y[i][1]-yMean[1];
+			dxM[i].resize(dimension);
+			dxM[i][0] =dx[i][0]-dxMean[0];
+			dxM[i][1] =dx[i][1]-dxMean[1];
+		}
+		
+		//Calculate A = (x^t x)^{-1} (x^t y)
+		std::vector<std::vector<double> > xTx(dimension),xTy(dimension),
+			xTxM(dimension),A(dimension);
+		for( size_t i=0 ; i<dimension ; ++i ) {
+			xTx[i].resize(dimension);
+			xTy[i].resize(dimension);
+			xTxM[i].resize(dimension);
+			A[i].resize(dimension);
+		}
+		
+		for( size_t i=0 ; i<dimension ; ++i ) {
+			for( size_t j=0 ; j<dimension ; ++j ) {
+				for( size_t v=0 ; v<numV ; ++v ) {
+					xTx[i][j] += xM[v][i]*xM[v][j];
+					xTy[i][j] += xM[v][i]*yM[v][j];
+				}
+			}
+		}
+		double detM = xTx[0][0]*xTx[1][1]-xTx[0][1]*xTx[1][0];
+		detM = 1.0/detM;
+		xTxM[0][0] = detM*xTx[1][1];
+		xTxM[1][1] = detM*xTx[0][0];
+		xTxM[0][1] = -detM*xTx[1][0];
+		xTxM[1][0] = -detM*xTx[0][1];
+	
+		//Calculate A
+		A[0][0] = xTxM[0][0]*xTy[0][0] + xTxM[0][1]*xTy[1][0];
+		A[0][1] = xTxM[0][0]*xTy[0][1] + xTxM[0][1]*xTy[1][1];
+		A[1][0] = xTxM[1][0]*xTy[0][0] + xTxM[1][1]*xTy[1][0];
+		A[1][1] = xTxM[1][0]*xTy[0][1] + xTxM[1][1]*xTy[1][1];
+		
+		//Apply SVD to A
+		//
+		
+		//Make sure determinant is non-zero
+		double detA = A[0][0]*A[1][1] - A[0][1]*A[1][0];
+		if( detA==0 ) {
+			std::cerr << "DivisionVolumeViaStrain::update() Determinant zero\n";
+			exit(-1);
+		}
+		double tau = std::atan2( A[0][0]-A[1][1],A[0][1]+A[1][0] );
+		double omega = std::atan2( A[0][0]+A[1][1],A[0][1]-A[1][0] );
+		double theta = 0.5*(tau-omega);
+		
+		//Create direction for update
+		std::vector<double> n(dimension);
+		double v = theta;
+		if( parameter(0)==1.0 )		
+			v = theta - 0.5*3.14159;
+		n[0]=std::cos(v);
+		n[1]=std::sin(v);
+		for (size_t dim=0; dim<dimension; ++dim) 
+			cellData[cellI][variableIndex(0,0)+dim] = n[dim];
+	}
 } 
 
 //!Constructor

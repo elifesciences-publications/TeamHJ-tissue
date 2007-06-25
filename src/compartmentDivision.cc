@@ -489,7 +489,7 @@ DivisionVolumeViaStrain(std::vector<double> &paraValue,
   if( paraValue.size()!=3 ) {
     std::cerr << "DivisionVolumeViaStrain::"
 							<< "DivisionVolumeViaStrain() "
-							<< "Two parameters used V_threshold, LWall_frac, and "
+							<< "Three parameters used V_threshold, LWall_frac, and "
 							<< "Lwall_threshold" << std::endl;
     exit(0);
   }
@@ -646,29 +646,9 @@ update(Tissue *T,size_t cellI,
 	//(A[0][1]-A[1][0])*(A[0][1]-A[1][0]) );
 	//double w = std::sqrt( (A[0][0]-A[1][1])*(A[0][0]-A[1][1]) +
 	//(A[0][1]+A[1][0])*(A[0][1]+A[1][0]) );
-	double dxTau=A[0][1]+A[1][0];
-	double dyTau=A[0][0]-A[1][1];
-	double tau = std::atan( std::fabs((A[0][1]+A[1][0])/(A[0][0]-A[1][1])) );
-	double dxOmega = A[0][1]-A[1][0];
-	double dyOmega = A[0][0]+A[1][1];
-	double omega = std::atan( std::fabs((A[0][1]-A[1][0])/(A[0][0]+A[1][1])) );
-	
-	//Check angles from signs
-	double pi = 3.14159265359;
-	if( dxTau>=0.0 && dyTau<0.0 )
-		tau =-tau;
-	else if( dxTau<0.0 && dyTau<0.0 )
-		tau = pi-tau;
-	else if( dxTau<0.0 && dyTau>=0.0 )
-		tau = pi+tau;
-	if( dxOmega>=0.0 && dyOmega<0.0 )
-		omega =-omega;
-	else if( dxOmega<0.0 && dyOmega<0.0 )
-		omega = pi-omega;
-	else if( dxOmega<0.0 && dyOmega>=0.0 )
-		omega = pi+omega;
-
-	
+	double tau = std::atan2( A[0][0]-A[1][1],A[0][1]+A[1][0] );
+	double omega = std::atan2( A[0][0]+A[1][1],A[0][1]-A[1][0] );
+		
 	//double p = 0.5*(t+w);
 	//double q = 0.5*(t-w);
 	double theta = 0.5*(tau-omega);
@@ -688,7 +668,7 @@ update(Tissue *T,size_t cellI,
 	//Create direction for new wall (xMean+t*n)
 	std::vector<double> n(dimension);
 	//rotate angle v=theta-90
-	double v = theta - 0.5*pi;
+	double v = theta - 0.5*3.14159;
 	n[0]=std::cos(v);
 	n[1]=std::sin(v);
 	
@@ -976,15 +956,15 @@ update(Tissue *T,size_t cellI,
 				}				
 				flag++;
 			}
-			else {
-				std::cerr << "Dividing cell " << divCell->index() << " not via wall "
-									<< k << " at t=" << t << std::endl;
-			}
+			//else {
+			//std::cerr << "Dividing cell " << divCell->index() << " not via wall "
+			//					<< k << " at t=" << t << std::endl;
+			//}
 		}		
-		else {
-			std::cerr << "Dividing cell " << divCell->index() << " not via wall "
-								<< k << " since parallell." << std::endl;
-		}
+		//else {
+		//std::cerr << "Dividing cell " << divCell->index() << " not via wall "
+		//					<< k << " since parallell." << std::endl;
+		//}
 	}
   assert( wI[1] != divCell->numWall() && wI[0] != wI[1] );
 	if( flag != 2 ) {

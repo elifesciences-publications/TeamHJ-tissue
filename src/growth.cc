@@ -75,7 +75,7 @@ WallGrowthExponentialStressTruncated(std::vector<double> &paraValue,
   if( paraValue.size()!=2 ) {
     std::cerr << "WallGrowthExponentialStressTruncated::"
 	      << "WallGrowthExponentialStressTruncated() "
-	      << "Uses two parameters k_growth anf L_trunc\n";
+	      << "Uses two parameters k_growth and L_trunc\n";
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size() != 1 ) {
@@ -147,7 +147,7 @@ WallGrowthConstantStress(std::vector<double> &paraValue,
   if( indValue.size() != 1 || indValue[0].size() != 1 ) {
     std::cerr << "WallGrowthConstantStress::"
 	      << "WallGrowthConstantStress() "
-	      << "One variable index is used.\n";
+	      << "One variable index is used (wall length).\n";
     exit(0);
   }
   //Set the variable values
@@ -186,11 +186,11 @@ derivs(Tissue &T,
     double distance=0.0;
     for( size_t d=0 ; d<vertexData[v1].size() ; d++ )
       distance += (vertexData[v1][d]-vertexData[v2][d])*
-	(vertexData[v1][d]-vertexData[v2][d]);
+				(vertexData[v1][d]-vertexData[v2][d]);
     distance = std::sqrt(distance);
     if( distance>wallData[i][lengthIndex] )
       wallDerivs[i][lengthIndex] += parameter(0)*
-	(distance-wallData[i][lengthIndex]);
+				(distance-wallData[i][lengthIndex]);
   }
 }
 
@@ -387,6 +387,7 @@ derivs(Tissue &T,
 		double arg = F - parameter(1);
 		if (arg > 0)
 			wallDerivs[T.wall(i).index()][variableIndex(0, 0)] 
-				+= parameter(0) * arg * wallData[T.wall(i).index()][variableIndex(0, 0)];
+				+= parameter(0) * arg * 
+				wallData[T.wall(i).index()][variableIndex(0, 0)];
 	}
 }
