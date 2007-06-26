@@ -469,7 +469,7 @@ void ForceDirection::update(Tissue &T, double h,
 					   std::vector< std::vector<double> > &vertexDerivs)
 {
 	for (size_t n = 0; n < T.numCell(); ++n) {
-		Cell cell = T.cell(n);
+ 		Cell cell = T.cell(n);
 		double x = 0.0;
 		double y = 0.0;
 

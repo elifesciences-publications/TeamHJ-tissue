@@ -1284,3 +1284,148 @@ update(Tissue *T,size_t cellI,
 	T->checkConnectivity(1);		
 }
 
+
+
+
+DivisionForceDirection::DivisionForceDirection(std::vector<double> &paraValue,
+									  std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 2) {
+		std::cerr << "DivisionForceDirection::DivisionForceDirection() "
+				<< "Two parameters are used V_threshold and Lwall_threshold." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 1) {
+		std::cerr << "DivisionForceDirection::DivisionForceDirection() "
+				<< "Variable indices for volume dependent cell "
+				<< "variables are used.\n";
+		exit(EXIT_FAILURE);
+	}
+	
+	setId("DivisionForceDirection");
+	setNumChange(1);
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+  
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize (numParameter());
+	tmp[0] = "V_threshold";
+	tmp[1] = "Lwall_threshold";
+	setParameterId(tmp);
+}
+
+int DivisionForceDirection::flag(Tissue *T, size_t i,
+						   std::vector< std::vector<double> > &cellData,
+						   std::vector< std::vector<double> > &wallData,
+						   std::vector< std::vector<double> > &vertexData,
+						   std::vector< std::vector<double> > &cellDerivs,
+						   std::vector< std::vector<double> > &wallDerivs,
+						   std::vector< std::vector<double> > &vertexDerivs)
+{
+	if (T->cell(i).calculateVolume(vertexData) > parameter(0)) {
+		std::cerr << "Cell " << i << " marked for division with volume " 
+				<< T->cell(i).volume() << std::endl;
+		return 1;
+	} 
+	return 0;
+}
+
+void DivisionForceDirection::update(Tissue* T, size_t i,
+							 std::vector< std::vector<double> > &cellData,
+							 std::vector< std::vector<double> > &wallData,
+							 std::vector< std::vector<double> > &vertexData,
+							 std::vector< std::vector<double> > &cellDerivs,
+							 std::vector< std::vector<double> > &wallDerivs,
+							 std::vector< std::vector<double> > &vertexDerivs)
+{
+	Cell cell = T->cell(i);
+	assert(cell.numWall() > 1);
+	assert(vertexData[0].size() == 2); // Make sure dimension == 2
+	
+
+	// Calculate force direction (nx, ny)
+	double nx = 0.0;
+	double ny = 0.0;
+	
+	for (size_t i = 0; i < cell.numWall(); ++i) {
+		Wall *wall = cell.wall(i);
+		double wx = wall->vertex1()->position(0) - wall->vertex2()->position(0);
+		double wy = wall->vertex1()->position(1) - wall->vertex2()->position(1);
+		double Aw = std::sqrt(wx * wx  + wy * wy);
+		if (wx > 0) {
+			wx = wx / Aw;
+			wy = wy / Aw;
+		} else {
+			wx = -1 * wx / Aw;
+			wy = -1 * wy / Aw;
+		}
+		double force = wallData[wall->index()][variableIndex(0, 1)];
+		
+		nx += wx * force;
+		ny += wy * force;
+	}
+	
+	double A = std::sqrt(nx * nx + ny * ny);
+	nx = nx / A;
+	ny = ny / A;
+
+	// Calculate mean vertex position (mx, my)
+	// by center of mass).
+	double mx = 0.0;
+	double my = 0.0;
+
+	for (size_t i = 0; i < cell.numVertex(); ++i) {
+		Vertex *vertex = cell.vertex(i);
+		mx += vertex->position(0);
+		my += vertex->position(1);
+	}
+	mx /= cell.numVertex();
+	my /= cell.numVertex();
+
+	// Find candidate walls for division (Patrik: See RR014)
+	std::vector<size_t> candidateWalls;
+	std::vector< std::vector<double> > verticesPosition;
+
+	for (size_t i = 0; i < cell.numWall(); ++i) {
+		Wall *wall = cell.wall(i);
+		Vertex *v1 = wall->vertex1();
+		Vertex *v2 = wall->vertex2();
+		
+		double x1x = v1->position(0);
+		double x1y = v1->position(1);
+		double x2x = v2->position(0);
+		double x2y = v2->position(1);
+
+		double detA = nx * (x1y - x2y) - ny * (x1x - x2x);
+
+		if (detA == 0)
+			continue;
+
+		// double s = ((x1y - x2y) * (x1x - mx) - (x1x - x2x) * (x1y - my)) / detA;
+		double t = (-ny * (x1x - mx) + nx * (x1y - my)) / detA;
+
+		if (t <= 0.0 || t >= 1.0)
+			continue;
+		else {
+			candidateWalls.push_back(i);
+			std::vector<double> position(2);
+			position[0] = x1x + t * (x2x - x1x);
+			position[1] = x1y + t * (x2y - x1y);
+			verticesPosition.push_back(position);
+		}
+	}
+
+	if (candidateWalls.size() != 2) {
+		std::cerr << "DivisionForceDirection::update() "
+				<< "More than two or less than one candidate walls for division." 
+				<< std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	T->divideCell(&cell, candidateWalls[0], candidateWalls[1],
+			    verticesPosition[0], verticesPosition[1],
+			    cellData, wallData, vertexData, cellDerivs ,wallDerivs ,vertexDerivs,
+			    variableIndex(0), parameter(1));
+}
+
