@@ -128,7 +128,7 @@ RemovalOutsideRadiusEpidermis(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Flags a cell for division if its position is outside threshold radius
+//! Flags a cell for removal if its position is outside threshold radius
 /*! 
  */
 int RemovalOutsideRadiusEpidermis::
