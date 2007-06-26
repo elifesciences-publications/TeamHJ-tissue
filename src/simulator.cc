@@ -20,6 +20,7 @@ int main(int argc,char *argv[]) {
 	myConfig::registerOption("rk2", 0);
 	myConfig::registerOption("help", 0);
 	myConfig::registerOption("merry_init", 0);
+	myConfig::registerOption("wallOutput", 0);
 	
 	size_t verbose=1;
 	std::string configFile(getenv("HOME"));
@@ -38,12 +39,14 @@ int main(int argc,char *argv[]) {
 							<< "output generated from merryproj." << std::endl;
 		std::cerr << "-rk2 - Overrides default numerical solver (rk4)"
 							<< " with a 2nd order Runge-Kutta solver." << std::endl;
+		std::cerr << "-wallOutput - Overrides default cell output with "
+							<< "wall output." << std::endl;
     exit(EXIT_FAILURE);
 	} else if (myConfig::argc() < 3 || myConfig::argc() > 4) {
 		std::cout << "Type '" << argv[0] << " -help' for usage." << std::endl;
 		exit(EXIT_FAILURE);
   }
-
+	
   double startTime=0.0,endTime=100.0,step=0.01;
   size_t printNum=100;
   if (argc>3) {
@@ -68,10 +71,13 @@ int main(int argc,char *argv[]) {
 		std::cerr << "Using merryproj init file format" << std::endl;
 		T.readMerryInit(initFile.c_str(),verbose);
 	}
+	size_t printWallFlag=0;
+	if (myConfig::getBooleanValue("wallOutput"))
+		printWallFlag=1;
 	if (!myConfig::getBooleanValue("rk2")) 
-		T.simulateRk4(startTime,endTime,step,printNum);
+		T.simulateRk4(startTime,endTime,step,printNum,printWallFlag);
 	else
-		T.simulateRk2(startTime,endTime,step,printNum);
+		T.simulateRk2(startTime,endTime,step,printNum,printWallFlag);
 	
   // Print init if applicable
 	std::string fileName;

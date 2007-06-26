@@ -1310,8 +1310,8 @@ void Tissue::derivs( std::vector< std::vector<double> > &cellData,
 }
 
 void Tissue::simulateRk2(double startTime,double endTime,double step,
-			 size_t numPrint) {
-  
+			 size_t numPrint,size_t wallPrintFlag) 
+{  
   //Initiate data structure
   //////////////////////////////////////////////////////////////////////
   std::vector< std::vector<double> > 
@@ -1380,7 +1380,10 @@ void Tissue::simulateRk2(double startTime,double endTime,double step,
     //Print if applicable 
     if( printFlag && time >= printTime ) {
       printTime += printDeltaTime;
-      printVertexAndCell(cellData,vertexData);  
+			if( wallPrintFlag )
+				printVertexAndWall(wallData,vertexData);  
+			else
+				printVertexAndCell(cellData,vertexData);  
       std::cerr << ++numPrinted << " " << time << " " << numCell() << " "
 								<< numWall() << " " << numVertex() << std::endl;
     }
@@ -1421,14 +1424,17 @@ void Tissue::simulateRk2(double startTime,double endTime,double step,
   }
   //Print if applicable
   if( printFlag ) {
-    printVertexAndCell(cellData,vertexData);  
+		if( wallPrintFlag )
+			printVertexAndWall(wallData,vertexData);  
+		else
+			printVertexAndCell(cellData,vertexData);  
     std::cerr << ++numPrinted << " " << time << " " << numCell() << " "
 							<< numWall() << " " << numVertex() << std::endl;
   }
 }
 
 void Tissue::simulateRk4(double startTime,double endTime,double step,
-												 size_t numPrint) 
+												 size_t numPrint, size_t wallPrintFlag) 
 {
   //
   // Initiate data structure
@@ -1495,7 +1501,7 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
   initiateReactions();
 	initiateDirection(cellData,wallData,vertexData,cellDeriv,wallDeriv,
 										vertexDeriv);
-
+	
 	//
   // Do the simulation
   //
@@ -1506,7 +1512,10 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
     // Print if applicable 
     if( printFlag && time >= printTime ) {
       printTime += printDeltaTime;
-      printVertexAndCell(cellData,vertexData);  
+			if( wallPrintFlag )
+				printVertexAndWall(wallData,vertexData);  
+			else
+				printVertexAndCell(cellData,vertexData);  
       std::cerr << ++numPrinted << " " << time << " " << numCell() << " "
 								<< numWall() << " " << numVertex() << std::endl;
     }
@@ -1596,11 +1605,14 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
     }
   }
   
-  // Print if applicable
+  // Print final point if applicable
   if( printFlag ) {
-    printVertexAndCell(cellData,vertexData);  
+		if( wallPrintFlag )
+			printVertexAndWall(wallData,vertexData);  
+		else
+			printVertexAndCell(cellData,vertexData);  
     std::cerr << ++numPrinted << " " << time << " " << numCell() << " "
-	      << numWall() << " " << numVertex() << std::endl;
+							<< numWall() << " " << numVertex() << std::endl;
   }
 
 	// Print final state in init format
@@ -3311,3 +3323,40 @@ printVertexAndCell(std::vector< std::vector<double> > &cellData,
 //   }	
 
 }
+
+void Tissue::
+printVertexAndWall(std::vector< std::vector<double> > &wallData,
+									 std::vector< std::vector<double> > &vertexData,
+									 std::ostream &os) {
+  
+  size_t Nv = vertexData.size(); 
+  if( !Nv ) {
+    os << "0 0" << std::endl << "0 0" << std::endl;
+    return;
+  }
+  //Print the vertex positions
+  size_t dimension = vertexData[0].size();
+  os << numVertex() << " " << dimension << std::endl;
+  for( size_t i=0 ; i<Nv ; ++i ) {
+    for( size_t d=0 ; d<dimension ; ++d )
+      os << vertexData[i][d] << " ";
+    os << std::endl;
+  }
+  os << std::endl;
+  // Print the walls, first connected vertecis and then variables
+  size_t Nw = wallData.size();
+	//
+	// Print wall variables
+	//
+	int numPrintVar=wallData[0].size()+2;
+	os << Nw << " " << numPrintVar << std::endl;
+  for( size_t i=0 ; i<Nw ; ++i ) {
+		os << "2 ";
+		os << wall(i).vertex1()->index() << " " 
+			 << wall(i).vertex2()->index() << " ";
+		for( size_t k=0 ; k<wallData[i].size() ; ++k )
+			os << wallData[i][k] << " ";
+		os << i << " " << wall(i).lengthFromVertexPosition(vertexData)
+			 << std::endl;
+  }
+}	

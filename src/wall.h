@@ -45,6 +45,8 @@ class Wall {
   inline Vertex* vertex1() const;
   inline Vertex* vertex2() const;
   inline double length() const;
+  double lengthFromVertexPosition( std::vector< std::vector<double> > 
+																	 &vertexData);
   inline size_t numVariable() const;
   inline double variable(size_t i) const;
 
@@ -62,7 +64,7 @@ class Wall {
   inline void setLength(double val);
   double setLengthFromVertexPosition();
   double setLengthFromVertexPosition( std::vector< std::vector<double> > 
-				      &vertexData);
+																			&vertexData);
 
 };
 

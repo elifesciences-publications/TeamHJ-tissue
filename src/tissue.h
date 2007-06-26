@@ -138,9 +138,11 @@ class Tissue {
 							 std::vector< std::vector<double> > &wallDeriv,
 							 std::vector< std::vector<double> > &vertexDeriv );
   void simulateRk2(double startTime=0.0,double endTime=1.0,
-									 double step=0.01,size_t printNum=10);
+									 double step=0.01,size_t printNum=10,
+									 size_t wallPrintFlag=0);
   void simulateRk4(double startTime=0.0,double endTime=1.0,
-									 double step=0.01,size_t printNum=10);
+									 double step=0.01,size_t printNum=10,
+									 size_t wallPrintFlag=0);
   
 	void initiateReactions();
 	void updateReactions(double step);
@@ -211,8 +213,11 @@ class Tissue {
   void printWall(std::ostream &os=std::cout);
   void printVertexAndCell(std::ostream &os=std::cout);
   void printVertexAndCell(std::vector< std::vector<double> > &cellData,
-			  std::vector< std::vector<double> > &vertexData,
-			  std::ostream &os=std::cout);  
+													std::vector< std::vector<double> > &vertexData,
+													std::ostream &os=std::cout);  
+  void printVertexAndWall(std::vector< std::vector<double> > &wallData,
+													std::vector< std::vector<double> > &vertexData,
+													std::ostream &os=std::cout);  
 };
 
 //!The tissue id
