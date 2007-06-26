@@ -486,11 +486,11 @@ DivisionVolumeViaStrain(std::vector<double> &paraValue,
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
-  if( paraValue.size()!=3 ) {
+  if( paraValue.size()!=4 ) {
     std::cerr << "DivisionVolumeViaStrain::"
 							<< "DivisionVolumeViaStrain() "
-							<< "Three parameters used V_threshold, LWall_frac, and "
-							<< "Lwall_threshold" << std::endl;
+							<< "Four parameters used V_threshold, LWall_frac, "
+							<< "Lwall_threshold, and Parallell_flag" << std::endl;
     exit(0);
   }
   if( indValue.size() != 1 ) {
@@ -514,6 +514,7 @@ DivisionVolumeViaStrain(std::vector<double> &paraValue,
   tmp[0] = "V_threshold";
   tmp[1] = "LWall_frac";
   tmp[2] = "LWall_threshold";
+	tmp[3] = "Parallell_flag"
   setParameterId( tmp );
 }
 
@@ -668,7 +669,9 @@ update(Tissue *T,size_t cellI,
 	//Create direction for new wall (xMean+t*n)
 	std::vector<double> n(dimension);
 	//rotate angle v=theta-90
-	double v = theta - 0.5*3.14159;
+	double v = theta;
+	if( parameter(3) != 1.0 )
+		v = theta - 0.5*3.14159;
 	n[0]=std::cos(v);
 	n[1]=std::sin(v);
 	
@@ -817,11 +820,11 @@ DivisionVolumeViaDirection(std::vector<double> &paraValue,
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
-  if( paraValue.size()!=3 ) {
+  if( paraValue.size()!=4 ) {
     std::cerr << "DivisionVolumeViaDirection::"
 							<< "DivisionVolumeViaDirection() "
-							<< "Three parameters used V_threshold, LWall_frac, and "
-							<< "Lwall_threshold" << std::endl;
+							<< "Four parameters used V_threshold, LWall_frac, "
+							<< "Lwall_threshold and Parallell_flag" << std::endl;
     exit(0);
   }
   if( indValue.size() != 2 || indValue[0].size() != 1 ) {
@@ -846,6 +849,7 @@ DivisionVolumeViaDirection(std::vector<double> &paraValue,
   tmp[0] = "V_threshold";
   tmp[1] = "LWall_frac";
   tmp[2] = "LWall_threshold";
+	tmp[3] = "Parallell_flag"
   setParameterId( tmp );
 }
 
@@ -900,8 +904,12 @@ update(Tissue *T,size_t cellI,
 	std::vector<double> n(dimension);
 	if( cellData[cellI][variableIndex(0,0)+dimension] ) {
 		//Perpendicular to given direction
-		n[0]=cellData[cellI][variableIndex(0,0)+1];
-		n[1]=-cellData[cellI][variableIndex(0,0)];
+		n[0]=cellData[cellI][variableIndex(0,0)];
+		n[1]=cellData[cellI][variableIndex(0,0)+1];		
+		if( parameter(3) != 1.0 ) {
+			n[0]=cellData[cellI][variableIndex(0,0)+1];
+			n[1]=-cellData[cellI][variableIndex(0,0)];
+		}
 	}
 	else {
 		//Random
@@ -1290,9 +1298,9 @@ update(Tissue *T,size_t cellI,
 DivisionForceDirection::DivisionForceDirection(std::vector<double> &paraValue,
 									  std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 3) {
+	if (paraValue.size() != 4) {
 		std::cerr << "DivisionForceDirection::DivisionForceDirection() "
-				<< "Three parameters are used V_threshold, Lwall_threshold and orientation_flag." << std::endl;
+				<< "Four parameters are used V_threshold, Lwall_fraction, Lwall_threshold and orientation_flag." << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	
@@ -1371,7 +1379,7 @@ void DivisionForceDirection::update(Tissue* T, size_t i,
 
 	double nxp;
 	double nyp;
-	if (parameter(2) == 0) {
+	if (parameter(3) == 0) {
 		nxp = nx / A;
 		nyp = ny / A;
 	} else {
@@ -1437,6 +1445,9 @@ void DivisionForceDirection::update(Tissue* T, size_t i,
 	T->divideCell(&cell, candidateWalls[0], candidateWalls[1],
 			    verticesPosition[0], verticesPosition[1],
 			    cellData, wallData, vertexData, cellDerivs ,wallDerivs ,vertexDerivs,
-			    variableIndex(0), parameter(1));
+			    variableIndex(0), parameter(2));
+
+	//Change length of new wall between the divided daugther cells 
+	wallData[T->numWall()-1][0] *= parameter(1);
 }
 
