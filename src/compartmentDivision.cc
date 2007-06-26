@@ -1290,9 +1290,9 @@ update(Tissue *T,size_t cellI,
 DivisionForceDirection::DivisionForceDirection(std::vector<double> &paraValue,
 									  std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 2) {
+	if (paraValue.size() != 3) {
 		std::cerr << "DivisionForceDirection::DivisionForceDirection() "
-				<< "Two parameters are used V_threshold and Lwall_threshold." << std::endl;
+				<< "Three parameters are used V_threshold, Lwall_threshold and orientation_flag." << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	
@@ -1312,6 +1312,7 @@ DivisionForceDirection::DivisionForceDirection(std::vector<double> &paraValue,
 	tmp.resize (numParameter());
 	tmp[0] = "V_threshold";
 	tmp[1] = "Lwall_threshold";
+	tmp[2] = "orientation_flag";
 	setParameterId(tmp);
 }
 
@@ -1367,8 +1368,18 @@ void DivisionForceDirection::update(Tissue* T, size_t i,
 	}
 	
 	double A = std::sqrt(nx * nx + ny * ny);
-	nx = nx / A;
-	ny = ny / A;
+
+	double nxp;
+	double nyp;
+	if (parameter(2) == 0) {
+		nxp = nx / A;
+		nyp = ny / A;
+	} else {
+		nxp = -ny / A;
+		nyp = nx / A;
+	}
+	nx = nxp;
+	ny = nyp;
 
 	// Calculate mean vertex position (mx, my)
 	// by center of mass).

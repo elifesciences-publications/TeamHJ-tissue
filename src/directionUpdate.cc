@@ -427,10 +427,11 @@ update(Tissue &T, double h,
 
 ForceDirection::ForceDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 0) {
+	if (paraValue.size() != 1) {
 		std::cerr << "ForceDirection::ForceDirection() " 
-				<< "No parameters are used.\n";
-		exit(EXIT_FAILURE);
+				<< "One parameter is used orientation_flag (0 for direction parallel with "
+				<< "force, 1 for direction perpendicular to force)" << std::endl;
+			exit(EXIT_FAILURE);
 	}
 
 	if (indValue.size() != 1 || indValue[0].size() != 2) {
@@ -445,6 +446,7 @@ ForceDirection::ForceDirection(std::vector<double> &paraValue, std::vector< std:
 	
 	std::vector<std::string> tmp(numParameter());
 	tmp.resize(numParameter());
+	tmp[0] = "orientation_flag";
 	setParameterId(tmp);
 
 }
@@ -495,8 +497,13 @@ void ForceDirection::update(Tissue &T, double h,
 		}
 		
 		double A = std::sqrt(x * x + y * y);
-		cellData[cell.index()][variableIndex(0, 1)] = x / A;
-		cellData[cell.index()][variableIndex(0, 1) + 1] = y / A;
+		if (parameter(0) == 0) {
+			cellData[cell.index()][variableIndex(0, 1)] = x / A;
+			cellData[cell.index()][variableIndex(0, 1) + 1] = y / A;
+		} else {
+			cellData[cell.index()][variableIndex(0, 1)] = - y / A;
+			cellData[cell.index()][variableIndex(0, 1) + 1] = x / A;
+		}
 	}
 }
 
