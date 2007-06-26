@@ -514,7 +514,7 @@ DivisionVolumeViaStrain(std::vector<double> &paraValue,
   tmp[0] = "V_threshold";
   tmp[1] = "LWall_frac";
   tmp[2] = "LWall_threshold";
-	tmp[3] = "Parallell_flag"
+	tmp[3] = "Parallell_flag";
   setParameterId( tmp );
 }
 
@@ -849,7 +849,7 @@ DivisionVolumeViaDirection(std::vector<double> &paraValue,
   tmp[0] = "V_threshold";
   tmp[1] = "LWall_frac";
   tmp[2] = "LWall_threshold";
-	tmp[3] = "Parallell_flag"
+	tmp[3] = "Parallell_flag";
   setParameterId( tmp );
 }
 
