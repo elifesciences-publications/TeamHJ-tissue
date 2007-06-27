@@ -1304,10 +1304,11 @@ DivisionForceDirection::DivisionForceDirection(std::vector<double> &paraValue,
 		exit(EXIT_FAILURE);
 	}
 	
-	if (indValue.size() != 1) {
+	if (indValue.size() != 2 || indValue[0].size() != 1) {
 		std::cerr << "DivisionForceDirection::DivisionForceDirection() "
-				<< "Variable indices for volume dependent cell "
-				<< "variables are used.\n";
+				<< "First level: Variable indices for volume dependent cell "
+				<< "variables are used.\n"
+				<< "Second level: Variable indices for forces.\n";
 		exit(EXIT_FAILURE);
 	}
 	
@@ -1356,7 +1357,7 @@ void DivisionForceDirection::update(Tissue* T, size_t i,
 	// Calculate force direction (nx, ny)
 	double nx = 0.0;
 	double ny = 0.0;
-	
+
 	for (size_t i = 0; i < cell.numWall(); ++i) {
 		Wall *wall = cell.wall(i);
 		double wx = wall->vertex1()->position(0) - wall->vertex2()->position(0);
@@ -1369,12 +1370,15 @@ void DivisionForceDirection::update(Tissue* T, size_t i,
 			wx = -1 * wx / Aw;
 			wy = -1 * wy / Aw;
 		}
-		double force = wallData[wall->index()][variableIndex(0, 0)];
-		
+
+		double force = 0.0;
+		for (size_t j = 0; j < numVariableIndex(1); ++j)
+			force += wallData[wall->index()][variableIndex(1, j)];
+
 		nx += wx * force;
 		ny += wy * force;
 	}
-	
+
 	double A = std::sqrt(nx * nx + ny * ny);
 
 	double nxp;
@@ -1444,7 +1448,7 @@ void DivisionForceDirection::update(Tissue* T, size_t i,
 
 	T->divideCell(&cell, candidateWalls[0], candidateWalls[1],
 			    verticesPosition[0], verticesPosition[1],
-			    cellData, wallData, vertexData, cellDerivs ,wallDerivs ,vertexDerivs,
+			    cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs,
 			    variableIndex(0), parameter(2));
 
 	//Change length of new wall between the divided daugther cells 
