@@ -436,7 +436,7 @@ ForceDirection::ForceDirection(std::vector<double> &paraValue, std::vector< std:
 
 	if (indValue.size() != 1 || indValue[0].size() != 2) {
 		std::cerr << "ForceDirection::ForceDirection() "
-				<< "Wall force index and start of cell direction index are used.\n";
+							<< "Wall force index and start of cell direction index are used.\n";
 		exit(EXIT_FAILURE);
 	}
 

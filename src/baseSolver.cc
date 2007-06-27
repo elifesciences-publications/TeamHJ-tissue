@@ -148,7 +148,8 @@ void BaseSolver::print(std::ostream &os)
   badOld = numBad_;
 	
   if( printFlag_==1 ) {//Print vertex and cell variables
-		
+		if( tCount==0 )
+			os << numPrint_ << "\n";
 	  size_t Nv = vertexData_.size(); 
 		if( !Nv ) {
 			os << "0 0" << std::endl << "0 0" << std::endl;
@@ -180,6 +181,8 @@ void BaseSolver::print(std::ostream &os)
 		}		
   }
   else if( printFlag_==2 ) {//Print vertex and cell variables
+		if( tCount==0 )
+			os << numPrint_ << "\n";
 		size_t Nv = vertexData_.size(); 
 		if( !Nv ) {
 			os << "0 0" << std::endl << "0 0" << std::endl;
