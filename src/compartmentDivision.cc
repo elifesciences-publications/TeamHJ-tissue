@@ -1369,7 +1369,7 @@ void DivisionForceDirection::update(Tissue* T, size_t i,
 			wx = -1 * wx / Aw;
 			wy = -1 * wy / Aw;
 		}
-		double force = wallData[wall->index()][variableIndex(0, 1)];
+		double force = wallData[wall->index()][variableIndex(0, 0)];
 		
 		nx += wx * force;
 		ny += wy * force;
