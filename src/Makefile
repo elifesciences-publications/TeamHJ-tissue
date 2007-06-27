@@ -7,8 +7,12 @@ CXX = c++
 BINDIR = ../bin
 
 # Optimized
-CXXFLAGS     = -O3 -DNDEBUG -funroll-loops -Wall -ansi -pedantic
-LDFLAGS    = -O3 -DNDEBUG -funroll-loops -Wall -ansi -pedantic
+# CXXFLAGS     = -O3 -DNDEBUG -funroll-loops -Wall -ansi -pedantic
+# LDFLAGS    = -O3 -DNDEBUG -funroll-loops -Wall -ansi -pedantic
+
+CXXFLAGS     = -O3 -funroll-loops -Wall -ansi -pedantic
+LDFLAGS    = -O3 -funroll-loops -Wall -ansi -pedantic
+
 
 # Including all assert calls
 #CXXFLAGS     = -O3
