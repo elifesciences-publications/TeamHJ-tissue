@@ -500,6 +500,11 @@ void ForceDirection::update(Tissue &T, double h,
 		}
 		
 		double A = std::sqrt(x * x + y * y);
+
+		// If the force is of zero magnitude, leave it as it is.
+		if (A == 0)
+			continue; 
+
 		if (parameter(0) == 0) {
 			cellData[cell.index()][variableIndex(0, 0)] = x / A;
 			cellData[cell.index()][variableIndex(0, 0) + 1] = y / A;
