@@ -6,6 +6,7 @@ std::vector<Cell *> Cell::cells;
 
 Cell::Cell()
 {
+	direction = NULL;
 	cells.push_back(this);
 }
 
@@ -70,6 +71,15 @@ std::vector<Vertex *> Cell::getVertices(void)
 	return vertices;
 }
 
+void Cell::setDirection(Direction *direction)
+{
+	this->direction = direction;
+}
+
+Direction *Cell::getDirection(void)
+{
+	return direction;
+}
 
 void Cell::setIndex(size_t index)
 {

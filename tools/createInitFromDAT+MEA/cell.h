@@ -2,8 +2,10 @@
 #define _CELL_H_
 
 #include <vector>
-#include "vertex.h"
-#include "wall.h"
+
+class Direction;
+class Vertex;
+class Wall;
 
 class Cell
 {
@@ -18,6 +20,8 @@ public:
 	std::vector<Wall *> getWalls(void);
 	void addVertex(Vertex *vertex);
 	std::vector<Vertex *> getVertices(void);
+	void setDirection(Direction *direction);
+	Direction *getDirection(void);
 	void setIndex(size_t index);
 	size_t getIndex(void);
 	double area(void);
@@ -25,6 +29,7 @@ private:
 	static std::vector<Cell *> cells;
 	std::vector<Wall *> walls;
 	std::vector<Vertex *> vertices;
+	Direction *direction;
 	size_t index;
 };
 

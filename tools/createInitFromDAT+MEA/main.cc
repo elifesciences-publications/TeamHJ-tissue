@@ -1,11 +1,13 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <limits>
 #include <map>
 #include <sstream>
 #include <vector>
 #include <cmath>
 #include "cell.h"
+#include "direction.h"
 #include "vertex.h"
 #include "wall.h"
 
@@ -19,6 +21,7 @@ void readDATFile(std::istream &input);
 void removeNonValidCells(void);
 void createWalls(void);
 void splitFourVertices(void);
+void readMEAFile(std::istream &input);
 void checkEntities(void);
 void printInit(std::ostream &output);
 
@@ -53,7 +56,6 @@ int main(int argc, char *argv[])
 	// TODO:
 	//  Flip
 	//  Rescale
-	//  Read directions
 
 	readDATFile(datfile);
 
@@ -62,6 +64,8 @@ int main(int argc, char *argv[])
 	createWalls();
 
 	splitFourVertices();
+
+	readMEAFile(meafile);
 
 	checkEntities();
 
@@ -412,12 +416,121 @@ void splitFourVertices(void)
 	}
 }
 
+// Temporary container class.
+class Data {
+public:
+	double fromx;
+	double fromy;
+	double tox;
+	double toy;
+};
+
+void readMEAFile(std::istream &input)
+{
+	std::vector<Data *> data;
+
+	std::string trash;
+	input >> trash >> trash;
+	
+	size_t numberOfDirections;
+	input >> numberOfDirections;
+
+	for (size_t n = 0; n < numberOfDirections; ++n) {
+		Data *tmp = new Data;
+		input >> trash >> trash;
+		input >> tmp->fromx >> tmp->fromy >> trash >> tmp->tox >> tmp->toy >> trash;
+		data.push_back(tmp);
+	}
+
+	bool foundMatch = false;
+	while (true) {
+		for (size_t n = 0; n < numberOfDirections; ++n) {
+			if (Direction::getDirectionWithIndex(n) != NULL)
+				continue;
+
+			double fromx = data[n]->fromx;
+			double fromy = data[n]->fromy;
+			double tox = data[n]->tox;
+			double toy = data[n]->toy;
+			
+			std::vector<Cell *> candidateCells;
+			std::vector<Cell *> cells = Cell::getCells();
+			for (size_t i = 0; i < cells.size(); ++i) {
+				double xmin = std::numeric_limits<double>::max();
+				double xmax = std::numeric_limits<double>::min();
+				double ymin = std::numeric_limits<double>::max();
+				double ymax = std::numeric_limits<double>::min();
+				
+				Cell *cell = cells[i];
+				if (cell->getDirection() != NULL)
+					continue;
+			
+				std::vector<Vertex *> vertices = cell->getVertices();
+				for (size_t j = 0; j < vertices.size(); ++j) {
+					Vertex *vertex = vertices[j];
+					
+					if (vertex->getX() > xmax)
+						xmax = vertex->getX();
+					if (vertex->getX() < xmin)
+						xmin = vertex->getX();
+					if (vertex->getY() > ymax)
+						ymax = vertex->getY();
+					if (vertex->getY() < ymin)
+						ymin = vertex->getY();
+				}
+				
+				if ((fromx >= xmin && tox >= xmin) && (fromx <= xmax && tox <= xmax) &&
+				    (fromy >= ymin && toy >= ymin) && (fromy <= ymax && toy <= ymax)) {
+					candidateCells.push_back(cell);
+					foundMatch = true;
+				}
+			}
+			
+			if (candidateCells.size() == 1) {
+				Cell *cell = candidateCells[0];
+				Direction *direction = Direction::getDirectionWithIndex(n);
+				if (direction != NULL) {
+					std::cerr << "Error: Direction " << n << " not uniquely assigned to one cell. "
+							<< "Candidates are " << direction->getCell()->getIndex() 
+							<< " and " << cell->getIndex() << std::endl;
+					exit(EXIT_FAILURE);
+				} else {
+					direction = new Direction();
+				}
+								
+				double dx = tox - fromx;
+				double dy = toy - fromy;
+				double A = std::sqrt(dx * dx + dy * dy);
+				dx /= A;
+				dy /= A;
+				
+				direction->setIndex(n);
+				direction->setX(dx);
+				direction->setY(dy);
+				direction->setCell(cell);
+				cell->setDirection(direction);
+
+				std::cout << "Matching direction " << direction->getIndex() << " with cell " << cell->getIndex() << std::endl;
+			}
+		}
+		if (foundMatch == true)
+			foundMatch = false;
+		else 
+			break;
+	}
+
+	if (Direction::getDirections().size() != numberOfDirections) {
+		std::cerr << "Error: Total number of directions does not match number of directions in .mea-file." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+}
+	
 void checkEntities(void)
 {
 	std::vector<Cell *> cells = Cell::getCells();
- 	std::vector<Vertex *> vertices = Vertex::getVertices();
+	std::vector<Vertex *> vertices = Vertex::getVertices();
  	std::vector<Wall *> walls = Wall::getWalls();
-
+	
 	for (size_t i = 0; i < cells.size(); ++i) {
 		Cell *cell = cells[i];
 		if (cell->getWalls().size() < 3) {
@@ -510,6 +623,11 @@ void printInit(std::ostream &output)
 	output << cells.size() << " " << 4 << std::endl;
 	for (size_t i = 0; i < cells.size(); ++i) {
 		Cell *cell = cells[i];
-		output << "0 0 0 " << cell->area() << std::endl;
+		Direction *direction = cell->getDirection();
+		if (direction != NULL) {
+			output << direction->getX() << " " << direction->getY() << " " << 1 << " " << cell->area() << std::endl;
+		} else {
+			output << "0 0 0 " << cell->area() << std::endl;
+		}
 	}
 }
