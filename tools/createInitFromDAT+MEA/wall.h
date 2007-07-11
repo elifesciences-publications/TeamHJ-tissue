@@ -20,6 +20,7 @@ public:
 	std::vector<Vertex *> getVertices(void);
 	//	void setIndex(size_t index);
 	size_t getIndex(void);
+	void swapVertices(void);
 	
 private:
 	static std::vector<Wall *> walls;

@@ -23,6 +23,9 @@ void createWalls(void);
 void splitFourVertices(void);
 void readMEAFile(std::istream &input);
 void checkEntities(void);
+void	rescaleCoordinates(void);
+void	flipCoordinates();
+void	translateCoordinates();
 void printInit(std::ostream &output);
 
 int main(int argc, char *argv[])
@@ -67,7 +70,16 @@ int main(int argc, char *argv[])
 
 	readMEAFile(meafile);
 
-	checkEntities();
+	checkEntities(); // Check one
+
+	rescaleCoordinates();
+
+	flipCoordinates();
+
+	translateCoordinates();
+	translateCoordinates();
+
+	checkEntities(); // Check two
 
 	printInit(initfile);
 
@@ -442,7 +454,10 @@ void readMEAFile(std::istream &input)
 		data.push_back(tmp);
 	}
 
+	// Matching method one. Will not match every direction to a cell. 
+
 	bool foundMatch = false;
+	bool foundGoodMatch = false;
 	while (true) {
 		for (size_t n = 0; n < numberOfDirections; ++n) {
 			if (Direction::getDirectionWithIndex(n) != NULL)
@@ -505,19 +520,88 @@ void readMEAFile(std::istream &input)
 				dy /= A;
 				
 				direction->setIndex(n);
-				direction->setX(dx);
-				direction->setY(dy);
+				direction->setX(-dy);
+				direction->setY(dx);
 				direction->setCell(cell);
 				cell->setDirection(direction);
 
 				std::cout << "Matching direction " << direction->getIndex() << " with cell " << cell->getIndex() << std::endl;
+				foundGoodMatch = true;
 			}
 		}
-		if (foundMatch == true)
+		if (foundMatch == true) {
+			if (foundGoodMatch == false)
+				break;
+			foundGoodMatch = false;
 			foundMatch = false;
-		else 
+		} else {
 			break;
+		}
 	}
+
+	// Matching method two. Less accurate than method one, but will take care of all directions that are left.
+
+	for (size_t n = 0; n < numberOfDirections; ++n) {
+		if (Direction::getDirectionWithIndex(n) != NULL)
+			continue;
+
+		double fromx = data[n]->fromx;
+		double fromy = data[n]->fromy;
+		double tox = data[n]->tox;
+		double toy = data[n]->toy;
+
+ 		double x = (fromx + tox) / 2.0;
+		double y = (fromy + toy) / 2.0;
+
+		double shortestDistance = std::numeric_limits<double>::max();
+		Cell *candidateCell = NULL;
+		std::vector<Cell *> cells = Cell::getCells();
+		for (size_t i = 0; i < cells.size(); ++i) {
+			Cell *cell = cells[i];
+
+			if (cell->getDirection() != NULL)
+				continue;
+
+			double cx = 0.0;
+			double cy = 0.0;
+			std::vector<Vertex *> cellVertices = cell->getVertices();
+			for (size_t j = 0; j < cellVertices.size(); ++j) {
+				Vertex *vertex = cellVertices[j];
+				cx += vertex->getX();
+				cy += vertex->getY();
+			}
+			cx /= cellVertices.size();
+			cy /= cellVertices.size();
+
+			double distance = std::sqrt((cx - x) * (cx - x) + (cy - y) * (cy - y));
+			if (distance < shortestDistance) {
+				shortestDistance = distance;
+				candidateCell = cell;
+			}
+		}
+
+ 		if (candidateCell->getDirection() != NULL) {
+ 			std::cerr << "Error: (Matching method two) Matching failed while readine .mea file. Tried to match cell " 
+ 					<< candidateCell->getIndex() << " with direction " << n << std::endl;
+ 			exit(EXIT_FAILURE);
+ 		}
+
+		Direction *direction = new Direction();
+
+		double dx = tox - fromx;
+		double dy = toy - fromy;
+		double A = std::sqrt(dx * dx + dy * dy);
+		dx /= A;
+		dy /= A;
+
+		direction->setIndex(n);
+		direction->setX(-dy);
+		direction->setY(dx);
+		direction->setCell(candidateCell);
+		candidateCell->setDirection(direction);
+		
+		std::cout << "Matching direction " << direction->getIndex() << " with cell " << candidateCell->getIndex() << std::endl;
+	}	
 
 	if (Direction::getDirections().size() != numberOfDirections) {
 		std::cerr << "Error: Total number of directions does not match number of directions in .mea-file." << std::endl;
@@ -571,6 +655,66 @@ void checkEntities(void)
 	}
 }
 
+void	rescaleCoordinates(void)
+{
+	std::vector<Cell *> cells = Cell::getCells();
+	double maxArea = std::numeric_limits<double>::min();
+	double minArea = std::numeric_limits<double>::max();
+	for (size_t i = 0; i < cells.size(); ++i) {
+		if (cells[i]->area() > maxArea) {
+			maxArea = cells[i]->area();
+		}
+		if (cells[i]->area() < minArea) {
+			minArea = cells[i]->area();
+		}
+	}
+	double factor = 1.0 / std::sqrt(maxArea);
+
+	std::vector<Vertex *> vertices = Vertex::getVertices();
+	for (size_t i = 0; i < vertices.size(); ++i) {
+		Vertex *vertex = vertices[i];
+		vertex->setX(vertex->getX() * factor);
+		vertex->setY(vertex->getY() * factor);
+	}
+}
+
+void	flipCoordinates()
+{
+	std::vector<Vertex *> vertices = Vertex::getVertices();
+	for (size_t i = 0; i < vertices.size(); ++i) {
+		Vertex *vertex = vertices[i];
+		vertex->setY(-vertex->getY());
+	}
+
+	std::vector<Direction *> directions = Direction::getDirections();
+	for (size_t i = 0; i < directions.size(); ++i) {
+		Direction *direction = directions[i];
+		direction->setY(-direction->getY());
+	}
+}
+
+void	translateCoordinates()
+{
+	std::vector<Vertex *> vertices = Vertex::getVertices();
+	double x = 0.0;
+	double y = 0.0;
+
+	for (size_t i = 0; i < vertices.size(); ++i) {
+		Vertex *vertex = vertices[i];
+		x += vertex->getX();
+		y += vertex->getY();
+	}
+	
+	x /= vertices.size();
+	y /= vertices.size();
+
+	for (size_t i = 0; i < vertices.size(); ++i) {
+		Vertex *vertex = vertices[i];
+		vertex->setX(vertex->getX() - x);
+		vertex->setY(vertex->getY() - y);
+	}
+
+}
 
 void printInit(std::ostream &output)
 {

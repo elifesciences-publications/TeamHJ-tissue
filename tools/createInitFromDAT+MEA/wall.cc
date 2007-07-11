@@ -76,6 +76,19 @@ std::vector<Vertex *> Wall::getVertices(void)
 	return vertices;
 }
 
+void Wall::swapVertices(void)
+{
+	if (vertices.size() != 2) {
+		std::cerr << "Error: Wall " << index << " does not have exactly two vertices. Unable to swap vertices." << std::endl;
+		exit(EXIT_FAILURE);
+	} else {
+		Vertex *v1 = vertices[0];
+		Vertex *v2 = vertices[1];
+		vertices[0] = v2;
+		vertices[1] = v1;
+	}
+}
+
 
 // void Wall::setIndex(size_t index)
 // {

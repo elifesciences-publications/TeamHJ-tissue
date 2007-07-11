@@ -1,6 +1,9 @@
 #include <algorithm>
 #include <iostream>
+#include <cmath>
 #include "cell.h"
+#include "vertex.h"
+#include "wall.h"
 
 std::vector<Cell *> Cell::cells;
 
@@ -93,6 +96,63 @@ size_t Cell::getIndex(void)
 
 double Cell::area(void)
 {
-	// TODO: Calculate area.
-	return 1.0;
+	std::vector<Wall *> sortedWalls;
+	sortedWalls.push_back(walls[0]);
+	while (sortedWalls.size() != walls.size()) {
+		size_t sw = sortedWalls[sortedWalls.size() - 1]->getVertices()[1]->getIndex();
+
+		bool foundWall = false;
+		for (size_t i = 0; i < walls.size(); ++i) {
+			Wall *wall = walls[i];
+
+			std::vector<Vertex *> vertices = wall->getVertices();
+			std::vector<Wall *>::iterator iterator = find(sortedWalls.begin(), sortedWalls.end(), wall);
+			
+			if (iterator != sortedWalls.end())
+				continue;
+
+			if (vertices.size() != 2) {
+				std::cerr << "Error: Wall " << wall->getIndex() << " does not have exactly two vertices. Unable to calculate area." << std::endl;
+				exit(EXIT_FAILURE);
+			}
+			
+			size_t v1 = wall->getVertices()[0]->getIndex();
+			size_t v2 = wall->getVertices()[1]->getIndex();
+			
+			if (v1 == sw) {
+				sortedWalls.push_back(wall);
+				foundWall = true;
+			}
+			if (v2 == sw) {
+				wall->swapVertices();
+				sortedWalls.push_back(wall);
+				foundWall = true;
+			}
+		}
+		if (foundWall == true)
+			foundWall = false;
+		else 
+			break;
+	}
+
+	// Check
+	if (sortedWalls[0]->getVertices()[0] != sortedWalls[sortedWalls.size() - 1]->getVertices()[1]) {
+		std::cerr << "Error: Unexpected error while sorting walls for area calculation." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	// Calculate area.
+	double area = 0.0;
+	for (size_t i = 0; i < sortedWalls.size(); ++i) {
+		double x1x = sortedWalls[i]->getVertices()[0]->getX();
+		double x1y = sortedWalls[i]->getVertices()[0]->getY();
+		
+		double x2x = sortedWalls[(i + 1) % sortedWalls.size()]->getVertices()[0]->getX();
+		double x2y = sortedWalls[(i + 1) % sortedWalls.size()]->getVertices()[0]->getY();
+
+		area += x1x * x2y - x2x * x1y;
+	}
+	area /= 2.0;
+
+	return std::abs(area);
 }
