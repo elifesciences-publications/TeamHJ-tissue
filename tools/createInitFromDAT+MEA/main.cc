@@ -520,8 +520,8 @@ void readMEAFile(std::istream &input)
 				dy /= A;
 				
 				direction->setIndex(n);
-				direction->setX(dx);
-				direction->setY(dy);
+				direction->setX(-dy);
+				direction->setY(dx);
 				direction->setCell(cell);
 				cell->setDirection(direction);
 
