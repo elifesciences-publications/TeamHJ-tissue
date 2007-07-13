@@ -118,7 +118,12 @@ void RK5Adaptive::simulate(void)
     ak6V[i].resize(vertexData_[i].size());
     yTempRkckV[i].resize(vertexData_[i].size());
 	}
-  
+
+  // Initiate reactions and direction for those where it is applicable
+  T_->initiateReactions();
+  T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_,
+				    vertexDerivs_);
+
   // Initiate print times
   //////////////////////////////////////////////////////////////////////
   double printTime = endTime_ + tiny;
