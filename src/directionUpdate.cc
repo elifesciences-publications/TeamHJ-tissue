@@ -348,8 +348,6 @@ update(Tissue &T, double h,
 		A[1][0] = xTxM[1][0]*xTy[0][0] + xTxM[1][1]*xTy[1][0];
 		A[1][1] = xTxM[1][0]*xTy[0][1] + xTxM[1][1]*xTy[1][1];
 
-		assert(A[0][0] >= A[1][1]);
-		
 		//Apply SVD to A
 		//
 		
@@ -367,7 +365,21 @@ update(Tissue &T, double h,
 		std::vector<double> n(dimension);
 		double v = theta;
 		if( parameter(0)==1.0 )		
-			v = theta - 0.5*3.14159;
+			v = theta - 0.5 * M_PI;
+
+		double a = A[0][0];
+		double b = A[0][1];
+		double c = A[1][0];
+		double d = A[1][1];
+
+		double t = std::sqrt((a + d) * (a + d) + (b - c) * (b - c));
+		double w = std::sqrt((a - d) * (a - d) + (b + c) * (b + c));
+
+		double p = 0.5 * (t + w);
+		double q = 0.5 * (t - w);
+
+		assert(std::abs(p) >= std::abs(q));
+
 		n[0]=std::cos(v);
 		n[1]=std::sin(v);
 		for (size_t dim=0; dim<dimension; ++dim) 
