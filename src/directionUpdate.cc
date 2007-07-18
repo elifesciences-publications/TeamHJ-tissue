@@ -354,7 +354,7 @@ update(Tissue &T, double h,
 		//Make sure determinant is non-zero
 		double detA = A[0][0]*A[1][1] - A[0][1]*A[1][0];
 		if( detA==0 ) {
-			std::cerr << "DivisionVolumeViaStrain::update() Determinant zero\n";
+			std::cerr << "StrainDirection::update() Determinant zero\n";
 			exit(-1);
 		}
 		double tau = std::atan2( A[0][0]-A[1][1],A[0][1]+A[1][0] );
@@ -449,15 +449,15 @@ ForceDirection::ForceDirection(std::vector<double> &paraValue, std::vector< std:
 {
 	if (paraValue.size() != 1) {
 		std::cerr << "ForceDirection::ForceDirection() " 
-				<< "One parameter is used orientation_flag (0 for direction parallel with "
-				<< "force, 1 for direction perpendicular to force)" << std::endl;
-			exit(EXIT_FAILURE);
+							<< "One parameter is used orientation_flag (0 for direction parallel with "
+							<< "force, 1 for direction perpendicular to force)" << std::endl;
+		exit(EXIT_FAILURE);
 	}
 
 	if (indValue.size() != 2 || indValue[0].size() != 1) {
 		std::cerr << "ForceDirection::ForceDirection() \n"
-				<< "First level: Start of cell direction index are used.\n"
-				<< "Second level: Wall force indices\n";
+							<< "First level: Start of cell direction index are used.\n"
+							<< "Second level: Wall force indices\n";
 		exit(EXIT_FAILURE);
 	}
 

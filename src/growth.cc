@@ -138,16 +138,16 @@ WallGrowthConstantStress(std::vector<double> &paraValue,
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
-  if( paraValue.size()!=1 ) {
+  if( paraValue.size()!=2 ) {
     std::cerr << "WallGrowthConstantStress::"
-	      << "WallGrowthConstantStress() "
-	      << "Uses one parameter k_growth\n";
+							<< "WallGrowthConstantStress() "
+							<< "Uses two parameters k_growth and stretch_threshold\n";
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size() != 1 ) {
     std::cerr << "WallGrowthConstantStress::"
-	      << "WallGrowthConstantStress() "
-	      << "One variable index is used (wall length).\n";
+							<< "WallGrowthConstantStress() "
+							<< "One variable index is used (wall length).\n";
     exit(0);
   }
   //Set the variable values
@@ -161,6 +161,7 @@ WallGrowthConstantStress(std::vector<double> &paraValue,
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "k_growth";
+	tmp[1] = "stretch_threshold";
   setParameterId( tmp );
 }
 
@@ -188,9 +189,9 @@ derivs(Tissue &T,
       distance += (vertexData[v1][d]-vertexData[v2][d])*
 				(vertexData[v1][d]-vertexData[v2][d]);
     distance = std::sqrt(distance);
-    if( distance>wallData[i][lengthIndex] )
+    if( distance-wallData[i][lengthIndex]>parameter(1) )
       wallDerivs[i][lengthIndex] += parameter(0)*
-				(distance-wallData[i][lengthIndex]);
+				(distance-(wallData[i][lengthIndex]+parameter(1)) );
   }
 }
 

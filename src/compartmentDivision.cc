@@ -1149,6 +1149,8 @@ update(Tissue *T,size_t cellI,
 		xMean[0] += vertexData[vI][0];
 		xMean[1] += vertexData[vI][1];
 	}
+	xMean[0] /= numV;
+	xMean[1] /= numV;
 	
 	std::vector<double> n(dimension);
 	double phi=2*3.14*myRandom::Rnd();

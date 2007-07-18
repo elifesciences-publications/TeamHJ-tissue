@@ -202,7 +202,7 @@ void BaseSolver::print(std::ostream &os)
 		//
 		// Print wall variables
 		//
-		int numPrintVar=wallData_[0].size()+2;
+		int numPrintVar=wallData_[0].size()+3;
 		os << Nw << " " << numPrintVar << std::endl;
 		for( size_t i=0 ; i<Nw ; ++i ) {
 			os << "2 ";
@@ -211,7 +211,19 @@ void BaseSolver::print(std::ostream &os)
 			for( size_t k=0 ; k<wallData_[i].size() ; ++k )
 				os << wallData_[i][k] << " ";
 			os << i << " " << T_->wall(i).lengthFromVertexPosition(vertexData_)
+				 << " " << T_->wall(i).lengthFromVertexPosition(vertexData_)-wallData_[i][0]
 				 << std::endl;
+		}		
+  }
+  else if( printFlag_==3 ) {//Print cell variables for gnuplot
+		//Print the cells, first connected vertecis and then variables
+		size_t Nc = cellData_.size();
+		//os << Nc << " " << numPrintVar << std::endl;
+		for( size_t i=0 ; i<Nc ; ++i ) {
+			for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+				os << cellData_[i][k] << " ";
+			os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+				 << T_->cell(i).numWall() << std::endl;
 		}		
   }
   else

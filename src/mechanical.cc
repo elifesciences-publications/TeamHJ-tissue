@@ -176,14 +176,14 @@ derivs(Tissue &T,
 				c1Fac += n_c1[d]*n_w[d]/(c1Norm*distance);
 		}
 		else
-			c1Fac = 0.5;
+			c1Fac = 1.0;
 		if( T.wall(i).cell2() != T.background() &&
 				cellData[T.wall(i).cell2()->index()][directionIndex+dimension]>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
 				c2Fac += n_c2[d]*n_w[d]/(c2Norm*distance);
 		}
 		else
-			c2Fac = 0.5;
+			c2Fac = 1.0;
 		
     double wallLength=wallData[i][wallLengthIndex];
     double coeff = (parameter(0)+parameter(1)*(2.0-c1Fac-c2Fac))*
@@ -1831,7 +1831,7 @@ derivs(Tissue &T,
 		if (numVariableIndexLevel()==3)
 			cellData[n][variableIndex(2,0)]=P;
 		
-		if( parameter(1)-P>0.0 )
+		//if( parameter(1)-P>0.0 )
 			cellDerivs[cell.index()][variableIndex(0, 1)] += 
 				parameter(0) * (parameter(1) - P) * sum;
 	}
