@@ -275,8 +275,9 @@ update(Tissue &T, double h,
 			xM(numV),yM(numV),dxM(numV);
 	
 		double dt=1.0;
-		std::vector<double> xMean(dimension),yMean(dimension),
-			dxMean(dimension);
+// 		std::vector<double> xMean(dimension),yMean(dimension),
+// 			dxMean(dimension);
+		std::vector<double> xMean(dimension),yMean(dimension);
 	
 		for( size_t i=0 ; i<numV ; ++i ) {
 			size_t vI = T.cell(cellI).vertex(i)->index();
@@ -290,15 +291,15 @@ update(Tissue &T, double h,
 			xMean[1] += x[i][1];
 			yMean[0] += y[i][0];
 			yMean[1] += y[i][1];
-			dxMean[0] += dx[i][0];			
-			dxMean[1] += dx[i][1];			
+// 			dxMean[0] += dx[i][0];			
+// 			dxMean[1] += dx[i][1];			
 		}
 		xMean[0] /=numV;
 		xMean[1] /=numV;
 		yMean[0] /=numV;
 		yMean[1] /=numV;
-		dxMean[0] /=numV;
-		dxMean[1] /=numV;
+// 		dxMean[0] /=numV;
+// 		dxMean[1] /=numV;
 		for( size_t i=0 ; i<numV ; ++i ) {
 			xM[i].resize(dimension);
 			xM[i][0] =x[i][0]-xMean[0];
@@ -307,8 +308,11 @@ update(Tissue &T, double h,
 			yM[i][0] =y[i][0]-yMean[0];
 			yM[i][1] =y[i][1]-yMean[1];
 			dxM[i].resize(dimension);
-			dxM[i][0] =dx[i][0]-dxMean[0];
-			dxM[i][1] =dx[i][1]-dxMean[1];
+// 			dxM[i][0] =dx[i][0]-dxMean[0];
+// 			dxM[i][1] =dx[i][1]-dxMean[1];
+			dxM[i][0] =dx[i][0];
+			dxM[i][1] =dx[i][1];
+
 		}
 		
 		//Calculate A = (x^t x)^{-1} (x^t y)
@@ -333,8 +337,10 @@ update(Tissue &T, double h,
 		detM = 1.0/detM;
 		xTxM[0][0] = detM*xTx[1][1];
 		xTxM[1][1] = detM*xTx[0][0];
-		xTxM[0][1] = -detM*xTx[1][0];
-		xTxM[1][0] = -detM*xTx[0][1];
+// 		xTxM[0][1] = -detM*xTx[1][0];
+// 		xTxM[1][0] = -detM*xTx[0][1];
+		xTxM[0][1] = -detM*xTx[0][1];
+		xTxM[1][0] = -detM*xTx[1][0];
 	
 		//Calculate A
 		A[0][0] = xTxM[0][0]*xTy[0][0] + xTxM[0][1]*xTy[1][0];
