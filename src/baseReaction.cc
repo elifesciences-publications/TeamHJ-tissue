@@ -80,6 +80,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new VertexFromWallSpringExperimental(paraValue, indValue);
   else if (idValue == "CellVolumeExperimental")
 	  return new CellVolumeExperimental(paraValue, indValue);
+  else if (idValue == "EpidermalRadialForce")
+	  return new EpidermalRadialForce(paraValue, indValue);
 
 	//network.h,network.cc
   else if(idValue=="AuxinModelSimple1")

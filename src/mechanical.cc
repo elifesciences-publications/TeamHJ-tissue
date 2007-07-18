@@ -1837,4 +1837,70 @@ derivs(Tissue &T,
 	}
 }
 
+EpidermalRadialForce::EpidermalRadialForce(std::vector<double> &paraValue,
+								   std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 1) {
+		std::cerr << "EpidermalRadialForce::EpidermalRadialForce() " 
+							<< "Uses one parameter: force" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 0) {
+		std::cerr << "EpidermalRadialForce::EpidermalRadialForce() "
+                    << "No indices are given." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	setId("EpidermalRadialForce");
+	setParameter(paraValue);
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp[0] = "force";
+
+	setParameterId(tmp);
+}
+
+void EpidermalRadialForce::derivs(Tissue &T,
+						    std::vector< std::vector<double> > &cellData,
+						    std::vector< std::vector<double> > &wallData,
+						    std::vector< std::vector<double> > &vertexData,
+						    std::vector< std::vector<double> > &cellDerivs,
+						    std::vector< std::vector<double> > &wallDerivs,
+						    std::vector< std::vector<double> > &vertexDerivs)
+{
+	for (size_t n = 0; n < T.numVertex(); ++n) {
+		Vertex vertex = T.vertex(n);
+		
+		// If vertex is not in the epidermal layer then skip.
+		bool isEpidermalVertex = false;
+		for (size_t i = 0; i < vertex.numWall(); ++i) {
+			Wall *wall = vertex.wall(i);
+			if ((wall->cell1()->index() == (size_t) -1) || (wall->cell2()->index() == (size_t) -1)) {
+				isEpidermalVertex = true;
+				break;
+			}
+		}
+		if (isEpidermalVertex == false) {
+			continue;
+
+		}
+
+		double x = vertex.position(0);
+		double y = vertex.position(1);
+		double A = std::sqrt(x * x + y * y);
+		if (A == 0)
+			continue;
+		x /= A;
+		y /= A;
+
+// 		std::cerr << "Vertex " << vertex.index() << std::endl;
+// 		std::cerr << " x = " << x << std::endl;
+// 		std::cerr << " y = " << y << std::endl;
+
+		vertexDerivs[vertex.index()][0] += -parameter(0) * x;
+		vertexDerivs[vertex.index()][1] += -parameter(0) * y;
+	}
+}
 

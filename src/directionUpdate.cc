@@ -347,6 +347,8 @@ update(Tissue &T, double h,
 		A[0][1] = xTxM[0][0]*xTy[0][1] + xTxM[0][1]*xTy[1][1];
 		A[1][0] = xTxM[1][0]*xTy[0][0] + xTxM[1][1]*xTy[1][0];
 		A[1][1] = xTxM[1][0]*xTy[0][1] + xTxM[1][1]*xTy[1][1];
+
+		assert(A[0][0] >= A[1][1]);
 		
 		//Apply SVD to A
 		//
