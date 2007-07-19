@@ -12,8 +12,8 @@ env = Environment()
 #env['LINKFLAGS']    = ['-O3', '-DNDEBUG']
 
 #Including all assert calls
-#env['CXXFLAGS']     = ['-O3', '-ansi', '-pedantic', '-Wall']
-#env['LINKFLAGS']    = ['-O3', '-ansi', '-pedantic', '-Wall']
+env['CXXFLAGS']     = ['-O3', '-ansi', '-pedantic', '-Wall']
+env['LINKFLAGS']    = ['-O3', '-ansi', '-pedantic', '-Wall']
 
 #For compiling to the cluster
 #env['CXXFLAGS']     = ['-O3']
@@ -28,8 +28,8 @@ env = Environment()
 #env['LINKFLAGS']    = ['-O3', '-pg']
 
 # For gdb
-env['CXXFLAGS']     = ['-O3', '-Wall', '-ansi', '-pedantic', '-g']
-env['LINKFLAGS']    = ['-O3', '-Wall', '-ansi', '-pedantic', '-g']
+#env['CXXFLAGS']     = ['-O3', '-Wall', '-ansi', '-pedantic', '-g']
+#env['LINKFLAGS']    = ['-O3', '-Wall', '-ansi', '-pedantic', '-g']
 
 #env['CPPPATH']      = ['~/include']
 #env['LIBPATH']      = ['~/lib']
@@ -40,14 +40,14 @@ env['LINKFLAGS']    = ['-O3', '-Wall', '-ansi', '-pedantic', '-g']
 #env.Program(target="../bin/createInitFromVoronoiFile",source=["createInitFromVoronoiFile.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","network.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc"])
 #env.Program(target="../bin/testTissue",source=["testTissue.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc"])
 
-s = ["simulator.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","direction.cc","baseDirectionUpdate.cc","baseDirectionDivision.cc","directionUpdate.cc","directionDivision.cc","myConfig.cc","myFiles.cc","myRandom.cc"]
-env.Program(target="../bin/simulator",source=s)
+#s = ["simulator.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","direction.cc","baseDirectionUpdate.cc","baseDirectionDivision.cc","directionUpdate.cc","directionDivision.cc","myConfig.cc","myFiles.cc","myRandom.cc"]
+#env.Program(target="../bin/simulator",source=s)
 
 s = ["simulatorNew.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","direction.cc","baseDirectionUpdate.cc","baseDirectionDivision.cc","directionUpdate.cc","directionDivision.cc","baseSolver.cc","rungeKutta.cc","myConfig.cc","myFiles.cc","myRandom.cc","mySignal.cc","myTimes.cc"]
 env.Program(target="../bin/simulatorNew",source=s)
 
-s = ["addCellDirectionsFromData.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","direction.cc","baseDirectionUpdate.cc","baseDirectionDivision.cc","directionUpdate.cc","directionDivision.cc","myConfig.cc","myFiles.cc","myRandom.cc"]
-env.Program(target="../bin/addCellDirectionsFromData",source=s)
+#s = ["addCellDirectionsFromData.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","direction.cc","baseDirectionUpdate.cc","baseDirectionDivision.cc","directionUpdate.cc","directionDivision.cc","myConfig.cc","myFiles.cc","myRandom.cc"]
+#env.Program(target="../bin/addCellDirectionsFromData",source=s)
 
 #s = ["simulatorRk2.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc"]
 #env.Program(target="../bin/simulatorRk2",source=s)
