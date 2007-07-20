@@ -379,7 +379,6 @@ update(Tissue &T, double h,
 		double q = 0.5 * (t - w);
 
 		assert(std::abs(p) >= std::abs(q));
-
 		n[0]=std::cos(v);
 		n[1]=std::sin(v);
 		for (size_t dim=0; dim<dimension; ++dim) 

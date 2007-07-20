@@ -1766,9 +1766,10 @@ CellVolumeExperimental::
 CellVolumeExperimental(std::vector<double> &paraValue,
 											 std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 3) {
+	if (paraValue.size() != 4) {
 		std::cerr << "CellVolumeExperimental::CellVolumeExperimental() "
-							<< "Uses three parameters: k_p, P_max and k_pp" << std::endl;
+							<< "Uses four parameters: k_p, P_max, k_pp and "
+							<< "allowShrink_flag." << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	
@@ -1792,7 +1793,8 @@ CellVolumeExperimental(std::vector<double> &paraValue,
 	tmp[0] = "k_p";
 	tmp[1] = "P_max";
 	tmp[2] = "k_pp";
-	
+	tmp[3] = "allowShrink_flag";
+
 	setParameterId(tmp);
 }
 
@@ -1823,7 +1825,7 @@ derivs(Tissue &T,
 			distance = std::sqrt(distance);
 			
 			for (size_t j = 0; j < numVariableIndex(1); ++j)
-				P += wallData[cell.wall(i)->index()][variableIndex(1, j)];
+				P += wallData[cell.wall(i)->index()][variableIndex(1, j)]/distance;
 			sum += distance;
 		}
 		P *= parameter(2);
@@ -1831,7 +1833,7 @@ derivs(Tissue &T,
 		if (numVariableIndexLevel()==3)
 			cellData[n][variableIndex(2,0)]=P;
 		
-		//if( parameter(1)-P>0.0 )
+		if( parameter(3) || parameter(1)-P>0.0 )
 			cellDerivs[cell.index()][variableIndex(0, 1)] += 
 				parameter(0) * (parameter(1) - P) * sum;
 	}
@@ -1955,11 +1957,13 @@ void PerpendicularWallPressure::derivs(Tissue &T,
 		for (size_t i = 0; i < cells.size(); ++i) {
 			Cell *cell = cells[i];
 
-			if (cell->id() == "Background") {
+			if (cell == T.background()) {
 				continue;
 			}
 				
-			double force = cellData[cell->index()][variableIndex(0, 0)] *  wall.lengthFromVertexPosition(vertexData);
+			double force = parameter(0) * 
+				cellData[cell->index()][variableIndex(0, 0)] *  
+				wall.lengthFromVertexPosition(vertexData);
 
 			double x = 0.0;
 			double y = 0.0;
@@ -1968,7 +1972,7 @@ void PerpendicularWallPressure::derivs(Tissue &T,
 				y += vertexData[cell->vertex(j)->index()][1];
 			}
 			x = (x / cell->numVertex()) - vertexData[vertices[0]->index()][0];
-			y = (y / cell->numVertex()) - vertexData[vertices[1]->index()][1];
+			y = (y / cell->numVertex()) - vertexData[vertices[0]->index()][1];
 
 			int sign = (nx * y - ny * x) >= 0 ? 1 : -1;
 

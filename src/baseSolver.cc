@@ -222,11 +222,22 @@ void BaseSolver::print(std::ostream &os)
 		size_t Nc = cellData_.size();
 		//os << Nc << " " << numPrintVar << std::endl;
 		for( size_t i=0 ; i<Nc ; ++i ) {
+			os << "0 " << i << " " << t_ << " ";
 			for( size_t k=0 ; k<cellData_[i].size() ; ++k )
 				os << cellData_[i][k] << " ";
 			os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
 				 << T_->cell(i).numWall() << std::endl;
 		}		
+		size_t Nw = wallData_.size();
+		for( size_t i=0 ; i<Nw ; ++i ) {
+			os << "1 " << i << " " << t_ << " ";
+			for( size_t k=0 ; k<wallData_[i].size() ; ++k )
+				os << wallData_[i][k] << " ";
+			os << i << " " << T_->wall(i).lengthFromVertexPosition(vertexData_)
+				 << " " << T_->wall(i).lengthFromVertexPosition(vertexData_)-wallData_[i][0]
+				 << std::endl;
+		}				
+		os << std::endl;
   }
   else
     std::cerr << "BaseSolver::print() Wrong printFlag value\n";
