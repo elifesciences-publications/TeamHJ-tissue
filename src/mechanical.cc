@@ -1959,12 +1959,7 @@ void PerpendicularWallPressure::derivs(Tissue &T,
 				continue;
 			}
 				
-			double circumference = 0.0;
-			for (size_t j = 0; j < cell->numWall(); ++j) {
-				circumference += wall.lengthFromVertexPosition(vertexData);
-			}
-
-			double force = cellData[cell->index()][variableIndex(0, 0)] / circumference;
+			double force = cellData[cell->index()][variableIndex(0, 0)] *  wall.lengthFromVertexPosition(vertexData);
 
 			double x = 0.0;
 			double y = 0.0;
