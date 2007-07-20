@@ -1904,3 +1904,85 @@ void EpidermalRadialForce::derivs(Tissue &T,
 	}
 }
 
+PerpendicularWallPressure::PerpendicularWallPressure(std::vector<double> &paraValue,
+										   std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 1) {
+		std::cerr << "PerpendicularWallPressure::PerpendicularWallPressure() " 
+				<< "Uses one parameter: k_force" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 1 || indValue[0].size() != 1) {
+		std::cerr << "PerpendicularWallPressure::PerpendicularWallPressure() "
+                    << "First level gives pressure index in wall." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	setId("PerpendicularWallPressure");
+	setParameter(paraValue);
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp[0] = "k_force";
+
+	setParameterId(tmp);
+}
+
+void PerpendicularWallPressure::derivs(Tissue &T,
+							    std::vector< std::vector<double> > &cellData,
+							    std::vector< std::vector<double> > &wallData,
+							    std::vector< std::vector<double> > &vertexData,
+							    std::vector< std::vector<double> > &cellDerivs,
+							    std::vector< std::vector<double> > &wallDerivs,
+							    std::vector< std::vector<double> > &vertexDerivs)
+{
+	for (size_t n = 0; n < T.numWall(); ++n) {
+		Wall wall = T.wall(n);
+		std::vector<Cell *> cells(2);
+		cells[0] = wall.cell1();
+		cells[1] = wall.cell2();
+		std::vector<Vertex *> vertices(2);
+		vertices[0] = wall.vertex1();
+		vertices[1] = wall.vertex2();
+
+ 		double nx = vertexData[vertices[1]->index()][0] - vertexData[vertices[0]->index()][0];
+ 		double ny = vertexData[vertices[1]->index()][1] - vertexData[vertices[0]->index()][1];
+		double A = std::sqrt(nx * nx + ny * ny);
+		nx = nx / A;
+		ny = ny / A;
+
+		for (size_t i = 0; i < cells.size(); ++i) {
+			Cell *cell = cells[i];
+
+			if (cell->id() == "Background") {
+				continue;
+			}
+				
+			double circumference = 0.0;
+			for (size_t j = 0; j < cell->numWall(); ++j) {
+				circumference += wall.lengthFromVertexPosition(vertexData);
+			}
+
+			double force = cellData[cell->index()][variableIndex(0, 0)] / circumference;
+
+			double x = 0.0;
+			double y = 0.0;
+			for (size_t j = 0; j < cell->numVertex(); ++j) {
+				x += vertexData[cell->vertex(j)->index()][0];
+				y += vertexData[cell->vertex(j)->index()][1];
+			}
+			x = (x / cell->numVertex()) - vertexData[vertices[0]->index()][0];
+			y = (y / cell->numVertex()) - vertexData[vertices[1]->index()][1];
+
+			int sign = (nx * y - ny * x) >= 0 ? 1 : -1;
+
+			for (size_t k = 0; k < vertices.size(); ++k) {
+				Vertex *vertex = vertices[k];
+				vertexDerivs[vertex->index()][0] += ny * sign * force;
+				vertexDerivs[vertex->index()][1] += - nx * sign * force;
+			}
+		}
+	}
+}
+
