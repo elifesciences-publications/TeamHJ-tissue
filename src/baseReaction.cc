@@ -5,12 +5,12 @@
  * Created      : October 2003
  * Revision     : $Id: baseReaction.cc,v 1.25 2006/03/18 00:05:14 henrik Exp $
  */
-#include<vector>
+#include <vector>
 
-#include"baseReaction.h"
-#include"growth.h"
-#include"mechanical.h"
-#include"network.h"
+#include "baseReaction.h"
+#include "growth.h"
+#include "mechanical.h"
+#include "network.h"
 //#include"massAction.h"
 
 BaseReaction::~BaseReaction(){}
@@ -25,18 +25,20 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   
   //Growth related updates
   //growth.h,growth.cc
-  if(idValue=="WallGrowthExponentialTruncated")
-    return new WallGrowthExponentialTruncated(paraValue,indValue);
-  else if(idValue=="WallGrowthExponentialStressTruncated")
-    return new WallGrowthExponentialStressTruncated(paraValue,indValue);
-  else if(idValue=="WallGrowthConstantStress")
-    return new WallGrowthConstantStress(paraValue,indValue);
-  else if(idValue=="WallGrowthConstantStressEpidermalAsymmetric")
-    return new WallGrowthConstantStressEpidermalAsymmetric(paraValue,indValue);
-  else if(idValue=="MoveVertexRadially")
-    return new MoveVertexRadially(paraValue,indValue);
+  if(idValue == "WallGrowthExponentialTruncated")
+    return new WallGrowthExponentialTruncated(paraValue, indValue);
+  else if(idValue == "WallGrowthExponentialStressTruncated")
+    return new WallGrowthExponentialStressTruncated(paraValue, indValue);
+  else if(idValue == "WallGrowthConstantStress")
+    return new WallGrowthConstantStress(paraValue, indValue);
+  else if(idValue == "WallGrowthConstantStressEpidermalAsymmetric")
+    return new WallGrowthConstantStressEpidermalAsymmetric(paraValue, indValue);
+  else if(idValue == "MoveVertexRadially")
+    return new MoveVertexRadially(paraValue, indValue);
   else if (idValue == "WallLengthGrowExperimental")
 	  return new WallLengthGrowExperimental(paraValue, indValue);
+	else if (idValue == "WaterVolumeFromTurgor")
+	  return new WaterVolumeFromTurgor(paraValue, indValue);
 
   //Mechanical interactions between vertices
   //mechanical.h,mechanical.cc

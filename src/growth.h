@@ -169,4 +169,34 @@ public:
 							std::vector< std::vector<double> > &vertexDerivs);
 };
 
+///
+/// @brief Updates the water volume variable given osmotic and turgor
+/// potentials
+///
+/// This function uses a constant osmotic potential and calculates the turgor
+/// potential to calculate water intake into the cell according to
+///
+/// @f \frac{V_w}{dt} = p_0 A (p_1-p_2T) @/f
+///
+/// where V_w is the water volume, T is the turgor,p_0 is the rate, p_1 is the
+/// osmotic potential and p_2 is an scaling factor. Also p_3=denyShrink_flag
+/// and p_4=allowNegTurgor_flag can be set to restrict the behavior.
+///
+/// The turgor, T, is calculated as T=V_w-V.
+///
+class WaterVolumeFromTurgor : public BaseReaction
+{
+public:
+	WaterVolumeFromTurgor(std::vector<double> &paraValue,
+												std::vector< std::vector<size_t> > &indValue);
+	
+	void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs);
+};
+
 #endif
