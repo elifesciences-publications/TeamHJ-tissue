@@ -49,7 +49,37 @@ public:
 							std::vector< std::vector<double> > &cellDerivs,
 							std::vector< std::vector<double> > &wallDerivs,
 							std::vector< std::vector<double> > &vertexDerivs );
-	void initiate(Tissue &T);
+	void initiate(Tissue &T,
+								std::vector< std::vector<double> > &cellData,
+								std::vector< std::vector<double> > &wallData,
+								std::vector< std::vector<double> > &vertexData );
+	//void update(Tissue &T,double step);
+};
+
+///
+/// @brief Updates vertices from an spatially asymmetric wall spring potential
+/// given by microtubule directions and also updates the spring constants
+/// slowly.
+///
+class VertexFromWallSpringMTHistory : public BaseReaction {
+  
+public:
+  
+  VertexFromWallSpringMTHistory(std::vector<double> &paraValue, 
+																std::vector< std::vector<size_t> > 
+																&indValue );
+  
+  void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
+	void initiate(Tissue &T,
+								std::vector< std::vector<double> > &cellData,
+								std::vector< std::vector<double> > &wallData,
+								std::vector< std::vector<double> > &vertexData);
 	//void update(Tissue &T,double step);
 };
 

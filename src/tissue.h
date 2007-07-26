@@ -144,7 +144,9 @@ class Tissue {
 									 double step=0.01,size_t printNum=10,
 									 size_t wallPrintFlag=0);
   
-	void initiateReactions();
+	void initiateReactions(std::vector< std::vector<double> > &cellData,
+												 std::vector< std::vector<double> > &wallData,
+												 std::vector< std::vector<double> > &vertexData);
 	void updateReactions(double step);
 	void initiateDirection(std::vector< std::vector<double> > &cellData,
 												 std::vector< std::vector<double> > &wallData,

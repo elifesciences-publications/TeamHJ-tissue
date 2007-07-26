@@ -1366,7 +1366,7 @@ void Tissue::simulateRk2(double startTime,double endTime,double step,
     std::cout << numPrint << std::endl;
   
 	// Initiate reactions and direction for those where it is applicable
-  initiateReactions();
+  initiateReactions(cellData,wallData,vertexData);
 	initiateDirection(cellData,wallData,vertexData,cellDeriv,wallDeriv,
 										vertexDeriv);
 	
@@ -1498,7 +1498,7 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
     std::cout << numPrint << std::endl;
 	
 	// Initiate reactions and directions for those where it is applicable
-  initiateReactions();
+  initiateReactions(cellData,wallData,vertexData);
 	initiateDirection(cellData,wallData,vertexData,cellDeriv,wallDeriv,
 										vertexDeriv);
 	
@@ -1627,10 +1627,12 @@ void Tissue::simulateRk4(double startTime,double endTime,double step,
 	INIT.close();	
 }
 
-void::Tissue::initiateReactions() 
+void::Tissue::initiateReactions(std::vector< std::vector<double> > &cellData,
+																std::vector< std::vector<double> > &wallData,
+																std::vector< std::vector<double> > &vertexData) 
 {
 	for (size_t i=0; i<numReaction(); ++i)
-		reaction(i)->initiate(*this);
+		reaction(i)->initiate(*this,cellData,wallData,vertexData);
 }
 
 void::Tissue::updateReactions(double step) 

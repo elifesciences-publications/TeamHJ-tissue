@@ -46,6 +46,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromWallSpringAsymmetric(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringMT")
     return new VertexFromWallSpringMT(paraValue,indValue);
+  else if(idValue=="VertexFromWallSpringMTHistory")
+    return new VertexFromWallSpringMTHistory(paraValue,indValue);
   else if(idValue=="VertexFromEpidermalWallSpringAsymmetric")
     return new VertexFromEpidermalWallSpringAsymmetric(paraValue,indValue);
   else if(idValue=="VertexFromEpidermalCellWallSpringAsymmetric")
@@ -133,7 +135,8 @@ BaseReaction::createReaction(std::istream &IN ) {
 }
 
 void BaseReaction::
-derivs(Tissue &T,std::vector< std::vector<double> > &cellData,
+derivs(Tissue &T,
+			 std::vector< std::vector<double> > &cellData,
        std::vector< std::vector<double> > &walldata,
        std::vector< std::vector<double> > &vertexData,
        std::vector< std::vector<double> > &cellderivs, 
@@ -144,7 +147,12 @@ derivs(Tissue &T,std::vector< std::vector<double> > &cellData,
   exit(0);
 }  
 
-void BaseReaction::initiate(Tissue &T) {}
+void BaseReaction::initiate(Tissue &T,
+														std::vector< std::vector<double> > &cellData,
+														std::vector< std::vector<double> > &walldata,
+														std::vector< std::vector<double> > &vertexData) 
+{
+}
 
 void BaseReaction::update(Tissue &T,double h) {}
 

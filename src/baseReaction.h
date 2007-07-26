@@ -69,7 +69,10 @@ class BaseReaction {
   inline void setVariableIndex(size_t i, std::vector<size_t> &value);
   inline void setVariableIndex(std::vector< std::vector<size_t> > &value);
   
-	virtual void initiate(Tissue &T);
+	virtual void initiate(Tissue &T,
+												std::vector< std::vector<double> > &cellData,
+												std::vector< std::vector<double> > &wallData,
+												std::vector< std::vector<double> > &vertexData);
   virtual void derivs(Tissue &T,
 											std::vector< std::vector<double> > &cellData,
 											std::vector< std::vector<double> > &wallData,

@@ -120,7 +120,7 @@ void RK5Adaptive::simulate(void)
 	}
 
   // Initiate reactions and direction for those where it is applicable
-  T_->initiateReactions();
+  T_->initiateReactions(cellData_, wallData_, vertexData_);
   T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_,
 				    vertexDerivs_);
 
