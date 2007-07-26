@@ -79,7 +79,7 @@ class Cell {
 	void sortWallAndVertex(Tissue &T);
 
   double calculateVolume( std::vector< std::vector<double> > 
-													&vertexData );
+													&vertexData, size_t signFlag=0 );
   std::vector<double> positionFromVertex();
   std::vector<double> 
 	positionFromVertex( std::vector< std::vector<double> > &vertexData );

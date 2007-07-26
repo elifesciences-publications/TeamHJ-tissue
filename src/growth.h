@@ -199,4 +199,33 @@ public:
 							std::vector< std::vector<double> > &vertexDerivs);
 };
 
+///
+/// @brief Updates 'concentration' variables according to volume changes from
+/// derivatives of the vertex positions.
+///
+/// The dilution of 'concentration' variables, C_i are calculated according to
+///
+/// @f$ \frac{C_i}{dt} = - \frac{C_i}{V}\frac{dV}{dt} @f$
+///
+/// where V is the volume, and dV/dt is calculated from vertex position
+/// derivatives.
+///
+/// @note Since this function uses the derivatives of the vertex positions it
+/// needs to be applied after all other derivatives applied to the vertices.
+///
+class DilutionFromVertexDerivs : public BaseReaction
+{
+public:
+	DilutionFromVertexDerivs(std::vector<double> &paraValue,
+													 std::vector< std::vector<size_t> > &indValue);
+	
+	void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs);
+};
+
 #endif

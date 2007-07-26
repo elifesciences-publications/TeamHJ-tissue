@@ -39,6 +39,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new WallLengthGrowExperimental(paraValue, indValue);
 	else if (idValue == "WaterVolumeFromTurgor")
 	  return new WaterVolumeFromTurgor(paraValue, indValue);
+	else if (idValue == "DilutionFromVertexDerivs")
+	  return new DilutionFromVertexDerivs(paraValue, indValue);
 
   //Mechanical interactions between vertices
   //mechanical.h,mechanical.cc

@@ -133,7 +133,7 @@ void Cell::sortWallAndVertex(Tissue &T) {
 
 //!Calculates the volume from vertex positions
 double Cell::calculateVolume( std::vector< std::vector<double> > 
-															&vertexData ) {
+															&vertexData, size_t signFlag ) {
 	
   assert( numVertex() );
   size_t dimension = vertex(0)->numPosition();
@@ -147,7 +147,10 @@ double Cell::calculateVolume( std::vector< std::vector<double> >
 			volume_ += vertexData[v1I][0]*vertexData[v2I][1]-
 				vertexData[v1I][1]*vertexData[v2I][0];
 		}
-		volume_ = 0.5*std::fabs(volume_);
+		if( signFlag ) 
+			volume_ *= 0.5;
+		else
+			volume_ = 0.5*std::fabs(volume_);
 		return volume_;
 	}
 	else {
