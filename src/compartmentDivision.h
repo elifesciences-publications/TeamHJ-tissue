@@ -176,4 +176,32 @@ class DivisionForceDirection : public BaseCompartmentChange
 			  std::vector< std::vector<double> > &vertexDerivs);  
 };
 
+//!Divides a cell when volume above a threshold
+/*!Divides a cell when volume above a threshold. New wall is created at shortest
+	path that divides the volume in equal parts. 
+ */
+class DivisionVolumeViaShortestPath : public BaseCompartmentChange {
+  
+ public:
+  
+  DivisionVolumeViaShortestPath(std::vector<double> &paraValue, 
+																std::vector< std::vector<size_t> > 
+																&indValue );
+  
+  int flag(Tissue *T,size_t i,
+					 std::vector< std::vector<double> > &cellData,
+					 std::vector< std::vector<double> > &wallData,
+					 std::vector< std::vector<double> > &vertexData,
+					 std::vector< std::vector<double> > &cellDerivs,
+					 std::vector< std::vector<double> > &wallDerivs,
+					 std::vector< std::vector<double> > &vertexDerivs );
+  void update(Tissue* T,size_t i,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );  
+};
+
 #endif
