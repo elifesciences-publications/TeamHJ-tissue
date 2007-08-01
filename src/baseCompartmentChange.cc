@@ -34,6 +34,8 @@ createCompartmentChange(std::vector<double> &paraValue,
     return new DivisionVolumeViaDirection(paraValue,indValue);
 	else if(idValue=="DivisionVolumeRandomDirection")
     return new DivisionVolumeRandomDirection(paraValue,indValue);
+	else if(idValue=="DivisionVolumeViaShortestPath")
+    return new DivisionVolumeViaShortestPath(paraValue,indValue);
 	//compartmentRemoval.h,compartmentRemoval.cc
   else if(idValue=="RemovalOutsideRadius")
     return new RemovalOutsideRadius(paraValue,indValue);

@@ -1535,14 +1535,14 @@ update(Tissue *T,size_t i,
   for (size_t k=0; k<divCell->numWall()-1; ++k) {
 		for (size_t k2=k+1; k<divCell->numWall(); ++k) {
 			std::vector<double> x0(dimension),x1(dimension),x2(dimension),n1(dimension),n2(dimension);
-			x1[0] = divCell->wall(k)->vertex1().position(0);
-			x1[1] = divCell->wall(k)->vertex1().position(1);
-			x2[0] = divCell->wall(k2)->vertex1().position(0);
-			x2[1] = divCell->wall(k2)->vertex1().position(1);
-			n1[0] = divCell->wall(k)->vertex2().position(0)-x1[0];
-			n1[1] = divCell->wall(k)->vertex2().position(1)-x1[1];
-			n2[0] = divCell->wall(k2)->vertex2().position(0)-x2[0];
-			n2[1] = divCell->wall(k2)->vertex2().position(1)-x2[1];
+			x1[0] = divCell->wall(k)->vertex1()->position(0);
+			x1[1] = divCell->wall(k)->vertex1()->position(1);
+			x2[0] = divCell->wall(k2)->vertex1()->position(0);
+			x2[1] = divCell->wall(k2)->vertex1()->position(1);
+			n1[0] = divCell->wall(k)->vertex2()->position(0)-x1[0];
+			n1[1] = divCell->wall(k)->vertex2()->position(1)-x1[1];
+			n2[0] = divCell->wall(k2)->vertex2()->position(0)-x2[0];
+			n2[1] = divCell->wall(k2)->vertex2()->position(1)-x2[1];
 			double wL1 = std::sqrt(n1[0]*n1[0]+n1[1]*n1[1]);
 			double wL2 = std::sqrt(n2[0]*n2[0]+n2[1]*n2[1]);
 			
@@ -1550,44 +1550,91 @@ update(Tissue *T,size_t i,
 			double denominator = n2[0]*n2[1]-n2[0]*n1[1];
 			if (denominator != 0.0) {
 				t1 = (n2[0]*(x2[1]-x1[1])-n2[1]*(x2[0]-x1[0]))/denominator;
+				Vertex *v1=divCell->wall(k)->vertex1();
+				Vertex *v1Other=divCell->wall(k)->vertex2();
 				if (t1>0.0) {
 					t1 = wL1-t1;
-					x1[0] = divCell->wall(k)->vertex2().position(0);
-					x1[1] = divCell->wall(k)->vertex2().position(1);
+					x1[0] = divCell->wall(k)->vertex2()->position(0);
+					x1[1] = divCell->wall(k)->vertex2()->position(1);
 					n1[0] = -n1[0];
 					n1[1] = -n1[1];
+					v1=divCell->wall(k)->vertex2();
+					v1Other=divCell->wall(k)->vertex1();
 				}
 				t2 = (n1[0]*(x2[1]-x1[1])-n1[1]*(x2[0]-x1[0]))/denominator;
+				Vertex *v2=divCell->wall(k2)->vertex1();
+				Vertex *v2Other=divCell->wall(k2)->vertex2();
 				if (t2>0.0) {
 					t2 = wL2-t2;
-					x2[0] = divCell->wall(k2)->vertex2().position(0);
-					x2[1] = divCell->wall(k2)->vertex2().position(1);
+					x2[0] = divCell->wall(k2)->vertex2()->position(0);
+					x2[1] = divCell->wall(k2)->vertex2()->position(1);
 					n2[0] = -n2[0];
 					n2[1] = -n2[1];
+					v2=divCell->wall(k2)->vertex2();
+					v2Other=divCell->wall(k2)->vertex1();
 				}
+				if( v1==v2 ) 
+					continue;
+				double ACell = divCell->calculateVolume(vertexData);
+				double Ahalf = 0.5*ACell;
+				//
+				// Calculate A2
+				//
+				size_t vk=0;
+				size_t oppositeVolumeFlag=0;
+				// Find start index for volume calculation
+				while (divCell->vertex(vk) != v1 && divCell->vertex(vk) != v2)
+					++vk;
+				std::vector<Vertex*> vertices;
+				vertices.push_back(divCell->vertex(vk++));
+				while (divCell->vertex(vk) != v1 && divCell->vertex(vk) != v2) {
+					if ( divCell->vertex(vk) == v1Other || 
+							 divCell->vertex(vk) == v2Other )
+						oppositeVolumeFlag++;
+					vertices.push_back(divCell->vertex(vk++));
+				}
+				vertices.push_back(divCell->vertex(vk));
+				assert( vertices[0]==v1 || vertices[0]==v2 );
+				assert( vertices[vertices.size()-1]==v1 || 
+								vertices[vertices.size()-1]==v2 );
+				// Calculate area from extracted vertices
+				double A2=0.0;
+				for (vk=0; vk<vertices.size(); ++vk) {
+					size_t vkPlus=(vk+1)%vertices.size();
+					A2 += vertices[vk]->position(0)*vertices[vkPlus]->position(1) -
+						vertices[vkPlus]->position(0)*vertices[vk]->position(1);
+				}
+				A2 = 0.5*std::fabs(A2);
+				if (oppositeVolumeFlag)
+					A2 = ACell-A2;
+				if (A2>Ahalf)
+					std::cerr << "Cell " << divCell->index() << " walls " << k << "," 
+										<< k2 << " not applicable" << std::endl;
 				x0[0] = x1[0] + n1[0]*t1;
 				x0[1] = x1[1] + n1[1]*t1;
 				double n1n2 = n1[0]*n2[0]+n1[1]*n2[1];
 				double alpha = std::acos(n1n2/(wL1*wL2));
 				double A0 = 0.5*((x1[0]-x0[0])*(x2[1]-x0[1])-
 												 (x1[1]-x0[1])*(x2[0]-x0[0]));
-				double A2;
-				double Ahalf = divCell->calculateVolume(vertexData);
 				double root = std::sqrt((A0+Ahalf-A2)/(std::cos(alpha)*std::sin(alpha)));
 				double t1A = std::sqrt((x1[0]-x0[0])*(x1[0]-x0[0])+(x1[1]-x0[1])*(x1[1]-x0[1]));
 				double t2A = std::sqrt((x2[0]-x0[0])*(x2[0]-x0[0])+(x2[1]-x0[1])*(x2[1]-x0[1]));
 				double length = 2*(2*t1A+root)*std::cos(alpha);
+				std::cerr << divCell->index() << " " << k << " " << k2 << "\t" << wL1 << " " << t1A+root << " (" << t1A-root << ")  "
+									<< wL2 << " " << t2A+root << " (" << t2A-root << ")" << std::endl;
 			}
 			else {
 			}
-
-
-			double tmpLength = divCell->wall(k)->setLengthFromVertexPosition(vertexData);
-			if( tmpLength > maxLength ) {
-				wI=k;
-				maxLength = tmpLength;
-			}
-  }   
+			
+			
+			//double tmpLength = divCell->wall(k)->setLengthFromVertexPosition(vertexData);
+			//if( tmpLength > maxLength ) {
+			//wI=k;
+			//maxLength = tmpLength;
+		}
+	}
+	exit(0);
+	double maxLength=0.0;
   
   std::vector<double> nW(dimension),nW2(dimension),v1Pos(dimension),
 		v2Pos(dimension);
