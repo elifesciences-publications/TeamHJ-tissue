@@ -78,12 +78,12 @@ class Cell {
   
 	void sortWallAndVertex(Tissue &T);
 
+  double calculateVolume( size_t signFlag=0 );
   double calculateVolume( std::vector< std::vector<double> > 
 													&vertexData, size_t signFlag=0 );
   std::vector<double> positionFromVertex();
   std::vector<double> 
-	positionFromVertex( std::vector< std::vector<double> > &vertexData );
-	
+	positionFromVertex( std::vector< std::vector<double> > &vertexData );	
 };
 
 //!Returns the cell index

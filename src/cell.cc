@@ -132,6 +132,33 @@ void Cell::sortWallAndVertex(Tissue &T) {
 }
 
 //!Calculates the volume from vertex positions
+double Cell::calculateVolume( size_t signFlag ) 
+{	
+  assert( numVertex() );	
+  size_t dimension = vertex(0)->numPosition();
+	if( dimension == 2 ) {
+		//Assuming vertices are sorted
+		double tmpVolume=0.0;
+		for( size_t k=0 ; k<numVertex() ; ++k ) {
+			size_t kk = (k+1)%(numVertex());
+			tmpVolume += vertex(k)->position(0)*vertex(kk)->position(1) -
+				vertex(k)->position(1)*vertex(kk)->position(0);
+		}
+		tmpVolume *= 0.5;
+		volume_ = std::fabs(tmpVolume);
+		if( signFlag ) 
+			return tmpVolume;
+		else
+			return volume_;
+	}
+	else {
+		std::cerr << "Cell::calculateVolume(signFlag) "
+							<< " only implemented for dimension=2." << std::endl;
+		exit(-1);
+	}
+}
+
+//!Calculates the volume from vertex positions
 double Cell::calculateVolume( std::vector< std::vector<double> > 
 															&vertexData, size_t signFlag ) {
 	
@@ -140,18 +167,19 @@ double Cell::calculateVolume( std::vector< std::vector<double> >
   
 	if( dimension == 2 ) {
 		//Assuming vertices are sorted
-		volume_=0.0;
+		double tmpVolume=0.0;
 		for( size_t k=0 ; k<numVertex() ; ++k ) {
 			size_t v1I = vertex(k)->index();
 			size_t v2I = vertex((k+1)%(numVertex()))->index();
-			volume_ += vertexData[v1I][0]*vertexData[v2I][1]-
+			tmpVolume += vertexData[v1I][0]*vertexData[v2I][1]-
 				vertexData[v1I][1]*vertexData[v2I][0];
 		}
+		tmpVolume *= 0.5;
+		volume_ = std::fabs(tmpVolume);
 		if( signFlag ) 
-			volume_ *= 0.5;
+			return tmpVolume;
 		else
-			volume_ = 0.5*std::fabs(volume_);
-		return volume_;
+			return volume_;
 	}
 	else {
 		//Caveat:Old version to be changed to projected version of 2D variant
@@ -193,36 +221,46 @@ std::vector<double> Cell::positionFromVertex()
 {
 	assert( numVertex() );
   size_t dimension=vertex(0)->numPosition();
+	assert(dimension==2);
   std::vector<double> pos( dimension );
-  for( size_t i=0 ; i<numVertex() ; ++i ) {
-    for( size_t d=0 ; d<dimension ; ++d ) {
-      pos[d] += vertex(i)->position(d);
+	double area = calculateVolume(1);
+	
+  for (size_t i=0; i<numVertex(); ++i) {
+		size_t ii = (i+1)%(numVertex());
+		double factor = vertex(i)->position(0)*vertex(ii)->position(1)-
+			vertex(ii)->position(0)*vertex(i)->position(1);
+    for (size_t d=0; d<dimension; ++d) {
+      pos[d] += factor*(vertex(i)->position(d)+vertex(ii)->position(d));
     }
   }
-  for( size_t d=0 ; d<dimension ; ++d )
-    pos[d] /= numVertex();
+  for (size_t d=0; d<dimension; ++d)
+    pos[d] /= 6*area;
   
   return pos;
 }
 
 //!Calculates the cell position from average vertex position
-std::vector<double> Cell::positionFromVertex( std::vector< 
-					      std::vector<double> > &vertexData ) {
-  
+std::vector<double> Cell::
+positionFromVertex( std::vector< 
+										std::vector<double> > &vertexData ) 
+{  
+	assert( numVertex() );
   size_t dimension=vertexData[0].size();
+	assert(dimension==2);
   std::vector<double> pos( dimension );
-  for( size_t i=0 ; i<numVertex() ; ++i ) {
-    //std::cerr << "- ";
-    for( size_t d=0 ; d<dimension ; ++d ) {
-      pos[d] += vertexData[ vertex(i)->index() ][d];
-      //std::cerr << vertex(i)->index() << " " << d << " " 
-      //	<< vertexData[ vertex(i)->index() ][d] << " ("
-      //	<< vertex(i)->position(d) << ")  ";
+	double area = calculateVolume(vertexData,1);
+	
+  for (size_t i=0; i<numVertex(); ++i) {
+		size_t vI = vertex(i)->index();
+		size_t vIPlus = vertex( (i+1)%(numVertex()) )->index();
+		double factor = vertexData[vI][0]*vertexData[vIPlus][1]-
+			vertexData[vIPlus][0]*vertexData[vI][1];
+    for (size_t d=0; d<dimension; ++d) {
+      pos[d] += factor*(vertexData[vI][d]+vertexData[vIPlus][d]);
     }
-    //std::cerr << std::endl;
   }
-  for( size_t d=0 ; d<dimension ; ++d )
-    pos[d] /= numVertex();
+  for (size_t d=0; d<dimension; ++d)
+    pos[d] /= 6*area;
   
   return pos;
 }

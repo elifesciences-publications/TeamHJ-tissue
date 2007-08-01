@@ -534,5 +534,96 @@ void ForceDirection::update(Tissue &T, double h,
 	}
 }
 
+StretchDirection::StretchDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 1) {
+		std::cerr << "StretchDirection::StretchDirection() " 
+							<< "One parameter is used orientation_flag (0 for direction parallel with "
+							<< "stretch, 1 for direction perpendicular to stretch)" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	if (indValue.size() != 2 || indValue[0].size() != 1 || 
+			indValue[1].size() != 1) {
+		std::cerr << "StretchDirection::StretchDirection() \n"
+							<< "First level: Start of cell direction index is used.\n"
+							<< "Second level: Wall length index." << std::endl;
+			exit(EXIT_FAILURE);
+	}
+	
+	setId("StretchDirection");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize(numParameter());
+	tmp[0] = "orientation_flag";
+	setParameterId(tmp);
+}
+
+void StretchDirection::
+initiate(Tissue &T,
+				 std::vector< std::vector<double> > &cellData,
+				 std::vector< std::vector<double> > &wallData,
+				 std::vector< std::vector<double> > &vertexData,
+				 std::vector< std::vector<double> > &cellDerivs,
+				 std::vector< std::vector<double> > &wallDerivs,
+				 std::vector< std::vector<double> > &vertexDerivs)
+{
+	// No initialization
+}
+
+void StretchDirection::
+update(Tissue &T, double h,
+			 std::vector< std::vector<double> > &cellData,
+			 std::vector< std::vector<double> > &wallData,
+			 std::vector< std::vector<double> > &vertexData,
+			 std::vector< std::vector<double> > &cellDerivs,
+			 std::vector< std::vector<double> > &wallDerivs,
+			 std::vector< std::vector<double> > &vertexDerivs)
+{
+	for (size_t n = 0; n < T.numCell(); ++n) {
+ 		Cell cell = T.cell(n);
+		double x = 0.0;
+		double y = 0.0;
+		
+		if (cellData[cell.index()][variableIndex(0, 0) + 2] == 0)
+			continue;
+
+		for (size_t i = 0; i < cell.numWall(); ++i) {
+			Wall *wall = cell.wall(i);
+			double wx = wall->vertex1()->position(0) - wall->vertex2()->position(0);
+			double wy = wall->vertex1()->position(1) - wall->vertex2()->position(1);
+			double Aw = std::sqrt(wx * wx  + wy * wy);
+			if (wx > 0) {
+				wx = wx / Aw;
+				wy = wy / Aw;
+			} else {
+				wx = -1 * wx / Aw;
+				wy = -1 * wy / Aw;
+			}
+			double restLength =wallData[wall->index()][variableIndex(1,0)];
+			double stretch = (Aw-restLength)/restLength;
+			
+			x += wx * stretch;
+			y += wy * stretch;
+		}
+		
+		double A = std::sqrt(x * x + y * y);
+
+		// If the stretch is of zero magnitude, leave it as it is.
+		if (A == 0)
+			continue; 
+		
+		if (parameter(0) == 0) {
+			cellData[cell.index()][variableIndex(0, 0)] = x / A;
+			cellData[cell.index()][variableIndex(0, 0) + 1] = y / A;
+		} else {
+			cellData[cell.index()][variableIndex(0, 0)] = - y / A;
+			cellData[cell.index()][variableIndex(0, 0) + 1] = x / A;
+		}
+	}
+}
+
 
 
