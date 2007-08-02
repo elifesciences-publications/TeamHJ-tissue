@@ -479,6 +479,8 @@ derivs(Tissue &T,
 				vertexDerivs[v2][d] += div;
       }
     }
+		else if( numVariableIndexLevel()>1 )
+			wallData[i][variableIndex(1,0)] = 0.0;
   }
 }
 
