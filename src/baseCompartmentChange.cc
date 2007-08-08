@@ -45,6 +45,9 @@ createCompartmentChange(std::vector<double> &paraValue,
     return new RemovalOutsideMaxDistanceEpidermis(paraValue,indValue);
   else if (idValue == "DivisionForceDirection")
 	  return new DivisionForceDirection(paraValue, indValue);
+  else if (idValue == "DivisionShortestPath")
+	  return new DivisionShortestPath(paraValue, indValue);
+
   //Default, if nothing found
   else {
     std::cerr << "\nBaseCompartmentChange::createCompartmentChange()"
