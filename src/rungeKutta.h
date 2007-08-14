@@ -49,7 +49,7 @@ public:
 	///
 	void readParameterFile(std::ifstream &IN);
 	
-	void simulate(void);
+	void simulate(size_t verbose=0);
 			
 	///
 	/// @brief Fifth order Runge-Kutta adaptive stepper.
@@ -161,7 +161,7 @@ public:
 	///
 	/// @brief Runs a simulation of an tissue model
 	///
-	void simulate(void);
+	void simulate(size_t verbose=0);
 	
 	///
 	/// @brief Fourth order Runge-Kutta stepper

@@ -137,13 +137,6 @@ class Tissue {
 							 std::vector< std::vector<double> > &cellDeriv,
 							 std::vector< std::vector<double> > &wallDeriv,
 							 std::vector< std::vector<double> > &vertexDeriv );
-  void simulateRk2(double startTime=0.0,double endTime=1.0,
-									 double step=0.01,size_t printNum=10,
-									 size_t wallPrintFlag=0);
-  void simulateRk4(double startTime=0.0,double endTime=1.0,
-									 double step=0.01,size_t printNum=10,
-									 size_t wallPrintFlag=0);
-  
 	void initiateReactions(std::vector< std::vector<double> > &cellData,
 												 std::vector< std::vector<double> > &wallData,
 												 std::vector< std::vector<double> > &vertexData);

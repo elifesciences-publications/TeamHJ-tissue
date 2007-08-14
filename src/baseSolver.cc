@@ -124,8 +124,9 @@ void BaseSolver::readParameterFile(std::ifstream &IN)
   exit(-1);
 }
 
-void BaseSolver::simulate(void)
+void BaseSolver::simulate(size_t verbose)
 {
+	if (verbose)
   std::cerr << "BaseSolver::simulate(void)\n";
   exit(-1);
 }

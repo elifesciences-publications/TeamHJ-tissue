@@ -80,7 +80,7 @@ public:
 	void printInit(std::ostream &os) const;
 	void printDebug(std::ostream &os) const;
 	virtual void readParameterFile(std::ifstream &IN);
-	virtual void simulate(void);
+	virtual void simulate(size_t verbose=0);
 	
 	inline double startTime() const;
 	inline double endTime() const;

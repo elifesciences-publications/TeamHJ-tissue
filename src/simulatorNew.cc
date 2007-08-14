@@ -27,7 +27,7 @@ int main(int argc,char *argv[]) {
 	myConfig::registerOption("verbose", 1);
 	myConfig::registerOption("debug_output", 1);
 
-	int verboseFlag=0;
+	int verboseFlag=1;
 	std::string verboseString;
 	verboseString = myConfig::getValue("verbose", 0);
 	if( !verboseString.empty() ) {
@@ -77,7 +77,11 @@ int main(int argc,char *argv[]) {
   std::string simPara = myConfig::argv(3);
 
   Tissue T;
+	if (verboseFlag)
+	std::cerr << "Reading model file " << modelFile << std::endl;
   T.readModel(modelFile.c_str(),verboseFlag);
+	if (verboseFlag)
+		std::cerr << "Reading init file " << initFile << std::endl;	
 	if (!myConfig::getBooleanValue("merry_init")) 
 		T.readInit(initFile.c_str(),verboseFlag);
 	else {
@@ -86,14 +90,18 @@ int main(int argc,char *argv[]) {
 	}
 	
 	// Create solver and initiate values
+	if (verboseFlag)
+		std::cerr << "Generating solver from file " << simPara << std::endl;
 	BaseSolver *S = BaseSolver::getSolver(&T, simPara);
-
+	
   // Add solver to signal handler.
   mySignal::addSolver(S);
 	
   // Simulate with updates of the neighborhood
-  std::cerr << "Start simulation.\n";
+	if (verboseFlag)
+		std::cerr << "Initiating solver from tissue." << std::endl; 
   S->getInit();
+  std::cerr << "Start simulation." << std::endl;
 	S->simulate();
 	
   // Print init if applicable

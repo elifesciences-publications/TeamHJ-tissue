@@ -28,7 +28,7 @@ void RK5Adaptive::readParameterFile(std::ifstream &IN)
   IN >> eps_;
 }
 
-void RK5Adaptive::simulate(void)
+void RK5Adaptive::simulate(size_t verbose)
 { 
   // double tiny = 1e-30; // Using NR definition
   double tiny = 1e-9*eps_; // Caveat! Using new definition
@@ -119,11 +119,13 @@ void RK5Adaptive::simulate(void)
     yTempRkckV[i].resize(vertexData_[i].size());
 	}
 
+	std::cerr << "RK5Adaptive::simulate() Test1." << std::endl;
   // Initiate reactions and direction for those where it is applicable
   T_->initiateReactions(cellData_, wallData_, vertexData_);
+	std::cerr << "RK5Adaptive::simulate() Test2." << std::endl;
   T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_,
 				    vertexDerivs_);
-
+	std::cerr << "RK5Adaptive::simulate() Test3." << std::endl;
   // Initiate print times
   //////////////////////////////////////////////////////////////////////
   double printTime = endTime_ + tiny;
@@ -509,7 +511,7 @@ void RK4::readParameterFile(std::ifstream &IN)
   IN >> h_;
 }
 
-void RK4::simulate() 
+void RK4::simulate(size_t verbose) 
 {
 	//
 	// Check that h1 and endTime-startTime are > 0
