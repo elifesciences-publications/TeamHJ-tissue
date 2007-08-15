@@ -2199,10 +2199,16 @@ void PerpendicularWallPressure::derivs(Tissue &T,
 				//Get direction
 				double t=0.0,nw2=0.0;
 				for (size_t d=0; d<dimension; ++d) {
-					t += nw[d]*(vertexData[vertices[0]->index()][d]-cellPos[d]);
+					t += nw[d]*(cellPos[d]-vertexData[vertices[0]->index()][d]);
 					nw2 += nw[d]*nw[d];
 				}
 				t /= nw2;
+				//if (t<0.0 || t>1.0 ) {
+				//std::cerr << "perpendicularWallPressure::derivs() Wrong t="
+				//				<< t << std::endl;
+				//exit(-1);
+				//}
+				//assert(t>=0.0 && t<=1.0);
 				std::vector<double> forceDirection(dimension);
 				double norm=0.0;
 				for (size_t d=0; d<dimension; ++d) {
@@ -2213,6 +2219,9 @@ void PerpendicularWallPressure::derivs(Tissue &T,
 				for (size_t d=0; d<dimension; ++d)
 					forceDirection[d] /=norm; 
 
+				//std::cerr << cellPos[0] << " " << cellPos[1] << " " << cellPos[2]
+				//				<< "\t" << forceDirection[0] << " " << forceDirection[1] 
+				//				<< " " << forceDirection[2] << std::endl;
 				for (size_t k = 0; k < vertices.size(); ++k) {
 					for (size_t d=0; d<dimension; ++d)
 						vertexDerivs[vertices[k]->index()][d] +=  forceDirection[d] * force;
