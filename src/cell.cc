@@ -221,21 +221,44 @@ std::vector<double> Cell::positionFromVertex()
 {
 	assert( numVertex() );
 	size_t dimension=vertex(0)->numPosition();
-	assert(dimension==2);
 	std::vector<double> pos(dimension, 0);
-	double area = calculateVolume(1);
-	
-	for (size_t i=0; i<numVertex(); ++i) {
-		size_t ii = (i+1)%(numVertex());
-		double factor = vertex(i)->position(0)*vertex(ii)->position(1)-
-			vertex(ii)->position(0)*vertex(i)->position(1);
-		for (size_t d=0; d<dimension; ++d) {
-			pos[d] += factor*(vertex(i)->position(d)+vertex(ii)->position(d));
+	if (dimension==2) {
+		double area = calculateVolume(1);
+		
+		for (size_t i=0; i<numVertex(); ++i) {
+			size_t ii = (i+1)%(numVertex());
+			double factor = vertex(i)->position(0)*vertex(ii)->position(1)-
+				vertex(ii)->position(0)*vertex(i)->position(1);
+			for (size_t d=0; d<dimension; ++d) {
+				pos[d] += factor*(vertex(i)->position(d)+vertex(ii)->position(d));
+			}
 		}
+		for (size_t d=0; d<dimension; ++d)
+			pos[d] /= 6*area;
 	}
-	for (size_t d=0; d<dimension; ++d)
-		pos[d] /= 6*area;
-	
+	else if (dimension==3) {
+		double sumWallLength=0.0;
+		for (size_t w=0; w<numWall(); ++w) {
+			double wallLength=0.0;
+			for (size_t d=0; d<dimension; ++d)
+				wallLength += (wall(w)->vertex1()->position(d) -
+											 wall(w)->vertex2()->position(d) ) *
+					(wall(w)->vertex1()->position(d) -
+					 wall(w)->vertex2()->position(d) );
+			wallLength = std::sqrt(wallLength);
+			sumWallLength += wallLength;
+			for (size_t d=0; d<dimension; ++d)
+				pos[d] += 0.5 * (wall(w)->vertex1()->position(d) +
+												 wall(w)->vertex2()->position(d) ) * wallLength;
+		}
+		for (size_t d=0; d<dimension; ++d)
+			pos[d] /= sumWallLength;
+	}
+	else {
+		std::cerr << "Cell::positionFromVertex() only implemented for two and"
+							<< " three dimensions" << std::endl;
+		exit(-1);
+	}
 	return pos;
 }
 
@@ -244,25 +267,49 @@ positionFromVertex(std::vector< std::vector<double> > &vertexData)
 {  
 	assert( numVertex() );
 	size_t dimension=vertexData[0].size();
-	assert(dimension==2);
 	std::vector<double> pos (dimension, 0);
-	double area = calculateVolume(vertexData,1);
-
-	for (size_t i=0; i<numVertex(); ++i) {
-
-		size_t vI = vertex(i)->index();
-// 		std::cerr << " *** Vertex " << i << " = (" << vertexData[vI][0] << ", " << vertexData[vI][1] << ")" << std::endl;
-
-		size_t vIPlus = vertex( (i+1)%(numVertex()) )->index();
-		double factor = vertexData[vI][0]*vertexData[vIPlus][1]-
-			vertexData[vIPlus][0]*vertexData[vI][1];
-		for (size_t d=0; d<dimension; ++d) {
-			pos[d] += factor*(vertexData[vI][d]+vertexData[vIPlus][d]);
+	if (dimension==2) {
+		double area = calculateVolume(vertexData,1);
+		
+		for (size_t i=0; i<numVertex(); ++i) {
+			
+			size_t vI = vertex(i)->index();
+			// 		std::cerr << " *** Vertex " << i << " = (" << vertexData[vI][0] << ", " << vertexData[vI][1] << ")" << std::endl;
+			
+			size_t vIPlus = vertex( (i+1)%(numVertex()) )->index();
+			double factor = vertexData[vI][0]*vertexData[vIPlus][1]-
+				vertexData[vIPlus][0]*vertexData[vI][1];
+			for (size_t d=0; d<dimension; ++d) {
+				pos[d] += factor*(vertexData[vI][d]+vertexData[vIPlus][d]);
+			}
 		}
+		for (size_t d=0; d<dimension; ++d)
+			pos[d] /= 6*area;
 	}
-	for (size_t d=0; d<dimension; ++d)
-		pos[d] /= 6*area;
-	
+	else if (dimension==3) {
+		double sumWallLength=0.0;
+		for (size_t w=0; w<numWall(); ++w) {
+			double wallLength=0.0;
+			for (size_t d=0; d<dimension; ++d)
+				wallLength += (vertexData[wall(w)->vertex1()->index()][d] -
+											 vertexData[wall(w)->vertex2()->index()][d] ) *
+					(vertexData[wall(w)->vertex1()->index()][d] -
+					 vertexData[wall(w)->vertex2()->index()][d] );
+			wallLength = std::sqrt(wallLength);
+			sumWallLength += wallLength;
+			for (size_t d=0; d<dimension; ++d)
+				pos[d] += 0.5*(vertexData[wall(w)->vertex1()->index()][d] +
+											 vertexData[wall(w)->vertex2()->index()][d] ) *
+					wallLength;
+		}
+		for (size_t d=0; d<dimension; ++d)
+			pos[d] /= sumWallLength;
+	}
+	else {
+		std::cerr << "Cell::positionFromVertex() only implemented for two and"
+							<< " three dimensions" << std::endl;
+		exit(-1);
+	}
 	return pos;
 }
 
