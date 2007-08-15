@@ -151,9 +151,35 @@ double Cell::calculateVolume( size_t signFlag )
 		else
 			return volume_;
 	}
+	else if (dimension==3) {
+		//Caveat:Old version to be changed to projected version of 2D variant
+		//Calculate cell position from vertices
+		std::vector<double> xCenter = positionFromVertex();
+		assert( xCenter.size()==dimension );
+		
+		//Calculate volume from vertex positions for each wall
+		volume_=0.0;
+		for( size_t k=0 ; k<numWall() ; ++k ) {
+			std::vector<double> r1(dimension),r2(dimension);
+			for( size_t d=0 ; d<dimension ; ++d ) {
+				r1[d] = wall(k)->vertex1()->position(d) - xCenter[d];
+				r2[d] = wall(k)->vertex2()->position(d) - xCenter[d];
+			}
+			double triArea=0.0;
+			for( size_t d=0 ; d<dimension ; ++d ) {
+				size_t d1 = (d+1)%dimension;
+				size_t d2 = (d+2)%dimension;
+				double r1crossr2 = r1[d1]*r2[d2]-r1[d2]*r2[d1];
+				triArea += r1crossr2*r1crossr2;
+			}
+			triArea = std::sqrt(triArea);
+			volume_ += 0.5*triArea;
+		}
+		return volume_;
+	}
 	else {
-		std::cerr << "Cell::calculateVolume(signFlag) "
-							<< " only implemented for dimension=2." << std::endl;
+		std::cerr << "Cell::calculateVolume() Only applicable for two or three"
+							<< " dimensions." << std::endl;
 		exit(-1);
 	}
 }
@@ -181,7 +207,7 @@ double Cell::calculateVolume( std::vector< std::vector<double> >
 		else
 			return volume_;
 	}
-	else {
+	else if (dimension==3) {
 		//Caveat:Old version to be changed to projected version of 2D variant
 		//Calculate cell position from vertices
 		std::vector<double> xCenter = positionFromVertex(vertexData);
@@ -193,26 +219,27 @@ double Cell::calculateVolume( std::vector< std::vector<double> >
 			Wall *tmpWall = wall(k);
 			size_t v1I = tmpWall->vertex1()->index();
 			size_t v2I = tmpWall->vertex2()->index();
-			std::vector<double> n(dimension);
-			double b=0.0;
+			std::vector<double> r1(dimension),r2(dimension);
 			for( size_t d=0 ; d<dimension ; ++d ) {
-				n[d] = vertexData[v2I][d]-vertexData[v1I][d];
-				b += n[d]*n[d];
+				r1[d] = vertexData[v1I][d]-xCenter[d];
+				r2[d] = vertexData[v2I][d]-xCenter[d];
 			}
-			assert( b>0.0 );
-			b = std::sqrt(b);
-			for( size_t d=0 ; d<dimension ; ++d )
-				n[d] /= b;
-			double h = (xCenter[0]-vertexData[v1I][0])*(xCenter[0]-vertexData[v1I][0])
-				+ (xCenter[1]-vertexData[v1I][1])*(xCenter[1]-vertexData[v1I][1])
-				- ( n[0]*(xCenter[0]-vertexData[v1I][0])+n[1]*(xCenter[1]-vertexData[v1I][1]) )*
-				( n[0]*(xCenter[0]-vertexData[v1I][0])+n[1]*(xCenter[1]-vertexData[v1I][1]) );
-			assert( h>0.0 );
-			h = std::sqrt(h);
-			volume_ += b*h;
+			double triArea=0.0;
+			for( size_t d=0 ; d<dimension ; ++d ) {
+				size_t d1 = (d+1)%dimension;
+				size_t d2 = (d+2)%dimension;
+				double r1crossr2 = r1[d1]*r2[d2]-r1[d2]*r2[d1];
+				triArea += r1crossr2*r1crossr2;
+			}
+			triArea = std::sqrt(triArea);
+			volume_ += 0.5*triArea;
 		}
-		volume_ *= 0.5;
 		return volume_;
+	}
+	else {
+		std::cerr << "Cell::calculateVolume(vertexData) Only applicable for two or three"
+							<< " dimensions." << std::endl;
+		exit(-1);
 	}
 }
 

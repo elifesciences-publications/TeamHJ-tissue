@@ -2122,49 +2122,108 @@ void PerpendicularWallPressure::derivs(Tissue &T,
 							    std::vector< std::vector<double> > &wallDerivs,
 							    std::vector< std::vector<double> > &vertexDerivs)
 {
-	for (size_t n = 0; n < T.numWall(); ++n) {
-		Wall wall = T.wall(n);
-		std::vector<Cell *> cells(2);
-		cells[0] = wall.cell1();
-		cells[1] = wall.cell2();
-		std::vector<Vertex *> vertices(2);
-		vertices[0] = wall.vertex1();
-		vertices[1] = wall.vertex2();
-
- 		double nx = vertexData[vertices[1]->index()][0] - vertexData[vertices[0]->index()][0];
- 		double ny = vertexData[vertices[1]->index()][1] - vertexData[vertices[0]->index()][1];
-		double A = std::sqrt(nx * nx + ny * ny);
-		nx = nx / A;
-		ny = ny / A;
-
-		for (size_t i = 0; i < cells.size(); ++i) {
-			Cell *cell = cells[i];
-
-			if (cell == T.background()) {
-				continue;
-			}
+	size_t dimension = vertexData[0].size();
+	if (dimension==2) {
+		for (size_t n = 0; n < T.numWall(); ++n) {
+			Wall wall = T.wall(n);
+			std::vector<Cell *> cells(2);
+			cells[0] = wall.cell1();
+			cells[1] = wall.cell2();
+			std::vector<Vertex *> vertices(2);
+			vertices[0] = wall.vertex1();
+			vertices[1] = wall.vertex2();
+			
+			double nx = vertexData[vertices[1]->index()][0] - vertexData[vertices[0]->index()][0];
+			double ny = vertexData[vertices[1]->index()][1] - vertexData[vertices[0]->index()][1];
+			double A = std::sqrt(nx * nx + ny * ny);
+			nx = nx / A;
+			ny = ny / A;
+			
+			for (size_t i = 0; i < cells.size(); ++i) {
+				Cell *cell = cells[i];
 				
-			double force = parameter(0) * 
-				cellData[cell->index()][variableIndex(0, 0)] *  
-				wall.lengthFromVertexPosition(vertexData);
-
-			double x = 0.0;
-			double y = 0.0;
-			for (size_t j = 0; j < cell->numVertex(); ++j) {
-				x += vertexData[cell->vertex(j)->index()][0];
-				y += vertexData[cell->vertex(j)->index()][1];
-			}
-			x = (x / cell->numVertex()) - vertexData[vertices[0]->index()][0];
-			y = (y / cell->numVertex()) - vertexData[vertices[0]->index()][1];
-
-			int sign = (nx * y - ny * x) >= 0 ? 1 : -1;
-
-			for (size_t k = 0; k < vertices.size(); ++k) {
-				Vertex *vertex = vertices[k];
-				vertexDerivs[vertex->index()][0] += ny * sign * force;
-				vertexDerivs[vertex->index()][1] += - nx * sign * force;
+				if (cell == T.background()) {
+					continue;
+				}
+				
+				double force = parameter(0) * 
+					cellData[cell->index()][variableIndex(0, 0)] *  
+					wall.lengthFromVertexPosition(vertexData);
+				
+				double x = 0.0;
+				double y = 0.0;
+				for (size_t j = 0; j < cell->numVertex(); ++j) {
+					x += vertexData[cell->vertex(j)->index()][0];
+					y += vertexData[cell->vertex(j)->index()][1];
+				}
+				x = (x / cell->numVertex()) - vertexData[vertices[0]->index()][0];
+				y = (y / cell->numVertex()) - vertexData[vertices[0]->index()][1];
+				
+				int sign = (nx * y - ny * x) >= 0 ? 1 : -1;
+				
+				for (size_t k = 0; k < vertices.size(); ++k) {
+					Vertex *vertex = vertices[k];
+					vertexDerivs[vertex->index()][0] += ny * sign * force;
+					vertexDerivs[vertex->index()][1] += - nx * sign * force;
+				}
 			}
 		}
+	}
+	else if (dimension==3) {
+		for (size_t n = 0; n < T.numWall(); ++n) {
+			Wall wall = T.wall(n);
+			std::vector<Cell *> cells(2);
+			cells[0] = wall.cell1();
+			cells[1] = wall.cell2();
+			std::vector<Vertex *> vertices(2);
+			vertices[0] = wall.vertex1();
+			vertices[1] = wall.vertex2();
+			
+			std::vector<double> nw(dimension);
+			for (size_t d=0; d<dimension; ++d)
+				nw[d] = vertexData[vertices[1]->index()][d] - vertexData[vertices[0]->index()][d];
+
+			for (size_t i = 0; i < cells.size(); ++i) {
+				Cell *cell = cells[i];
+				
+				if (cell == T.background()) {
+					continue;
+				}
+				std::vector<double> cellPos = cell->positionFromVertex(vertexData);
+				assert (cellPos.size()==dimension);
+
+				double force = parameter(0) * 
+					cellData[cell->index()][variableIndex(0, 0)] *  
+					wall.lengthFromVertexPosition(vertexData);
+				
+				//Get direction
+				double t=0.0,nw2=0.0;
+				for (size_t d=0; d<dimension; ++d) {
+					t += nw[d]*(vertexData[vertices[0]->index()][d]-cellPos[d]);
+					nw2 += nw[d]*nw[d];
+				}
+				t /= nw2;
+				std::vector<double> forceDirection(dimension);
+				double norm=0.0;
+				for (size_t d=0; d<dimension; ++d) {
+					forceDirection[d] = vertexData[vertices[0]->index()][d] + t*nw[d] - cellPos[d];
+					norm += forceDirection[d]*forceDirection[d];
+				}
+				norm = std::sqrt(norm);
+				for (size_t d=0; d<dimension; ++d)
+					forceDirection[d] /=norm; 
+
+				for (size_t k = 0; k < vertices.size(); ++k) {
+					for (size_t d=0; d<dimension; ++d)
+						vertexDerivs[vertices[k]->index()][d] +=  forceDirection[d] * force;
+				}
+			}			
+		}
+	}
+	else {
+		std::cerr << "PerpendicularWallPressure::derivs() Only applicable for two or three"
+							<< " dimensions." << std::endl;
+		exit(-1);
 	}
 }
 
