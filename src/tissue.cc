@@ -1627,7 +1627,8 @@ removeEpidermalCellsAtDistance(std::vector< std::vector<double> > &cellData,
 															 double distanceThreshold,double max,
 															 size_t direction ) 
 {
-	size_t dimension=vertexData[0].size();
+	size_t dimension;
+	dimension = vertexData[0].size();
 	assert( direction<dimension );
 	std::vector<size_t> cellR;
 	//Mark cells for removal (sorted with highest index first

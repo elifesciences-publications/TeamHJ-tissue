@@ -545,7 +545,8 @@ derivs(Tissue &T,
 			 std::vector< std::vector<double> > &wallDerivs,
 			 std::vector< std::vector<double> > &vertexDerivs)
 {
-	size_t dimension = vertexData[0].size();
+	size_t dimension;
+	dimension = vertexData[0].size();
 	assert(dimension==2);
 
 	for (size_t n = 0; n < T.numCell(); ++n) {

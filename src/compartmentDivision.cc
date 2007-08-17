@@ -1528,10 +1528,11 @@ update(Tissue *T,size_t i,
   Cell *divCell = &(T->cell(i));
   size_t dimension = vertexData[0].size();
   assert( divCell->numWall() > 1 );
-	assert( dimension==2 );
+  assert( dimension==2 );
 	
   // Find shortest path for each wall pair
-  size_t wI=0, wI2=1;
+	size_t wI=0;
+	//  size_t wI2=1;
   for (size_t k=0; k<divCell->numWall()-1; ++k) {
 		for (size_t k2=k+1; k<divCell->numWall(); ++k) {
 			std::vector<double> x0(dimension),x1(dimension),x2(dimension),n1(dimension),n2(dimension);
@@ -1619,7 +1620,7 @@ update(Tissue *T,size_t i,
 				double root = std::sqrt((A0+Ahalf-A2)/(std::cos(alpha)*std::sin(alpha)));
 				double t1A = std::sqrt((x1[0]-x0[0])*(x1[0]-x0[0])+(x1[1]-x0[1])*(x1[1]-x0[1]));
 				double t2A = std::sqrt((x2[0]-x0[0])*(x2[0]-x0[0])+(x2[1]-x0[1])*(x2[1]-x0[1]));
-				double length = 2*(2*t1A+root)*std::cos(alpha);
+				//				double length = 2*(2*t1A+root)*std::cos(alpha);
 				std::cerr << divCell->index() << " " << k << " " << k2 << "\t" << wL1 << " " << t1A+root << " (" << t1A-root << ")  "
 									<< wL2 << " " << t2A+root << " (" << t2A-root << ")" << std::endl;
 			}

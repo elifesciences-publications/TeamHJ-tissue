@@ -219,7 +219,8 @@ derivs(Tissue &T,
   size_t pidI = variableIndex(0,3);
   size_t xI = variableIndex(0,4);
   size_t l1I = variableIndex(0,5);
-  size_t mI = variableIndex(0,6);
+  size_t mI;
+  mI = variableIndex(0,6);
   assert( auxinI<cellData[0].size() &&
 					pinI<cellData[0].size() &&
 					auxI<cellData[0].size() &&
@@ -404,7 +405,9 @@ derivs(Tissue &T,
   size_t pidI = variableIndex(0,3);
   size_t xI = variableIndex(0,4);
   size_t l1I = variableIndex(0,5);
-  size_t mI = variableIndex(0,6);
+  size_t mI;
+  mI = variableIndex(0,6);
+
   assert( auxinI<cellData[0].size() &&
 					pinI<cellData[0].size() &&
 					auxI<cellData[0].size() &&
@@ -599,7 +602,8 @@ derivs(Tissue &T,
   size_t pidI = variableIndex(0,3);
   size_t xI = variableIndex(0,4);
   size_t l1I = variableIndex(0,5);
-  size_t mI = variableIndex(0,6);
+  size_t mI;
+  mI = variableIndex(0,6);
   assert( auxinI<cellData[0].size() &&
 	  pinI<cellData[0].size() &&
 	  auxI<cellData[0].size() &&

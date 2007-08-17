@@ -723,7 +723,8 @@ derivs(Tissue &T,
   
   //Do the update for each vertex via each wall in each cell
   size_t numCells = T.numCell();
-  size_t dimension = T.vertex(0).numPosition(); 
+  size_t dimension;
+  dimension = T.vertex(0).numPosition(); 
 	
 	//Assumming vertices and walls are sorted
 	//////////////////////////////////////////////////////////////////////
