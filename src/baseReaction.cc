@@ -90,6 +90,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new EpidermalRadialForce(paraValue, indValue);
   else if (idValue == "PerpendicularWallPressure")
 	  return new PerpendicularWallPressure(paraValue, indValue);
+  else if (idValue == "ContinousMTDirection")
+	  return new ContinousMTDirection(paraValue, indValue);
 
 	//network.h,network.cc
   else if(idValue=="AuxinModelSimple1")

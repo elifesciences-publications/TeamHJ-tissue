@@ -30,6 +30,9 @@ LDFLAGS    = -O3 -DNDEBUG -funroll-loops -Wall -ansi -pedantic
 #LIBPATH      = ~/lib
 
 # For development 
+# CXXFLAGS     = -O0 -Wall -ansi -pedantic -g
+# LDFLAGS    = -O0 -Wall -ansi -pedantic -g
+
 # CXXFLAGS     = -O3 -Wall -ansi -pedantic -g
 # LDFLAGS    = -O3 -Wall -ansi -pedantic -g
 
