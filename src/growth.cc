@@ -493,10 +493,9 @@ derivs(Tissue &T,
 		}
 		
 		// Calculate turgor measure from volume and 'water volume'
-		// P ~ p_2(V_w-V)
+		// P ~ p_2(V_w-V)/V
 		double cellVolume =cell.calculateVolume(vertexData);
-		P = (cellData[cell.index()][variableIndex(0,0)]-cellVolume) /
-			cellVolume;
+		P = (cellData[cell.index()][variableIndex(0,0)]-cellVolume) / cellVolume;
 		if (P<0.0 && !parameter(4))
 			P=0.0;
 		

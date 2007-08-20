@@ -249,10 +249,10 @@ DivisionVolumeViaLongestWall3D(std::vector<double> &paraValue,
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
-  if( paraValue.size()!=2 ) {
+  if( paraValue.size()!=3 ) {
     std::cerr << "DivisionVolumeViaLongestWall3D::"
 							<< "DivisionVolumeViaLongestWall3D() "
-							<< "Two parameters used V_threshold, LWall_frac\n";
+							<< "Two parameters used V_threshold, LWall_frac LWall_threshold\n";
     exit(0);
   }
   if( indValue.size() != 1 ) {
@@ -275,6 +275,7 @@ DivisionVolumeViaLongestWall3D(std::vector<double> &paraValue,
   tmp.resize( numParameter() );
   tmp[0] = "V_threshold";
 	tmp[1] = "LWall_frac";
+	tmp[2] = "LWall_threshold";
   setParameterId( tmp );
 }
 
@@ -459,7 +460,9 @@ update(Tissue *T,size_t i,
   size_t v1w3I = divCell->wall(w3I)->vertex1()->index();
   size_t v2w3I = divCell->wall(w3I)->vertex2()->index();
   for( size_t d=0 ; d<dimension ; ++d )
-    v2Pos[d] = 0.5*(vertexData[v1w3I][d]+vertexData[v2w3I][d]);
+    v2Pos[d] = vertexData[v1w3I][d] + 
+			w3tTmp[w3tTmp.size()-1]*(vertexData[v2w3I][d]-vertexData[v1w3I][d]);
+	//v2Pos[d] = 0.5*(vertexData[v1w3I][d]+vertexData[v2w3I][d]);
 	
   //Add one cell, three walls, and two vertices
   //////////////////////////////////////////////////////////////////////
@@ -468,7 +471,8 @@ update(Tissue *T,size_t i,
 	assert( numWallTmp==T->numWall() );
 	//Divide
 	T->divideCell(divCell,wI,w3I,v1Pos,v2Pos,cellData,wallData,vertexData,
-									 cellDeriv,wallDeriv,vertexDeriv,variableIndex(0));
+								cellDeriv,wallDeriv,vertexDeriv,variableIndex(0),
+								parameter(2));
 	assert( numWallTmp+3 == T->numWall() );
 	
 	//Change length of new wall between the divided daugther cells 
