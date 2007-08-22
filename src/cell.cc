@@ -10,7 +10,7 @@
 #include "cell.h"
 #include "tissue.h"
 #include "vertex.h"
-
+#include "math.h"
 
 //!The empty cel constructor
 Cell::Cell() {
@@ -338,5 +338,112 @@ positionFromVertex(std::vector< std::vector<double> > &vertexData)
 		exit(-1);
 	}
 	return pos;
+}
+
+
+std::vector< std::vector<double> > Cell::pcaPlane(std::vector< std::vector<double> > &vertexData)
+{
+	size_t dimensions = vertexData[0].size();
+	size_t numberOfVertices = vertex_.size();
+
+	// Copy vertex data to temporary container and calculate mean values.
+
+	std::vector< std::vector<double> > vertices(numberOfVertices, dimensions);
+	std::vector<double> mean(dimensions, 0.0);
+
+	for (size_t i = 0; i < numberOfVertices; ++i) {
+		for (size_t j = 0; j < dimensions; ++j) {
+			vertices[i][j] = vertexData[i][j];
+			mean[j] += vertexData[i][j];
+		}
+	}
+
+	for (size_t i = 0; i < dimensions; ++i) {
+		mean[i] /= numberOfVertices;
+	}
+
+	// Subtract mean from data to get an expectation value equal to zero.
+
+	for (size_t i = 0; i < numberOfVertices; ++i) {
+		for (size_t j = 0; j < dimensions; ++j) {
+			vertices[i][j] -= mean[j];
+		}
+	}
+
+	// Calculate the correlation matrix.
+	
+	std::vector< std::vector<double> > R(dimensions, dimensions);
+	for (size_t k = 0; k < dimensions; ++k) {
+		for (size_t l = 0; l < dimensions; ++l) {
+			for (size_t i = 0; i < numberOfVertices; ++i) {
+				R[k][l] += vertices[i][k] * vertices[i][l];
+			}
+			R[k][l] /= numberOfVertices;
+		}
+	}
+
+	// Find the eigenvectors with the two greatests corresponding eigenvalues.
+
+	std::vector< std::vector<double> > candidates;
+
+	std::vector< std::vector<double> > V;
+	std::vector<double> d;
+
+	jacobiTransformation(R , V, d);
+
+	size_t max1 = 0;
+	
+	for (size_t i = 0; i < d.size(); ++i) {
+		if (d[i] > d[max1]) {
+			max1 = i;
+		}
+	}
+
+	size_t max2 = 0;
+	for (size_t i = 0; i < d.size(); ++i) {
+		if (d[i] > d[max2] && i != max2) {
+			max2 = i;
+		}
+	}
+
+	candidates.push_back(V[max1]);
+	candidates.push_back(V[max1]);
+
+ 	// Find orthonormal basis.
+
+	std::vector< std::vector<double> > E(2);
+
+	for (size_t i = 0; i < dimensions; ++i) {
+		E[0][i] = V[0][i];
+	}
+
+	double s = 0.0;
+
+	double numerator = 0.0;
+	double denominator = 0.0;
+	for (size_t i = 0; i < dimensions; ++i) {
+		numerator += V[0][i] * V[1][i];
+		denominator += V[0][i] * V[0][i];
+	}
+
+	s = -numerator / denominator;
+
+	for (size_t i = 0; i < dimensions; ++i) {
+		E[1][i] = s * E[0][i] + V[1][i];
+	}
+
+	for (size_t i = 0; i < E.size(); ++i) {
+		double sum = 0.0;
+		for (size_t j = 0; j < dimensions; ++j) {
+			sum += E[i][j];
+		}
+		for (size_t j = 0; j < dimensions; ++j) {
+			E[i][j] /= sum;
+		}
+	}
+
+	// Return result.
+
+	return E;
 }
 

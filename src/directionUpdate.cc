@@ -502,6 +502,7 @@ void ForceDirection::update(Tissue &T, double h,
 			double wx = wall->vertex1()->position(0) - wall->vertex2()->position(0);
 			double wy = wall->vertex1()->position(1) - wall->vertex2()->position(1);
 			double Aw = std::sqrt(wx * wx  + wy * wy);
+			
 			if (wx > 0) {
 				wx = wx / Aw;
 				wy = wy / Aw;
