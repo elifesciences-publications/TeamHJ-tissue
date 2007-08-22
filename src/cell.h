@@ -37,7 +37,9 @@ class Cell {
   double volume_;
   size_t mitosisFlag_;
   Wall* directionWall_;
-  
+
+  // The vectors obtained from PCA.
+  std::vector< std::vector<double> > E;
   
  public:
   
@@ -85,7 +87,11 @@ class Cell {
   std::vector<double> 
 	positionFromVertex( std::vector< std::vector<double> > &vertexData );	
 
-  std::vector< std::pair<double, double> > pcaPlane(std::vector< std::vector<double> > &vertexData);
+
+  void calculatePCAPlane(std::vector< std::vector<double> > &vertexData);
+  std::vector< std::vector<double> > getPCAPlane(void);
+  std::vector< std::pair<double, double> > projectVerticesOnPCAPlane(std::vector< std::vector<double> > &vertexData);
+
 };
 
 //!Returns the cell index

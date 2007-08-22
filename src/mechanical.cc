@@ -2348,7 +2348,9 @@ void DebugReaction::derivs(Tissue &T,
 		
 		std::vector< std::pair<double, double> > coordinates;
 
-		coordinates = cell.pcaPlane(vertexData);
+		cell.calculatePCAPlane(vertexData);
+
+		coordinates = cell.projectVerticesOnPCAPlane(vertexData);
 
 		for (size_t j = 0; j < coordinates.size(); ++j) {
 // 			std::cout << "j = " << j << std::endl;

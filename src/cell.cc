@@ -341,13 +341,13 @@ positionFromVertex(std::vector< std::vector<double> > &vertexData)
 }
 
 
-std::vector< std::pair<double, double> > Cell::pcaPlane(std::vector< std::vector<double> > &vertexData)
+void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 {
 	size_t dimensions = vertexData[0].size();
 	size_t numberOfVertices = vertex_.size();
 
 	// Copy vertex data to temporary container and calculate mean values.
-
+ 
 	std::vector< std::vector<double> > vertices(numberOfVertices, dimensions);
 	std::vector<double> mean(dimensions, 0.0);
 
@@ -409,7 +409,7 @@ std::vector< std::pair<double, double> > Cell::pcaPlane(std::vector< std::vector
 
  	// Find orthonormal basis.
 
-	std::vector< std::vector<double> > E(2);
+	E.resize(dimensions);
 
 	for (size_t i = 0; i < dimensions; ++i) {
 		E[0][i] = V[max1][i];
@@ -439,11 +439,45 @@ std::vector< std::pair<double, double> > Cell::pcaPlane(std::vector< std::vector
 			E[i][j] /= sum;
 		}
 	}
+}
 
-	// Project vertices to plane and return result.
+std::vector< std::vector<double> > Cell::getPCAPlane(void)
+{
+	return E;
+}
 
+std::vector< std::pair<double, double> > Cell::projectVerticesOnPCAPlane(std::vector< std::vector<double> > &vertexData)
+{
+	size_t dimensions = vertexData[0].size();
+	size_t numberOfVertices = vertex_.size();	
+
+	// Copy vertex data to temporary container and calculate mean values.
+ 
+	std::vector< std::vector<double> > vertices(numberOfVertices, dimensions);
+	std::vector<double> mean(dimensions, 0.0);
+	
+	for (size_t i = 0; i < numberOfVertices; ++i) {
+		Vertex *v = vertex(i);
+		for (size_t j = 0; j < dimensions; ++j) {
+			vertices[i][j] = vertexData[v->index()][j];
+			mean[j] += vertexData[v->index()][j];
+		}
+	}
+	
+	for (size_t i = 0; i < dimensions; ++i) {
+		mean[i] /= numberOfVertices;
+	}
+	
+	// Subtract mean from data to get an expectation value equal to zero.
+	
+	for (size_t i = 0; i < numberOfVertices; ++i) {
+		for (size_t j = 0; j < dimensions; ++j) {
+			vertices[i][j] -= mean[j];
+		}
+	}
+	
 	std::vector< std::pair<double, double> > coordinates;
-
+	
 	for (size_t i = 0; i < numberOfVertices; ++i) {
 		std::pair<double, double> tmp(0.0, 0.0);
 		for (size_t j = 0; j < dimensions; ++j) {
@@ -452,7 +486,6 @@ std::vector< std::pair<double, double> > Cell::pcaPlane(std::vector< std::vector
 		}
 		coordinates.push_back(tmp);
 	}
-
+	
 	return coordinates;
 }
-
