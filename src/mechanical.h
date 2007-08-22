@@ -441,4 +441,20 @@ class ContinousMTDirection : public BaseReaction
 		    std::vector< std::vector<double> > &vertexDerivs);
 };
 
+// Do not use this reaction. Restricted area (unless you are a developer).
+class DebugReaction : public BaseReaction
+{
+ public:
+	DebugReaction(std::vector<double> &paraValue,
+		      std::vector< std::vector<size_t> > &indValue);
+
+	void derivs(Tissue &T,
+		    std::vector< std::vector<double> > &cellData,
+		    std::vector< std::vector<double> > &wallData,
+		    std::vector< std::vector<double> > &vertexData,
+		    std::vector< std::vector<double> > &cellDerivs,
+		    std::vector< std::vector<double> > &wallDerivs,
+		    std::vector< std::vector<double> > &vertexDerivs);
+};
+
 #endif

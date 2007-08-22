@@ -92,6 +92,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new PerpendicularWallPressure(paraValue, indValue);
   else if (idValue == "ContinousMTDirection")
 	  return new ContinousMTDirection(paraValue, indValue);
+  else if (idValue == "DebugReaction")
+	  return new DebugReaction(paraValue, indValue);
 
 	//network.h,network.cc
   else if(idValue=="AuxinModelSimple1")

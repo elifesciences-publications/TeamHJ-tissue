@@ -2329,3 +2329,32 @@ void ContinousMTDirection::derivs(Tissue &T,
 }
 
 
+DebugReaction::DebugReaction(std::vector<double> &paraValue,
+			     std::vector< std::vector<size_t> > &indValue)
+{
+
+}
+
+void DebugReaction::derivs(Tissue &T,
+			   std::vector< std::vector<double> > &cellData,
+			   std::vector< std::vector<double> > &wallData,
+			   std::vector< std::vector<double> > &vertexData,
+			   std::vector< std::vector<double> > &cellDerivs,
+			   std::vector< std::vector<double> > &wallDerivs,
+			   std::vector< std::vector<double> > &vertexDerivs)
+{
+	for (size_t i = 0; i < T.numCell(); ++i) {
+		Cell cell = T.cell(i);
+		
+		std::vector< std::pair<double, double> > coordinates;
+
+		coordinates = cell.pcaPlane(vertexData);
+
+		for (size_t j = 0; j < coordinates.size(); ++j) {
+// 			std::cout << "j = " << j << std::endl;
+// 			std::cout << "\tx = " << vertexData[cell.vertex(j)->index()][0] << "   \ty = " << vertexData[cell.vertex(j)->index()][1]
+// 				  << "   \tz = " << vertexData[cell.vertex(j)->index()][2] << std::endl;
+// 			std::cout << "\tx = " << coordinates[j].first << "   \ty = " << coordinates[j].second << std::endl;
+		}
+	}
+}

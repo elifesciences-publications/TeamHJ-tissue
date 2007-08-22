@@ -341,7 +341,7 @@ positionFromVertex(std::vector< std::vector<double> > &vertexData)
 }
 
 
-std::vector< std::vector<double> > Cell::pcaPlane(std::vector< std::vector<double> > &vertexData)
+std::vector< std::pair<double, double> > Cell::pcaPlane(std::vector< std::vector<double> > &vertexData)
 {
 	size_t dimensions = vertexData[0].size();
 	size_t numberOfVertices = vertex_.size();
@@ -352,9 +352,10 @@ std::vector< std::vector<double> > Cell::pcaPlane(std::vector< std::vector<doubl
 	std::vector<double> mean(dimensions, 0.0);
 
 	for (size_t i = 0; i < numberOfVertices; ++i) {
+		Vertex *v = vertex(i);
 		for (size_t j = 0; j < dimensions; ++j) {
-			vertices[i][j] = vertexData[i][j];
-			mean[j] += vertexData[i][j];
+			vertices[i][j] = vertexData[v->index()][j];
+			mean[j] += vertexData[v->index()][j];
 		}
 	}
 
@@ -401,20 +402,17 @@ std::vector< std::vector<double> > Cell::pcaPlane(std::vector< std::vector<doubl
 
 	size_t max2 = 0;
 	for (size_t i = 0; i < d.size(); ++i) {
-		if (d[i] > d[max2] && i != max2) {
+		if (d[i] > d[max2] && i != max1) {
 			max2 = i;
 		}
 	}
-
-	candidates.push_back(V[max1]);
-	candidates.push_back(V[max1]);
 
  	// Find orthonormal basis.
 
 	std::vector< std::vector<double> > E(2);
 
 	for (size_t i = 0; i < dimensions; ++i) {
-		E[0][i] = V[0][i];
+		E[0][i] = V[max1][i];
 	}
 
 	double s = 0.0;
@@ -422,14 +420,14 @@ std::vector< std::vector<double> > Cell::pcaPlane(std::vector< std::vector<doubl
 	double numerator = 0.0;
 	double denominator = 0.0;
 	for (size_t i = 0; i < dimensions; ++i) {
-		numerator += V[0][i] * V[1][i];
-		denominator += V[0][i] * V[0][i];
+		numerator += V[max1][i] * V[max2][i];
+		denominator += V[max1][i] * V[max1][i];
 	}
 
 	s = -numerator / denominator;
 
 	for (size_t i = 0; i < dimensions; ++i) {
-		E[1][i] = s * E[0][i] + V[1][i];
+		E[1][i] = s * E[0][i] + V[max2][i];
 	}
 
 	for (size_t i = 0; i < E.size(); ++i) {
@@ -442,8 +440,19 @@ std::vector< std::vector<double> > Cell::pcaPlane(std::vector< std::vector<doubl
 		}
 	}
 
-	// Return result.
+	// Project vertices to plane and return result.
 
-	return E;
+	std::vector< std::pair<double, double> > coordinates;
+
+	for (size_t i = 0; i < numberOfVertices; ++i) {
+		std::pair<double, double> tmp(0.0, 0.0);
+		for (size_t j = 0; j < dimensions; ++j) {
+			tmp.first += E[0][j] * vertices[i][j];
+			tmp.second += E[1][j] * vertices[i][j];
+		}
+		coordinates.push_back(tmp);
+	}
+
+	return coordinates;
 }
 

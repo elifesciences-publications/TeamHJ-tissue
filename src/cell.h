@@ -85,7 +85,7 @@ class Cell {
   std::vector<double> 
 	positionFromVertex( std::vector< std::vector<double> > &vertexData );	
 
-  std::vector< std::vector<double> > pcaPlane(std::vector< std::vector<double> > &vertexData);
+  std::vector< std::pair<double, double> > pcaPlane(std::vector< std::vector<double> > &vertexData);
 };
 
 //!Returns the cell index
