@@ -2237,10 +2237,33 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 	checkConnectivity(1);
 }
 
-void Tissue::sortCellWallAndCellVertex() 
+void Tissue::sortCellWallAndCellVertex(Cell *cell) 
 {	
-	for (size_t i=0; i<numCell(); ++i)
-		cell(i).sortWallAndVertex(*this);
+	std::cerr << "Tissue::sortCellWallAndCellVertex()" << std::endl;
+	std::vector<size_t> sortedFlag(numCell());
+	size_t numSorted=0;
+	if( !cell )		
+		cell = this->cellP(0);
+	sortCellRecursive(cell, sortedFlag, numSorted);
+	std::cerr << "Tissue::sortCellWallAndCellVertex() " << numSorted << " of " << numCell()
+						<< " sorted recursively." << std::endl;
+}
+
+void Tissue::sortCellRecursive( Cell* cell, std::vector<size_t> &sortedFlag, size_t &numSorted)
+{
+	if (sortedFlag[cell->index()])
+		return;
+	std::cerr << "Sorting cell " << cell->index() << " " << sortedFlag[cell->index()] << " (" 
+						<< numSorted << "," << numCell() << ")" << std::endl;
+	cell->sortWallAndVertex(*this);
+	sortedFlag[cell->index()]++;
+	numSorted++;
+	for (size_t k=0; k<cell->numWall(); ++k) {
+		Cell *cellNext = cell->cellNeighbor(k);
+		if (cellNext!=background())
+			sortCellRecursive(cellNext,sortedFlag,numSorted);
+	}
+	return;
 }
 
 void Tissue::checkConnectivity(size_t verbose) 

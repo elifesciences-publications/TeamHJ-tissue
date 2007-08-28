@@ -49,7 +49,7 @@ void Cell::sortWallAndVertex(Tissue &T) {
 	//					<< wall(i)->vertex2()->index() << std::endl; 
 	
 	size_t directionalWallFlag=0;
-	Wall* tmpDirectionalWall;
+	Wall* tmpDirectionalWall=NULL;
 	if( T.numDirectionalWall() && T.directionalWall(index())<numWall() ) {
 		directionalWallFlag=1;
 		tmpDirectionalWall = wall(T.directionalWall(index()));
@@ -108,6 +108,7 @@ void Cell::sortWallAndVertex(Tissue &T) {
 	
 	if( directionalWallFlag ) {
 		//Find the wall in the new list
+		assert(tmpDirectionalWall);
 		size_t foundWall=0;
 		for( size_t k=0; k<numWall(); ++k )
 			if( wall(k)==tmpDirectionalWall ) {

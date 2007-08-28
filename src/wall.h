@@ -27,6 +27,7 @@ class Wall {
   std::string id_;           
   
   std::pair<Cell*,Cell*> cell_;
+	std::pair<int,int> cellSort_;
   std::pair<Vertex*,Vertex*> vertex_;
   double length_;
   std::vector<double> variable_;
@@ -42,6 +43,8 @@ class Wall {
   inline std::string id() const;
   inline Cell* cell1() const;
   inline Cell* cell2() const;
+	inline int cellSort1() const;
+	inline int cellSort2() const;
   inline Vertex* vertex1() const;
   inline Vertex* vertex2() const;
   inline double length() const;
@@ -56,6 +59,9 @@ class Wall {
   inline void setCell(Cell *v1,Cell *v2);
   inline void setCell1(Cell *v1);
   inline void setCell2(Cell *v2);
+	inline void setCellSort(int value1,int value2);
+	inline void setCellSort1(int value);
+	inline void setCellSort2(int value);
   inline void setVertex(Vertex *v1,Vertex *v2);
   inline void setVertex1(Vertex *v1);
   inline void setVertex2(Vertex *v2);
@@ -82,6 +88,20 @@ inline Cell* Wall::cell1() const {
 //!The second Cell
 inline Cell* Wall::cell2() const {
   return cell_.second;
+}
+
+/// 
+/// @brief The sort direction for the first cell
+///
+inline int Wall::cellSort1() const {
+	return cellSort_.first;
+}
+
+/// 
+/// @brief The sort direction for the second cell
+///
+inline int Wall::cellSort2() const {
+	return cellSort_.second;
 }
 
 //!The first Vertex
@@ -126,6 +146,28 @@ inline void Wall::setCell1(Cell *c1) {
 //!Sets cell2
 inline void Wall::setCell2(Cell *c2) {
   cell_.second = c2;
+}
+
+///
+/// @brief Sets the cell sorting directions
+///
+inline void Wall::setCellSort(int value1,int value2) {
+	cellSort_.first = value1;
+	cellSort_.second = value2;
+}
+
+///
+/// @brief Sets the cell sorting direction for cell 1
+///
+inline void Wall::setCellSort1(int value) {
+	cellSort_.first = value;
+}
+
+///
+/// @brief Sets the cell sorting direction for cell 2
+///
+inline void Wall::setCellSort2(int value) {
+	cellSort_.second = value;
 }
 
 //!Sets the vertecis

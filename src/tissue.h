@@ -83,6 +83,7 @@ class Tissue {
   inline const std::vector<Cell> & cell() const;
   inline const Cell & cell(size_t i) const;
   inline Cell & cell(size_t i);
+	inline Cell * cellP(size_t i);
   inline void addCell( Cell val );
   inline void removeCell( size_t index );
   void removeEpidermalCells(std::vector< std::vector<double> > &cellData,
@@ -189,14 +190,15 @@ class Tissue {
 									 double threshold=0.0);
   
   //!Sorts cell.wall and cell.vertex vectors to be cyclic 
-  void sortCellWallAndCellVertex();
+  void sortCellWallAndCellVertex(Cell* cell=NULL);
+	void sortCellRecursive( Cell* cell, std::vector<size_t> &sortedFlag, size_t &numSorted);
   //!Checks all connectivities for errors
   void checkConnectivity(size_t verbose=0);
   
   ///Finds maxima in a variable column for the cells 
   unsigned int findPeaksGradientAscent( std::vector< std::vector<double> > &cellData, 
-					size_t col, std::vector<size_t> &cellMax,
-					std::vector<size_t> &flag );
+																				size_t col, std::vector<size_t> &cellMax,
+																				std::vector<size_t> &flag );
   
   //Print functions
   void printInit(std::ostream &os=std::cout);
@@ -254,6 +256,11 @@ inline const Cell & Tissue::cell(size_t i) const { return cell_[i]; }
 
 //!Returns a reference to cell i 
 inline Cell & Tissue::cell(size_t i) { return cell_[i]; }
+
+///
+/// @brief Return a pointer to cell i
+//
+inline Cell* Tissue::cellP(size_t i) {return &cell_[i];}
 
 //!Adds a cell to the vector
 inline void Tissue::addCell( Cell val ) { cell_.push_back(val);}

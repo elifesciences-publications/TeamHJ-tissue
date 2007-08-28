@@ -444,7 +444,8 @@ update(Tissue &T, double h,
   
 }
 
-ForceDirection::ForceDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
+ForceDirection::
+ForceDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
 {
 	if (paraValue.size() != 1) {
 		std::cerr << "ForceDirection::ForceDirection() " 
@@ -491,11 +492,10 @@ void ForceDirection::update(Tissue &T, double h,
 {
 	for (size_t n = 0; n < T.numCell(); ++n) {
  		Cell cell = T.cell(n);
-
+		
 		if (cellData[cell.index()][variableIndex(0, 0) + 2] == 0) {
 			continue;
 		}
-
 		double enumerator = 0.0;
 		double denominator = 0.0;
 
@@ -510,7 +510,6 @@ void ForceDirection::update(Tissue &T, double h,
 				wx *= -1.0;
 				wy *= -1.0;
 			}
-		       
 			double sigma = std::atan2(wy, wx);
 
 			double c = std::cos(2.0 * sigma);
@@ -520,13 +519,12 @@ void ForceDirection::update(Tissue &T, double h,
 			for (size_t j = 0; j < numVariableIndex(1); ++j) {
 				force += wallData[wall->index()][variableIndex(1, j)];
 			}
-
 			enumerator += force * s;
 			denominator += force * c;
 		}
-
+		
 		double angle = std::atan2(enumerator, denominator);
-
+		
 		double x = std::cos(0.5 * angle);
 		double y = std::sin(0.5 * angle);
 
@@ -540,7 +538,8 @@ void ForceDirection::update(Tissue &T, double h,
 	}
 }
 
-StretchDirection::StretchDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
+StretchDirection::
+StretchDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
 {
 	if (paraValue.size() != 1) {
 		std::cerr << "StretchDirection::StretchDirection() " 
@@ -548,13 +547,13 @@ StretchDirection::StretchDirection(std::vector<double> &paraValue, std::vector< 
 							<< "stretch, 1 for direction perpendicular to stretch)" << std::endl;
 		exit(EXIT_FAILURE);
 	}
-
+	
 	if (indValue.size() != 2 || indValue[0].size() != 1 || 
 			indValue[1].size() != 1) {
 		std::cerr << "StretchDirection::StretchDirection() \n"
 							<< "First level: Start of cell direction index is used.\n"
 							<< "Second level: Wall length index." << std::endl;
-			exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
 	
 	setId("StretchDirection");
@@ -588,48 +587,96 @@ update(Tissue &T, double h,
 			 std::vector< std::vector<double> > &wallDerivs,
 			 std::vector< std::vector<double> > &vertexDerivs)
 {
-	for (size_t n = 0; n < T.numCell(); ++n) {
- 		Cell cell = T.cell(n);
-		double x = 0.0;
-		double y = 0.0;
-		
-		if (cellData[cell.index()][variableIndex(0, 0) + 2] == 0)
-			continue;
-
-		for (size_t i = 0; i < cell.numWall(); ++i) {
-			Wall *wall = cell.wall(i);
-			double wx = wall->vertex1()->position(0) - wall->vertex2()->position(0);
-			double wy = wall->vertex1()->position(1) - wall->vertex2()->position(1);
-			double Aw = std::sqrt(wx * wx  + wy * wy);
-			if (wx > 0) {
-				wx = wx / Aw;
-				wy = wy / Aw;
-			} else {
-				wx = -1 * wx / Aw;
-				wy = -1 * wy / Aw;
-			}
-			double restLength =wallData[wall->index()][variableIndex(1,0)];
-			double stretch = (Aw-restLength)/restLength;
+	size_t dimension = vertexData[0].size();
+	if (dimension==2) { 
+		for (size_t n = 0; n < T.numCell(); ++n) {
+			Cell cell = T.cell(n);
+			double x = 0.0;
+			double y = 0.0;
 			
-			x += wx * stretch;
-			y += wy * stretch;
-		}
+			if (cellData[cell.index()][variableIndex(0, 0) + 2] == 0)
+				continue;
+			
+			for (size_t i = 0; i < cell.numWall(); ++i) {
+				Wall *wall = cell.wall(i);
+				double wx = wall->vertex1()->position(0) - wall->vertex2()->position(0);
+				double wy = wall->vertex1()->position(1) - wall->vertex2()->position(1);
+				double Aw = std::sqrt(wx * wx  + wy * wy);
+				if (wx > 0) {
+					wx = wx / Aw;
+					wy = wy / Aw;
+				} else {
+					wx = -1 * wx / Aw;
+					wy = -1 * wy / Aw;
+				}
+				double restLength =wallData[wall->index()][variableIndex(1,0)];
+				double stretch = (Aw-restLength)/restLength;
+				
+				x += wx * stretch;
+				y += wy * stretch;
+			}
 		
-		double A = std::sqrt(x * x + y * y);
-
-		// If the stretch is of zero magnitude, leave it as it is.
-		if (A == 0)
-			continue; 
-		
-		if (parameter(0) == 0) {
-			cellData[cell.index()][variableIndex(0, 0)] = x / A;
-			cellData[cell.index()][variableIndex(0, 0) + 1] = y / A;
-		} else {
-			cellData[cell.index()][variableIndex(0, 0)] = - y / A;
-			cellData[cell.index()][variableIndex(0, 0) + 1] = x / A;
+			double A = std::sqrt(x * x + y * y);
+			
+			// If the stretch is of zero magnitude, leave it as it is.
+			if (A == 0)
+				continue; 
+			
+			if (parameter(0) == 0) {
+				cellData[cell.index()][variableIndex(0, 0)] = x / A;
+				cellData[cell.index()][variableIndex(0, 0) + 1] = y / A;
+			} else {
+				cellData[cell.index()][variableIndex(0, 0)] = - y / A;
+				cellData[cell.index()][variableIndex(0, 0) + 1] = x / A;
+			}
 		}
 	}
+	else if (dimension==3) {
+		if (parameter(0) != 0) {
+			std::cerr << "StretchDirection::update() Not yet implemented for three dimensions and"
+								<< " perpendicular direction." << std::endl;
+			exit(-1);
+		}
+		for (size_t n = 0; n < T.numCell(); ++n) {
+			Cell cell = T.cell(n);
+			double x = 0.0;
+			double y = 0.0;
+			double z = 0.0;
+
+			if (cellData[cell.index()][variableIndex(0, 0) + dimension] == 0)
+				continue;
+			
+			for (size_t i = 0; i < cell.numWall(); ++i) {
+				Wall *wall = cell.wall(i);
+				double wx = wall->vertex1()->position(0) - wall->vertex2()->position(0);
+				double wy = wall->vertex1()->position(1) - wall->vertex2()->position(1);
+				double wz = wall->vertex1()->position(2) - wall->vertex2()->position(2);
+				double Aw = std::sqrt(wx * wx  + wy * wy + wz * wz);
+				if (wx > 0) {
+					wx /= Aw;
+					wy /= Aw;
+					wz /= Aw;
+				} else {
+					wx /= -Aw;
+					wy /= -Aw;
+					wz /= -Aw;
+				}
+				double restLength =wallData[wall->index()][variableIndex(1,0)];
+				double stretch = (Aw-restLength)/restLength;
+				
+				x += wx * stretch;
+				y += wy * stretch;
+				z += wz * stretch;
+			}
+			double A = std::sqrt(x * x + y * y + z * z);
+			
+			// If the stretch is of zero magnitude, leave it as it is.
+			if (A == 0.0)
+				continue; 
+			
+			cellData[cell.index()][variableIndex(0, 0)] = x / A;
+			cellData[cell.index()][variableIndex(0, 0) + 1] = y / A;
+			cellData[cell.index()][variableIndex(0, 0) + 2] = z / A;
+		}		
+	}
 }
-
-
-

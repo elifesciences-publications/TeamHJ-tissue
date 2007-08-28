@@ -1400,7 +1400,7 @@ SphereCylinderForce(std::vector<double> &paraValue,
   if( paraValue.size()!=2 ) {
     std::cerr << "SphereCylinderForce::"
 	      << "SphereCylinderForce() "
-	      << "Uses two parameters K_force direction(-1 -> inwards)" 
+	      << "Uses two parameters K_force direction (-1 -> inwards)" 
 	      << std::endl;
     exit(0);
   }
@@ -1452,23 +1452,23 @@ derivs(Tissue &T,
       //On sphere
       double norm = 0.0;
       for( size_t d=0 ; d<dimension ; d++ )
-	norm += vertexData[i][d]*vertexData[i][d];
+				norm += vertexData[i][d]*vertexData[i][d];
       if( norm>0.0 )
-	norm = 1.0/std::sqrt(norm);
+				norm = 1.0/std::sqrt(norm);
       else norm=0.0;
       for( size_t d=0 ; d<dimension ; d++ )
-	vertexDerivs[i][d] += coeff*norm*vertexData[i][d];
+				vertexDerivs[i][d] += coeff*norm*vertexData[i][d];
     }
     else {
       //On cylinder
       double norm = 0.0;
       for( size_t d=0 ; d<dimension-1 ; d++ )
-	norm += vertexData[i][d]*vertexData[i][d];
+				norm += vertexData[i][d]*vertexData[i][d];
       if( norm>0.0 )
-	norm = 1.0/std::sqrt(norm);
+				norm = 1.0/std::sqrt(norm);
       else norm=0.0;
       for( size_t d=0 ; d<dimension-1 ; d++ )
-	vertexDerivs[i][d] += coeff*norm*vertexData[i][d];
+				vertexDerivs[i][d] += coeff*norm*vertexData[i][d];
     }
   }
 }

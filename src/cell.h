@@ -77,6 +77,7 @@ class Cell {
   inline void setVariable( size_t index,double val );
   inline void addVariable( double val );
   inline int isNeighbor( Cell *neighbor );
+	inline Cell* cellNeighbor(size_t k);
   
 	void sortWallAndVertex(Tissue &T);
 
@@ -263,6 +264,14 @@ inline int Cell::isNeighbor( Cell *neighbor )
     if (wall(i)->cell1()==neighbor || wall(i)->cell2()==neighbor) 
       return 1;
   return 0;
+}
+
+///
+/// @brief returns the cell neighbor on the other side of wall k
+///
+inline Cell* Cell::cellNeighbor(size_t k)
+{
+	return wall(k)->cell1()==this ? wall(k)->cell2() : wall(k)->cell1(); 
 }
 
 #endif
