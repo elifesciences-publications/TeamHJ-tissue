@@ -437,7 +437,7 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 		numerator += V[max1][i] * V[max2][i];
 		denominator += V[max1][i] * V[max1][i];
 	}
-
+	assert(denominator>0.0);
 	s = -numerator / denominator;
 
 	for (size_t i = 0; i < dimensions; ++i) {

@@ -2328,6 +2328,81 @@ void ContinousMTDirection::derivs(Tissue &T,
 	}
 }
 
+VertexFromCellPlaneSphereCylinder::
+VertexFromCellPlaneSphereCylinder(std::vector<double> &paraValue,
+																	std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 1) {
+		std::cerr << "VertexFromCellPlaneSphereCylinder::VertexFromCellPlaneSphereCylinder() " 
+							<< "Uses one parameter: k_force" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 0) {
+		std::cerr << "VertexFromCellPlaneSphereCylinder::VertexFromCellPlaneSphereCylinder() " 
+							<< std::endl
+							<< "No variable index used." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	setId("VertexFromCellPlaneSphereCylinder");
+	setParameter(paraValue);
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp[0] = "k_force";
+	
+	setParameterId(tmp);
+}
+
+void VertexFromCellPlaneSphereCylinder::
+derivs(Tissue &T,
+			 std::vector< std::vector<double> > &cellData,
+			 std::vector< std::vector<double> > &wallData,
+			 std::vector< std::vector<double> > &vertexData,
+			 std::vector< std::vector<double> > &cellDerivs,
+			 std::vector< std::vector<double> > &wallDerivs,
+			 std::vector< std::vector<double> > &vertexDerivs)
+{
+	size_t dimension = vertexData[0].size();
+	if (dimension!=3) {
+		std::cerr << "VertexFromCellPlaneSphereCylinder::VertexFromCellPlaneSphereCylinder() " 
+							<< "Only implemented for three dimensions." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	for (size_t n = 0; n < T.numCell(); ++n) {
+		Cell cell = T.cell(n);
+		cell.calculatePCAPlane(vertexData);
+
+		std::vector<double> normal = cell.getNormalToPCAPlane();
+		double norm=0.0;
+		for (size_t d=0; d<dimension; ++d)
+			norm += normal[d]*normal[d];
+		if (norm != 1.0) {
+			norm = std::sqrt(norm);
+			assert(norm>0.0);
+			for (size_t d=0; d<dimension; ++d)
+				normal[d] /= norm;
+		}
+		std::vector<double> cellPos = cell.positionFromVertex(vertexData);
+
+		std::vector<double> scNorm(dimension);
+		for (size_t d=0; d<dimension; ++d)
+			scNorm[d] = cellPos[d];
+		if( cellPos[2]<0.0 )
+			scNorm[2]=0.0;
+		double scalarProd=0.0;
+		for (size_t d=0; d<dimension; ++d)
+			scalarProd += scNorm[d]*normal[d];
+		if (scalarProd<0.0) {
+			for (size_t d=0; d<dimension; ++d)
+				normal[d] = -normal[d];
+		}
+		for (size_t k=0; k<cell.numVertex(); ++k)
+			for (size_t d=0; d<dimension; ++d)
+				vertexDerivs[cell.vertex(k)->index()][d] += parameter(0) * normal[d];
+	}	
+}
 
 DebugReaction::DebugReaction(std::vector<double> &paraValue,
 			     std::vector< std::vector<size_t> > &indValue)

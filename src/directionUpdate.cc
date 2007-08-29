@@ -502,8 +502,10 @@ void ForceDirection::update(Tissue &T, double h,
 		for (size_t i = 0; i < cell.numWall(); ++i) {
 			Wall *wall = cell.wall(i);
 
-			double wx = wall->vertex1()->position(0) - wall->vertex2()->position(0);
-			double wy = wall->vertex1()->position(1) - wall->vertex2()->position(1);
+			double wx = (vertexData[wall->vertex1()->index()][0] - 
+									 vertexData[wall->vertex2()->index()][0]); 
+			double wy = (vertexData[wall->vertex1()->index()][1] - 
+									 vertexData[wall->vertex2()->index()][1]); 
 
 			// Dodgy error check. Might have to improve it.
 			if (wx < 0) {
@@ -602,8 +604,10 @@ update(Tissue &T, double h,
 			for (size_t i = 0; i < cell.numWall(); ++i) {
 				Wall *wall = cell.wall(i);
 
-				double wx = wall->vertex1()->position(0) - wall->vertex2()->position(0);
-				double wy = wall->vertex1()->position(1) - wall->vertex2()->position(1);
+				double wx = (vertexData[wall->vertex1()->index()][0] - 
+										 vertexData[wall->vertex2()->index()][0]); 
+				double wy = (vertexData[wall->vertex1()->index()][1] - 
+										 vertexData[wall->vertex2()->index()][1]); 
 
 
 				// Dodgy error check. Might have to improve it.
@@ -616,8 +620,17 @@ update(Tissue &T, double h,
 				double c = std::cos(2.0 * sigma);
 				double s = std::sin(2.0 * sigma);
 				
-				enumerator += s;
-				denominator += c; 
+				double force = 0.0, distance=0.0;
+				for (size_t d=0; d<dimension; ++d)
+					distance += ((vertexData[wall->vertex1()->index()][d] - 
+												vertexData[wall->vertex2()->index()][d]) *
+											 (vertexData[wall->vertex1()->index()][d] - 
+												vertexData[wall->vertex2()->index()][d]));
+				distance = std::sqrt(distance);
+				force = ((distance-wallData[wall->index()][variableIndex(1, 0)]) /
+								 wallData[wall->index()][variableIndex(1, 0)]);
+				enumerator += force * s;
+				denominator += force * c;
 			}
 			
 			double angle = std::atan2(enumerator, denominator);
@@ -635,51 +648,65 @@ update(Tissue &T, double h,
 		}
 	}
 	else if (dimension==3) {
-		if (parameter(0) != 0) {
-			std::cerr << "StretchDirection::update() Not yet implemented for three dimensions and"
-								<< " perpendicular direction." << std::endl;
-			exit(-1);
-		}
 		for (size_t n = 0; n < T.numCell(); ++n) {
 			Cell cell = T.cell(n);
-			double x = 0.0;
-			double y = 0.0;
-			double z = 0.0;
-
-			if (cellData[cell.index()][variableIndex(0, 0) + dimension] == 0)
+			
+			if (cellData[cell.index()][variableIndex(0, 0) + dimension] == 0) {
 				continue;
+			}
+
+			cell.calculatePCAPlane(vertexData);
+			std::vector< std::vector<double> > axes = cell.getPCAPlane();
+			std::vector< std::pair<double, double> > vertices = cell.projectVerticesOnPCAPlane(vertexData);
+			
+			double enumerator = 0.0;
+			double denominator = 0.0;
 			
 			for (size_t i = 0; i < cell.numWall(); ++i) {
+				size_t ii = (i+1)%cell.numWall();
 				Wall *wall = cell.wall(i);
-				double wx = wall->vertex1()->position(0) - wall->vertex2()->position(0);
-				double wy = wall->vertex1()->position(1) - wall->vertex2()->position(1);
-				double wz = wall->vertex1()->position(2) - wall->vertex2()->position(2);
-				double Aw = std::sqrt(wx * wx  + wy * wy + wz * wz);
-				if (wx > 0) {
-					wx /= Aw;
-					wy /= Aw;
-					wz /= Aw;
-				} else {
-					wx /= -Aw;
-					wy /= -Aw;
-					wz /= -Aw;
-				}
-				double restLength =wallData[wall->index()][variableIndex(1,0)];
-				double stretch = (Aw-restLength)/restLength;
+
+				double wx = vertices[i].first - vertices[ii].first;
+				double wy = vertices[i].second - vertices[ii].second;
 				
-				x += wx * stretch;
-				y += wy * stretch;
-				z += wz * stretch;
+				// Dodgy error check. Might have to improve it.
+				if (wx < 0) {
+					wx *= -1.0;
+					wy *= -1.0;
+				}
+				double sigma = std::atan2(wy, wx);
+				
+				double c = std::cos(2.0 * sigma);
+				double s = std::sin(2.0 * sigma);
+				
+				double force = 0.0, distance=0.0;
+				for (size_t d=0; d<dimension; ++d)
+					distance += ((vertexData[wall->vertex1()->index()][d] - 
+												vertexData[wall->vertex2()->index()][d]) *
+											 (vertexData[wall->vertex1()->index()][d] - 
+												vertexData[wall->vertex2()->index()][d]));
+				distance = std::sqrt(distance);
+				force = ((distance-wallData[wall->index()][variableIndex(1, 0)]) /
+								 wallData[wall->index()][variableIndex(1, 0)]);
+				enumerator += force * s;
+				denominator += force * c;
 			}
-			double A = std::sqrt(x * x + y * y + z * z);
 			
-			// If the stretch is of zero magnitude, leave it as it is.
-			if (A == 0.0)
-				continue; 
+			double angle = std::atan2(enumerator, denominator);
 			
-			cellData[cell.index()][variableIndex(0, 0)] = x / A;
-			cellData[cell.index()][variableIndex(0, 0) + 1] = y / A;
-			cellData[cell.index()][variableIndex(0, 0) + 2] = z / A;
+			double x = std::cos(0.5 * angle);
+			double y = std::sin(0.5 * angle);
+			
+			
+			if (parameter(0) == 1) {
+				//Use perpendicular direction
+				double tmp = -y;
+				y = x;
+				x = tmp;
+			}
+			
+			for (size_t d=0; d<dimension; ++d)
+				cellData[cell.index()][variableIndex(0, 0) + d] = x * axes[0][d] + y * axes[1][d];
 		}		
 	}
 }

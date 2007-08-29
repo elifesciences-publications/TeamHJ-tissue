@@ -43,7 +43,7 @@ env['LINKFLAGS']    = ['-O3', '-ansi', '-pedantic', '-Wall']
 #s = ["simulator.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","direction.cc","baseDirectionUpdate.cc","baseDirectionDivision.cc","directionUpdate.cc","directionDivision.cc","myConfig.cc","myFiles.cc","myRandom.cc"]
 #env.Program(target="../bin/simulator",source=s)
 
-s = ["simulatorNew.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","direction.cc","baseDirectionUpdate.cc","baseDirectionDivision.cc","directionUpdate.cc","directionDivision.cc","baseSolver.cc","rungeKutta.cc","myConfig.cc","myFiles.cc","myRandom.cc","mySignal.cc","myTimes.cc","math.h"]
+s = ["simulatorNew.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","direction.cc","baseDirectionUpdate.cc","baseDirectionDivision.cc","directionUpdate.cc","directionDivision.cc","baseSolver.cc","rungeKutta.cc","myConfig.cc","myFiles.cc","myRandom.cc","mySignal.cc","myTimes.cc","math.cc"]
 env.Program(target="../bin/simulatorNew",source=s)
 
 #s = ["addCellDirectionsFromData.cc","tissue.cc","cell.cc","wall.cc","vertex.cc","baseReaction.cc","growth.cc","mechanical.cc","baseCompartmentChange.cc","compartmentDivision.cc","compartmentRemoval.cc","network.cc","direction.cc","baseDirectionUpdate.cc","baseDirectionDivision.cc","directionUpdate.cc","directionDivision.cc","myConfig.cc","myFiles.cc","myRandom.cc"]
