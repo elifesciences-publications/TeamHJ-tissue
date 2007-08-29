@@ -396,21 +396,23 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 	size_t max1 = 0;
 	
 	for (size_t i = 0; i < d.size(); ++i) {
-		if (d[i] > d[max1]) {
+		if (d[i] >= d[max1]) {
 			max1 = i;
 		}
 	}
 
 	size_t max2 = 0;
 	for (size_t i = 0; i < d.size(); ++i) {
-		if (d[i] > d[max2] && i != max1) {
+		if (d[i] >= d[max2] && i != max1) {
 			max2 = i;
 		}
 	}
 
  	// Find orthonormal basis.
 
-	E.resize(dimensions);
+	E.resize(2);
+	E[0].resize(dimensions);
+	E[1].resize(dimensions);
 
 	for (size_t i = 0; i < dimensions; ++i) {
 		E[0][i] = V[max1][i];
@@ -489,4 +491,21 @@ std::vector< std::pair<double, double> > Cell::projectVerticesOnPCAPlane(std::ve
 	}
 	
 	return coordinates;
+}
+
+std::vector<double> Cell::getNormalToPCAPlane(void)
+{
+	size_t dimension = E[0].size();
+	if (dimension != 3) {
+		std::cerr << "Cell::getNormalToPCAPlane(): Dimension is not equal to three." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	std::vector<double> N(dimension);
+
+	N[0] = E[0][1] * E[1][2] - E[0][2] * E[1][1];
+	N[1] = E[0][2] * E[1][0] - E[0][0] * E[1][2];
+	N[2] = E[0][0] * E[1][1] - E[0][1] * E[1][0];
+
+	return N;
 }

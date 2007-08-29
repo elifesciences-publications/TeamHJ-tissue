@@ -89,10 +89,13 @@ class Cell {
 	positionFromVertex( std::vector< std::vector<double> > &vertexData );	
 
 
+  // These functions handles projection to a PCAPlane. Important: Make
+  // sure you call calculatePCAPlane() before any of the other
+  // functions.
   void calculatePCAPlane(std::vector< std::vector<double> > &vertexData);
   std::vector< std::vector<double> > getPCAPlane(void);
   std::vector< std::pair<double, double> > projectVerticesOnPCAPlane(std::vector< std::vector<double> > &vertexData);
-
+  std::vector<double> getNormalToPCAPlane(void);
 };
 
 //!Returns the cell index
