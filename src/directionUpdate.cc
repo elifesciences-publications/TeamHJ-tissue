@@ -591,43 +591,46 @@ update(Tissue &T, double h,
 	if (dimension==2) { 
 		for (size_t n = 0; n < T.numCell(); ++n) {
 			Cell cell = T.cell(n);
-			double x = 0.0;
-			double y = 0.0;
-			
-			if (cellData[cell.index()][variableIndex(0, 0) + 2] == 0)
+
+			if (cellData[cell.index()][variableIndex(0, 0) + 2] == 0) {
 				continue;
+			}
+
+			double enumerator = 0.0;
+			double denominator = 0.0;
 			
 			for (size_t i = 0; i < cell.numWall(); ++i) {
 				Wall *wall = cell.wall(i);
+
 				double wx = wall->vertex1()->position(0) - wall->vertex2()->position(0);
 				double wy = wall->vertex1()->position(1) - wall->vertex2()->position(1);
-				double Aw = std::sqrt(wx * wx  + wy * wy);
-				if (wx > 0) {
-					wx = wx / Aw;
-					wy = wy / Aw;
-				} else {
-					wx = -1 * wx / Aw;
-					wy = -1 * wy / Aw;
+
+
+				// Dodgy error check. Might have to improve it.
+				if (wx < 0) {
+					wx *= -1.0;
+					wy *= -1.0;
 				}
-				double restLength =wallData[wall->index()][variableIndex(1,0)];
-				double stretch = (Aw-restLength)/restLength;
+				double sigma = std::atan2(wy, wx);
 				
-				x += wx * stretch;
-				y += wy * stretch;
+				double c = std::cos(2.0 * sigma);
+				double s = std::sin(2.0 * sigma);
+				
+				enumerator += s;
+				denominator += c; 
 			}
+			
+			double angle = std::atan2(enumerator, denominator);
+			
+			double x = std::cos(0.5 * angle);
+			double y = std::sin(0.5 * angle);
 		
-			double A = std::sqrt(x * x + y * y);
-			
-			// If the stretch is of zero magnitude, leave it as it is.
-			if (A == 0)
-				continue; 
-			
 			if (parameter(0) == 0) {
-				cellData[cell.index()][variableIndex(0, 0)] = x / A;
-				cellData[cell.index()][variableIndex(0, 0) + 1] = y / A;
+				cellData[cell.index()][variableIndex(0, 0) + 0] = x;
+				cellData[cell.index()][variableIndex(0, 0) + 1] = y;
 			} else {
-				cellData[cell.index()][variableIndex(0, 0)] = - y / A;
-				cellData[cell.index()][variableIndex(0, 0) + 1] = x / A;
+				cellData[cell.index()][variableIndex(0, 0) + 0] = - y;
+				cellData[cell.index()][variableIndex(0, 0) + 1] = x;
 			}
 		}
 	}
