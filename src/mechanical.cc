@@ -2346,12 +2346,22 @@ void DebugReaction::derivs(Tissue &T,
 	for (size_t i = 0; i < T.numCell(); ++i) {
 		Cell cell = T.cell(i);
 		
+// 		std::cerr << "Cell " << cell.index() << std::endl;
+
+// 		for (size_t i = 0; i < cell.numVertex(); ++i) {
+// 			Vertex *vertex = cell.vertex(i);
+// 			std::cerr << "   Vertex: " << i << std::endl;
+// 			std::cerr << "      x = " << vertexData[vertex->index()][0] << std::endl;
+// 			std::cerr << "      y = " << vertexData[vertex->index()][1] << std::endl;
+// 			std::cerr << "      z = " << vertexData[vertex->index()][2] << std::endl;
+// 		}
+
 		cell.calculatePCAPlane(vertexData);
 
 		std::vector<double> N = cell.getNormalToPCAPlane();
 
-		std::cout << "x = " << N[0] << std::endl;
-		std::cout << "y = " << N[1] << std::endl;
-		std::cout << "z = " << N[2] << std::endl;
+		std::cerr << "x = " << N[0] << std::endl;
+		std::cerr << "y = " << N[1] << std::endl;
+		std::cerr << "z = " << N[2] << std::endl;
 	}
 }

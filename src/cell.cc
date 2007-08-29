@@ -393,19 +393,30 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 
 	jacobiTransformation(R , V, d);
 
-	size_t max1 = 0;
-	
+
+	double max = 0.0;
+	size_t max1 = d.size();
+	size_t max2 = d.size();
+
+	max = 0.0;
 	for (size_t i = 0; i < d.size(); ++i) {
-		if (d[i] >= d[max1]) {
+		if (std::abs(d[i]) >= max) {
 			max1 = i;
+			max = std::abs(d[i]);
 		}
 	}
 
-	size_t max2 = 0;
+	max = 0.0;
 	for (size_t i = 0; i < d.size(); ++i) {
-		if (d[i] >= d[max2] && i != max1) {
+		if (std::abs(d[i]) >= max && i != max1) {
 			max2 = i;
+			max = std::abs(d[i]);
 		}
+	}
+
+	if (max1 == d.size() || max2 == d.size()) {
+		std::cerr << "Cell::calculatePCAPlane(): Unexpected behaviour." << std::endl;
+		exit(EXIT_FAILURE);
 	}
 
  	// Find orthonormal basis.
