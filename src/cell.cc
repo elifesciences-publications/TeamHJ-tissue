@@ -447,12 +447,12 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 	for (size_t i = 0; i < E.size(); ++i) {
 		double sum = 0.0;
 		for (size_t j = 0; j < dimensions; ++j) {
-			sum += E[i][j];
+			sum += E[i][j] * E[i][j];
 		}
 		for (size_t j = 0; j < dimensions; ++j) {
-			E[i][j] /= sum;
+			E[i][j] /= std::sqrt(sum);
 		}
-	}
+	}	
 }
 
 std::vector< std::vector<double> > Cell::getPCAPlane(void)
