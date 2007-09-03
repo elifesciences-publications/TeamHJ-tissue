@@ -392,8 +392,7 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 	std::vector<double> d;
 
 	jacobiTransformation(R , V, d);
-
-
+       
 	double max = 0.0;
 	size_t max1 = d.size();
 	size_t max2 = d.size();
@@ -426,22 +425,26 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 	E[1].resize(dimensions);
 
 	for (size_t i = 0; i < dimensions; ++i) {
-		E[0][i] = V[max1][i];
+		//		E[0][i] = V[max1][i];
+		E[0][i] = V[i][max1];
 	}
-
+	
 	double s = 0.0;
-
+	
 	double numerator = 0.0;
 	double denominator = 0.0;
 	for (size_t i = 0; i < dimensions; ++i) {
-		numerator += V[max1][i] * V[max2][i];
-		denominator += V[max1][i] * V[max1][i];
+		// 		numerator += V[max1][i] * V[max2][i];
+		// 		denominator += V[max1][i] * V[max1][i];
+		numerator += V[i][max1] * V[i][max2];
+		denominator += V[i][max1] * V[i][max1];
 	}
 	assert(denominator>0.0);
 	s = -numerator / denominator;
-
+	
 	for (size_t i = 0; i < dimensions; ++i) {
-		E[1][i] = s * E[0][i] + V[max2][i];
+		// 		E[1][i] = s * E[0][i] + V[max2][i];
+		E[1][i] = s * E[0][i] + V[i][max2];
 	}
 
 	for (size_t i = 0; i < E.size(); ++i) {
