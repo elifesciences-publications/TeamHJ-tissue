@@ -186,7 +186,7 @@ void RK5Adaptive::simulate(size_t verbose)
 		//
     // Check for discrete and reaction updates
     //
-		T_->updateReactions(h);
+		T_->updateReactions(cellData_,wallData_,vertexData_,h);
 		T_->updateDirection(h,cellData_,wallData_,vertexData_,cellDerivs_,
 												wallDerivs_,vertexDerivs_);
     T_->checkCompartmentChange(cellData_,wallData_,vertexData_,
@@ -614,7 +614,7 @@ void RK4::simulate(size_t verbose)
 		//
     // Check for discrete and reaction updates
     //
-		T_->updateReactions(h_);
+		T_->updateReactions(cellData_,wallData_,vertexData_,h_);
 		T_->updateDirection(h_,cellData_,wallData_,vertexData_,cellDerivs_,
 												wallDerivs_,vertexDerivs_);
     T_->checkCompartmentChange(cellData_,wallData_,vertexData_,

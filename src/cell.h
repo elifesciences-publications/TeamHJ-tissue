@@ -80,6 +80,7 @@ class Cell {
 	inline Cell* cellNeighbor(size_t k);
   
 	void sortWallAndVertex(Tissue &T);
+	void sortWallAndVertexNew(Tissue &T);
 
   double calculateVolume( size_t signFlag=0 );
   double calculateVolume( std::vector< std::vector<double> > 

@@ -1316,10 +1316,13 @@ void::Tissue::initiateReactions(std::vector< std::vector<double> > &cellData,
 		reaction(i)->initiate(*this,cellData,wallData,vertexData);
 }
 
-void::Tissue::updateReactions(double step) 
+void::Tissue::updateReactions(std::vector< std::vector<double> > &cellData,
+															std::vector< std::vector<double> > &wallData,
+															std::vector< std::vector<double> > &vertexData,
+															double step) 
 {
 	for (size_t i=0; i<numReaction(); ++i)
-		reaction(i)->update(*this,step);	
+		reaction(i)->update(*this,cellData,wallData,vertexData,step);	
 }
 
 void::Tissue::
@@ -2245,16 +2248,14 @@ void Tissue::sortCellWallAndCellVertex(Cell *cell)
 	if( !cell )		
 		cell = this->cellP(0);
 	sortCellRecursive(cell, sortedFlag, numSorted);
-	std::cerr << "Tissue::sortCellWallAndCellVertex() " << numSorted << " of " << numCell()
-						<< " sorted recursively." << std::endl;
+	//std::cerr << "Tissue::sortCellWallAndCellVertex() " << numSorted << " of " << numCell()
+	//				<< " sorted recursively." << std::endl;
 }
 
 void Tissue::sortCellRecursive( Cell* cell, std::vector<size_t> &sortedFlag, size_t &numSorted)
 {
 	if (sortedFlag[cell->index()])
 		return;
-	std::cerr << "Sorting cell " << cell->index() << " " << sortedFlag[cell->index()] << " (" 
-						<< numSorted << "," << numCell() << ")" << std::endl;
 	cell->sortWallAndVertex(*this);
 	sortedFlag[cell->index()]++;
 	numSorted++;

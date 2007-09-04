@@ -53,7 +53,6 @@ public:
 								std::vector< std::vector<double> > &cellData,
 								std::vector< std::vector<double> > &wallData,
 								std::vector< std::vector<double> > &vertexData );
-	//void update(Tissue &T,double step);
 };
 
 ///
@@ -80,7 +79,6 @@ public:
 								std::vector< std::vector<double> > &cellData,
 								std::vector< std::vector<double> > &wallData,
 								std::vector< std::vector<double> > &vertexData);
-	//void update(Tissue &T,double step);
 };
 
 //!Updates vertices from an asymmetric epidermal wall spring potential
@@ -193,24 +191,6 @@ class VertexFromCellPowerdiagram : public BaseReaction {
  public:
   
   VertexFromCellPowerdiagram(std::vector<double> &paraValue, 
-			     std::vector< std::vector<size_t> > 
-			     &indValue );
-  
-  void derivs(Tissue &T,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );
-};
-
-//!Sets positional derivatives to zero for vertices in specified region  
-class VertexNoUpdateFromPosition : public BaseReaction {
-  
- public:
-  
-  VertexNoUpdateFromPosition(std::vector<double> &paraValue, 
 			     std::vector< std::vector<size_t> > 
 			     &indValue );
   

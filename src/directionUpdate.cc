@@ -704,9 +704,105 @@ update(Tissue &T, double h,
 				y = x;
 				x = tmp;
 			}
-			
+			std::vector<double> dir(dimension);
+			double norm=0.0;
+			for (size_t d=0; d<dimension; ++d) {
+				dir[d] = x * axes[0][d] + y * axes[1][d];
+				norm += dir[d]*dir[d];
+			}
+			norm = 1.0/std::sqrt(norm);
 			for (size_t d=0; d<dimension; ++d)
-				cellData[cell.index()][variableIndex(0, 0) + d] = x * axes[0][d] + y * axes[1][d];
+				cellData[cell.index()][variableIndex(0, 0) + d] = dir[d] * norm;
 		}		
+	}
+}
+
+PCAPlaneDirection::
+PCAPlaneDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 1) {
+		std::cerr << "PCAPlaneDirection::PCAPlaneDirection() " 
+							<< "One parameter is used orientation_flag (0 for direction parallel with "
+							<< "first PCA vector, 1 for normal to the plane)" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 1 || indValue[0].size() != 1 ) { 
+		std::cerr << "PCAPlaneDirection::PCAPlaneDirection() \n"
+							<< "First level: Start of cell direction index is used." << std::endl;			
+		exit(EXIT_FAILURE);
+	}
+	
+	setId("PCAPlaneDirection");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize(numParameter());
+	tmp[0] = "normal_flag";
+	setParameterId(tmp);
+}
+
+void PCAPlaneDirection::
+initiate(Tissue &T,
+				 std::vector< std::vector<double> > &cellData,
+				 std::vector< std::vector<double> > &wallData,
+				 std::vector< std::vector<double> > &vertexData,
+				 std::vector< std::vector<double> > &cellDerivs,
+				 std::vector< std::vector<double> > &wallDerivs,
+				 std::vector< std::vector<double> > &vertexDerivs)
+{
+	// No initialization
+}
+
+void PCAPlaneDirection::
+update(Tissue &T, double h,
+			 std::vector< std::vector<double> > &cellData,
+			 std::vector< std::vector<double> > &wallData,
+			 std::vector< std::vector<double> > &vertexData,
+			 std::vector< std::vector<double> > &cellDerivs,
+			 std::vector< std::vector<double> > &wallDerivs,
+			 std::vector< std::vector<double> > &vertexDerivs)
+{
+	size_t dimension = vertexData[0].size();
+	if (dimension==3) {
+		for (size_t n = 0; n < T.numCell(); ++n) {
+			Cell cell = T.cell(n);
+			
+			if (cellData[cell.index()][variableIndex(0, 0) + dimension] == 0) {
+				continue;
+			}
+			
+			cell.calculatePCAPlane(vertexData);
+			std::vector< std::vector<double> > axes = cell.getPCAPlane();
+			std::vector<double> normal = cell.getNormalToPCAPlane();
+			
+			double axesNorm=0.0,normalNorm=0.0;
+			for (size_t d=0; d<dimension; ++d) {
+				axesNorm += axes[0][d]*axes[0][d];
+				normalNorm += normal[d]*normal[d];
+			}
+			assert(axesNorm>0.0);
+			assert(normalNorm>0.0);
+			axesNorm = 1.0/std::sqrt(axesNorm);
+			normalNorm = 1.0/std::sqrt(normalNorm);
+			for (size_t d=0; d<dimension; ++d) {
+				axes[0][d] *= axesNorm;
+				normal[d] *= normalNorm;
+			}
+
+			std::vector<double> &dir = axes[0];
+			if (parameter(0) == 1) {
+				dir = normal;
+			}
+
+			for (size_t d=0; d<dimension; ++d)
+				cellData[cell.index()][variableIndex(0, 0) + d] = dir[d];
+		}		
+	}
+	else {
+		std::cerr << "PCAPlaneDirection::derivs() Only implemented for three dimensions."
+							<< std::endl;
+		exit(EXIT_FAILURE);
 	}
 }

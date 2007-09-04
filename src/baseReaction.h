@@ -80,7 +80,11 @@ class BaseReaction {
 											std::vector< std::vector<double> > &cellDerivs,
 											std::vector< std::vector<double> > &wallDerivs,
 											std::vector< std::vector<double> > &vertexDerivs );
-  virtual void update(Tissue &T, double h);
+  virtual void update(Tissue &T,
+											std::vector< std::vector<double> > &cellData,
+											std::vector< std::vector<double> > &wallData,
+											std::vector< std::vector<double> > &vertexData,
+											double h);
   virtual void print( std::ofstream &os );
 };
 

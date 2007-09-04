@@ -8,9 +8,11 @@
 #include <vector>
 
 #include "baseReaction.h"
+#include "adhocReaction.h"
 #include "growth.h"
 #include "mechanical.h"
 #include "network.h"
+
 //#include"massAction.h"
 
 BaseReaction::~BaseReaction(){}
@@ -64,8 +66,6 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromCellPressureThresholdFromMaxPos(paraValue,indValue);
   else if(idValue=="VertexFromCellInternalPressure")
     return new VertexFromCellInternalPressure(paraValue,indValue);
-  else if(idValue=="VertexNoUpdateFromPosition")
-    return new VertexNoUpdateFromPosition(paraValue,indValue); 
   else if(idValue=="VertexForceOrigoFromIndex")
     return new VertexForceOrigoFromIndex(paraValue,indValue); 
   else if(idValue=="CellForceOrigoFromIndex")
@@ -106,6 +106,13 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new AuxinModelSimple3(paraValue,indValue); 
   else if(idValue=="AuxinModel4")
     return new AuxinModel4(paraValue,indValue); 
+
+	//adhocReaction.h,adhocReaction.cc
+  else if(idValue=="VertexNoUpdateFromPosition")
+    return new VertexNoUpdateFromPosition(paraValue,indValue); 
+  else if(idValue=="VertexTranslateToMax")
+    return new VertexTranslateToMax(paraValue,indValue); 
+
   //Default, if nothing found
   else {
     std::cerr << "\nBaseReaction::createReaction() WARNING: Reactiontype " 
@@ -162,7 +169,13 @@ void BaseReaction::initiate(Tissue &T,
 {
 }
 
-void BaseReaction::update(Tissue &T,double h) {}
+void BaseReaction::update(Tissue &T,
+													std::vector< std::vector<double> > &cellData,
+													std::vector< std::vector<double> > &walldata,
+													std::vector< std::vector<double> > &vertexData,
+													double h) 
+{
+}
 
 void BaseReaction::print( std::ofstream &os ) {
   std::cerr << "BaseReaction::print(ofstream) should not be used. "

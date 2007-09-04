@@ -141,7 +141,10 @@ class Tissue {
 	void initiateReactions(std::vector< std::vector<double> > &cellData,
 												 std::vector< std::vector<double> > &wallData,
 												 std::vector< std::vector<double> > &vertexData);
-	void updateReactions(double step);
+	void updateReactions(std::vector< std::vector<double> > &cellData,
+											 std::vector< std::vector<double> > &wallData,
+											 std::vector< std::vector<double> > &vertexData,
+											 double step);
 	void initiateDirection(std::vector< std::vector<double> > &cellData,
 												 std::vector< std::vector<double> > &wallData,
 												 std::vector< std::vector<double> > &vertexData,

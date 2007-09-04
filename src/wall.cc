@@ -12,6 +12,8 @@
 
 Wall::Wall() {
 
+	cellSort_.first = 0;
+	cellSort_.second = 0;
 }
 
 Wall::Wall( const Wall& wallCopy ) {
@@ -21,6 +23,8 @@ Wall::Wall( const Wall& wallCopy ) {
   length_ = wallCopy.length();
   cell_.first = wallCopy.cell1();
   cell_.second = wallCopy.cell2();
+	cellSort_.first = wallCopy.cellSort1();
+	cellSort_.second = wallCopy.cellSort2();
   vertex_.first = wallCopy.vertex1();
   vertex_.second = wallCopy.vertex2();
   variable_.resize(wallCopy.numVariable());
