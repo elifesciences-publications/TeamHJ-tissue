@@ -11,6 +11,7 @@
 #include "adhocReaction.h"
 #include "growth.h"
 #include "mechanical.h"
+#include "mechanicalSpring.h"
 #include "network.h"
 
 //#include"massAction.h"
@@ -33,6 +34,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new WallGrowthExponentialStressTruncated(paraValue, indValue);
   else if(idValue == "WallGrowthConstantStress")
     return new WallGrowthConstantStress(paraValue, indValue);
+  else if(idValue == "WallGrowthConstantStressConcentrationHill")
+    return new WallGrowthConstantStressConcentrationHill(paraValue, indValue);
   else if(idValue == "WallGrowthConstantStressEpidermalAsymmetric")
     return new WallGrowthConstantStressEpidermalAsymmetric(paraValue, indValue);
   else if(idValue == "MoveVertexRadially")
@@ -45,9 +48,11 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new DilutionFromVertexDerivs(paraValue, indValue);
 
   //Mechanical interactions between vertices
-  //mechanical.h,mechanical.cc
+  //mechanicalSpring.h,mechanicalSpring.cc
   else if(idValue=="VertexFromWallSpringAsymmetric")
     return new VertexFromWallSpringAsymmetric(paraValue,indValue);
+  else if(idValue=="VertexFromWallSpringConcentrationHill")
+    return new VertexFromWallSpringConcentrationHill(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringMT")
     return new VertexFromWallSpringMT(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringMTHistory")
@@ -56,6 +61,11 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromEpidermalWallSpringAsymmetric(paraValue,indValue);
   else if(idValue=="VertexFromEpidermalCellWallSpringAsymmetric")
     return new VertexFromEpidermalCellWallSpringAsymmetric(paraValue,indValue);
+  else if (idValue == "VertexFromWallSpringExperimental")
+	  return new VertexFromWallSpringExperimental(paraValue, indValue);
+
+  //Mechanical interactions between vertices
+  //mechanical.h,mechanical.cc
   else if(idValue=="VertexFromCellPowerdiagram")
     return new VertexFromCellPowerdiagram(paraValue,indValue);
   else if(idValue=="VertexFromCellPressure")
@@ -82,8 +92,6 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new EpidermalVertexForce(paraValue,indValue); 
   else if (idValue == "VertexFromPressureExperimental")
 	  return new VertexFromPressureExperimental(paraValue, indValue);
-  else if (idValue == "VertexFromWallSpringExperimental")
-	  return new VertexFromWallSpringExperimental(paraValue, indValue);
   else if (idValue == "CellVolumeExperimental")
 	  return new CellVolumeExperimental(paraValue, indValue);
   else if (idValue == "EpidermalRadialForce")

@@ -102,8 +102,7 @@ VertexTranslateToMax(std::vector<double> &paraValue,
   //Set the parameter identities
   //////////////////////////////////////////////////////////////////////
   std::vector<std::string> tmp( numParameter() );
-  tmp[0] = "threshold";
-  tmp[1] = "direction";
+  tmp[0] = "maxPos";
   setParameterId( tmp );
 }
 

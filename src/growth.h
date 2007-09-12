@@ -69,18 +69,25 @@ class WallGrowthExponentialStressTruncated : public BaseReaction {
 	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
-//!Constant strech-driven wall growth 
-/*!Constant growth driven by a streched wall. The wall lengths, L, are
-  updated only if the length is shorter than the distance between the
-  vertices of the wall and then according to
-
-  dL/dt = p_0*(d_v-L)
-
-  p_0 is the growth rate. 
-  d_v is the distance between the two wall vertices.
-
-  In addition, the column index for the wall length should be given.
- */
+///
+/// @brief Constant stress/strain-driven wall growth dependent on a
+/// concentration level in the cell
+///
+/// Constant growth driven by a streched wall. The wall lengths, L, are
+/// updated only if the length is shorter than the distance between the
+///  vertices of the wall and then according to
+///
+///  dL/dt = p_0*(d_v-L) if (d_v-L) > p_1
+///
+/// p_0 is the growth rate. 
+/// p_1 is a threshold 
+/// p_2 is a flag for using stretch/strain instead of stress
+/// p_3 is a flag for using growth proportional to wall length (not constant)
+/// d_v is the distance between the two wall vertices.
+///
+///  In addition, the column index for the wall length and the cell
+///  concentration should be given.
+///
 class WallGrowthConstantStress : public BaseReaction {
   
  public:
@@ -96,6 +103,48 @@ class WallGrowthConstantStress : public BaseReaction {
 	      std::vector< std::vector<double> > &cellDerivs,
 	      std::vector< std::vector<double> > &wallDerivs,
 	      std::vector< std::vector<double> > &vertexDerivs );
+};
+
+///
+/// @brief Constant stress/strain-driven wall growth dependent on a
+/// concentration level in the cell
+///
+/// Constant growth driven by a streched wall. The wall lengths, L, are
+/// updated only if the length is shorter than the distance between the
+///  vertices of the wall and then according to
+///
+///  dL/dt = (p_0+p_1*f(c,K,n)) * (d_v-L) if (d_v-L) > p_1
+///
+/// p_0 is the constant growth rate. 
+/// p_1 is the maximal added growth rate (V_max in the Hill function)
+/// p_2 is the K_Hill
+/// p_3 is the n_Hill
+/// p_4 is a threshold 
+/// p_5 is a flag for using stretch/strain instead of stress
+/// p_6 is a flag for using growth proportional to wall length (not constant)
+/// f is the hill function (increasing)
+/// c is the concentration
+/// d_v is the distance between the two wall vertices.
+/// 
+///
+///  In addition, the column index for the wall length and the cell
+///  concentration should be given.
+///
+class WallGrowthConstantStressConcentrationHill : public BaseReaction {
+  
+public:
+  
+  WallGrowthConstantStressConcentrationHill(std::vector<double> &paraValue, 
+																						std::vector< std::vector<size_t> > 
+																						&indValue );
+  
+  void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
 };
 
 //!Constant strech-driven wall growth 

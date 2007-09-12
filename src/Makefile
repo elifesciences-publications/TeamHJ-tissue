@@ -36,7 +36,7 @@ LDFLAGS    = -O3 -DNDEBUG -funroll-loops -Wall -ansi -pedantic
 # LDFLAGS    = -O3 -Wall -ansi -pedantic -g
 
 # List of object files.
-OBJECTS = tissue.o cell.o wall.o vertex.o baseReaction.o growth.o mechanical.o baseCompartmentChange.o compartmentDivision.o compartmentRemoval.o network.o direction.o baseDirectionUpdate.o baseDirectionDivision.o directionUpdate.o directionDivision.o myConfig.o myFiles.o myRandom.o myTimes.o mySignal.o rungeKutta.o baseSolver.o math.o
+OBJECTS = tissue.o cell.o wall.o vertex.o baseReaction.o growth.o mechanical.o mechanicalSpring.o baseCompartmentChange.o compartmentDivision.o compartmentRemoval.o network.o direction.o baseDirectionUpdate.o baseDirectionDivision.o directionUpdate.o directionDivision.o myConfig.o myFiles.o myRandom.o myTimes.o mySignal.o rungeKutta.o baseSolver.o math.o
 
 # simulatorSolver
 
