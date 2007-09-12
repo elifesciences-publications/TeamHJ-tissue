@@ -102,9 +102,11 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new ContinousMTDirection(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneSphereCylinder")
 	  return new VertexFromCellPlaneSphereCylinder(paraValue, indValue);
+  else if (idValue == "VertexFromCellPlaneSphereCylinderConcentrationHill")
+	  return new VertexFromCellPlaneSphereCylinderConcentrationHill(paraValue, indValue);
   else if (idValue == "DebugReaction")
 	  return new DebugReaction(paraValue, indValue);
-
+	
 	//network.h,network.cc
   else if(idValue=="AuxinModelSimple1")
     return new AuxinModelSimple1(paraValue,indValue); 

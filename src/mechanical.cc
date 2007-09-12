@@ -1707,6 +1707,90 @@ derivs(Tissue &T,
 	}	
 }
 
+VertexFromCellPlaneSphereCylinderConcentrationHill::
+VertexFromCellPlaneSphereCylinderConcentrationHill(std::vector<double> &paraValue,
+																	std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 4) {
+		std::cerr << "VertexFromCellPlaneSphereCylinderConcentrationHill::"
+							<< "VertexFromCellPlaneSphereCylinderConcentrationHill() " 
+							<< "Uses four parameters: k_forceConst, k_forceHill, K_Hill, n_Hill" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 1 || indValue[0].size() != 1) {
+		std::cerr << "VertexFromCellPlaneSphereCylinderConcentrationHill::"
+							<< "VertexFromCellPlaneSphereCylinderConcentrationHill() " 
+							<< std::endl
+							<< "One variable index for concentration index is used." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	setId("VertexFromCellPlaneSphereCylinderConcentrationHill");
+	setParameter(paraValue);
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp[0] = "k_forceConst";
+	tmp[1] = "k_forceHill";
+	tmp[2] = "K_Hill";
+	tmp[3] = "n_Hill";
+	
+	setParameterId(tmp);
+}
+
+void VertexFromCellPlaneSphereCylinderConcentrationHill::
+derivs(Tissue &T,
+			 std::vector< std::vector<double> > &cellData,
+			 std::vector< std::vector<double> > &wallData,
+			 std::vector< std::vector<double> > &vertexData,
+			 std::vector< std::vector<double> > &cellDerivs,
+			 std::vector< std::vector<double> > &wallDerivs,
+			 std::vector< std::vector<double> > &vertexDerivs)
+{
+	size_t dimension = vertexData[0].size();
+	if (dimension!=3) {
+		std::cerr << "VertexFromCellPlaneSphereCylinderConcentrationHill::"
+							<< "VertexFromCellPlaneSphereCylinderConcentrationHill() " 
+							<< "Only implemented for three dimensions." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	double Kpow = std::pow(parameter(2),parameter(3));
+	for (size_t n = 0; n < T.numCell(); ++n) {
+		Cell cell = T.cell(n);
+		cell.calculatePCAPlane(vertexData);
+		double concpow = std::pow(cellData[cell.index()][variableIndex(0,0)],parameter(3));
+		std::vector<double> normal = cell.getNormalToPCAPlane();
+		double norm=0.0;
+		for (size_t d=0; d<dimension; ++d)
+			norm += normal[d]*normal[d];
+		if (norm != 1.0) {
+			norm = std::sqrt(norm);
+			assert(norm>0.0);
+			for (size_t d=0; d<dimension; ++d)
+				normal[d] /= norm;
+		}
+		std::vector<double> cellPos = cell.positionFromVertex(vertexData);
+		
+		std::vector<double> scNorm(dimension);
+		for (size_t d=0; d<dimension; ++d)
+			scNorm[d] = cellPos[d];
+		if( cellPos[2]<0.0 )
+			scNorm[2]=0.0;
+		double scalarProd=0.0;
+		for (size_t d=0; d<dimension; ++d)
+			scalarProd += scNorm[d]*normal[d];
+		if (scalarProd<0.0) {
+			for (size_t d=0; d<dimension; ++d)
+				normal[d] = -normal[d];
+		}
+		double coeff = parameter(0) + parameter(1)*concpow/(concpow+Kpow);
+		for (size_t k=0; k<cell.numVertex(); ++k)
+			for (size_t d=0; d<dimension; ++d)
+				vertexDerivs[cell.vertex(k)->index()][d] += coeff * normal[d];
+	}	
+}
+
 DebugReaction::DebugReaction(std::vector<double> &paraValue,
 			     std::vector< std::vector<size_t> > &indValue)
 {
