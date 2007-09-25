@@ -592,7 +592,7 @@ update(Tissue &T, double h,
 	size_t dimension = vertexData[0].size();
 	if (dimension==2) { 
 		for (size_t n = 0; n < T.numCell(); ++n) {
-			Cell cell = T.cell(n);
+			Cell &cell = T.cell(n);
 
 			if (cellData[cell.index()][variableIndex(0, 0) + 2] == 0) {
 				continue;

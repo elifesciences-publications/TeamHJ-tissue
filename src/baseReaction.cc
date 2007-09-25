@@ -116,6 +116,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new AuxinModelSimple3(paraValue,indValue); 
   else if(idValue=="AuxinModel4")
     return new AuxinModel4(paraValue,indValue); 
+  else if(idValue=="AuxinModel5")
+    return new AuxinModel5(paraValue,indValue); 
 
 	//adhocReaction.h,adhocReaction.cc
   else if(idValue=="VertexNoUpdateFromPosition")

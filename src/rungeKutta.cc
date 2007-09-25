@@ -152,6 +152,16 @@ void RK5Adaptive::simulate(size_t verbose)
 							 vertexDerivs_);
 
     // Calculate 'scaling' for error measure
+		Nc = yScalC.size();
+		if( Nc )
+			Ncvar = yScalC[0].size();
+		Nw = yScalW.size();
+		if( Nw )
+			Nwvar = yScalW[0].size();
+		Nv = yScalV.size();
+		if( Nv )
+			Nvvar = yScalV[0].size();
+
     for (size_t i=0; i<Nc; ++i)
       for (size_t j = 0; j<Ncvar; ++j)
         yScalC[i][j] = std::fabs(cellData_[i][j]) + 

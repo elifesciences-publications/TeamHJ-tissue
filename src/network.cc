@@ -727,3 +727,130 @@ derivs(Tissue &T,
     }
   }
 }
+
+AuxinModel5::
+AuxinModel5(std::vector<double> &paraValue, 
+						std::vector< std::vector<size_t> > 
+						&indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //////////////////////////////////////////////////////////////////////
+  if( paraValue.size()!=14 ) {
+    std::cerr << "AuxinModel5::"
+							<< "AuxinModel5() "
+							<< "Ten parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 4 ) {
+    std::cerr << "AuxinModel5::"
+							<< "AuxinModel5() "
+							<< "Four variable indices are used (auxin,pin,X,M).\n";
+    exit(0);
+  }
+  //Set the variable values
+  //////////////////////////////////////////////////////////////////////
+  setId("AuxinModel5");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //////////////////////////////////////////////////////////////////////
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "p_auxin(M)";
+  tmp[1] = "p_auxin";
+  tmp[2] = "d_auxin";
+  tmp[3] = "p_pol";
+  tmp[4] = "T_auxin";
+  tmp[5] = "D_auxin";
+  tmp[6] = "p_pin";
+  tmp[7] = "d_pin";
+  tmp[8] = "p_X";
+  tmp[9] = "d_X";
+  tmp[10] = "p_M";
+  tmp[11] = "K_M";
+  tmp[12] = "n_M";	
+  tmp[13] = "d_M";
+	
+  setParameterId( tmp );
+}
+
+void AuxinModel5::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+	size_t aI = variableIndex(0,0);
+	size_t pI = variableIndex(0,1);
+	size_t xI = variableIndex(0,2);
+	size_t mI = variableIndex(0,3);
+  assert( aI<cellData[0].size() &&
+					pI<cellData[0].size() &&
+					xI<cellData[0].size() &&
+					mI<cellData[0].size() );
+  size_t dimension = vertexData[0].size();
+	double powK = std::pow(parameter(11),parameter(12));
+
+  for( size_t i=0 ; i<numCells ; ++i ) {
+		
+		//Production and degradation
+    cellDerivs[i][aI] += parameter(0)*cellData[i][mI] + parameter(1) - 
+			parameter(2)*cellData[i][aI];
+		
+    cellDerivs[i][pI] += parameter(6) - parameter(7)*cellData[i][pI];
+		
+    cellDerivs[i][xI] += parameter(8)*cellData[i][aI] 
+			- parameter(9)*cellData[i][xI];
+		
+		std::vector<double> cellCenter = T.cell(i).positionFromVertex(vertexData);
+		double R=0.0;
+		for (size_t d=0; d<dimension; ++d)
+			R += cellCenter[d]*cellCenter[d];
+		R = std::sqrt(R);
+		double powR = std::pow(R,parameter(12));
+		cellDerivs[i][mI] += parameter(10)*powR/(powK+powR) - parameter(13)*cellData[i][mI];
+		
+		//Transport
+		size_t numWalls=T.cell(i).numWall();
+		//Polarization coefficient normalization constant
+		double sum=0.0;
+		size_t numActualWalls=0;
+		//pin[i].resize( numWalls+1 );
+		for( size_t n=0 ; n<numWalls ; ++n ) {
+			if( T.cell(i).wall(n)->cell1() != T.background() &&
+					T.cell(i).wall(n)->cell2() != T.background() ) { 
+				numActualWalls++;
+				if( T.cell(i).wall(n)->cell1()->index()==i )
+					sum += cellData[ T.cell(i).wall(n)->cell2()->index() ][ xI ];
+				else
+					sum += cellData[ T.cell(i).wall(n)->cell1()->index() ][ xI ];
+			}
+		}
+		//sum /= numActualWalls;//For adjusting for different num neigh
+		sum += parameter(3);
+		
+		for( size_t n=0 ; n<numWalls ; ++n ) {
+			//if( !T.cell(i).isNeighbor(T.background()) ) { 
+			if( T.cell(i).wall(n)->cell1() != T.background() &&
+					T.cell(i).wall(n)->cell2() != T.background() ) { 
+				size_t neighIndex; 
+				if( T.cell(i).wall(n)->cell1()->index()==i )
+					neighIndex = T.cell(i).wall(n)->cell2()->index();				
+				else
+					neighIndex = T.cell(i).wall(n)->cell1()->index();				
+				double polRate=0.0;
+				
+				if( sum != 0.0 )
+					polRate = cellData[i][pI] * cellData[neighIndex][xI] / sum;
+				//pin[i][n+1] = polRate;
+				cellDerivs[i][aI] -= (parameter(4)*polRate+parameter(5))*cellData[i][aI];
+				cellDerivs[neighIndex][aI] += (parameter(4)*polRate+parameter(5))*cellData[i][aI];
+			}
+		}
+	}
+}

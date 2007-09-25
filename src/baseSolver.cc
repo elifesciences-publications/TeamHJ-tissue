@@ -280,7 +280,7 @@ void BaseSolver::printInit(std::ostream &os) const
   os << std::endl;
   
   //Print wall data
-  os << T_->numWall() << " 1 " << T_->wall(0).numVariable() << std::endl;
+  os << T_->numWall() << " 1 " << wallData_[0].size()-1 << std::endl;
   for( size_t i=0 ; i<T_->numWall() ; ++i ) {
 		assert( wallData_[i].size() );
     for( size_t j=0 ; j<wallData_[i].size() ; ++j )
