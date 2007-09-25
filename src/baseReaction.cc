@@ -63,6 +63,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromEpidermalCellWallSpringAsymmetric(paraValue,indValue);
   else if (idValue == "VertexFromWallSpringExperimental")
 	  return new VertexFromWallSpringExperimental(paraValue, indValue);
+  else if(idValue=="VertexFromWallSpringMTConcentrationHill")
+    return new VertexFromWallSpringMTConcentrationHill(paraValue,indValue);
 
   //Mechanical interactions between vertices
   //mechanical.h,mechanical.cc
