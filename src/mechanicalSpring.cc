@@ -852,8 +852,8 @@ derivs(Tissue &T,
       coeff *=parameter(5);
     
 		//Save force in wall variable if appropriate
-		if( numVariableIndexLevel()>1 )
-			wallData[i][variableIndex(1,0)] = coeff*distance;
+		if( numVariableIndexLevel()>2 )
+			wallData[i][variableIndex(2,0)] = coeff*distance;
 		
     //Update both vertices for each dimension
     for(size_t d=0 ; d<dimension ; d++ ) {
