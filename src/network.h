@@ -145,5 +145,38 @@ class AuxinModel5 : public BaseReaction {
 							std::vector< std::vector<double> > &vertexDerivs );
 };
 
+class AuxinModel6 : public BaseReaction {
+  
+ public:
+  
+  AuxinModel6(std::vector<double> &paraValue, 
+							std::vector< std::vector<size_t> > 
+							&indValue );
+  
+  void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
+};
+
+class AuxinTransportCellCellNoGeometry : public BaseReaction {
+  
+ public:
+  
+  AuxinTransportCellCellNoGeometry(std::vector<double> &paraValue, 
+																	 std::vector< std::vector<size_t> > 
+																	 &indValue );
+  
+  void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
+};
 
 #endif

@@ -862,6 +862,105 @@ derivs(Tissue &T,
 	}
 }
 
+AuxinModel6::
+AuxinModel6(std::vector<double> &paraValue, 
+						std::vector< std::vector<size_t> > 
+						&indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //////////////////////////////////////////////////////////////////////
+  if( paraValue.size()!=16 ) {
+    std::cerr << "AuxinModel6::"
+							<< "AuxinModel6() "
+							<< "16 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 5 ) {
+    std::cerr << "AuxinModel6::"
+							<< "AuxinModel6() "
+							<< "Five variable indices are used (auxin,pin,aux,X,M).\n";
+    exit(0);
+  }
+  //Set the variable values
+  //////////////////////////////////////////////////////////////////////
+  setId("AuxinModel6");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //////////////////////////////////////////////////////////////////////
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "p_auxin(M)";
+  tmp[1] = "p0_auxin";
+  tmp[2] = "d_auxin";
+  tmp[3] = "p0_pin";
+  tmp[4] = "d_pin";
+  tmp[5] = "p0_aux";
+  tmp[6] = "d_aux";
+  tmp[7] = "p0_X";
+  tmp[8] = "p_X(auxin)";
+  tmp[9] = "d_X";
+  tmp[10] = "p_M";
+  tmp[11] = "K_M";
+  tmp[12] = "n_M";	
+  tmp[13] = "K_M2";
+  tmp[14] = "n_M2";	
+  tmp[15] = "d_M";
+	
+  setParameterId( tmp );
+}
+
+void AuxinModel6::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+	size_t aI = variableIndex(0,0);//auxin
+	size_t pI = variableIndex(0,1);//pin
+	size_t AI = variableIndex(0,2);//aux
+	size_t xI = variableIndex(0,3);//X
+	size_t mI = variableIndex(0,4);//M
+  assert( aI<cellData[0].size() &&
+					pI<cellData[0].size() &&
+					AI<cellData[0].size() &&
+					xI<cellData[0].size() &&
+					mI<cellData[0].size() );
+  size_t dimension = vertexData[0].size();
+	double powK = std::pow(parameter(11),parameter(12));
+	double powK2 = std::pow(parameter(13),parameter(14));
+
+  for( size_t i=0 ; i<numCells ; ++i ) {
+		
+		//Production and degradation
+    cellDerivs[i][aI] += parameter(0)*cellData[i][mI] + parameter(1) - 
+			parameter(2)*cellData[i][aI];
+		
+    cellDerivs[i][pI] += parameter(3) - parameter(4)*cellData[i][pI];
+		
+    cellDerivs[i][AI] += parameter(5) - parameter(6)*cellData[i][pI];
+		
+    cellDerivs[i][xI] += parameter(7) + parameter(8)*cellData[i][aI]*
+			cellData[i][aI]/(2.0+cellData[i][aI]*cellData[i][aI]) 
+			- parameter(9)*cellData[i][xI];
+		
+		std::vector<double> cellCenter = T.cell(i).positionFromVertex(vertexData);
+		double R=0.0;
+		for (size_t d=0; d<dimension; ++d)
+			R += cellCenter[d]*cellCenter[d];
+		R = std::sqrt(R);
+		double powR = std::pow(R,parameter(12));
+		double powR2 = std::pow(R,parameter(14));
+		cellDerivs[i][mI] += parameter(10)*(powR*powK2) / ((powK+powR)*(powK2+powR2)) 
+			- parameter(15)*cellData[i][mI];
+	}
+}
+
 AuxinTransportCellCellNoGeometry::
 AuxinTransportCellCellNoGeometry(std::vector<double> &paraValue, 
 																 std::vector< std::vector<size_t> > &indValue )
@@ -926,47 +1025,46 @@ derivs(Tissue &T,
 	for (size_t i=0; i<cellData.size(); ++i) {
 		size_t numActualWalls=0;
 		double sum = 1.0;
-		std::vector<double> Pij(T.cell(i).numWall());
+		std::vector<double> Pin(T.cell(i).numWall());
 		for (size_t n = 0; n < T.cell(i).numWall(); ++n) {
 			if( T.cell(i).wall(n)->cell1() != T.background() &&
 					T.cell(i).wall(n)->cell2() != T.background() ) { 
 				numActualWalls++;
-				if( T.cell(i).wall(n)->cell1()->index()==i )
-					sum += Pij[n] = PIN1Feedback(cellData[ T.cell(i).wall(n)->cell2()->index() ][ xI ]);
-				else
-					sum += Pij[n] = PIN1Feedback(cellData[ T.cell(i).wall(n)->cell2()->index() ][ xI ]);
+				if( T.cell(i).wall(n)->cell1()->index()==i ) {
+					double tmp = std::pow(cellData[ T.cell(i).wall(n)->cell2()->index() ][ xI ],parameter(5));
+					tmp = parameter(2) + 
+						parameter(3)*tmp/(std::pow(parameter(4),parameter(5))+tmp);
+					sum += Pin[n] = tmp;
+				}
+				else {
+					double tmp = std::pow(cellData[ T.cell(i).wall(n)->cell1()->index() ][ xI ],parameter(5));
+					tmp = parameter(2) + 
+						parameter(3)*tmp/(std::pow(parameter(4),parameter(5))+tmp);
+					sum += Pin[n] = tmp;
+				}
 			}
 			else 
-				sum += Pij[n] = parameter(2);
+				sum += Pin[n] = parameter(2);
 		}
 		
-		
-
-		for (size_t n = 0; n < compartment.numNeighbor(); ++n) {
-			size_t j = compartment.neighbor(n);
-		
-		double passive = parameter(0) * y[i][variableIndex(0,0)];
-		
-		double Pij = PIN1Feedback(y[j][variableIndex(0,0)]) * 
-			y[i][variableIndex(0,1)] / sum;		
-		
-		double active = AuxinActiveTransport(y[i][variableIndex(0,0)]) * Pij; 
-		
-		dydt[i][species] -= (passive + active);
-		dydt[j][species] += (passive + active);
+		for (size_t n = 0; n < T.cell(i).numWall(); ++n) {
+			if( T.cell(i).wall(n)->cell1() != T.background() &&
+					T.cell(i).wall(n)->cell2() != T.background() ) { 
+				size_t j=T.cell(i).wall(n)->cell1()->index();
+				if( T.cell(i).wall(n)->cell1()->index()==i )
+					j = T.cell(i).wall(n)->cell2()->index();
+				
+				double passive = parameter(0) * cellData[i][aI];
+				
+				double Pij = cellData[i][PI] * Pin[n] / sum;		
+				
+				double active = Pij*parameter(1)*cellData[j][AI]*cellData[i][aI]/ 
+					((parameter(6) + cellData[i][aI])*(cellData[i][AI]+cellData[j][AI]));
+				
+				cellDerivs[i][aI] -= (passive + active);
+				cellDerivs[j][aI] += (passive + active);
+			}
+		}
 	}
-}
+}	
 
-double AuxinTransportCellCellNoGeometry::PIN1Feedback(double auxin)
-{
-	double tmp;
-	tmp = parameter(2);
-	tmp += parameter(3) * pow(auxin, parameter(5)) /
-		(parameter(4) + pow(auxin, parameter(5)));
-	return tmp;
-}
-
-double AuxinTransportCellCellNoGeometry::AuxinActiveTransport(double auxin)
-{
-	return parameter(1) * auxin / (parameter(6) + auxin);
-}
