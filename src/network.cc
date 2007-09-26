@@ -735,7 +735,7 @@ AuxinModel5(std::vector<double> &paraValue,
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
-  if( paraValue.size()!=14 ) {
+  if( paraValue.size()!=16 ) {
     std::cerr << "AuxinModel5::"
 							<< "AuxinModel5() "
 							<< "Ten parameters used (see network.h)\n";
@@ -770,7 +770,9 @@ AuxinModel5(std::vector<double> &paraValue,
   tmp[10] = "p_M";
   tmp[11] = "K_M";
   tmp[12] = "n_M";	
-  tmp[13] = "d_M";
+  tmp[13] = "K_M2";
+  tmp[14] = "n_M2";	
+  tmp[15] = "d_M";
 	
   setParameterId( tmp );
 }
@@ -795,6 +797,7 @@ derivs(Tissue &T,
 					mI<cellData[0].size() );
   size_t dimension = vertexData[0].size();
 	double powK = std::pow(parameter(11),parameter(12));
+	double powK2 = std::pow(parameter(13),parameter(14));
 
   for( size_t i=0 ; i<numCells ; ++i ) {
 		
@@ -804,7 +807,7 @@ derivs(Tissue &T,
 		
     cellDerivs[i][pI] += parameter(6) - parameter(7)*cellData[i][pI];
 		
-    cellDerivs[i][xI] += parameter(8)*cellData[i][aI] 
+    cellDerivs[i][xI] += parameter(8)*cellData[i][aI]*cellData[i][aI]/(2.0+cellData[i][aI]*cellData[i][aI]) 
 			- parameter(9)*cellData[i][xI];
 		
 		std::vector<double> cellCenter = T.cell(i).positionFromVertex(vertexData);
@@ -813,7 +816,9 @@ derivs(Tissue &T,
 			R += cellCenter[d]*cellCenter[d];
 		R = std::sqrt(R);
 		double powR = std::pow(R,parameter(12));
-		cellDerivs[i][mI] += parameter(10)*powR/(powK+powR) - parameter(13)*cellData[i][mI];
+		double powR2 = std::pow(R,parameter(14));
+		cellDerivs[i][mI] += parameter(10)*(powR*powK2) / ((powK+powR)*(powK2+powR2)) 
+			- parameter(15)*cellData[i][mI];
 		
 		//Transport
 		size_t numWalls=T.cell(i).numWall();
@@ -830,6 +835,8 @@ derivs(Tissue &T,
 				else
 					sum += cellData[ T.cell(i).wall(n)->cell1()->index() ][ xI ];
 			}
+			else 
+				sum += 0.5;
 		}
 		//sum /= numActualWalls;//For adjusting for different num neigh
 		sum += parameter(3);
@@ -853,4 +860,113 @@ derivs(Tissue &T,
 			}
 		}
 	}
+}
+
+AuxinTransportCellCellNoGeometry::
+AuxinTransportCellCellNoGeometry(std::vector<double> &paraValue, 
+																 std::vector< std::vector<size_t> > &indValue )
+{
+	if (paraValue.size() != 7) {
+		std::cerr << "AuxinTransportCellCellNoGeometry::AuxinTransportCellCellNoGeometry"
+							<< "Uses seven parameters: " << std::endl
+							<< "d, "             // 0
+							<< "T, "             // 1
+							<< "k1, "            // 2
+							<< "k2, "            // 3
+							<< "K_H, "           // 4
+							<< "n and "          // 5
+							<< "K_M."            // 6
+							<< std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 1 || indValue[0].size() != 4) {
+		std::cerr << "AuxinTransportCellCellNoGeometry::AuxinTransportCellCellNoGeometry "
+							<< "Four variable indices are needed: " << std::endl
+							<< "Auxin, "      // 0
+							<< "PIN1, "       // 1
+							<< "AUX1, and "   // 2
+							<< "X(feedback)." // 3
+							<< std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	setId("AuxinTransportCellCellNoGeometry");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize(numParameter());
+	
+	tmp[0] = "d";
+	tmp[1] = "T";
+	tmp[2] = "k1";
+	tmp[3] = "k2";
+	tmp[4] = "K_H";
+	tmp[5] = "n";
+	tmp[6] = "K_M";
+	
+	setParameterId( tmp );
+}
+
+void AuxinTransportCellCellNoGeometry::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{  
+	size_t aI = variableIndex(0,0);
+	size_t PI = variableIndex(0,1);
+	size_t AI = variableIndex(0,2);
+	size_t xI = variableIndex(0,3);
+
+	for (size_t i=0; i<cellData.size(); ++i) {
+		size_t numActualWalls=0;
+		double sum = 1.0;
+		std::vector<double> Pij(T.cell(i).numWall());
+		for (size_t n = 0; n < T.cell(i).numWall(); ++n) {
+			if( T.cell(i).wall(n)->cell1() != T.background() &&
+					T.cell(i).wall(n)->cell2() != T.background() ) { 
+				numActualWalls++;
+				if( T.cell(i).wall(n)->cell1()->index()==i )
+					sum += Pij[n] = PIN1Feedback(cellData[ T.cell(i).wall(n)->cell2()->index() ][ xI ]);
+				else
+					sum += Pij[n] = PIN1Feedback(cellData[ T.cell(i).wall(n)->cell2()->index() ][ xI ]);
+			}
+			else 
+				sum += Pij[n] = parameter(2);
+		}
+		
+		
+
+		for (size_t n = 0; n < compartment.numNeighbor(); ++n) {
+			size_t j = compartment.neighbor(n);
+		
+		double passive = parameter(0) * y[i][variableIndex(0,0)];
+		
+		double Pij = PIN1Feedback(y[j][variableIndex(0,0)]) * 
+			y[i][variableIndex(0,1)] / sum;		
+		
+		double active = AuxinActiveTransport(y[i][variableIndex(0,0)]) * Pij; 
+		
+		dydt[i][species] -= (passive + active);
+		dydt[j][species] += (passive + active);
+	}
+}
+
+double AuxinTransportCellCellNoGeometry::PIN1Feedback(double auxin)
+{
+	double tmp;
+	tmp = parameter(2);
+	tmp += parameter(3) * pow(auxin, parameter(5)) /
+		(parameter(4) + pow(auxin, parameter(5)));
+	return tmp;
+}
+
+double AuxinTransportCellCellNoGeometry::AuxinActiveTransport(double auxin)
+{
+	return parameter(1) * auxin / (parameter(6) + auxin);
 }
