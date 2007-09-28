@@ -122,6 +122,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new AuxinModel5(paraValue,indValue); 
   else if(idValue=="AuxinModel6")
     return new AuxinModel6(paraValue,indValue); 
+  else if(idValue=="AuxinModel7")
+    return new AuxinModel7(paraValue,indValue); 
   else if(idValue=="AuxinTransportCellCellNoGeometry")
     return new AuxinTransportCellCellNoGeometry(paraValue,indValue); 
 

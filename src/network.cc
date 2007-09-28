@@ -961,6 +961,117 @@ derivs(Tissue &T,
 	}
 }
 
+AuxinModel7::
+AuxinModel7(std::vector<double> &paraValue, 
+						std::vector< std::vector<size_t> > 
+						&indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //////////////////////////////////////////////////////////////////////
+  if( paraValue.size()!=22 ) {
+    std::cerr << "AuxinModel7::"
+							<< "AuxinModel7() "
+							<< "22 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 5 ) {
+    std::cerr << "AuxinModel7::"
+							<< "AuxinModel7() "
+							<< "Five variable indices are used (auxin,pin,aux,X,M).\n";
+    exit(0);
+  }
+  //Set the variable values
+  //////////////////////////////////////////////////////////////////////
+  setId("AuxinModel7");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //////////////////////////////////////////////////////////////////////
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "p_auxin(M)";
+  tmp[1] = "p0_auxin";
+  tmp[2] = "d_auxin";
+  tmp[3] = "p0_pin";
+	tmp[4] = "f_Pauxin";
+	tmp[5] = "K_P";
+	tmp[6] = "n_P";
+  tmp[7] = "d_pin";
+  tmp[8] = "p0_aux";
+	tmp[9] = "f_Aauxin";
+	tmp[10] = "K_A";
+	tmp[11] = "n_A";
+  tmp[12] = "d_aux";
+  tmp[13] = "p0_X";
+  tmp[14] = "p_X(auxin)";
+  tmp[15] = "d_X";
+  tmp[16] = "p_M";
+  tmp[17] = "K_M";
+  tmp[18] = "n_M";	
+  tmp[19] = "K_M2";
+  tmp[20] = "n_M2";	
+  tmp[21] = "d_M";
+	
+  setParameterId( tmp );
+}
+
+void AuxinModel7::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+	size_t aI = variableIndex(0,0);//auxin
+	size_t pI = variableIndex(0,1);//pin
+	size_t AI = variableIndex(0,2);//aux
+	size_t xI = variableIndex(0,3);//X
+	size_t mI = variableIndex(0,4);//M
+  assert( aI<cellData[0].size() &&
+					pI<cellData[0].size() &&
+					AI<cellData[0].size() &&
+					xI<cellData[0].size() &&
+					mI<cellData[0].size() );
+  size_t dimension = vertexData[0].size();
+	double powK = std::pow(parameter(17),parameter(18));
+	double powK2 = std::pow(parameter(19),parameter(20));
+	double powPK = std::pow(parameter(5),parameter(6));
+	double powAK = std::pow(parameter(10),parameter(11));
+	
+  for( size_t i=0 ; i<numCells ; ++i ) {
+		
+		//Production and degradation
+    cellDerivs[i][aI] += parameter(0)*cellData[i][mI] + parameter(1) - 
+			parameter(2)*cellData[i][aI];
+		
+		double powPA = std::pow(cellData[i][aI],parameter(6));
+    cellDerivs[i][pI] += parameter(3)*((1-parameter(4))+ parameter(4)*powPA/(powPK+powPA))
+			- parameter(7)*cellData[i][pI];
+		
+		double powAA = std::pow(cellData[i][aI],parameter(11));
+    cellDerivs[i][AI] += parameter(8)*((1-parameter(9))+parameter(9)*powAA/(powAK+powAA)) 
+			- parameter(12)*cellData[i][pI];
+		
+    cellDerivs[i][xI] += parameter(13) + parameter(14)*cellData[i][aI]*
+			cellData[i][aI]/(2.0+cellData[i][aI]*cellData[i][aI]) 
+			- parameter(15)*cellData[i][xI];
+		
+		std::vector<double> cellCenter = T.cell(i).positionFromVertex(vertexData);
+		double R=0.0;
+		for (size_t d=0; d<dimension; ++d)
+			R += cellCenter[d]*cellCenter[d];
+		R = std::sqrt(R);
+		double powR = std::pow(R,parameter(18));
+		double powR2 = std::pow(R,parameter(20));
+		cellDerivs[i][mI] += parameter(16)*(powR*powK2) / ((powK+powR)*(powK2+powR2)) 
+			- parameter(21)*cellData[i][mI];
+	}
+}
+
 AuxinTransportCellCellNoGeometry::
 AuxinTransportCellCellNoGeometry(std::vector<double> &paraValue, 
 																 std::vector< std::vector<size_t> > &indValue )
