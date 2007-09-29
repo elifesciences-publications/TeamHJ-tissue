@@ -265,14 +265,6 @@ void BaseSolver::print(std::ostream &os)
 		size_t auxinI=5,pinI=6,auxI=7,xI=8;
 		std::vector<double> parameter(8);
 		parameter[0]=0.1;
-		parameter[1]=1.0;
-		parameter[2]=0.9;
-		parameter[3]=0.1;
-		parameter[4]=1.0;
-		parameter[5]=1.0;
-		parameter[6]=0.0001;
-		parameter[7]=4;
-		
 		for( size_t i=0 ; i<Nc ; ++i ) {
 			size_t Ncv = T_->cell(i).numVertex(); 
 			os << Ncv << " ";
@@ -284,7 +276,7 @@ void BaseSolver::print(std::ostream &os)
 			size_t numWalls=T_->cell(i).numWall();
 			
 			//Polarization coefficient normalization constant
-			double sum=0.0;
+			double sum=1.0;
 			std::vector<double> Pij(numWalls);
 			for( size_t n=0 ; n<numWalls ; ++n ) {
 				if( T_->cell(i).wall(n)->cell1() != T_->background() &&
@@ -296,16 +288,14 @@ void BaseSolver::print(std::ostream &os)
 						neighI = T_->cell(i).wall(n)->cell1()->index();
 					//double powX = std::pow(cellData_[ neighI ][ xI ],parameter[5));
 					//double Cij = powX/(std::pow(parameter[4),parameter[5))+powX);
-					sum += Pij[n] = (1.0-parameter[2]) + 
-						parameter[2]*cellData_[ neighI ][ xI ];
+					sum += Pij[n] = cellData_[ neighI ][ xI ];
 					//sum += Pij[n] = (1.0-parameter[2]) + 
 					//parameter[2]*cellData_[ neighI ][xI];
 				}
 				else 
-					sum += Pij[n] = (1.0-parameter[2]);
+					sum += Pij[n] = parameter[0];
 			}
 			//sum /= numWalls;//For adjusting for different num neigh
-			sum += parameter[3];
 			
 			if( sum >= 0.0 )
 				std::cout << parameter[3]*cellData_[i][pinI] / sum << " ";

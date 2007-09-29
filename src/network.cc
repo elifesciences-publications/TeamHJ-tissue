@@ -1057,7 +1057,7 @@ derivs(Tissue &T,
 			- parameter(12)*cellData[i][pI];
 		
     cellDerivs[i][xI] += parameter(13) + parameter(14)*cellData[i][aI]*
-			cellData[i][aI]/(2.0+cellData[i][aI]*cellData[i][aI]) 
+			cellData[i][aI]/(1.0+cellData[i][aI]*cellData[i][aI]) 
 			- parameter(15)*cellData[i][xI];
 		
 		std::vector<double> cellCenter = T.cell(i).positionFromVertex(vertexData);
