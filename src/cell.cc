@@ -232,7 +232,6 @@ void Cell::sortWallAndVertexNew(Tissue &T) {
 		}
 	}
 	
-	//CONTINUE HERE!!!
 	//size_t wallIndexMod = wallIndex%numWall();
 	while( wallIndex<wallIndexStart+numWall()-1 ) {
 		for( size_t wI=0 ; wI<numWall() ; ++wI ) {

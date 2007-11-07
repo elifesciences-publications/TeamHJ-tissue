@@ -102,6 +102,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new PerpendicularWallPressure(paraValue, indValue);
   else if (idValue == "ContinousMTDirection")
 	  return new ContinousMTDirection(paraValue, indValue);
+  else if (idValue == "VertexFromCellPlane")
+	  return new VertexFromCellPlane(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneSphereCylinder")
 	  return new VertexFromCellPlaneSphereCylinder(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneSphereCylinderConcentrationHill")

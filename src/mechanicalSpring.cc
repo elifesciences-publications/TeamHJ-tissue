@@ -799,6 +799,7 @@ derivs(Tissue &T,
   for( size_t i=0 ; i<numWalls ; ++i ) {
     size_t v1 = T.wall(i).vertex1()->index();
     size_t v2 = T.wall(i).vertex2()->index();
+    assert( vertexData[v1].size()==dimension );
     assert( vertexData[v2].size()==dimension );
     //Calculate shared factors
     double distance=0.0,c1Norm=0.0,c2Norm=0.0;

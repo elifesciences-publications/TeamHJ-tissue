@@ -1631,6 +1631,117 @@ void ContinousMTDirection::derivs(Tissue &T,
 	}
 }
 
+VertexFromCellPlane::
+VertexFromCellPlane(std::vector<double> &paraValue,
+																	std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 1) {
+		std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
+							<< "Uses one parameter: k_force" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 0) {
+		std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
+							<< std::endl
+							<< "No variable index used." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	setId("VertexFromCellPlane");
+	setParameter(paraValue);
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp[0] = "k_force";
+	
+	setParameterId(tmp);
+}
+
+void VertexFromCellPlane::
+derivs(Tissue &T,
+			 std::vector< std::vector<double> > &cellData,
+			 std::vector< std::vector<double> > &wallData,
+			 std::vector< std::vector<double> > &vertexData,
+			 std::vector< std::vector<double> > &cellDerivs,
+			 std::vector< std::vector<double> > &wallDerivs,
+			 std::vector< std::vector<double> > &vertexDerivs)
+{
+	size_t dimension = vertexData[0].size();
+	if (dimension!=3) {
+		std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
+							<< "Only implemented for three dimensions." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	for (size_t n = 0; n < T.numCell(); ++n) {
+		Cell cell = T.cell(n);
+		cell.calculatePCAPlane(vertexData);
+
+		std::vector<double> normal = cell.getNormalToPCAPlane();
+		double norm=0.0;
+		for (size_t d=0; d<dimension; ++d)
+			norm += normal[d]*normal[d];
+		if (norm != 1.0) {
+			norm = std::sqrt(norm);
+			assert(norm>0.0);
+			for (size_t d=0; d<dimension; ++d)
+				normal[d] /= norm;
+		}
+
+		std::vector<int> scalarProdSign(cell.numVertex());
+		for (size_t k=0; k<cell.numVertex(); ++k) {
+			size_t k2=(k+1)%cell.numVertex();
+			size_t k3=(k+2)%cell.numVertex();
+			//Make sure ((v2-v1)x(v3-v2))n has same sign for all cells
+			assert(cell.numVertex()>2);
+			std::vector<double> nw1(dimension),nw2(dimension);
+			for (size_t d=0; d<dimension; ++d) {
+				nw1[d] = cell.vertex(k2)->position(d)-cell.vertex(k)->position(d);
+				nw2[d] = cell.vertex(k3)->position(d)-cell.vertex(k2)->position(d);
+			}
+			//cross product
+			double scalarProd=0.0;
+			for (size_t d1=0; d1<dimension; ++d1) {
+				size_t d2=(d1+1)%dimension;
+				size_t d3=(d1+2)%dimension;
+				scalarProd += (nw1[d1]*nw2[d2]-nw1[d2]*nw2[d1])*normal[d3];
+			}
+			if (scalarProd>0.0)
+				scalarProdSign[k]=1;
+			else
+				scalarProdSign[k]=-1;
+			//if (scalarProd>0.0)
+			//for (size_t d=0; d<dimension; ++d)
+			//	normal[d] = -normal[d];
+		}
+		for (size_t k=0; k<cell.numVertex(); ++k)
+			if (scalarProdSign[k]>0) 
+				std::cerr << " " << scalarProdSign[k] << " ";
+			else
+				std::cerr << scalarProdSign[k] << " ";
+		std::cerr << std::endl;
+		for (size_t k=1; k<cell.numVertex(); ++k)
+			if (scalarProdSign[k]!=scalarProdSign[0]) {
+				std::cerr << "Cell " << n << " has diverging signs on scalar product." << std::endl;
+				break;
+			}
+		//Set cellData direction to normal direction for plotting
+		for (size_t d=0; d<dimension; ++d)
+			cellData[n][d] = normal[d];
+		
+// 		double scalarProd=0.0;
+// 		for (size_t d=0; d<dimension; ++d)
+// 			scalarProd += scNorm[d]*normal[d];
+// 		if (scalarProd<0.0) {
+// 			for (size_t d=0; d<dimension; ++d)
+// 				normal[d] = -normal[d];
+// 		}
+		//for (size_t k=0; k<cell.numVertex(); ++k)
+		//for (size_t d=0; d<dimension; ++d)
+		//vertexDerivs[cell.vertex(k)->index()][d] += parameter(0) * normal[d];
+	}	
+}
+
 VertexFromCellPlaneSphereCylinder::
 VertexFromCellPlaneSphereCylinder(std::vector<double> &paraValue,
 																	std::vector< std::vector<size_t> > &indValue)
