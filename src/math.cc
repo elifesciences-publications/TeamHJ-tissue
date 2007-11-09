@@ -3,7 +3,7 @@
  * Description  : A set of functions dealing with various mathematical operations.
  * Author(s)    : Patrik Sahlin (sahlin@thep.lu.se)
  * Created      : August 2008
- * Revision     : $Id:$
+ * Revision     : $Id$
  */
 
 #include <cmath>
