@@ -37,7 +37,7 @@ Cell::Cell(size_t indexVal,std::string idVal) {
 
 Cell::~Cell() {}
 
-void Cell::sortWallAndVertex(Tissue &T) {
+void Cell::sortWallAndVertexOld(Tissue &T) {
 	
 	assert( numWall()==numVertex() );
 	
@@ -131,17 +131,17 @@ void Cell::sortWallAndVertex(Tissue &T) {
 	//					<< wall(i)->vertex2()->index() << std::endl; 
 }
 
-void Cell::sortWallAndVertexNew(Tissue &T) {
+void Cell::sortWallAndVertex(Tissue &T) {
 	
 	assert( numWall()==numVertex() );
 	
-	std::cerr << "Cell " << index() << std::endl;
-	for( size_t i=0 ; i<numVertex() ; ++i )
-		std::cerr << vertex(i)->index() << " "; 
-	std::cerr << std::endl;
-	for( size_t i=0 ; i<numWall() ; ++i )
-		std::cerr << wall(i)->index() << "\t" << wall(i)->vertex1()->index() << " "
-							<< wall(i)->vertex2()->index() << std::endl; 
+// 	std::cerr << "Cell " << index() << std::endl;
+// 	for( size_t i=0 ; i<numVertex() ; ++i )
+// 		std::cerr << vertex(i)->index() << " "; 
+// 	std::cerr << std::endl;
+// 	for( size_t i=0 ; i<numWall() ; ++i )
+// 		std::cerr << wall(i)->index() << "\t" << wall(i)->vertex1()->index() << " "
+// 							<< wall(i)->vertex2()->index() << std::endl; 
 	
 	size_t directionalWallFlag=0;
 	Wall* tmpDirectionalWall=NULL;
@@ -163,23 +163,25 @@ void Cell::sortWallAndVertexNew(Tissue &T) {
 	else
 		wallIndex=wallIndexStart=0;
 
-	std::cerr << "WallIndexStart: " << wallIndexStart << std::endl;
+// 	if (foundCellSortFlag)
+// 		std::cerr << "Found cell sort flag." << std::endl;
+// 	std::cerr << "WallIndexStart: " << wallIndexStart << std::endl;
 	unsigned int numWallSorted=0,numVertexSorted=0;
 	// Set sorting order for first wall
-	if (!foundCellSortFlag) {
+	if (!foundCellSortFlag) {//No previous information about sorting
 		tmpWall[wallIndex] = wall(wallIndex);
 		++numWallSorted;
-		std::cerr << "Adding wall " << wall(wallIndex)->index() 
-							<< " at position " << wallIndex << std::endl;
+// 		std::cerr << "Adding wall " << wall(wallIndex)->index() 
+// 							<< " at position " << wallIndex << std::endl;
 		tmpVertex[vertexIndex] = wall(wallIndex)->vertex1();
 		++numVertexSorted;
-		std::cerr << "Adding vertex " << wall(wallIndex)->vertex1()->index() 
-							<< " at position " << vertexIndex << std::endl;
+// 		std::cerr << "Adding vertex " << wall(wallIndex)->vertex1()->index() 
+// 							<< " at position " << vertexIndex << std::endl;
 		++vertexIndex;
 		tmpVertex[vertexIndex] = wall(wallIndex)->vertex2();
 		++numVertexSorted;
-		std::cerr << "Adding vertex " << wall(wallIndex)->vertex2()->index() 
-							<< " at position " << vertexIndex << std::endl;
+// 		std::cerr << "Adding vertex " << wall(wallIndex)->vertex2()->index() 
+// 							<< " at position " << vertexIndex << std::endl;
 		if (wall(wallIndex)->cell1()==this) {
 			wall(wallIndex)->setCellSort1(1);
 			if (wall(wallIndex)->cell2()!=T.background())
@@ -196,35 +198,35 @@ void Cell::sortWallAndVertexNew(Tissue &T) {
 			exit(EXIT_FAILURE);
 		}
 	}
-	else {
+	else {//First wall chosen from earlier sorting information
 		tmpWall[wallIndex] = wall(wallIndex);
 		++numWallSorted;
-		std::cerr << "Adding wall " << wall(wallIndex)->index() 
-							<< " at position " << wallIndex << std::endl;
+// 		std::cerr << "Adding wall " << wall(wallIndex)->index() 
+// 							<< " at position " << wallIndex << std::endl;
 		if (wall(wallIndex)->cell1()==this) {
 			if (wall(wallIndex)->cellSort1()==1) {
 				tmpVertex[vertexIndex] = wall(wallIndex)->vertex1();
 				++numVertexSorted;
-				std::cerr << "Adding vertex " << wall(wallIndex)->vertex1()->index() 
-									<< " at position " << vertexIndex << std::endl;
+// 				std::cerr << "Adding vertex " << wall(wallIndex)->vertex1()->index() 
+// 									<< " at position " << vertexIndex << std::endl;
 				++vertexIndex;
 				vertexIndex = vertexIndex%numVertex();
 				tmpVertex[vertexIndex] = wall(wallIndex)->vertex2();
 				++numVertexSorted;
-				std::cerr << "Adding vertex " << wall(wallIndex)->vertex2()->index() 
-									<< " at position " << vertexIndex << std::endl;
+// 				std::cerr << "Adding vertex " << wall(wallIndex)->vertex2()->index() 
+// 									<< " at position " << vertexIndex << std::endl;
 			}
 			else if (wall(wallIndex)->cellSort1()==-1) {
 				tmpVertex[vertexIndex] = wall(wallIndex)->vertex2();
 				++numVertexSorted;
-				std::cerr << "Adding vertex " << wall(wallIndex)->vertex2()->index() 
-									<< " at position " << vertexIndex << std::endl;				
+// 				std::cerr << "Adding vertex " << wall(wallIndex)->vertex2()->index() 
+// 									<< " at position " << vertexIndex << std::endl;				
 				++vertexIndex;
 				vertexIndex = vertexIndex%numVertex();
 				tmpVertex[vertexIndex] = wall(wallIndex)->vertex1();
 				++numVertexSorted;
-				std::cerr << "Adding vertex " << wall(wallIndex)->vertex1()->index() 
-									<< " at position " << vertexIndex << std::endl;
+// 				std::cerr << "Adding vertex " << wall(wallIndex)->vertex1()->index() 
+// 									<< " at position " << vertexIndex << std::endl;
 			}
 			else {
 				std::cerr << "cell.sortWallAndVertex() Wall to be sorted marked as but is not sorted."
@@ -236,26 +238,26 @@ void Cell::sortWallAndVertexNew(Tissue &T) {
 			if (wall(wallIndex)->cellSort2()==1) {
 				tmpVertex[vertexIndex] = wall(wallIndex)->vertex1();
 				++numVertexSorted;
-				std::cerr << "Adding vertex " << wall(wallIndex)->vertex1()->index() 
-									<< " at position " << vertexIndex << std::endl;
+// 				std::cerr << "Adding vertex " << wall(wallIndex)->vertex1()->index() 
+// 									<< " at position " << vertexIndex << std::endl;
 				++vertexIndex;
 				vertexIndex = vertexIndex%numVertex();
 				tmpVertex[vertexIndex] = wall(wallIndex)->vertex2();
 				++numVertexSorted;
-				std::cerr << "Adding vertex " << wall(wallIndex)->vertex2()->index() 
-									<< " at position " << vertexIndex << std::endl;
+// 				std::cerr << "Adding vertex " << wall(wallIndex)->vertex2()->index() 
+// 									<< " at position " << vertexIndex << std::endl;
 			}
 			else if (wall(wallIndex)->cellSort2()==-1) {
 				tmpVertex[vertexIndex] = wall(wallIndex)->vertex2();
 				++numVertexSorted;
-				std::cerr << "Adding vertex " << wall(wallIndex)->vertex2()->index() 
-									<< " at position " << vertexIndex << std::endl;				
+// 				std::cerr << "Adding vertex " << wall(wallIndex)->vertex2()->index() 
+// 									<< " at position " << vertexIndex << std::endl;				
 				++vertexIndex;
 				vertexIndex = vertexIndex%numVertex();
 				tmpVertex[vertexIndex] = wall(wallIndex)->vertex1();
 				++numVertexSorted;
-				std::cerr << "Adding vertex " << wall(wallIndex)->vertex1()->index() 
-									<< " at position " << vertexIndex << std::endl;
+// 				std::cerr << "Adding vertex " << wall(wallIndex)->vertex1()->index() 
+// 									<< " at position " << vertexIndex << std::endl;
 			}
 			else {
 				std::cerr << "cell.sortWallAndVertex() Wall to be sorted marked as but is not sorted."
@@ -271,6 +273,7 @@ void Cell::sortWallAndVertexNew(Tissue &T) {
 	}
 	
 	//size_t wallIndexMod = wallIndex%numWall();
+	// Sort the remaining walls
 	while( wallIndex<wallIndexStart+numWall()-1 ) {
 		for( size_t wI=0 ; wI<numWall() ; ++wI ) {
 			if( wall(wI) != tmpWall[wallIndex%numWall()] &&
@@ -278,24 +281,24 @@ void Cell::sortWallAndVertexNew(Tissue &T) {
 				++wallIndex;
 				tmpWall[wallIndex%numWall()]=wall(wI);				
 				++numWallSorted;
-				std::cerr << "Adding wall " << wall(wI)->index() 
-									<< " at position " << wallIndex%numWall() << std::endl;
+// 				std::cerr << "Adding wall " << wall(wI)->index() 
+// 									<< " at position " << wallIndex%numWall() << std::endl;
 				if( wallIndex<wallIndexStart+numWall()-1 ) {
 					if( tmpVertex[vertexIndex]==wall(wI)->vertex1() )  {
 						++vertexIndex;
 						vertexIndex=vertexIndex%numVertex();
 						tmpVertex[vertexIndex]=wall(wI)->vertex2();
 						++numVertexSorted;
-						std::cerr << "Adding vertex " << wall(wI)->vertex2()->index() 
-											<< " at position " << vertexIndex << std::endl;						
+// 						std::cerr << "Adding vertex " << wall(wI)->vertex2()->index() 
+// 											<< " at position " << vertexIndex << std::endl;						
 					}
 					else if( tmpVertex[vertexIndex]==wall(wI)->vertex2() ) {
 						++vertexIndex;
 						vertexIndex=vertexIndex%numVertex();
 						tmpVertex[vertexIndex]=wall(wI)->vertex1();
 						++numVertexSorted;
-						std::cerr << "Adding vertex " << wall(wI)->vertex1()->index() 
-											<< " at position " << vertexIndex << std::endl;
+// 						std::cerr << "Adding vertex " << wall(wI)->vertex1()->index() 
+// 											<< " at position " << vertexIndex << std::endl;
 					}
 					else {
 						std::cerr << "Cell::sortWallAndVertex() "
@@ -303,12 +306,149 @@ void Cell::sortWallAndVertexNew(Tissue &T) {
 						exit(-1);
 					}
 				}
+				else {//make sure vertexIndex points at initial vertex (which is not added again)
+					++vertexIndex;
+					vertexIndex=vertexIndex%numVertex();
+				}
+				// Check if this wall has marked sorting and either check if it complies with
+				// current sorting or add sorting variables
+				if (wall(wI)->cell1()==this) {
+					if (wall(wI)->cellSort1()==1 ) {//sorted along wall vertices
+						if (wall(wI)->vertex2() != tmpVertex[vertexIndex] ) {
+							std::cerr << "Cell::sortWallAndVertex() "
+												<< "Current sorting direction for wall does not comply with previous."
+												<< std::endl;
+							std::cerr << "Cell sort: " << wall(wI)->cellSort1() << " wall vertices: "
+												<< wall(wI)->vertex1()->index() << "," 
+												<< wall(wI)->vertex2()->index() << std::endl
+												<< "vertexIndex: " << vertexIndex << std::endl;
+							std::cerr << "tmpVertex ";
+							for (size_t k=0; k<tmpVertex.size(); ++k)
+								if (tmpVertex[k]) 
+									std::cerr << tmpVertex[k]->index() << " (" << k << ") ";
+							std::cerr << std::endl;
+							std::cerr << "tmpWall ";
+							for (size_t k=0; k<tmpWall.size(); ++k)
+								if (tmpWall[k]) 
+									std::cerr << tmpWall[k]->index() << " (" << k << ") ";
+							std::cerr << std::endl;
+							exit(-1);
+						}
+					}
+					else if (wall(wI)->cellSort1()==-1 ) {//sorted 'against' wall vertices
+						if (wall(wI)->vertex1() != tmpVertex[vertexIndex] ) {
+							std::cerr << "Cell::sortWallAndVertex() "
+												<< "Current sorting direction for wall does not comply with previous."
+												<< std::endl;
+							std::cerr << "Cell sort: " << wall(wI)->cellSort1() << " wall vertices: "
+												<< wall(wI)->vertex1()->index() << "," 
+												<< wall(wI)->vertex2()->index() << std::endl
+												<< "vertexIndex: " << vertexIndex << std::endl;
+							std::cerr << "tmpVertex ";
+							for (size_t k=0; k<tmpVertex.size(); ++k)
+								if (tmpVertex[k]) 
+									std::cerr << tmpVertex[k]->index() << " (" << k << ") ";
+							std::cerr << std::endl;
+							std::cerr << "tmpWall ";
+							for (size_t k=0; k<tmpWall.size(); ++k)
+								if (tmpWall[k]) 
+									std::cerr << tmpWall[k]->index() << " (" << k << ") ";
+							std::cerr << std::endl;
+							exit(-1);
+						}
+					}
+					else {//not sorted before
+						if (wall(wI)->vertex2()==tmpVertex[vertexIndex] ) {
+							wall(wI)->setCellSort1(1);
+							if (wall(wI)->cell2()!=T.background())
+								wall(wI)->setCellSort2(-1);
+						}
+						else if (wall(wI)->vertex1()==tmpVertex[vertexIndex] ) {
+							wall(wI)->setCellSort1(-1);
+							if (wall(wI)->cell2()!=T.background())
+								wall(wI)->setCellSort2(1);
+						}
+						else {
+							std::cerr << "Cell::sortWallAndVertex() "
+												<< "tmpVertex not in wall sorted!" << std::endl;
+							exit(-1);
+						}
+					}					
+				}
+				else if (wall(wI)->cell2()==this) {
+					if (wall(wI)->cellSort2()==1 ) {//sorted along wall vertices
+						if (wall(wI)->vertex2() != tmpVertex[vertexIndex] ) {
+							std::cerr << "Cell::sortWallAndVertex() "
+												<< "Current sorting direction for wall does not comply with previous."
+												<< std::endl;
+							std::cerr << "Cell sort: " << wall(wI)->cellSort2() << " wall vertices: "
+												<< wall(wI)->vertex1()->index() << "," 
+												<< wall(wI)->vertex2()->index() << std::endl
+												<< "vertexIndex: " << vertexIndex << std::endl;
+							std::cerr << "tmpVertex ";
+							for (size_t k=0; k<tmpVertex.size(); ++k)
+								if (tmpVertex[k]) 
+									std::cerr << tmpVertex[k]->index() << " (" << k << ") ";
+							std::cerr << std::endl;
+							std::cerr << "tmpWall ";
+							for (size_t k=0; k<tmpWall.size(); ++k)
+								if (tmpWall[k]) 
+									std::cerr << tmpWall[k]->index() << " (" << k << ") ";
+							std::cerr << std::endl;
+							exit(-1);
+						}
+					}
+					else if (wall(wI)->cellSort2()==-1 ) {//sorted 'against' wall vertices
+						if (wall(wI)->vertex1() != tmpVertex[vertexIndex] ) {
+							std::cerr << "Cell::sortWallAndVertex() "
+												<< "Current sorting direction for wall does not comply with previous."
+												<< std::endl;
+							std::cerr << "Cell sort: " << wall(wI)->cellSort2() << " wall vertices: "
+												<< wall(wI)->vertex1()->index() << "," 
+												<< wall(wI)->vertex2()->index() << std::endl
+												<< "vertexIndex: " << vertexIndex << std::endl;
+							std::cerr << "tmpVertex ";
+							for (size_t k=0; k<tmpVertex.size(); ++k)
+								if (tmpVertex[k]) 
+									std::cerr << tmpVertex[k]->index() << " (" << k << ") ";
+							std::cerr << std::endl;
+							std::cerr << "tmpWall ";
+							for (size_t k=0; k<tmpWall.size(); ++k)
+								if (tmpWall[k]) 
+									std::cerr << tmpWall[k]->index() << " (" << k << ") ";
+							std::cerr << std::endl;
+							exit(-1);
+						}
+					}
+					else {//not sorted before
+						if (wall(wI)->vertex2()==tmpVertex[vertexIndex] ) {
+							wall(wI)->setCellSort2(1);
+							if (wall(wI)->cell1()!=T.background())
+								wall(wI)->setCellSort1(-1);
+						}
+						else if (wall(wI)->vertex1()==tmpVertex[vertexIndex] ) {
+							wall(wI)->setCellSort2(-1);
+							if (wall(wI)->cell1()!=T.background())
+								wall(wI)->setCellSort1(1);
+						}
+						else {
+							std::cerr << "Cell::sortWallAndVertex() "
+												<< "tmpVertex not in wall sorted!" << std::endl;
+							exit(-1);
+						}
+					}					
+				}					
+				else {
+					std::cerr << "cell.sortWallAndVertex() Wall to be sorted does not belong to the cell"
+										<< std::endl;
+					exit(EXIT_FAILURE);
+				}
 				break;
 			}
 		}
 	}
-	std::cerr << "numWallSorted: " << numWallSorted << " (" << numWall() << ") numVertexSorted: "
-						<< numVertexSorted << " (" << numVertex() << ")" << std::endl;
+// 	std::cerr << "numWallSorted: " << numWallSorted << " (" << numWall() << ") numVertexSorted: "
+// 						<< numVertexSorted << " (" << numVertex() << ")" << std::endl;
 	if (numWallSorted!=numWall() || numVertexSorted!=numVertex()) {
 		std::cerr << "Cell " << index() << " has sorted " << numWallSorted 
 							<< " walls out of " << numWall()

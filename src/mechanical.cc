@@ -1673,12 +1673,12 @@ derivs(Tissue &T,
 							<< "Only implemented for three dimensions." << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	unsigned int numFlipNormal=0, numFlipNormalSC=0;
+	unsigned int numFlipNormal=0;
 	for (size_t n = 0; n < T.numCell(); ++n) {
 		Cell cell = T.cell(n);
 		cell.calculatePCAPlane(vertexData);
-		unsigned int flipFlag=0,flipFlagSC=0;
-
+		unsigned int flipFlag=0;
+		
 		std::vector<double> normal = cell.getNormalToPCAPlane();
 		double norm=0.0;
 		for (size_t d=0; d<dimension; ++d)
@@ -1713,63 +1713,35 @@ derivs(Tissue &T,
 			else
 				scalarProdSign[k]=-1;
 		}
-// 		for (size_t k=0; k<cell.numVertex(); ++k)
-// 			if (scalarProdSign[k]>0) 
-// 				std::cerr << " " << scalarProdSign[k] << " ";
-// 			else
-// 				std::cerr << scalarProdSign[k] << " ";
-// 		std::cerr << std::endl;
-		for (size_t k=1; k<cell.numVertex(); ++k)
-			if (scalarProdSign[k]!=scalarProdSign[0]) {
-				std::cerr << "Cell " << n << " has diverging signs on scalar product." << std::endl;
-				break;
-			}
+// 		for (size_t k=1; k<cell.numVertex(); ++k)
+// 			if (scalarProdSign[k]!=scalarProdSign[0]) {
+// 				std::cerr << "Cell " << n << " has diverging signs on scalar product." << std::endl;
+// 				break;
+// 			}
 		int scalarProdSignSum=0;
 		for (size_t k=0; k<scalarProdSign.size(); ++k)
 			scalarProdSignSum += scalarProdSign[k];
-
+		
 		if (scalarProdSignSum<0) {
 			numFlipNormal++;
 			flipFlag=1;
-			//for (size_t d=0; d<dimension; ++d)
-			//normal[d] = -normal[d];
+			for (size_t d=0; d<dimension; ++d)
+				normal[d] = -normal[d];
 		}
 		else if (scalarProdSignSum==0) {
 			std::cerr << "Cell " << n << " has no majority sign in right han rule expression." 
 								<< std::endl;
 			exit(-1);
 		}
-		
-		//SCnormal calculation
-		std::vector<double> cellPos = cell.positionFromVertex(vertexData);
-		std::vector<double> scNorm(dimension);
-		for (size_t d=0; d<dimension; ++d)
-			scNorm[d] = cellPos[d];
-		if( cellPos[2]<0.0 )
-			scNorm[2]=0.0;
-		
- 		double scalarProdSC=0.0;
- 		for (size_t d=0; d<dimension; ++d)
- 			scalarProdSC += scNorm[d]*normal[d];
- 		if (scalarProdSC<0.0) {
-			numFlipNormalSC++;
-			flipFlagSC=1;
-			for (size_t d=0; d<dimension; ++d)
- 				normal[d] = -normal[d];
- 		}
-		std::cerr << n << "  " << flipFlag << " " << flipFlagSC << std::endl;
-		//Set cellData direction to normal direction for plotting
-		for (size_t d=0; d<dimension; ++d)
-			cellData[n][d] = normal[d];
-
-		//for (size_t k=0; k<cell.numVertex(); ++k)
-		//for (size_t d=0; d<dimension; ++d)
-		//vertexDerivs[cell.vertex(k)->index()][d] += parameter(0) * normal[d];
+		//update the vertex derivatives
+		for (size_t d=0; d<dimension; ++d) {
+			cellData[n][d]=normal[d];
+			for (size_t k=0; k<cell.numVertex(); ++k)
+				vertexDerivs[cell.vertex(k)->index()][d] += parameter(0) * normal[d];
+		}
 	}	
-	std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
-						<< std::endl;
-	std::cerr << numFlipNormalSC << " cells out of " << T.numCell() 
-						<< " has flipped normal due to SC constraint." << std::endl;
+	//std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
+	//				<< std::endl;
 }
 
 VertexFromCellPlaneSphereCylinder::
