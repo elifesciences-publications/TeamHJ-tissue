@@ -490,53 +490,120 @@ void ForceDirection::update(Tissue &T, double h,
 					   std::vector< std::vector<double> > &wallDerivs,
 					   std::vector< std::vector<double> > &vertexDerivs)
 {
-	for (size_t n = 0; n < T.numCell(); ++n) {
- 		Cell cell = T.cell(n);
-		
-		if (cellData[cell.index()][variableIndex(0, 0) + 2] == 0) {
-			continue;
-		}
-		double enumerator = 0.0;
-		double denominator = 0.0;
-
-		for (size_t i = 0; i < cell.numWall(); ++i) {
-			Wall *wall = cell.wall(i);
-
-			double wx = (vertexData[wall->vertex1()->index()][0] - 
-									 vertexData[wall->vertex2()->index()][0]); 
-			double wy = (vertexData[wall->vertex1()->index()][1] - 
-									 vertexData[wall->vertex2()->index()][1]); 
-
-			// Dodgy error check. Might have to improve it.
-			if (wx < 0) {
-				wx *= -1.0;
-				wy *= -1.0;
+	size_t dimension = vertexData[0].size();
+	if (dimension==2) { 
+		for (size_t n = 0; n < T.numCell(); ++n) {
+			Cell cell = T.cell(n);
+			
+			if (cellData[cell.index()][variableIndex(0, 0) + 2] == 0) {
+				continue;
 			}
-			double sigma = std::atan2(wy, wx);
-
-			double c = std::cos(2.0 * sigma);
-			double s = std::sin(2.0 * sigma);
-
-			double force = 0.0;
-			for (size_t j = 0; j < numVariableIndex(1); ++j) {
-				force += wallData[wall->index()][variableIndex(1, j)];
+			double enumerator = 0.0;
+			double denominator = 0.0;
+			
+			for (size_t i = 0; i < cell.numWall(); ++i) {
+				Wall *wall = cell.wall(i);
+				
+				double wx = (vertexData[wall->vertex1()->index()][0] - 
+										 vertexData[wall->vertex2()->index()][0]); 
+				double wy = (vertexData[wall->vertex1()->index()][1] - 
+										 vertexData[wall->vertex2()->index()][1]); 
+				
+				// Dodgy error check. Might have to improve it.
+				if (wx < 0) {
+					wx *= -1.0;
+					wy *= -1.0;
+				}
+				double sigma = std::atan2(wy, wx);
+				
+				double c = std::cos(2.0 * sigma);
+				double s = std::sin(2.0 * sigma);
+				
+				double force = 0.0;
+				for (size_t j = 0; j < numVariableIndex(1); ++j) {
+					force += wallData[wall->index()][variableIndex(1, j)];
+				}
+				enumerator += force * s;
+				denominator += force * c;
 			}
-			enumerator += force * s;
-			denominator += force * c;
+			
+			double angle = std::atan2(enumerator, denominator);
+			
+			double x = std::cos(0.5 * angle);
+			double y = std::sin(0.5 * angle);
+			
+			if (parameter(0) == 0) {
+				cellData[cell.index()][variableIndex(0, 0) + 0] = x;
+				cellData[cell.index()][variableIndex(0, 0) + 1] = y;
+			} else {
+				cellData[cell.index()][variableIndex(0, 0) + 0] = - y;
+				cellData[cell.index()][variableIndex(0, 0) + 1] = x;
+			}
 		}
-		
-		double angle = std::atan2(enumerator, denominator);
-		
-		double x = std::cos(0.5 * angle);
-		double y = std::sin(0.5 * angle);
+	}
+	else if (dimension==3) {
+		for (size_t n = 0; n < T.numCell(); ++n) {
+			Cell cell = T.cell(n);
+			
+			if (cellData[cell.index()][variableIndex(0, 0) + dimension] == 0) {
+				continue;
+			}
+			
+			cell.calculatePCAPlane(vertexData);
+			std::vector< std::vector<double> > axes = cell.getPCAPlane();
+			std::vector< std::pair<double, double> > vertices = cell.projectVerticesOnPCAPlane(vertexData);
+			
+			double enumerator = 0.0;
+			double denominator = 0.0;
+			
+			for (size_t i = 0; i < cell.numWall(); ++i) {
+				size_t ii = (i+1)%cell.numWall();
+				Wall *wall = cell.wall(i);
+				
+				double wx = vertices[i].first - vertices[ii].first;
+				double wy = vertices[i].second - vertices[ii].second;
+				
+				// Dodgy error check. Might have to improve it.
+				if (wx < 0) {
+					wx *= -1.0;
+					wy *= -1.0;
+				}
+				double sigma = std::atan2(wy, wx);
+				
+				double c = std::cos(2.0 * sigma);
+				double s = std::sin(2.0 * sigma);
+				
+				double force = 0.0;
 
-		if (parameter(0) == 0) {
-			cellData[cell.index()][variableIndex(0, 0) + 0] = x;
-			cellData[cell.index()][variableIndex(0, 0) + 1] = y;
-		} else {
-			cellData[cell.index()][variableIndex(0, 0) + 0] = - y;
-			cellData[cell.index()][variableIndex(0, 0) + 1] = x;
-		}
+				for (size_t j = 0; j < numVariableIndex(1); ++j) {
+					force += wallData[wall->index()][variableIndex(1, j)];
+				}
+				enumerator += force * s;
+				denominator += force * c;
+			}
+			
+			double angle = std::atan2(enumerator, denominator);
+			
+			double x = std::cos(0.5 * angle);
+			double y = std::sin(0.5 * angle);
+			
+			
+			if (parameter(0) == 1) {
+				//Use perpendicular direction
+				double tmp = -y;
+				y = x;
+				x = tmp;
+			}
+			std::vector<double> dir(dimension);
+			double norm=0.0;
+			for (size_t d=0; d<dimension; ++d) {
+				dir[d] = x * axes[0][d] + y * axes[1][d];
+				norm += dir[d]*dir[d];
+			}
+			norm = 1.0/std::sqrt(norm);
+			for (size_t d=0; d<dimension; ++d)
+				cellData[cell.index()][variableIndex(0, 0) + d] = dir[d] * norm;
+		}		
 	}
 }
 
