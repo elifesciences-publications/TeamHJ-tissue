@@ -108,3 +108,115 @@ update(Tissue *T,size_t i,std::vector< std::vector<double> > &cellData,
 						<< "Should always be mapped onto one of the real types.\n";
   exit(0);
 }  
+
+void BaseCompartmentChange::
+printCellWallError(std::vector< std::vector<double> > &vertexData,
+									 Cell *divCell, 
+									 std::vector<size_t> &w3Tmp, 
+									 size_t &wI, 
+									 size_t &w3I,
+									 std::ostream &os) {
+	
+	for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
+		std::cerr << "0 " 
+							<< vertexData[divCell->wall(k)->vertex1()->index()][0]
+							<< " " 
+							<< vertexData[divCell->wall(k)->vertex1()->index()][1]
+							<< "\n0 " 
+							<< vertexData[divCell->wall(k)->vertex2()->index()][0]
+							<< " " 
+							<< vertexData[divCell->wall(k)->vertex2()->index()][1]
+							<< "\n\n\n";
+	}
+	for( size_t kk=0 ; kk<w3Tmp.size() ; ++kk ) {
+		size_t k = w3Tmp[kk];
+		std::cerr << "1 " 
+							<< vertexData[divCell->wall(k)->vertex1()->index()][0]
+							<< " " 
+							<< vertexData[divCell->wall(k)->vertex1()->index()][1]
+							<< "\n1 " 
+							<< vertexData[divCell->wall(k)->vertex2()->index()][0]
+							<< " " 
+							<< vertexData[divCell->wall(k)->vertex2()->index()][1]
+							<< "\n\n\n";
+	}
+	std::cerr << "2 " 
+						<< vertexData[divCell->wall(wI)->vertex1()->index()][0]
+						<< " " 
+						<< vertexData[divCell->wall(wI)->vertex1()->index()][1]
+						<< "\n2 " 
+						<< vertexData[divCell->wall(wI)->vertex2()->index()][0]
+						<< " " 
+						<< vertexData[divCell->wall(wI)->vertex2()->index()][1]
+						<< "\n\n\n";
+	std::cerr << "3 " 
+						<< vertexData[divCell->wall(w3I)->vertex1()->index()][0]
+						<< " " 
+						<< vertexData[divCell->wall(w3I)->vertex1()->index()][1]
+						<< "\n3 " 
+						<< vertexData[divCell->wall(w3I)->vertex2()->index()][0]
+						<< " " 
+						<< vertexData[divCell->wall(w3I)->vertex2()->index()][1]
+						<< "\n\n\n";
+	std::cerr << "4 " 
+						<< 0.5*(vertexData[divCell->wall(wI)->vertex1()->index()][0]+
+										vertexData[divCell->wall(wI)->vertex2()->index()][0])
+						<< " " 
+						<< 0.5*(vertexData[divCell->wall(wI)->vertex1()->index()][1]+
+										vertexData[divCell->wall(wI)->vertex2()->index()][1])
+						<< "\n4 "
+						<< 0.5*(vertexData[divCell->wall(w3I)->vertex1()->index()][0]+
+										vertexData[divCell->wall(w3I)->vertex2()->index()][0])
+						<< " " 
+						<< 0.5*(vertexData[divCell->wall(w3I)->vertex1()->index()][1]+
+										vertexData[divCell->wall(w3I)->vertex2()->index()][1])
+						<< "\n\n\n";
+}
+
+void BaseCompartmentChange::
+findSecondDivisionWall(std::vector< std::vector<double> > &vertexData, 
+											 Cell *divCell, size_t &wI, size_t &w3I, 
+											 size_t &flag, size_t &vertexFlag,
+											 std::vector<double> &v1Pos, 
+											 std::vector<double> &nW2, 
+											 std::vector<size_t> &w3Tmp, 
+											 std::vector<double> &w3tTmp) {
+	
+	size_t dimension=vertexData[0].size();
+	if (dimension==2) {
+		for (size_t k=0; k<divCell->numWall(); ++k) {
+			if (k!=wI) {
+				size_t v1w3Itmp = divCell->wall(k)->vertex1()->index();
+				size_t v2w3Itmp = divCell->wall(k)->vertex2()->index();
+				std::vector<double> w3(dimension),w0(dimension);
+				for (size_t d=0; d<dimension; ++d) {
+					w3[d] = vertexData[v2w3Itmp][d]-vertexData[v1w3Itmp][d];
+					w0[d] = v1Pos[d]-vertexData[v1w3Itmp][d];
+				}
+				double a=0.0,b=0.0,c=0.0,d=0.0,e=0.0;//a=1.0
+				for (size_t dim=0; dim<dimension; ++dim) {
+					a += nW2[dim]*nW2[dim];
+					b += nW2[dim]*w3[dim];
+					c += w3[dim]*w3[dim];
+					d += nW2[dim]*w0[dim];
+					e += w3[dim]*w0[dim];
+				}
+				double fac=a*c-b*b;//a*c-b*b
+				if (fac>1e-10) {//else parallell and not applicable
+					fac = 1.0/fac;
+					//double s = fac*(b*e-c*d);
+					double t = fac*(a*e-b*d);//fac*(a*e-b*d)
+					if (t>0.0 && t<=1.0) {//within wall
+						//double dx0 = w0[0] +fac*((b*e-c*d)*nW2[0]+()*w3[0]); 					
+						++flag;
+						if (t==1.0)
+							vertexFlag++;
+						w3I = k;
+						w3Tmp.push_back(k);
+						w3tTmp.push_back(t);
+					}
+				}
+			}
+		}
+	}
+}

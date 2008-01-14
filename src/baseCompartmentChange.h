@@ -14,6 +14,7 @@
 #include<fstream>
 
 class Tissue;
+class Cell;
 
 //!A base class for describing diff equation updates for dynamical variables
 /*! The BaseCompartmentChange class is a base class used when defining
@@ -73,19 +74,43 @@ class BaseCompartmentChange {
   inline void setVariableIndex(std::vector< std::vector<size_t> > &value);
   
   virtual int flag(Tissue* T,size_t i,
-		   std::vector< std::vector<double> > &cellData,
-		   std::vector< std::vector<double> > &wallData,
-		   std::vector< std::vector<double> > &vertexData,
-		   std::vector< std::vector<double> > &cellDerivs,
-		   std::vector< std::vector<double> > &wallDerivs,
-		   std::vector< std::vector<double> > &vertexDerivs );
+									 std::vector< std::vector<double> > &cellData,
+									 std::vector< std::vector<double> > &wallData,
+									 std::vector< std::vector<double> > &vertexData,
+									 std::vector< std::vector<double> > &cellDerivs,
+									 std::vector< std::vector<double> > &wallDerivs,
+									 std::vector< std::vector<double> > &vertexDerivs );
   virtual void update(Tissue* T,size_t i,
-		      std::vector< std::vector<double> > &cellData,
-		      std::vector< std::vector<double> > &wallData,
-		      std::vector< std::vector<double> > &vertexData,
-		      std::vector< std::vector<double> > &cellDerivs,
-		      std::vector< std::vector<double> > &wallDerivs,
-		      std::vector< std::vector<double> > &vertexDerivs );
+											std::vector< std::vector<double> > &cellData,
+											std::vector< std::vector<double> > &wallData,
+											std::vector< std::vector<double> > &vertexData,
+											std::vector< std::vector<double> > &cellDerivs,
+											std::vector< std::vector<double> > &wallDerivs,
+											std::vector< std::vector<double> > &vertexDerivs );
+
+	///
+	/// @brief Prints the wall positions and different other stuff for
+	/// error checking in gnuplot.
+	///
+	void printCellWallError(std::vector< std::vector<double> > &vertexData,
+													Cell *divCell, 
+													std::vector<size_t> &w3Tmp, 
+													size_t &wI, 
+													size_t &w3I,
+													std::ostream &os=std::cerr);
+
+	///
+	/// @brief Delivers the index and position of a second wall for division
+	///
+	/// It uses a position on a wall and a direction to find a second
+	/// vertex position for a division.
+	void findSecondDivisionWall(std::vector< std::vector<double> > &vertexData, 
+															Cell *divCell, size_t &wI, size_t &w3I, 
+															size_t &flag, size_t &vertexFlag,
+															std::vector<double> &v1Pos, 
+															std::vector<double> &nW2, 
+															std::vector<size_t> &w3Tmp, 
+															std::vector<double> &w3tTmp);
 };
 
 //!Returns the id string

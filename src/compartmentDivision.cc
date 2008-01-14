@@ -9,14 +9,13 @@
 #include "compartmentDivision.h"
 #include "myRandom.h"
 
-//!Constructor
 DivisionVolumeViaLongestWall::
 DivisionVolumeViaLongestWall(std::vector<double> &paraValue, 
-			     std::vector< std::vector<size_t> > 
-			     &indValue ) {
-  
-  //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+														 std::vector< std::vector<size_t> > 
+														 &indValue ) {
+  //
+  // Do some checks on the parameters and variable indeces
+  //
   if( paraValue.size()!=3 ) {
     std::cerr << "DivisionVolumeViaLongestWall::"
 							<< "DivisionVolumeViaLongestWall() "
@@ -31,15 +30,16 @@ DivisionVolumeViaLongestWall(std::vector<double> &paraValue,
 							<< "variables is used.\n";
     exit(0);
   }
-  //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
+	// Set the variable values
+  //
   setId("DivisionVolumeViaLongestWall");
 	setNumChange(1);
   setParameter(paraValue);  
   setVariableIndex(indValue);
-  
-  //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+	//
+  // Set the parameter identities
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "V_threshold";
@@ -48,9 +48,6 @@ DivisionVolumeViaLongestWall(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Flags a cell for division if the volume above threshold
-/*! 
- */
 int DivisionVolumeViaLongestWall::
 flag(Tissue *T,size_t i,
      std::vector< std::vector<double> > &cellData,
@@ -68,9 +65,6 @@ flag(Tissue *T,size_t i,
   return 0;
 }
 
-//! Updates the dividing cell by adding a prependicular wall from the longest
-/*! 
- */
 void DivisionVolumeViaLongestWall::
 update(Tissue *T,size_t i,
        std::vector< std::vector<double> > &cellData,
@@ -83,10 +77,10 @@ update(Tissue *T,size_t i,
   Cell *divCell = &(T->cell(i));
   size_t dimension = vertexData[0].size();
   assert( divCell->numWall() > 1 );
-	assert( dimension==2 );
-	
+	assert( dimension==2 ); 
+	//
   //Find longest wall
-	//////////////////////////////////////////////////////////////////////
+	// 
   size_t wI=0;
   double maxLength = divCell->wall(0)->setLengthFromVertexPosition(vertexData);
   for( size_t k=1 ; k<divCell->numWall() ; ++k ) {
@@ -106,125 +100,39 @@ update(Tissue *T,size_t i,
     nW[d] = (vertexData[v1wI][d]-vertexData[v2wI][d])/maxLength;
     v1Pos[d] = 0.5*(vertexData[v1wI][d]+vertexData[v2wI][d]);
   }
-  nW2[1] = nW[0];
-  nW2[0] = -nW[1];
-	
-  //Find intersection with another wall
-	//////////////////////////////////////////////////////////////////////
-  size_t w3I=divCell->numWall();
-  //double minDist,w3s;
-	std::vector<size_t> w3Tmp;
-	std::vector<double> w3tTmp;
-  int flag=0,vertexFlag=0;
-  for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
-    if( k!=wI ) {
-      size_t v1w3Itmp = divCell->wall(k)->vertex1()->index();
-      size_t v2w3Itmp = divCell->wall(k)->vertex2()->index();
-      std::vector<double> w3(dimension),w0(dimension);
-      for( size_t d=0 ; d<dimension ; ++d ) {
-				w3[d] = vertexData[v2w3Itmp][d]-vertexData[v1w3Itmp][d];
-				w0[d] = v1Pos[d]-vertexData[v1w3Itmp][d];
-      }
-      double a=0.0,b=0.0,c=0.0,d=0.0,e=0.0;//a=1.0
-      for( size_t dim=0 ; dim<dimension ; ++dim ) {
-				a += nW2[dim]*nW2[dim];
-				b += nW2[dim]*w3[dim];
-				c += w3[dim]*w3[dim];
-				d += nW2[dim]*w0[dim];
-				e += w3[dim]*w0[dim];
-      }
-      double fac=a*c-b*b;//a*c-b*b
-      if( fac>1e-10 ) {//else parallell and not applicable
-				fac = 1.0/fac;
-				//double s = fac*(b*e-c*d);
-				double t = fac*(a*e-b*d);//fac*(a*e-b*d)
-				if( t>0.0 && t<=1.0 ) {//within wall
-					//double dx0 = w0[0] +fac*((b*e-c*d)*nW2[0]+()*w3[0]); 					
-					flag++;
-					if( t==1.0 )
-						vertexFlag++;
-					w3I = k;
-					w3Tmp.push_back(k);
-					w3tTmp.push_back(t);
-				}
-      }
-    }
-  }
-  assert( w3I != divCell->numWall() && w3I != wI );
+	//
+  // Find intersection with another wall
+	//
+	if (dimension==2) {
+		nW2[1] = nW[0];
+		nW2[0] = -nW[1];
+		size_t w3I=divCell->numWall();
+		//double minDist,w3s;
+		std::vector<size_t> w3Tmp;
+		std::vector<double> w3tTmp;
+		int flag=0,vertexFlag=0;
+		findSecondDivisionWall(vertexData, divCell, wI, w3I, flag, vertexFlag, nW2, w3Tmp, w3tTmp);
+	}
+	assert( w3I != divCell->numWall() && w3I != wI );
 	if( flag != 1 && !(flag==2 && vertexFlag) ) {
 		std::cerr << "divideVolumeViaLongestWall::update Warning"
 							<< " more than one wall possible as connection "
-							<< "for cell " 
-							<< i << std::endl; 
-		std::cerr << flag << " " << vertexFlag << std::endl; 
-		for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
-			std::cerr << "0 " 
-								<< vertexData[divCell->wall(k)->vertex1()->index()][0]
-								<< " " 
-								<< vertexData[divCell->wall(k)->vertex1()->index()][1]
-								<< "\n0 " 
-								<< vertexData[divCell->wall(k)->vertex2()->index()][0]
-								<< " " 
-								<< vertexData[divCell->wall(k)->vertex2()->index()][1]
-								<< "\n\n\n";
-		}
-		for( size_t kk=0 ; kk<w3Tmp.size() ; ++kk ) {
-			size_t k = w3Tmp[kk];
-			std::cerr << "1 " 
-								<< vertexData[divCell->wall(k)->vertex1()->index()][0]
-								<< " " 
-								<< vertexData[divCell->wall(k)->vertex1()->index()][1]
-								<< "\n1 " 
-								<< vertexData[divCell->wall(k)->vertex2()->index()][0]
-								<< " " 
-								<< vertexData[divCell->wall(k)->vertex2()->index()][1]
-								<< "\n\n\n";
-		}
-		std::cerr << "2 " 
-							<< vertexData[divCell->wall(wI)->vertex1()->index()][0]
-							<< " " 
-							<< vertexData[divCell->wall(wI)->vertex1()->index()][1]
-							<< "\n2 " 
-							<< vertexData[divCell->wall(wI)->vertex2()->index()][0]
-							<< " " 
-							<< vertexData[divCell->wall(wI)->vertex2()->index()][1]
-							<< "\n\n\n";
-		std::cerr << "3 " 
-							<< vertexData[divCell->wall(w3I)->vertex1()->index()][0]
-							<< " " 
-							<< vertexData[divCell->wall(w3I)->vertex1()->index()][1]
-							<< "\n3 " 
-							<< vertexData[divCell->wall(w3I)->vertex2()->index()][0]
-							<< " " 
-							<< vertexData[divCell->wall(w3I)->vertex2()->index()][1]
-							<< "\n\n\n";
-		std::cerr << "4 " 
-							<< 0.5*(vertexData[divCell->wall(wI)->vertex1()->index()][0]+
-											vertexData[divCell->wall(wI)->vertex2()->index()][0])
-							<< " " 
-							<< 0.5*(vertexData[divCell->wall(wI)->vertex1()->index()][1]+
-											vertexData[divCell->wall(wI)->vertex2()->index()][1])
-							<< "\n4 "
-							<< 0.5*(vertexData[divCell->wall(w3I)->vertex1()->index()][0]+
-											vertexData[divCell->wall(w3I)->vertex2()->index()][0])
-							<< " " 
-							<< 0.5*(vertexData[divCell->wall(w3I)->vertex1()->index()][1]+
-											vertexData[divCell->wall(w3I)->vertex2()->index()][1])
-							<< "\n\n\n";
-			exit(-1);
+							<< "for cell " << i << std::endl 
+							<< flag << " possible walls found and " << vertexFlag 
+							<< " marked as vertices." << std::endl; 
+		printCellWallsError(vertexData, divCell, w3Tmp, wI, w3I);
+		exit(-1);
 	}	
-  size_t v1w3I = divCell->wall(w3I)->vertex1()->index();
-  size_t v2w3I = divCell->wall(w3I)->vertex2()->index();
+	size_t v1w3I = divCell->wall(w3I)->vertex1()->index();
+	size_t v2w3I = divCell->wall(w3I)->vertex2()->index();
 	//Set the vertex using the collected t
-  for( size_t d=0 ; d<dimension ; ++d )
-    v2Pos[d] = vertexData[v1w3I][d] + 
+	for( size_t d=0 ; d<dimension ; ++d )
+		v2Pos[d] = vertexData[v1w3I][d] + 
 			w3tTmp[w3tTmp.size()-1]*(vertexData[v2w3I][d]-vertexData[v1w3I][d]);
-  //for( size_t d=0 ; d<dimension ; ++d )
-	//v2Pos[d] = 0.5*(vertexData[v2w3I][d]+vertexData[v1w3I][d]);
-
 	
+	//
   //Add one cell, three walls, and two vertices
-  //////////////////////////////////////////////////////////////////////
+  //
 	//Save number of walls
 	size_t numWallTmp=wallData.size();
 	assert( numWallTmp==T->numWall() );
@@ -233,12 +141,12 @@ update(Tissue *T,size_t i,
 								cellDeriv,wallDeriv,vertexDeriv,variableIndex(0),
 								parameter(2));
 	assert( numWallTmp+3 == T->numWall() );
-
+	
 	//Change length of new wall between the divided daugther cells 
 	wallData[numWallTmp][0] *= parameter(1);
 	
 	//Check that the division did not mess up the data structure
-	T->checkConnectivity(1);	
+	//T->checkConnectivity(1);	
 }
 
 //!Constructor
