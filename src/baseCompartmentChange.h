@@ -104,13 +104,11 @@ class BaseCompartmentChange {
 	///
 	/// It uses a position on a wall and a direction to find a second
 	/// vertex position for a division.
-	void findSecondDivisionWall(std::vector< std::vector<double> > &vertexData, 
-															Cell *divCell, size_t &wI, size_t &w3I, 
-															size_t &flag, size_t &vertexFlag,
-															std::vector<double> &v1Pos, 
-															std::vector<double> &nW2, 
-															std::vector<size_t> &w3Tmp, 
-															std::vector<double> &w3tTmp);
+	int findSecondDivisionWall(std::vector< std::vector<double> > &vertexData, 
+														 Cell *divCell, size_t &wI, size_t &w3I, 
+														 std::vector<double> &v1Pos, 
+														 std::vector<double> &nW2, 
+														 std::vector<double> &v2Pos);
 };
 
 //!Returns the id string

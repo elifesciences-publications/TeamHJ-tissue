@@ -117,72 +117,73 @@ printCellWallError(std::vector< std::vector<double> > &vertexData,
 									 size_t &w3I,
 									 std::ostream &os) {
 	
-	for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
-		std::cerr << "0 " 
-							<< vertexData[divCell->wall(k)->vertex1()->index()][0]
-							<< " " 
-							<< vertexData[divCell->wall(k)->vertex1()->index()][1]
-							<< "\n0 " 
-							<< vertexData[divCell->wall(k)->vertex2()->index()][0]
-							<< " " 
-							<< vertexData[divCell->wall(k)->vertex2()->index()][1]
-							<< "\n\n\n";
+	size_t dimension=vertexData[0].size();
+	assert( dimension==2 || dimension==3); 
+	// Print all walls
+	for (size_t k=0; k<divCell->numWall(); ++k) {
+		os << "0 "; 
+		for (size_t d=0; d<dimension; ++d)
+			os << vertexData[divCell->wall(k)->vertex1()->index()][d] << " ";
+		os << std::endl << "0 "; 
+		for (size_t d=0; d<dimension; ++d)
+			os << vertexData[divCell->wall(k)->vertex2()->index()][d] << " ";
+		os << std::endl << std::endl << std::endl;
 	}
+	// Print potential second walls
 	for( size_t kk=0 ; kk<w3Tmp.size() ; ++kk ) {
 		size_t k = w3Tmp[kk];
-		std::cerr << "1 " 
-							<< vertexData[divCell->wall(k)->vertex1()->index()][0]
-							<< " " 
-							<< vertexData[divCell->wall(k)->vertex1()->index()][1]
-							<< "\n1 " 
-							<< vertexData[divCell->wall(k)->vertex2()->index()][0]
-							<< " " 
-							<< vertexData[divCell->wall(k)->vertex2()->index()][1]
-							<< "\n\n\n";
+		os << "1 "; 
+		for (size_t d=0; d<dimension; ++d)
+			os << vertexData[divCell->wall(k)->vertex1()->index()][d] << " ";
+		os << std::endl << "1 "; 
+		for (size_t d=0; d<dimension; ++d)
+			os << vertexData[divCell->wall(k)->vertex2()->index()][d] << " ";
+		os << std::endl << std::endl << std::endl;		
 	}
-	std::cerr << "2 " 
-						<< vertexData[divCell->wall(wI)->vertex1()->index()][0]
-						<< " " 
-						<< vertexData[divCell->wall(wI)->vertex1()->index()][1]
-						<< "\n2 " 
-						<< vertexData[divCell->wall(wI)->vertex2()->index()][0]
-						<< " " 
-						<< vertexData[divCell->wall(wI)->vertex2()->index()][1]
-						<< "\n\n\n";
-	std::cerr << "3 " 
-						<< vertexData[divCell->wall(w3I)->vertex1()->index()][0]
-						<< " " 
-						<< vertexData[divCell->wall(w3I)->vertex1()->index()][1]
-						<< "\n3 " 
-						<< vertexData[divCell->wall(w3I)->vertex2()->index()][0]
-						<< " " 
-						<< vertexData[divCell->wall(w3I)->vertex2()->index()][1]
-						<< "\n\n\n";
-	std::cerr << "4 " 
-						<< 0.5*(vertexData[divCell->wall(wI)->vertex1()->index()][0]+
-										vertexData[divCell->wall(wI)->vertex2()->index()][0])
-						<< " " 
-						<< 0.5*(vertexData[divCell->wall(wI)->vertex1()->index()][1]+
-										vertexData[divCell->wall(wI)->vertex2()->index()][1])
-						<< "\n4 "
-						<< 0.5*(vertexData[divCell->wall(w3I)->vertex1()->index()][0]+
-										vertexData[divCell->wall(w3I)->vertex2()->index()][0])
-						<< " " 
-						<< 0.5*(vertexData[divCell->wall(w3I)->vertex1()->index()][1]+
-										vertexData[divCell->wall(w3I)->vertex2()->index()][1])
-						<< "\n\n\n";
+	// Print chosen first wall 
+	os << "2 "; 
+	for (size_t d=0; d<dimension; ++d)
+		os << vertexData[divCell->wall(wI)->vertex1()->index()][d] << " ";
+	os << std::endl << "2 "; 
+	for (size_t d=0; d<dimension; ++d)
+		os << vertexData[divCell->wall(wI)->vertex2()->index()][d] << " ";
+	os << std::endl << std::endl << std::endl;		
+	// Print chosen second wall 
+	os << "3 "; 
+	for (size_t d=0; d<dimension; ++d)
+		os << vertexData[divCell->wall(w3I)->vertex1()->index()][d] << " ";
+	os << std::endl << "3 "; 
+	for (size_t d=0; d<dimension; ++d)
+		os << vertexData[divCell->wall(w3I)->vertex2()->index()][d] << " ";
+	os << std::endl << std::endl << std::endl;			
+	// Print wall between the two chosen walls
+	os << "4 "; 
+	for (size_t d=0; d<dimension; ++d)
+		os << 0.5*(vertexData[divCell->wall(wI)->vertex1()->index()][d]+
+							 vertexData[divCell->wall(wI)->vertex2()->index()][d])
+			 << " "; 
+	os << std::endl << "4 "; 
+	for (size_t d=0; d<dimension; ++d)
+		os << 0.5*(vertexData[divCell->wall(w3I)->vertex1()->index()][d]+
+							 vertexData[divCell->wall(w3I)->vertex2()->index()][d])
+			 << " "; 
+	os << std::endl << std::endl << std::endl;		
 }
 
-void BaseCompartmentChange::
+int BaseCompartmentChange::
 findSecondDivisionWall(std::vector< std::vector<double> > &vertexData, 
 											 Cell *divCell, size_t &wI, size_t &w3I, 
-											 size_t &flag, size_t &vertexFlag,
 											 std::vector<double> &v1Pos, 
 											 std::vector<double> &nW2, 
-											 std::vector<size_t> &w3Tmp, 
-											 std::vector<double> &w3tTmp) {
+											 std::vector<double> &v2Pos) {
 	
 	size_t dimension=vertexData[0].size();
+	w3I=divCell->numWall();
+	//double minDist,w3s;
+	std::vector<size_t> w3Tmp;
+	std::vector<double> w3tTmp;
+	int flag=0,vertexFlag=0;
+	
 	if (dimension==2) {
 		for (size_t k=0; k<divCell->numWall(); ++k) {
 			if (k!=wI) {
@@ -210,7 +211,7 @@ findSecondDivisionWall(std::vector< std::vector<double> > &vertexData,
 						//double dx0 = w0[0] +fac*((b*e-c*d)*nW2[0]+()*w3[0]); 					
 						++flag;
 						if (t==1.0)
-							vertexFlag++;
+							++vertexFlag;
 						w3I = k;
 						w3Tmp.push_back(k);
 						w3tTmp.push_back(t);
@@ -218,5 +219,58 @@ findSecondDivisionWall(std::vector< std::vector<double> > &vertexData,
 				}
 			}
 		}
-	}
+	}//if (dimension==2)
+	else if (dimension==3) {
+		w3I=divCell->numWall();
+		for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
+			if( k!=wI ) {
+				size_t v1w3Itmp = divCell->wall(k)->vertex1()->index();
+				size_t v2w3Itmp = divCell->wall(k)->vertex2()->index();
+				std::vector<double> w3(dimension),w0(dimension);
+				double fac1=0.0,fac2=0.0;
+				for( size_t d=0 ; d<dimension ; ++d ) {
+					w3[d] = vertexData[v2w3Itmp][d]-vertexData[v1w3Itmp][d];
+					fac1 += nW2[d]*(v1Pos[d]-vertexData[v1w3Itmp][d]);
+					fac2 += nW2[d]*w3[d]; 
+				}
+				if( fac2 != 0.0 ) {//else parallell and not applicable
+					double t = fac1/fac2;
+					if( t>0.0 && t<=1.0 ) {//within wall
+						//std::cerr << "wall " << k << " (t=" << t << " " << fac1 << "/"
+						//				<< fac2 
+						//				<< ") chosen as second wall"
+						//				<< std::endl;					
+						++flag;
+						if (t==1.0)
+							++vertexFlag;
+						w3I = k;
+						w3Tmp.push_back(k);
+						w3tTmp.push_back(t);
+					}
+				}
+			}
+		}
+	}//if (dimension==3)	
+	//
+	// Check that division consistent
+	//
+	assert( w3I != divCell->numWall() && w3I != wI );
+	if( flag != 1 && !(flag==2 && vertexFlag) ) {
+		std::cerr << "baseCompartmentChange::findSecondDivisionWall Warning"
+							<< " more than one wall possible as connection "
+							<< "for cell " << divCell->index() << " (" << dimension << "dim)" << std::endl 
+							<< flag << " possible walls found and " << vertexFlag 
+							<< " marked as vertices." << std::endl; 
+		printCellWallError(vertexData, divCell, w3Tmp, wI, w3I);
+		return -1;
+	}	
+	//
+	// Set the second vertex position using the collected t
+	//
+	size_t v1w3I = divCell->wall(w3I)->vertex1()->index();
+	size_t v2w3I = divCell->wall(w3I)->vertex2()->index();
+	for( size_t d=0 ; d<dimension ; ++d )
+		v2Pos[d] = vertexData[v1w3I][d] + 
+			w3tTmp[w3tTmp.size()-1]*(vertexData[v2w3I][d]-vertexData[v1w3I][d]);		
+	return 0;
 }
