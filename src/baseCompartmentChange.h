@@ -100,10 +100,24 @@ class BaseCompartmentChange {
 													std::ostream &os=std::cerr);
 
 	///
+	/// @brief Delivers the wall indices and vertex positions of walls for division
+	///
+	/// It uses a position and a direction to find two walls
+	/// vertex positions for a division.
+	///
+	int findTwoDivisionWalls(std::vector< std::vector<double> > &vertexData, 
+													 Cell *divCell, std::vector<size_t> &wI,
+													 std::vector<double> &point, 
+													 std::vector<double> &direction, 
+													 std::vector<double> &v1Pos, 
+													 std::vector<double> &v2Pos);
+	
+	///
 	/// @brief Delivers the index and position of a second wall for division
 	///
 	/// It uses a position on a wall and a direction to find a second
 	/// vertex position for a division.
+	///
 	int findSecondDivisionWall(std::vector< std::vector<double> > &vertexData, 
 														 Cell *divCell, size_t &wI, size_t &w3I, 
 														 std::vector<double> &v1Pos, 
