@@ -233,11 +233,13 @@ findTwoDivisionWalls(std::vector< std::vector<double> > &vertexData,
 			double fac1=0.0,fac2=0.0;
 			for( size_t d=0 ; d<dimension ; ++d ) {
 				w3[d] = vertexData[v2w3Itmp][d]-vertexData[v1w3Itmp][d];
-				fac1 += n[d]*(v1Pos[d]-vertexData[v1w3Itmp][d]);
+				fac1 += n[d]*(point[d]-vertexData[v1w3Itmp][d]);
 				fac2 += n[d]*w3[d]; 
 			}
 			if( fac2 != 0.0 ) {//else parallell and not applicable
 				double t = fac1/fac2;
+				//std::cerr << k << "(" << divCell->numWall() << ")" << t << " " 
+				//				<< fac1 << "/" << fac2 << std::endl;
 				if( t>0.0 && t<=1.0 ) {//within wall
 					w3Tmp.push_back(k);
 					w3tTmp.push_back(t);
@@ -256,6 +258,7 @@ findTwoDivisionWalls(std::vector< std::vector<double> > &vertexData,
 	if ( wI[1] == divCell->numWall() || wI[0]==wI[1]) {
 		std::cerr << "BaseCompartmentChange::findTwoDivisionWalls:"
 							<< "Two correct walls not found for division." << std::endl
+							<< flag << " walls proposed (" << vertexFlag << " vertex)" << std::endl
 							<< "w[0]=" << wI[0] << " w[1]=" << wI[1] << std::endl;
 		exit(-1);
 	}
