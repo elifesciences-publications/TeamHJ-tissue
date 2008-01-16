@@ -253,7 +253,14 @@ findTwoDivisionWalls(std::vector< std::vector<double> > &vertexData,
 		}
 	}
 
+	if ( wI[1] == divCell->numWall() || wI[0]==wI[1]) {
+		std::cerr << "BaseCompartmentChange::findTwoDivisionWalls:"
+							<< "Two correct walls not found for division." << std::endl
+							<< "w[0]=" << wI[0] << " w[1]=" << wI[1] << std::endl;
+		exit(-1);
+	}
 	assert( wI[1] != divCell->numWall() && wI[0] != wI[1] );
+ 
 	if( flag != 2 && !(flag==3 && vertexFlag) ) {
 		std::cerr << "BaseCompartmentChange::findTwoDivisionWalls Warning:"
 							<< " not two, but " << flag << " walls chosen as "
