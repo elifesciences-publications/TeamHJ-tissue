@@ -69,8 +69,17 @@ public:
 	static BaseSolver *getSolver(Tissue *T, const std::string &file);
 	
 	size_t debugCount() const;
+
+	///
+	/// @brief Sets internal variables from values in the tissue.
+	///
 	void getInit();
-	
+
+ 	///
+	/// @brief Updates the tissue variables from the current state of the internal variables
+	///
+	void setTissueVariables();
+
 	///
 	/// @brief General printing function
 	///

@@ -118,6 +118,39 @@ void BaseSolver::getInit()
   }
 }
 
+void BaseSolver::setTissueVariables()
+{
+	//
+	// Check size of data vectors
+	//
+	if (cellData_.size() != T_->numCell() ||
+			wallData_.size() != T_->numWall() ||
+			vertexData_.size() != T_->numVertex()) {
+		std::cerr << "BaseSolver::setTissueVariables wrong size of data:" << std::endl
+							<< "Data\tTissue\tInternal" << std::endl
+							<< "Cell\t" << T_->numCell() << "\t" << cellData_.size() << std::endl
+							<< "Wall\t" << T_->numWall() << "\t" << wallData_.size() << std::endl
+							<< "Vertex\t" << T_->numVertex() << "\t" << vertexData_.size() << std::endl;
+		exit(-1);
+  }
+	//
+	// Copy variable values to tissue
+	//
+  for (size_t i=0; i<T_->numCell(); ++i) {
+    for (size_t j=0; j<cellData_[i].size(); ++j)
+      T_->cell(i).setVariable(j,cellData_[i][j]);
+  }
+  
+  for (size_t i=0; i<T_->numWall(); ++i) {
+    T_->wall(i).setLength(wallData_[i][0]);
+		T_->wall(i).setVariable(wallData_[i]);
+  }
+  
+  for (size_t i=0; i<T_->numVertex(); ++i) {
+		T_->vertex(i).setPosition(vertexData_[i]);
+  }
+}
+
 void BaseSolver::readParameterFile(std::ifstream &IN)
 {
   std::cerr << "BaseSolver::readParameterFile(std::ifstream &IN)\n";
@@ -325,6 +358,12 @@ void BaseSolver::printInit(std::ostream &os) const
 					T_->numWall()==wallData_.size() &&
 					T_->numVertex()==vertexData_.size() );
 
+	// Increase resolution to max for doubles
+	unsigned int oldPrecision = os.precision(); 
+	os.precision(60);
+	std::cerr << "Tissue::prinitInit(): old precision: " << oldPrecision << " new " 
+						<< os.precision() << std::endl;	
+
   os << T_->numCell() << " " << T_->numWall() << " " << T_->numVertex() << std::endl;
 	
   //Print the connectivity from walls
@@ -374,6 +413,7 @@ void BaseSolver::printInit(std::ostream &os) const
     }
     os << std::endl;
   }  
+	os.precision(oldPrecision);
 }
 
 void BaseSolver::printDebug(std::ostream &os) const

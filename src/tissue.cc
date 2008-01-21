@@ -2632,6 +2632,12 @@ findPeaksGradientAscent( std::vector< std::vector<double> > &cellData,
 
 void Tissue::printInit(std::ostream &os) {
   
+	// Increase resolution to max for doubles
+	unsigned int oldPrecision = os.precision(); 
+	os.precision(15);
+	std::cerr << "Tissue::prinitInit(): old precision: " << oldPrecision << " new " 
+						<< os.precision() << std::endl;
+	
   os << numCell() << " " << numWall() << " " << numVertex() << std::endl;
 
   //Print the connectivity from walls
@@ -2679,6 +2685,7 @@ void Tissue::printInit(std::ostream &os) {
     }
     os << std::endl;
   }  
+	os.precision(oldPrecision);		
 }
 
 void Tissue::printInit(std::vector< std::vector<double> > &cellData,
@@ -2689,10 +2696,16 @@ void Tissue::printInit(std::vector< std::vector<double> > &cellData,
 	assert( numCell()==cellData.size() && 
 					numWall()==wallData.size() &&
 					numVertex()==vertexData.size() );
-
+	
+	// Increase resolution to max for doubles
+	unsigned int oldPrecision = os.precision(); 
+	os.precision(15);
+	std::cerr << "Tissue::prinitInit(): old precision: " << oldPrecision << " new " 
+						<< os.precision() << std::endl;
+	
   os << numCell() << " " << numWall() << " " << numVertex() << std::endl;
 	
-  //Print the connectivity from walls
+  // Print the connectivity from walls
   for( size_t i=0 ; i<numWall() ; ++i ) {
     os << i << " ";
 		if( wall(i).cell1()->index()<numCell() )
@@ -2739,6 +2752,7 @@ void Tissue::printInit(std::vector< std::vector<double> > &cellData,
     }
     os << std::endl;
   }  
+	os.precision(oldPrecision);	
 }
 
 void Tissue::printVertex(std::ostream &os) {

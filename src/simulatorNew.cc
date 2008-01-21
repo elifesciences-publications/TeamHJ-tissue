@@ -115,6 +115,9 @@ int main(int argc,char *argv[]) {
 								<< fileName << ")" << std::endl;
 		} 
 		else {
+			std::cerr << "Setting tissue variables from simulator data." << std::endl;
+			S->setTissueVariables();
+			std::cerr << "Printing init in file " << fileName << "." << std::endl;
 			S->printInit(OUT);
 			OUT.close();
 		}

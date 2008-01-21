@@ -1686,11 +1686,13 @@ derivs(Tissue &T,
 		if (norm != 1.0) {
 			norm = std::sqrt(norm);
 			assert(norm>0.0);
+			double noemFac = 1.0/norm; 
 			for (size_t d=0; d<dimension; ++d)
-				normal[d] /= norm;
+				normal[d] *= normFac;
 		}
 
 		std::vector<int> scalarProdSign(cell.numVertex());
+		std::vector<double> scalarProdVal(cell.numVertex());
 		for (size_t k=0; k<cell.numVertex(); ++k) {
 			size_t k2=(k+1)%cell.numVertex();
 			size_t k3=(k+2)%cell.numVertex();
@@ -1708,6 +1710,7 @@ derivs(Tissue &T,
 				size_t d3=(d1+2)%dimension;
 				scalarProd += (nw1[d1]*nw2[d2]-nw1[d2]*nw2[d1])*normal[d3];
 			}
+			scalarProdVal[k] = scalarProd;
 			if (scalarProd>0.0)
 				scalarProdSign[k]=1;
 			else
@@ -1729,8 +1732,44 @@ derivs(Tissue &T,
 				normal[d] = -normal[d];
 		}
 		else if (scalarProdSignSum==0) {
-			std::cerr << "Cell " << n << " has no majority sign in right han rule expression." 
+			std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
 								<< std::endl;
+			std::vector<double> center = cell.positionFromVertex(vertexData);
+			// Print all walls
+			for (size_t k=0; k<cell.numWall(); ++k) {
+				std::cerr << "0 "; 
+				for (size_t d=0; d<dimension; ++d)
+					std::cerr << vertexData[cell.wall(k)->vertex1()->index()][d] << " ";
+				std::cerr << std::endl << "0 "; 
+				for (size_t d=0; d<dimension; ++d)
+					std::cerr << vertexData[cell.wall(k)->vertex2()->index()][d] << " ";
+				std::cerr << std::endl << std::endl;
+			}		 
+			std::cerr << "1 "; 
+			for (size_t d=0; d<dimension; ++d)
+				std::cerr << vertexData[cell.wall(0)->vertex1()->index()][d] << " ";
+			std::cerr << std::endl << std::endl;
+			std::cerr << "2 "; 
+			for (size_t d=0; d<dimension; ++d)
+				std::cerr << center[d] << " ";
+			std::cerr << std::endl << "2 ";
+			for (size_t d=0; d<dimension; ++d)
+				std::cerr << center[d]+normal[d] << " ";
+			std::cerr << std::endl << std::endl;
+			std::cerr << "3 "; 
+			for (size_t d=0; d<dimension; ++d)
+				std::cerr << normal[d] << " ";
+			std::cerr << std::endl << std::endl;
+			std::cerr << "4 "; 
+			for (size_t i=0; i<scalarProdVal.size(); ++i)
+				std::cerr << scalarProdVal[i] << " ";
+			std::cerr << std::endl << std::endl;
+			std::cerr << "5 "; 
+			for (size_t i=0; i<scalarProdSign.size(); ++i)
+				std::cerr << scalarProdSign[i] << " ";
+			std::cerr << std::endl << std::endl;
+
+
 			exit(-1);
 		}
 		//update the vertex derivatives
