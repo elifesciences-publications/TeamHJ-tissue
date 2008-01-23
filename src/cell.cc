@@ -891,3 +891,62 @@ std::vector<double> Cell::getNormalToPCAPlane(void)
 	
 	return N;
 }
+
+int Cell::
+vectorSignFromSort(std::vector<double> &n,
+									 std::vector< std::vector<double> > &vertexData) 
+{
+	size_t numV=numVertex();
+	size_t dimension=vertexData[0].size();
+	assert(numV>2);
+	int sign=1;
+	std::vector<int> scalarProdSign(numV);
+	std::vector<double> scalarProdVal(numV);
+	double scalarProdSum=0.0;
+	for (size_t k=0; k<numV; ++k) {
+		size_t k2=(k+1)%numV;
+		size_t k3=(k+2)%numV;
+		//Make sure ((v2-v1)x(v3-v2))n has same sign for all cells
+		std::vector<double> nw1(dimension),nw2(dimension);
+		for (size_t d=0; d<dimension; ++d) {
+			nw1[d] = vertexData[vertex(k2)->index()][d]-vertexData[vertex(k)->index()][d];
+			nw2[d] = vertexData[vertex(k3)->index()][d]-vertexData[vertex(k2)->index()][d];
+		}
+		//cross product
+		double scalarProd=0.0;
+		for (size_t d1=0; d1<dimension; ++d1) {
+			size_t d2=(d1+1)%dimension;
+			size_t d3=(d1+2)%dimension;
+			scalarProd += (nw1[d1]*nw2[d2]-nw1[d2]*nw2[d1])*n[d3];
+		}
+		scalarProdVal[k] = scalarProd;
+		scalarProdSum += scalarProd;
+		if (scalarProd>0.0)
+			scalarProdSign[k]=1;
+		else
+			scalarProdSign[k]=-1;
+	}
+	int scalarProdSignSum=0;
+	for (size_t k=0; k<scalarProdSign.size(); ++k)
+		scalarProdSignSum += scalarProdSign[k];
+	
+	if (scalarProdSignSum<0) {
+		sign=-1;
+	}
+	else if (scalarProdSignSum==0) {
+		//std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
+		//				<< std::endl;
+		if (std::fabs(scalarProdSum)>0.01) {
+			if (scalarProdSum<0.0) {
+				sign=-1;
+			}
+		}
+		else {
+			std::cerr << "Cell::vectorSignFromSort() Cell " 
+								<< index() << " has no majority sign in right hand rule expression." 
+								<< std::endl;
+			exit(-1);
+		}
+	}
+	return sign;
+}

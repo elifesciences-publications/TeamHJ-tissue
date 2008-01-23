@@ -1474,64 +1474,100 @@ void PerpendicularWallPressure::derivs(Tissue &T,
 		}
 	}
 	else if (dimension==3) {
-		for (size_t n = 0; n < T.numWall(); ++n) {
-			Wall wall = T.wall(n);
-			std::vector<Cell *> cells(2);
-			cells[0] = wall.cell1();
-			cells[1] = wall.cell2();
-			std::vector<Vertex *> vertices(2);
-			vertices[0] = wall.vertex1();
-			vertices[1] = wall.vertex2();
-			
-			std::vector<double> nw(dimension);
-			for (size_t d=0; d<dimension; ++d)
-				nw[d] = vertexData[vertices[1]->index()][d] - vertexData[vertices[0]->index()][d];
 
-			for (size_t i = 0; i < cells.size(); ++i) {
-				Cell *cell = cells[i];
-				
-				if (cell == T.background()) {
+		size_t numCell = T.numCell();
+		for (size_t i=0; i<numCell; ++i) {
+			Cell* cell1 = &(T.cell(i));
+			size_t c1I = cell1->index();
+			std::vector<double> n1 = cell1->getNormalToPCAPlane();
+			int n1Sign = cell1->vectorSignFromSort(n1,vertexData);
+			std::vector<double> n = n1;
+			std::vector<double> x1 = cell1->positionFromVertex(vertexData);
+
+			size_t numNeigh = cell1->numWall();
+			for (size_t k=0; k<numNeigh; ++k) {
+				Cell* cell2 = cell1->cellNeighbor(k);
+				size_t c2I = cell2->index();
+				// Get normal to second cell (if not background) and calculate combined normal (n)
+				if (cell2!=T.background() && c2I<c1I) {
 					continue;
 				}
-				std::vector<double> cellPos = cell->positionFromVertex(vertexData);
-				assert (cellPos.size()==dimension);
-
-				double force = parameter(0) * 
-					cellData[cell->index()][variableIndex(0, 0)] *  
-					wall.lengthFromVertexPosition(vertexData);
-				
-				//Get direction
-				double t=0.0,nw2=0.0;
-				for (size_t d=0; d<dimension; ++d) {
-					t += nw[d]*(cellPos[d]-vertexData[vertices[0]->index()][d]);
-					nw2 += nw[d]*nw[d];
+				else if (cell2!=T.background()) {
+					std::vector<double> n2(dimension);
+					n2 = cell2->getNormalToPCAPlane();
+					int n2Sign = cell2->vectorSignFromSort(n2,vertexData);
+					for (size_t d=0; d<dimension; ++d) 
+						n[d] = n1Sign*n1[d]+n2Sign*n2[d];
 				}
-				t /= nw2;
-				//if (t<0.0 || t>1.0 ) {
-				//std::cerr << "perpendicularWallPressure::derivs() Wrong t="
-				//				<< t << std::endl;
-				//exit(-1);
-				//}
-				//assert(t>=0.0 && t<=1.0);
-				std::vector<double> forceDirection(dimension);
-				double norm=0.0;
+				// Get wall direction
+				size_t v1I = cell1->wall(k)->vertex1()->index();
+				size_t v2I = cell1->wall(k)->vertex2()->index();
+				std::vector<double> nw(dimension),xw(dimension);
 				for (size_t d=0; d<dimension; ++d) {
-					forceDirection[d] = vertexData[vertices[0]->index()][d] + t*nw[d] - cellPos[d];
-					norm += forceDirection[d]*forceDirection[d];
+					nw[d] = vertexData[v2I][d]-vertexData[v1I][d];
+					xw[d] = 0.5*(vertexData[v2I][d]+vertexData[v1I][d]);					
 				}
+				// Normalize n and nw
+				double norm=0.0,normW=0.0;
+				for (size_t d=0; d<dimension; ++d) { 
+					norm += n[d]*n[d];
+					normW += nw[d]*nw[d];
+				}
+				assert(norm>0.0 && normW>0.0);
 				norm = std::sqrt(norm);
-				for (size_t d=0; d<dimension; ++d)
-					forceDirection[d] /=norm; 
-
-				//std::cerr << cellPos[0] << " " << cellPos[1] << " " << cellPos[2]
-				//				<< "\t" << forceDirection[0] << " " << forceDirection[1] 
-				//				<< " " << forceDirection[2] << std::endl;
-				for (size_t k = 0; k < vertices.size(); ++k) {
-					for (size_t d=0; d<dimension; ++d)
-						vertexDerivs[vertices[k]->index()][d] +=  forceDirection[d] * force;
+				normW = std::sqrt(normW);
+				double normFac=1.0/norm,normWFac=1.0/normW;
+				for (size_t d=0; d<dimension; ++d) {
+					n[d] *= normFac;
+					nw[d] *= normWFac;
 				}
-			}			
+				
+				// Calculate force direction perpendicular to n and nw, plus sign
+				std::vector<double> nF(dimension);
+				nF[0] = n[1]*nw[2]-n[2]*nw[1];
+				nF[1] = n[2]*nw[0]-n[0]*nw[2];
+				nF[2] = n[0]*nw[1]-n[1]*nw[0];
+				norm=0.0;
+				for (size_t d=0; d<dimension; ++d) { 
+					norm += nF[d]*nF[d];
+				}
+				assert(norm>0.0);
+				norm = std::sqrt(norm);
+				normFac=1.0/norm;
+				for (size_t d=0; d<dimension; ++d) {
+					nF[d] *= normFac;
+				}
+
+				// sign from scalar product?
+				double scalar=0.0;
+				for (size_t d=0; d<dimension; ++d)
+					scalar += (xw[d]-x1[d])*nF[d];
+				int sign=1;
+				if (scalar<0.0)
+					sign=-1;
+				double forceFactor = parameter(0)*cellData[c1I][variableIndex(0,0)]*normW;
+				if (cell2!=T.background())
+					forceFactor -= parameter(0)*cellData[c2I][variableIndex(0,0)]*normW;
+				
+				//Print result (wall and nF) for debugging
+				double fac=0.5*sign;
+				std::cerr << c1I << " " << vertexData[v1I][0] << " " 
+									<< vertexData[v1I][1] << " " 
+									<< vertexData[v1I][2] << " " 
+									<< xw[0] << " " << xw[1] << " " << xw[2] << std::endl;
+				std::cerr << c1I << " " << vertexData[v2I][0] << " " 
+									<< vertexData[v2I][1] << " " 
+									<< vertexData[v2I][2] << " " 
+									<< xw[0]+fac*nF[0] << " " << xw[1]+fac*nF[1] << " " << xw[2]+fac*nF[2] 
+									<< std::endl << std::endl << std::endl;
+				
+				for (size_t d=0; d<dimension; ++d) {
+					vertexDerivs[v1I][d] += forceFactor*sign*nF[d];
+					vertexDerivs[v2I][d] += forceFactor*sign*nF[d];
+				}				
+			}
 		}
+		exit(0);
 	}
 	else {
 		std::cerr << "PerpendicularWallPressure::derivs() Only applicable for two or three"
@@ -1541,17 +1577,17 @@ void PerpendicularWallPressure::derivs(Tissue &T,
 }
 
 ContinousMTDirection::ContinousMTDirection(std::vector<double> &paraValue,
-					   std::vector< std::vector<size_t> > &indValue)
+																					 std::vector< std::vector<size_t> > &indValue)
 {
 	if (paraValue.size() != 1) {
 		std::cerr << "ContinousMTDirection::ContinousMTDirection() " 
-			  << "Uses one parameter: k_rate" << std::endl;
+							<< "Uses one parameter: k_rate" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	
 	if (indValue.size() != 2 || indValue[0].size() != 1 ||  indValue[1].size() != 1) {
 		std::cerr << "ContinousMTDirection::ContinousMTDirection() " << std::endl
-			  << "First level gives target direction index." << std::endl
+							<< "First level gives target direction index." << std::endl
 			  << "Second level gives real direction index." << std::endl;
 		exit(EXIT_FAILURE);
 	}
@@ -1785,8 +1821,8 @@ derivs(Tissue &T,
 			}
 		}
 		// Get the cell size
-		double A = cell.calculateVolume(vertexData);
-		
+		//double A = cell.calculateVolume(vertexData);
+		double A=1.0;
 		//update the vertex derivatives
 		for (size_t d=0; d<dimension; ++d) {
 			cellData[n][d]=normal[d];

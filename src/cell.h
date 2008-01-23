@@ -97,6 +97,8 @@ class Cell {
   std::vector< std::vector<double> > getPCAPlane(void) const;
   std::vector< std::pair<double, double> > projectVerticesOnPCAPlane(std::vector< std::vector<double> > &vertexData);
   std::vector<double> getNormalToPCAPlane(void);
+	int vectorSignFromSort(std::vector<double> &n,
+												 std::vector< std::vector<double> > &vertexData);
 };
 
 //!Returns the cell index
