@@ -39,7 +39,7 @@ class Cell {
   Wall* directionWall_;
 
   // The vectors obtained from PCA.
-  std::vector< std::vector<double> > E;
+  std::vector< std::vector<double> > E_;
   
  public:
   
@@ -94,7 +94,7 @@ class Cell {
   // sure you call calculatePCAPlane() before any of the other
   // functions.
   void calculatePCAPlane(std::vector< std::vector<double> > &vertexData);
-  std::vector< std::vector<double> > getPCAPlane(void);
+  std::vector< std::vector<double> > getPCAPlane(void) const;
   std::vector< std::pair<double, double> > projectVerticesOnPCAPlane(std::vector< std::vector<double> > &vertexData);
   std::vector<double> getNormalToPCAPlane(void);
 };

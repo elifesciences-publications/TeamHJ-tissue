@@ -137,3 +137,80 @@ update(Tissue &T,
 		vertexData[i][posIndex] -= delta;
 }
 
+CalculatePCAPlane::
+CalculatePCAPlane(std::vector<double> &paraValue, 
+						 std::vector< std::vector<size_t> > 
+						 &indValue ) {
+  
+	//
+  // Do some checks on the parameters and variable indeces
+  //
+  if (paraValue.size()!=1) {
+    std::cerr << "CalculatePCAPlane::"
+							<< "CalculatePCAPlane() "
+							<< "Uses one parameter: onlyInUpdateFlag "
+							<< "(-1 -> less than)" 
+							<< std::endl;
+    exit(0);
+  }
+  if (indValue.size()!=0) {
+    std::cerr << "CalculatePCAPlane::"
+							<< "CalculatePCAPlane() "
+							<< "No indices used." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //////////////////////////////////////////////////////////////////////
+  setId("CalculatePCAPlane");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //////////////////////////////////////////////////////////////////////
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "onlyInUpdateFlag";
+  setParameterId( tmp );
+}
+
+void CalculatePCAPlane::
+initiate(Tissue &T,
+				 std::vector< std::vector<double> > &cellData,
+				 std::vector< std::vector<double> > &wallData,
+				 std::vector< std::vector<double> > &vertexData)
+{
+	if (parameter(0)==1.0) {
+		size_t numCell = T.numCell();
+		for (size_t i=0; i<numCell; ++i)
+			T.cell(i).calculatePCAPlane(vertexData);
+	}
+}
+
+void CalculatePCAPlane::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{
+	if (parameter(0)!=1.0) {
+		size_t numCell = T.numCell();
+		for (size_t i=0; i<numCell; ++i)
+			T.cell(i).calculatePCAPlane(vertexData);
+	}
+}
+
+void CalculatePCAPlane::
+update(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+			 double h)
+{
+	if (parameter(0)==1.0) {
+		size_t numCell = T.numCell();
+		for (size_t i=0; i<numCell; ++i)
+			T.cell(i).calculatePCAPlane(vertexData);
+	}
+}

@@ -28,6 +28,7 @@ Cell::Cell( const Cell & cellCopy ) {
   wall_ = cellCopy.wall();
   vertex_ = cellCopy.vertex();
 	variable_ = cellCopy.variable();
+	E_ = cellCopy.getPCAPlane();
 }
 
 Cell::Cell(size_t indexVal,std::string idVal) {
@@ -780,13 +781,13 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 
  	// Find orthonormal basis.
 
-	E.resize(2);
-	E[0].resize(dimensions);
-	E[1].resize(dimensions);
+	E_.resize(2);
+	E_[0].resize(dimensions);
+	E_[1].resize(dimensions);
 
 	for (size_t i = 0; i < dimensions; ++i) {
-		//		E[0][i] = V[max1][i];
-		E[0][i] = V[i][max1];
+		//		E_[0][i] = V[max1][i];
+		E_[0][i] = V[i][max1];
 	}
 	
 	double s = 0.0;
@@ -803,28 +804,34 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 	s = -numerator / denominator;
 	
 	for (size_t i = 0; i < dimensions; ++i) {
-		// 		E[1][i] = s * E[0][i] + V[max2][i];
-		E[1][i] = s * E[0][i] + V[i][max2];
+		// 		E_[1][i] = s * E_[0][i] + V[max2][i];
+		E_[1][i] = s * E_[0][i] + V[i][max2];
 	}
 
-	for (size_t i = 0; i < E.size(); ++i) {
+	for (size_t i = 0; i < E_.size(); ++i) {
 		double sum = 0.0;
 		for (size_t j = 0; j < dimensions; ++j) {
-			sum += E[i][j] * E[i][j];
+			sum += E_[i][j] * E_[i][j];
 		}
 		for (size_t j = 0; j < dimensions; ++j) {
-			E[i][j] /= std::sqrt(sum);
+			E_[i][j] /= std::sqrt(sum);
 		}
 	}	
 }
 
-std::vector< std::vector<double> > Cell::getPCAPlane(void)
+std::vector< std::vector<double> > Cell::getPCAPlane(void) const
 {
-	return E;
+	return E_;
 }
 
-std::vector< std::pair<double, double> > Cell::projectVerticesOnPCAPlane(std::vector< std::vector<double> > &vertexData)
+std::vector< std::pair<double, double> > Cell::
+projectVerticesOnPCAPlane(std::vector< std::vector<double> > &vertexData)
 {
+	if (E_.size()!=2 || E_[0].size() != 3) {
+		std::cerr << "Cell::projectVerticesOnPCAPlane(): "
+							<< "PCAPlane not calculated or dimension not equal to three." << std::endl;
+		exit(EXIT_FAILURE);
+	}
 	size_t dimensions = vertexData[0].size();
 	size_t numberOfVertices = vertex_.size();	
 
@@ -858,8 +865,8 @@ std::vector< std::pair<double, double> > Cell::projectVerticesOnPCAPlane(std::ve
 	for (size_t i = 0; i < numberOfVertices; ++i) {
 		std::pair<double, double> tmp(0.0, 0.0);
 		for (size_t j = 0; j < dimensions; ++j) {
-			tmp.first += E[0][j] * vertices[i][j];
-			tmp.second += E[1][j] * vertices[i][j];
+			tmp.first += E_[0][j] * vertices[i][j];
+			tmp.second += E_[1][j] * vertices[i][j];
 		}
 		coordinates.push_back(tmp);
 	}
@@ -869,17 +876,18 @@ std::vector< std::pair<double, double> > Cell::projectVerticesOnPCAPlane(std::ve
 
 std::vector<double> Cell::getNormalToPCAPlane(void)
 {
-	size_t dimension = E[0].size();
-	if (dimension != 3) {
-		std::cerr << "Cell::getNormalToPCAPlane(): Dimension is not equal to three." << std::endl;
+	if (E_.size()!=2 || E_[0].size() != 3) {
+		std::cerr << "Cell::getNormalToPCAPlane(): "
+							<< "PCAPlane not calculated or dimension not equal to three." << std::endl;
 		exit(EXIT_FAILURE);
 	}
+	size_t dimension = E_[0].size();
 	
 	std::vector<double> N(dimension);
-
-	N[0] = E[0][1] * E[1][2] - E[0][2] * E[1][1];
-	N[1] = E[0][2] * E[1][0] - E[0][0] * E[1][2];
-	N[2] = E[0][0] * E[1][1] - E[0][1] * E[1][0];
-
+	
+	N[0] = E_[0][1] * E_[1][2] - E_[0][2] * E_[1][1];
+	N[1] = E_[0][2] * E_[1][0] - E_[0][0] * E_[1][2];
+	N[2] = E_[0][0] * E_[1][1] - E_[0][1] * E_[1][0];
+	
 	return N;
 }

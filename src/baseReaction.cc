@@ -134,6 +134,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexNoUpdateFromPosition(paraValue,indValue); 
   else if(idValue=="VertexTranslateToMax")
     return new VertexTranslateToMax(paraValue,indValue); 
+  else if(idValue=="CalculatePCAPlane")
+    return new CalculatePCAPlane(paraValue,indValue); 
 
   //Default, if nothing found
   else {

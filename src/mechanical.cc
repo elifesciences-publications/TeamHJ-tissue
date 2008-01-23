@@ -1404,7 +1404,7 @@ PerpendicularWallPressure::PerpendicularWallPressure(std::vector<double> &paraVa
 	
 	if (indValue.size() != 1 || indValue[0].size() != 1) {
 		std::cerr << "PerpendicularWallPressure::PerpendicularWallPressure() "
-                    << "First level gives pressure index in wall." << std::endl;
+                    << "First level gives pressure index in cell." << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	
@@ -1676,7 +1676,8 @@ derivs(Tissue &T,
 	unsigned int numFlipNormal=0;
 	for (size_t n = 0; n < T.numCell(); ++n) {
 		Cell cell = T.cell(n);
-		cell.calculatePCAPlane(vertexData);
+		// This calculation should now be done in reaction CalculatePCAPlane
+		//cell.calculatePCAPlane(vertexData);
 		unsigned int flipFlag=0;
 		
 		std::vector<double> normal = cell.getNormalToPCAPlane();
@@ -1690,7 +1691,7 @@ derivs(Tissue &T,
 			for (size_t d=0; d<dimension; ++d)
 				normal[d] *= normFac;
 		}
-
+		
 		std::vector<int> scalarProdSign(cell.numVertex());
 		std::vector<double> scalarProdVal(cell.numVertex());
 		double scalarProdSum=0.0;
@@ -1841,8 +1842,8 @@ derivs(Tissue &T,
 	}
 	for (size_t n = 0; n < T.numCell(); ++n) {
 		Cell cell = T.cell(n);
-		cell.calculatePCAPlane(vertexData);
-
+		// This calculation should now be done in CalculatePCAPlane reaction.
+		//cell.calculatePCAPlane(vertexData);
 		std::vector<double> normal = cell.getNormalToPCAPlane();
 		double norm=0.0;
 		for (size_t d=0; d<dimension; ++d)
@@ -1867,9 +1868,12 @@ derivs(Tissue &T,
 			for (size_t d=0; d<dimension; ++d)
 				normal[d] = -normal[d];
 		}
+		// Introduce cell size
+		//double A = cell.calculateVolume(vertexData); 
+		double A = 1.0;
 		for (size_t k=0; k<cell.numVertex(); ++k)
 			for (size_t d=0; d<dimension; ++d)
-				vertexDerivs[cell.vertex(k)->index()][d] += parameter(0) * normal[d];
+				vertexDerivs[cell.vertex(k)->index()][d] += parameter(0) * A * normal[d];
 	}	
 }
 
@@ -1924,7 +1928,8 @@ derivs(Tissue &T,
 	double Kpow = std::pow(parameter(2),parameter(3));
 	for (size_t n = 0; n < T.numCell(); ++n) {
 		Cell cell = T.cell(n);
-		cell.calculatePCAPlane(vertexData);
+		// This calculation should now be done in reaction CalculatePCAPlane
+		//cell.calculatePCAPlane(vertexData);
 		double concpow = std::pow(cellData[cell.index()][variableIndex(0,0)],parameter(3));
 		std::vector<double> normal = cell.getNormalToPCAPlane();
 		double norm=0.0;
@@ -1984,8 +1989,9 @@ void DebugReaction::derivs(Tissue &T,
 // 			std::cerr << "      z = " << vertexData[vertex->index()][2] << std::endl;
 // 		}
 
-		cell.calculatePCAPlane(vertexData);
-
+		// This calculation should now be done in reaction CalculatePCAPlane
+		//cell.calculatePCAPlane(vertexData);
+		
 		std::vector<double> N = cell.getNormalToPCAPlane();
 
 		std::cerr << "x = " << N[0] << std::endl;

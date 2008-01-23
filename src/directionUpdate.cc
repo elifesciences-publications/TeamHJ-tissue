@@ -549,7 +549,8 @@ void ForceDirection::update(Tissue &T, double h,
 				continue;
 			}
 			
-			cell.calculatePCAPlane(vertexData);
+			// This calculation should now be done in reaction CalculatePCAPlane
+			//cell.calculatePCAPlane(vertexData);
 			std::vector< std::vector<double> > axes = cell.getPCAPlane();
 			std::vector< std::pair<double, double> > vertices = cell.projectVerticesOnPCAPlane(vertexData);
 			
@@ -721,8 +722,8 @@ update(Tissue &T, double h,
 			if (cellData[cell.index()][variableIndex(0, 0) + dimension] == 0) {
 				continue;
 			}
-
-			cell.calculatePCAPlane(vertexData);
+			// This calculation should now be done in reaction CalculatePCAPlane
+			//cell.calculatePCAPlane(vertexData);
 			std::vector< std::vector<double> > axes = cell.getPCAPlane();
 			std::vector< std::pair<double, double> > vertices = cell.projectVerticesOnPCAPlane(vertexData);
 			
@@ -840,7 +841,8 @@ update(Tissue &T, double h,
 				continue;
 			}
 			
-			cell.calculatePCAPlane(vertexData);
+			// This calculation should now be done in reaction CalculatePCAPlane
+			//cell.calculatePCAPlane(vertexData);
 			std::vector< std::vector<double> > axes = cell.getPCAPlane();
 			std::vector<double> normal = cell.getNormalToPCAPlane();
 			
