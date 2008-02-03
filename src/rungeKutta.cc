@@ -201,6 +201,9 @@ void RK5Adaptive::simulate(size_t verbose)
 												wallDerivs_,vertexDerivs_);
     T_->checkCompartmentChange(cellData_,wallData_,vertexData_,
 															 cellDerivs_,wallDerivs_,vertexDerivs_ );
+
+		// Check the tissue connectivity in each step
+		T_->checkConnectivity(1);
 		
     // Rescale all temporary vectors as well
     if (cellData_.size() != yScalC.size()) {
@@ -630,6 +633,9 @@ void RK4::simulate(size_t verbose)
     T_->checkCompartmentChange(cellData_,wallData_,vertexData_,
 															 cellDerivs_,wallDerivs_,vertexDerivs_ );
 		
+		// Check the tissue connectivity in each step
+		T_->checkConnectivity(1);
+
     // Resize temporary containers as well
     if(cellData_.size() != ytCell.size() ) {
       ytCell.resize( cellData_.size(), ytCell[0] );

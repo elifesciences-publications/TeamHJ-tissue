@@ -36,6 +36,10 @@ createCompartmentChange(std::vector<double> &paraValue,
     return new DivisionVolumeRandomDirection(paraValue,indValue);
 	else if(idValue=="DivisionVolumeViaShortestPath")
     return new DivisionVolumeViaShortestPath(paraValue,indValue);
+  else if (idValue == "DivisionForceDirection")
+	  return new DivisionForceDirection(paraValue, indValue);
+  else if (idValue == "DivisionShortestPath")
+	  return new DivisionShortestPath(paraValue, indValue);
 	//compartmentRemoval.h,compartmentRemoval.cc
   else if(idValue=="RemovalOutsideRadius")
     return new RemovalOutsideRadius(paraValue,indValue);
@@ -43,10 +47,8 @@ createCompartmentChange(std::vector<double> &paraValue,
     return new RemovalOutsideRadiusEpidermis(paraValue,indValue);
   else if(idValue=="RemovalOutsideMaxDistanceEpidermis")
     return new RemovalOutsideMaxDistanceEpidermis(paraValue,indValue);
-  else if (idValue == "DivisionForceDirection")
-	  return new DivisionForceDirection(paraValue, indValue);
-  else if (idValue == "DivisionShortestPath")
-	  return new DivisionShortestPath(paraValue, indValue);
+  else if(idValue=="RemovalOutsidePosition")
+    return new RemovalOutsidePosition(paraValue,indValue);
 
   //Default, if nothing found
   else {
@@ -115,6 +117,8 @@ printCellWallError(std::vector< std::vector<double> > &vertexData,
 									 std::vector<size_t> &w3Tmp, 
 									 size_t &wI, 
 									 size_t &w3I,
+									 std::vector<double> &point,
+									 std::vector<double> &normal,
 									 std::ostream &os) {
 	
 	size_t dimension=vertexData[0].size();
@@ -168,6 +172,14 @@ printCellWallError(std::vector< std::vector<double> > &vertexData,
 							 vertexData[divCell->wall(w3I)->vertex2()->index()][d])
 			 << " "; 
 	os << std::endl << std::endl << std::endl;		
+	// Print direction from the initial point
+	os << "5 "; 
+	for (size_t d=0; d<dimension; ++d)
+		os << point[d] << " ";
+	os << std::endl << "5 "; 
+	for (size_t d=0; d<dimension; ++d)
+		os << point[d]+normal[d] << " ";
+	os << std::endl << std::endl << std::endl;			
 }
 
 int BaseCompartmentChange::
@@ -269,7 +281,7 @@ findTwoDivisionWalls(std::vector< std::vector<double> > &vertexData,
 							<< " not two, but " << flag << " walls chosen as "
 							<< "connection for cell " 
 							<< cellI << std::endl; 
-		printCellWallError(vertexData,divCell,w3Tmp,wI[0],wI[1]);
+		printCellWallError(vertexData,divCell,w3Tmp,wI[0],wI[1],point,n);
 		return -1;
 	}	
 	
@@ -376,7 +388,7 @@ findSecondDivisionWall(std::vector< std::vector<double> > &vertexData,
 							<< "for cell " << divCell->index() << " (" << dimension << "dim)" << std::endl 
 							<< flag << " possible walls found and " << vertexFlag 
 							<< " marked as vertices." << std::endl; 
-		printCellWallError(vertexData, divCell, w3Tmp, wI, w3I);
+		printCellWallError(vertexData, divCell, w3Tmp, wI, w3I,v1Pos,n);
 		return -1;
 	}	
 	//

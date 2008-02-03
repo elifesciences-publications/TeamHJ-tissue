@@ -1549,17 +1549,17 @@ void PerpendicularWallPressure::derivs(Tissue &T,
 				if (cell2!=T.background())
 					forceFactor -= parameter(0)*cellData[c2I][variableIndex(0,0)]*normW;
 				
-				//Print result (wall and nF) for debugging
-				double fac=0.5*sign;
-				std::cerr << c1I << " " << vertexData[v1I][0] << " " 
-									<< vertexData[v1I][1] << " " 
-									<< vertexData[v1I][2] << " " 
-									<< xw[0] << " " << xw[1] << " " << xw[2] << std::endl;
-				std::cerr << c1I << " " << vertexData[v2I][0] << " " 
-									<< vertexData[v2I][1] << " " 
-									<< vertexData[v2I][2] << " " 
-									<< xw[0]+fac*nF[0] << " " << xw[1]+fac*nF[1] << " " << xw[2]+fac*nF[2] 
-									<< std::endl << std::endl << std::endl;
+				// Print result (wall and nF) for debugging
+				//double fac=0.5*sign;
+				//std::cerr << c1I << " " << vertexData[v1I][0] << " " 
+				//				<< vertexData[v1I][1] << " " 
+				//				<< vertexData[v1I][2] << " " 
+				//				<< xw[0] << " " << xw[1] << " " << xw[2] << std::endl;
+				//std::cerr << c1I << " " << vertexData[v2I][0] << " " 
+				//				<< vertexData[v2I][1] << " " 
+				//				<< vertexData[v2I][2] << " " 
+				//				<< xw[0]+fac*nF[0] << " " << xw[1]+fac*nF[1] << " " << xw[2]+fac*nF[2] 
+				//				<< std::endl << std::endl << std::endl;
 				
 				for (size_t d=0; d<dimension; ++d) {
 					vertexDerivs[v1I][d] += forceFactor*sign*nF[d];
@@ -1567,7 +1567,6 @@ void PerpendicularWallPressure::derivs(Tissue &T,
 				}				
 			}
 		}
-		exit(0);
 	}
 	else {
 		std::cerr << "PerpendicularWallPressure::derivs() Only applicable for two or three"
@@ -1825,7 +1824,7 @@ derivs(Tissue &T,
 		double A=1.0;
 		//update the vertex derivatives
 		for (size_t d=0; d<dimension; ++d) {
-			cellData[n][d]=normal[d];
+			//escellData[n][d]=normal[d];
 			for (size_t k=0; k<cell.numVertex(); ++k)
 				vertexDerivs[cell.vertex(k)->index()][d] += parameter(0) * A * normal[d];
 		}

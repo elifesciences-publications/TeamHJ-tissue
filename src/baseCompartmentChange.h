@@ -97,6 +97,8 @@ class BaseCompartmentChange {
 													std::vector<size_t> &w3Tmp, 
 													size_t &wI, 
 													size_t &w3I,
+													std::vector<double> &point,
+													std::vector<double> &normal,
 													std::ostream &os=std::cerr);
 
 	///

@@ -375,7 +375,7 @@ update(Tissue *T,size_t i,
 	wallData[numWallTmp][0] *= parameter(1);
 	
 	//Check that the division did not messed up the data structure
-	T->checkConnectivity(1);	
+	//T->checkConnectivity(1);	
 }
 
 //!Constructor
@@ -709,7 +709,7 @@ update(Tissue *T,size_t cellI,
 	wallData[numWallTmp][0] *= parameter(1);
 	
 	//Check that the division did not mess up the data structure
-	T->checkConnectivity(1);		
+	//T->checkConnectivity(1);		
 }
 
 //!Constructor
@@ -811,8 +811,8 @@ update(Tissue *T,size_t cellI,
 			//dimension=3
 			if( parameter(3) != 1.0 ) {//Perpendicular to given direction, ie plane vector parallell
 				n[0]=cellData[cellI][variableIndex(0,0)];
-				n[1]=-cellData[cellI][variableIndex(0,0)+1];
-				n[2]=-cellData[cellI][variableIndex(0,0)+2];
+				n[1]=cellData[cellI][variableIndex(0,0)+1];
+				n[2]=cellData[cellI][variableIndex(0,0)+2];
 			}
 			else {
 				// Parallell to given direction is undefined in 3D
@@ -1097,7 +1097,7 @@ update(Tissue *T,size_t cellI,
 	wallData[numWallTmp][0] *= parameter(1);
 	
 	//Check that the division did not mess up the data structure
-	T->checkConnectivity(1);		
+	//T->checkConnectivity(1);		
 }
 
 
@@ -1584,7 +1584,7 @@ update(Tissue *T,size_t i,
 	wallData[numWallTmp][0] *= parameter(1);
 	
 	//Check that the division did not mess up the data structure
-	T->checkConnectivity(1);	
+	//T->checkConnectivity(1);	
 }
 
 DivisionShortestPath::DivisionShortestPath(std::vector<double> &paraValue, 
@@ -1842,16 +1842,16 @@ void DivisionShortestPath::update(Tissue* T, size_t i,
 	q[0] = winner.qx;
 	q[1] = winner.qy;
 
-        T->divideCell(&cell, winner.wall1, winner.wall2, p, q, cellData, wallData, vertexData,
-		      cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), parameter(2));
-
-        assert (numWallTmp + 3 == T->numWall());
-
-        //Change length of new wall between the divided daugther cells
-        wallData[numWallTmp][0] *= parameter(1);
-
-        //Check that the division did not mess up the data structure
-        T->checkConnectivity(1);
+	T->divideCell(&cell, winner.wall1, winner.wall2, p, q, cellData, wallData, vertexData,
+								cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), parameter(2));
+	
+	assert (numWallTmp + 3 == T->numWall());
+	
+	//Change length of new wall between the divided daugther cells
+	wallData[numWallTmp][0] *= parameter(1);
+	
+	//Check that the division did not mess up the data structure
+	//T->checkConnectivity(1);
 }
 
 double DivisionShortestPath::astar(double sigma, double A, double B)

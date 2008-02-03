@@ -1408,7 +1408,7 @@ checkCompartmentChange( std::vector< std::vector<double> > &cellData,
 						cell(*k).sortWallAndVertex(*this);
 				}	
 				else if( compartmentChange(k)->numChange()==-1 )
-					i--;
+					--i;
 				else if( compartmentChange(k)->numChange()<-1 )
 					i=numCell()+1;
 			}
@@ -1571,7 +1571,7 @@ void Tissue::removeCell(size_t cellIndex,
 	assert( cellData.size() == numCell() );
 	assert( wallData.size() == numWall() );
 	assert( vertexData.size() == numVertex() );	
-	checkConnectivity(1);
+	//checkConnectivity(1);
 	std::cerr << numCR << " cells, " << numWR << " walls, and "
 						<< numVR << " vertices removed in total" << std::endl;
 }
@@ -1616,7 +1616,7 @@ removeEpidermalCells(std::vector< std::vector<double> > &cellData,
 	for( size_t i=0 ; i<cellR.size() ; ++i ) {
 		removeCell(cellR[i],cellData,wallData,vertexData,cellDeriv,wallDeriv,
 							 vertexDeriv);
-		checkConnectivity(1);
+		//checkConnectivity(1);
 	}
 }
 
@@ -1655,7 +1655,7 @@ removeEpidermalCellsAtDistance(std::vector< std::vector<double> > &cellData,
 	for( size_t i=0 ; i<cellR.size() ; ++i ) {
 		removeCell(cellR[i],cellData,wallData,vertexData,cellDeriv,wallDeriv,
 							 vertexDeriv);
-		checkConnectivity(1);
+		//checkConnectivity(1);
 	}
 }
 
@@ -2237,7 +2237,7 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 			cellData[Nc][volumeChangeList[k]] *= fn;
 		}
 	}		
-	checkConnectivity(1);
+	//checkConnectivity(1);
 }
 
 void Tissue::sortCellWallAndCellVertex(Cell *cell) 
@@ -2270,15 +2270,16 @@ void Tissue::sortCellRecursive( Cell* cell, std::vector<size_t> &sortedFlag, siz
 void Tissue::checkConnectivity(size_t verbose) 
 {	
   int exitFlag=0;
-  //Check all indices used
-  //////////////////////////////////////////////////////////////////////
-  for (size_t i=0; i<numCell(); ++i) {
+	size_t numC = numCell();
+  // Check if all indices are used
+  //
+  for (size_t i=0; i<numC; ++i) {
     if( verbose ) {
       if( cell(i).index() != i ) {
-	std::cerr << "Tissue::checkConnectivity() "
-		  << "Cell " << i << " has index " << cell(i).index()
-		  << std::endl;
-	exitFlag++;
+				std::cerr << "Tissue::checkConnectivity() "
+									<< "Cell " << i << " has index " << cell(i).index()
+									<< std::endl;
+				exitFlag++;
       }
     }
     else
@@ -2287,10 +2288,10 @@ void Tissue::checkConnectivity(size_t verbose)
   for (size_t i=0; i<numWall(); ++i) {
     if( verbose ) {
       if( wall(i).index() != i ) {
-	std::cerr << "Tissue::checkConnectivity() "
-		  << "Wall " << i << " has index " << wall(i).index()
-		  << std::endl;
-	exitFlag++;
+				std::cerr << "Tissue::checkConnectivity() "
+									<< "Wall " << i << " has index " << wall(i).index()
+									<< std::endl;
+				exitFlag++;
       }
     }
     else
@@ -2308,44 +2309,44 @@ void Tissue::checkConnectivity(size_t verbose)
     else
       assert( vertex(i).index() == i );
   }
-  //Make sure all cellVertex(Wall) are real vertices(walls) via index
-  //////////////////////////////////////////////////////////////////////
-  for( size_t k=0 ; k<numCell() ; ++k ) {
+  // Make sure all cellVertex(Wall) are real vertices(walls) via index
+  //
+  for( size_t k=0 ; k<numC ; ++k ) {
     for( size_t l=0 ; l<cell(k).numWall() ; ++l ) { 
       if( verbose ) {
-	if( cell(k).wall(l)->index()>=numWall() ) {
-	  std::cerr << "Tissue::checkConnectivity() " << "Cell " << k 
-		    << " is connected to wall "
-		    << cell(k).wall(l)->index() << "("
-		    << numWall() << " walls in total)" << std::endl;
-	  exitFlag++;
-	}
+				if( cell(k).wall(l)->index()>=numWall() ) {
+					std::cerr << "Tissue::checkConnectivity() " << "Cell " << k 
+										<< " is connected to wall "
+										<< cell(k).wall(l)->index() << "("
+										<< numWall() << " walls in total)" << std::endl;
+					exitFlag++;
+				}
       }
       else {
-	assert( cell(k).wall(l)->index()<numWall() );
+				assert( cell(k).wall(l)->index()<numWall() );
       }
     }
     for( size_t l=0 ; l<cell(k).numVertex() ; ++l ) { 
       if( verbose ) {
-	if( cell(k).vertex(l)->index()>=numVertex() ) {
-	  std::cerr << "Tissue::checkConnectivity() " << "Cell " << k 
-		    << " is connected to vertex "
-		    << cell(k).vertex(l)->index() << "("
-		    << numVertex() << " vertices in total)" << std::endl;
-	  exitFlag++;
-	}
-	for( size_t ll=l+1 ; ll<cell(k).numVertex() ; ++ll ) { 
-	  if( cell(k).vertex(l)==cell(k).vertex(ll) ) {
-	    std::cerr << "Tissue::checkConnectivity() " << "Cell " << k 
-		      << " is connected to vertex "
-		      << cell(k).vertex(l)->index() << "(twice)"
-		      << std::endl;
-	    exitFlag++;
-	  }
-	}
+				if( cell(k).vertex(l)->index()>=numVertex() ) {
+					std::cerr << "Tissue::checkConnectivity() " << "Cell " << k 
+										<< " is connected to vertex "
+										<< cell(k).vertex(l)->index() << "("
+										<< numVertex() << " vertices in total)" << std::endl;
+					exitFlag++;
+				}
+				for( size_t ll=l+1 ; ll<cell(k).numVertex() ; ++ll ) { 
+					if( cell(k).vertex(l)==cell(k).vertex(ll) ) {
+						std::cerr << "Tissue::checkConnectivity() " << "Cell " << k 
+											<< " is connected to vertex "
+											<< cell(k).vertex(l)->index() << "(twice)"
+											<< std::endl;
+						exitFlag++;
+					}
+				}
       }
       else {
-	assert( cell(k).vertex(l)->index()<numVertex() );
+				assert( cell(k).vertex(l)->index()<numVertex() );
       }
     }
   }
@@ -2354,54 +2355,54 @@ void Tissue::checkConnectivity(size_t verbose)
   for( size_t k=0 ; k<numWall() ; ++k ) {
     if( verbose ) {
       if( ( wall(k).cell1()->index()>=numCell() &&
-	    wall(k).cell1() != background() ) ||
-	  ( wall(k).cell2()->index()>=numCell() &&
-	    wall(k).cell2() != background() ) ) {
-	std::cerr << "Tissue::checkConnectivity() " << "Wall " << k 
-		  << " is connected to cell "
-		  << wall(k).cell1()->index() << " and "
-		  << wall(k).cell2()->index() << " ("
-		  << numCell() << " cells in total)" << std::endl;
-	exitFlag++;
+						wall(k).cell1() != background() ) ||
+					( wall(k).cell2()->index()>=numCell() &&
+						wall(k).cell2() != background() ) ) {
+				std::cerr << "Tissue::checkConnectivity() " << "Wall " << k 
+									<< " is connected to cell "
+									<< wall(k).cell1()->index() << " and "
+									<< wall(k).cell2()->index() << " ("
+									<< numCell() << " cells in total)" << std::endl;
+				exitFlag++;
       }
       if( wall(k).cell1() == wall(k).cell2() ) {
-	std::cerr << "Tissue::checkConnectivity() " << "Wall " << k 
-		  << " is connected to cell "
-		  << wall(k).cell1()->index() << " and "
-		  << wall(k).cell2()->index() << " (same cell)" 
-		  << std::endl;
-	exitFlag++;
+				std::cerr << "Tissue::checkConnectivity() " << "Wall " << k 
+									<< " is connected to cell "
+									<< wall(k).cell1()->index() << " and "
+									<< wall(k).cell2()->index() << " (same cell)" 
+									<< std::endl;
+				exitFlag++;
       }
     }
     else {
       assert( ( wall(k).cell1()->index()<numCell() ||
-		wall(k).cell1() == background() ) &&
-	      ( wall(k).cell2()->index()<numCell() ||
-		wall(k).cell2() == background() ) );
+								wall(k).cell1() == background() ) &&
+							( wall(k).cell2()->index()<numCell() ||
+								wall(k).cell2() == background() ) );
       assert( wall(k).cell1() != wall(k).cell2() );
     }
     if( verbose ) {
       if( wall(k).vertex1()->index()>=numVertex() ||
-	  wall(k).vertex2()->index()>=numVertex() ) {
-	std::cerr << "Tissue::checkConnectivity() " << "Wall " << k 
-		  << " is connected to vertex "
-		  << wall(k).vertex1()->index() << " and "
-		  << wall(k).vertex2()->index() << " ("
-		  << numVertex() << " vertices in total)" << std::endl;
-	exitFlag++;
+					wall(k).vertex2()->index()>=numVertex() ) {
+				std::cerr << "Tissue::checkConnectivity() " << "Wall " << k 
+									<< " is connected to vertex "
+									<< wall(k).vertex1()->index() << " and "
+									<< wall(k).vertex2()->index() << " ("
+									<< numVertex() << " vertices in total)" << std::endl;
+				exitFlag++;
       }
       if( wall(k).vertex1() == wall(k).vertex2() ) {
-	std::cerr << "Tissue::checkConnectivity() " << "Wall " << k 
-		  << " is connected to vertex "
-		  << wall(k).vertex1()->index() << " and "
-		  << wall(k).vertex2()->index() << " (same vertex)" 
-		  << std::endl;
-	exitFlag++;
+				std::cerr << "Tissue::checkConnectivity() " << "Wall " << k 
+									<< " is connected to vertex "
+									<< wall(k).vertex1()->index() << " and "
+									<< wall(k).vertex2()->index() << " (same vertex)" 
+									<< std::endl;
+				exitFlag++;
       }
     }
     else {
       assert( wall(k).vertex1()->index()<numVertex() &&
-	      wall(k).vertex2()->index()<numVertex() );			
+							wall(k).vertex2()->index()<numVertex() );			
       assert( wall(k).vertex1() != wall(k).vertex2() );
     }
   }
@@ -2411,84 +2412,85 @@ void Tissue::checkConnectivity(size_t verbose)
   for( size_t k=0 ; k<numVertex() ; ++k ) {
     for( size_t l=0 ; l<vertex(k).numCell() ; ++l ) { 
       if( verbose ) {
-	if( vertex(k).cell(l)->index()>=numCell() ) {
-	  std::cerr << "Tissue::checkConnectivity() " << "Vertex " << k 
-		    << " is connected to cell "
-		    << vertex(k).cell(l)->index() << "("
-		    << numCell() << " cells in total)" << std::endl;
-	  exitFlag++;
-	}
-	if( vertex(k).cell(l) == background() ) {
-	  std::cerr << "Tissue::checkConnectivity() " 
-		    << "Vertex " << k << " is connected to background"
-		    << std::endl;
-	  exitFlag++;
-	}
-	for( size_t ll=l+1 ; ll<vertex(k).numCell() ; ++ll ) { 
-	  if( vertex(k).cell(l)==vertex(k).cell(ll) ) {
-	    std::cerr << "Tissue::checkConnectivity() " << "Vertex " << k 
-		      << " is connected to cell "
-		      << vertex(k).cell(l)->index() << " twice."
-		      << std::endl;
-	    exitFlag++;
-	  }
-	}		
+				if( vertex(k).cell(l)->index()>=numCell() ) {
+					std::cerr << "Tissue::checkConnectivity() " << "Vertex " << k 
+										<< " is connected to cell "
+										<< vertex(k).cell(l)->index() << "("
+										<< numCell() << " cells in total)" << std::endl;
+					exitFlag++;
+				}
+				if( vertex(k).cell(l) == background() ) {
+					std::cerr << "Tissue::checkConnectivity() " 
+										<< "Vertex " << k << " is connected to background"
+										<< std::endl;
+					exitFlag++;
+				}
+				for( size_t ll=l+1 ; ll<vertex(k).numCell() ; ++ll ) { 
+					if( vertex(k).cell(l)==vertex(k).cell(ll) ) {
+						std::cerr << "Tissue::checkConnectivity() " << "Vertex " << k 
+											<< " is connected to cell "
+											<< vertex(k).cell(l)->index() << " twice."
+											<< std::endl;
+						exitFlag++;
+					}
+				}		
       }
       else {
-	assert( vertex(k).cell(l)->index()<numCell() );
-	assert( vertex(k).cell(l) != background() );
+				assert( vertex(k).cell(l)->index()<numCell() );
+				assert( vertex(k).cell(l) != background() );
       }
     }
     for( size_t l=0 ; l<vertex(k).numWall() ; ++l ) { 
       if( verbose ) {
-	if( vertex(k).wall(l)->index()>=numWall() ) {
-	  std::cerr << "Tissue::checkConnectivity() " << "Vertex " << k 
-		    << " is connected to wall "
-		    << vertex(k).wall(l)->index() << "("
-		    << numWall() << " walls in total)" << std::endl;
-	  exitFlag++;
-	}
-	for( size_t ll=l+1 ; ll<vertex(k).numWall() ; ++ll ) { 
-	  if( vertex(k).wall(l)==vertex(k).wall(ll) ) {
-	    std::cerr << "Tissue::checkConnectivity() " << "Vertex " << k 
-		      << " is connected to wall "
-		      << vertex(k).wall(l)->index() << " twice."
-		      << std::endl;
-	    exitFlag++;
-	  }
-	}		
+				if( vertex(k).wall(l)->index()>=numWall() ) {
+					std::cerr << "Tissue::checkConnectivity() " << "Vertex " << k 
+										<< " is connected to wall "
+										<< vertex(k).wall(l)->index() << "("
+										<< numWall() << " walls in total)" << std::endl;
+					exitFlag++;
+				}
+				for( size_t ll=l+1 ; ll<vertex(k).numWall() ; ++ll ) { 
+					if( vertex(k).wall(l)==vertex(k).wall(ll) ) {
+						std::cerr << "Tissue::checkConnectivity() " << "Vertex " << k 
+											<< " is connected to wall "
+											<< vertex(k).wall(l)->index() << " twice."
+											<< std::endl;
+						exitFlag++;
+					}
+				}		
       }
       else {
-	assert( vertex(k).wall(l)->index()<numWall() );
+				assert( vertex(k).wall(l)->index()<numWall() );
       }
     }
   }
   
-  //Make sure alls compartments includes same set of variables
+  // Make sure all compartments include same set of variables
+	//
   size_t numVarTmp=cell(0).numVariable();
-  for (size_t i=1; i<numCell(); ++i) {
+  for (size_t i=1; i<numC; ++i) {
     if( verbose ) {
       if( numVarTmp != cell(i).numVariable() ) {
-	std::cerr << "Tissue::checkConnectivity() " << "Cell " << i 
-		  << " has " << cell(i).numVariable() << " variables" 
-		  << " while cell 0 has " << numVarTmp << std::endl;
-	exitFlag++;
+				std::cerr << "Tissue::checkConnectivity() " << "Cell " << i 
+									<< " has " << cell(i).numVariable() << " variables" 
+									<< " while cell 0 has " << numVarTmp << std::endl;
+				exitFlag++;
       }
     }
     else
       assert( numVarTmp==cell(i).numVariable() );
   }
-  //Do checks on connectivity from cells
+  // Do checks on connectivity from cells
   //////////////////////////////////////////////////////////////////////
-  for (size_t i=0; i<numCell(); ++i) {
+  for (size_t i=0; i<numC; ++i) {
     
     if( verbose ) {
       if ( cell(i).numWall() != cell(i).numVertex() ) {
-	std::cerr << "Tissue::checkConnectivity() "
-		  << "Cell " << i << " has " << cell(i).numWall()
-		  << " walls and " << cell(i).numVertex() 
-		  << " vertices!" << std::endl; 
-	exitFlag++;
+				std::cerr << "Tissue::checkConnectivity() "
+									<< "Cell " << i << " has " << cell(i).numWall()
+									<< " walls and " << cell(i).numVertex() 
+									<< " vertices!" << std::endl; 
+				exitFlag++;
       }
     }
     else
@@ -2497,53 +2499,110 @@ void Tissue::checkConnectivity(size_t verbose)
     //Make sure that vertecis in all cell-walls are cell-vertices
     for (size_t w=0 ; w<cell(i).numWall(); ++w) {
       if ( verbose ) {
-	if ( !cell(i).hasVertex( cell(i).wall(w)->vertex1() ) ) {
-	  std::cerr << "Tissue::checkConnectivity() "
-		    << "Cell " << i << " has wall " << cell(i).wall(w)->index()
-		    << " with vertex " << cell(i).wall(w)->vertex1()->index()
-		    << " but is not connected to the vertex!"
-		    << std::endl;
-	  exitFlag++;
-	}
-	if ( !cell(i).hasVertex( cell(i).wall(w)->vertex2() ) ) {
-	  std::cerr << "Tissue::checkConnectivity() "
-		    << "Cell " << i << " has wall " << cell(i).wall(w)->index() 
-		    << " with vertex " << cell(i).wall(w)->vertex2()->index()
-		    << " but is not connected to the vertex!"
-		    << std::endl;
-	  exitFlag++;
-	}				
+				if ( !cell(i).hasVertex( cell(i).wall(w)->vertex1() ) ) {
+					std::cerr << "Tissue::checkConnectivity() "
+										<< "Cell " << i << " has wall " << cell(i).wall(w)->index()
+										<< " with vertex " << cell(i).wall(w)->vertex1()->index()
+										<< " but is not connected to the vertex!"
+										<< std::endl;
+					exitFlag++;
+				}
+				if ( !cell(i).hasVertex( cell(i).wall(w)->vertex2() ) ) {
+					std::cerr << "Tissue::checkConnectivity() "
+										<< "Cell " << i << " has wall " << cell(i).wall(w)->index() 
+										<< " with vertex " << cell(i).wall(w)->vertex2()->index()
+										<< " but is not connected to the vertex!"
+										<< std::endl;
+					exitFlag++;
+				}				
       }
       else {
-	assert( cell(i).hasVertex( cell(i).wall(w)->vertex1() ) );
-	assert( cell(i).hasVertex( cell(i).wall(w)->vertex2() ) );
+				assert( cell(i).hasVertex( cell(i).wall(w)->vertex1() ) );
+				assert( cell(i).hasVertex( cell(i).wall(w)->vertex2() ) );
       }
     }
     //Make sure that two walls in all cell-vertices are cell-walls
     for (size_t v=0 ; v<cell(i).numVertex(); ++v) {
       int numWall=0;
       for (size_t w=0 ; w<cell(i).vertex(v)->numWall(); ++w) {
-	numWall += cell(i).hasWall( cell(i).vertex(v)->wall(w) );
+				numWall += cell(i).hasWall( cell(i).vertex(v)->wall(w) );
       }
       if ( verbose ) {
-	if( numWall != 2 ) {
-	  std::cerr << "Tissue::checkConnectivity() "
-		    << "Cell " << i << " has vertex " << cell(i).vertex(v)->index() 
-		    << " with " << cell(i).vertex(v)->numWall() 
-		    << " walls but " << numWall 
-		    << " walls are connected to the cell!"
-		    << std::endl;
-	  exitFlag++;
-	}								
+				if( numWall != 2 ) {
+					std::cerr << "Tissue::checkConnectivity() "
+										<< "Cell " << i << " has vertex " << cell(i).vertex(v)->index() 
+										<< " with " << cell(i).vertex(v)->numWall() 
+										<< " walls but " << numWall 
+										<< " walls are connected to the cell!"
+										<< std::endl;
+					exitFlag++;
+				}								
       }
       else {
-	assert( numWall==2 );
+				assert( numWall==2 );
       }
     }
   }//for i
-  
-  if ( exitFlag )
+
+	// Check that walls and vertices are properly sorted in cells
+  for (size_t i=0; i<numC; ++i) {
+		Cell* cP = cellP(i);
+		size_t numW=cP->numWall();
+		for (size_t k=0; k<numW; ++k) {
+			size_t kPlus = (k+1)%numW;
+			if (cP->wall(k)->cell1()==cP) {
+				if (cP->wall(k)->cellSort1()==-1) {
+					if (cP->vertex(kPlus) != cP->wall(k)->vertex1() ||
+							cP->vertex(k) != cP->wall(k)->vertex2() ) {
+						std::cerr << "Tissue::checkConnectivity() "
+											<< "vertecis and walls not sorted correctly."
+											<< std::endl;
+						++exitFlag;
+					}
+				}
+				else { //cellSort=1 or cellSort=0
+					if (cP->vertex(k) != cP->wall(k)->vertex1() ||
+							cP->vertex(kPlus) != cP->wall(k)->vertex2() ) {
+						std::cerr << "Tissue::checkConnectivity() "
+											<< "vertecis and walls not sorted correctly."
+											<< std::endl;
+						++exitFlag;
+					}
+				}
+			}
+			else if (cP->wall(k)->cell2()==cP) {
+				if (cP->wall(k)->cellSort2()==-1) {
+					if (cP->vertex(kPlus) != cP->wall(k)->vertex1() ||
+							cP->vertex(k) != cP->wall(k)->vertex2() ) {
+						std::cerr << "Tissue::checkConnectivity() "
+											<< "vertecis and walls not sorted correctly."
+											<< std::endl;
+						++exitFlag;
+					}
+				}
+				else { //cellSort=1 or cellSort=0
+					if (cP->vertex(k) != cP->wall(k)->vertex1() ||
+							cP->vertex(kPlus) != cP->wall(k)->vertex2() ) {
+						std::cerr << "Tissue::checkConnectivity() "
+											<< "vertecis and walls not sorted correctly."
+											<< std::endl;
+						++exitFlag;
+					}
+				}
+			}
+			else {
+				std::cerr << "Tissue::checkConnectivity() "
+									<< "cellWall not connected to cell." << std::endl; 
+				++exitFlag;
+			}
+		}
+	}
+	
+  if ( exitFlag ) {
+		std::cerr << "Tissue::checkConnectivity() "
+							<< exitFlag << " errors found in tissue." << std::endl;
     exit(-1);
+	}
 }
 
 unsigned int Tissue::
