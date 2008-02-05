@@ -175,6 +175,7 @@ derivs(Tissue &T,
 				cellData[T.wall(i).cell1()->index()][directionIndex+dimension]>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
 				c1Fac += n_c1[d]*n_w[d]/(c1Norm*distance);
+			c1Fac = std::fabs(c1Fac);
 		}
 		else
 			c1Fac = 0.5;//1.0;
@@ -182,6 +183,7 @@ derivs(Tissue &T,
 				cellData[T.wall(i).cell2()->index()][directionIndex+dimension]>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
 				c2Fac += n_c2[d]*n_w[d]/(c2Norm*distance);
+			c2Fac = std::fabs(c2Fac);
 		}
 		else
 			c2Fac = 0.5;//1.0;

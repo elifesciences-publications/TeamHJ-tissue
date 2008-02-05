@@ -104,6 +104,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new ContinousMTDirection(paraValue, indValue);
   else if (idValue == "VertexFromCellPlane")
 	  return new VertexFromCellPlane(paraValue, indValue);
+  else if (idValue == "VertexFromCellPlaneNormalized")
+	  return new VertexFromCellPlaneNormalized(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneSphereCylinder")
 	  return new VertexFromCellPlaneSphereCylinder(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneSphereCylinderConcentrationHill")
