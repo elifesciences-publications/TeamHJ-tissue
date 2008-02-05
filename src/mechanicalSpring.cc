@@ -174,16 +174,16 @@ derivs(Tissue &T,
 		if( T.wall(i).cell1() != T.background() &&
 				cellData[T.wall(i).cell1()->index()][directionIndex+dimension]>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
-				c1Fac += n_c1[d]*n_w[d]/(c1Norm*distance);
-			c1Fac = std::fabs(c1Fac);
+				c1Fac += n_c1[d]*n_w[d];
+			c1Fac = std::fabs(c1Fac)/(c1Norm*distance);
 		}
 		else
 			c1Fac = 0.5;//1.0;
 		if( T.wall(i).cell2() != T.background() &&
 				cellData[T.wall(i).cell2()->index()][directionIndex+dimension]>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
-				c2Fac += n_c2[d]*n_w[d]/(c2Norm*distance);
-			c2Fac = std::fabs(c2Fac);
+				c2Fac += n_c2[d]*n_w[d];
+			c2Fac = std::fabs(c2Fac)/(c2Norm*distance);
 		}
 		else
 			c2Fac = 0.5;//1.0;
@@ -300,14 +300,16 @@ derivs(Tissue &T,
 		if( T.wall(i).cell1() != T.background() &&
 				cellData[T.wall(i).cell1()->index()][directionIndex+dimension]>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
-				c1Fac += n_c1[d]*n_w[d]/(c1Norm*distance);
+				c1Fac += n_c1[d]*n_w[d];
+			c1Fac = std::fabs(c1Fac)/(c1Norm*distance);
 		}
 		else
 			c1Fac = 0.5;//1.0;
 		if( T.wall(i).cell2() != T.background() &&
 				cellData[T.wall(i).cell2()->index()][directionIndex+dimension]>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
-				c2Fac += n_c2[d]*n_w[d]/(c2Norm*distance);
+				c2Fac += n_c2[d]*n_w[d];
+			c2Fac = std::fabs(c2Fac)/(c2Norm*distance);
 		}
 		else
 			c2Fac = 0.5;//1.0;
@@ -378,14 +380,16 @@ initiate(Tissue &T,
 		if( T.wall(i).cell1() != T.background() &&
 				T.wall(i).cell1()->variable(directionIndex+dimension)>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
-				c1Fac += n_c1[d]*n_w[d]/(c1Norm*distance);
+				c1Fac += n_c1[d]*n_w[d];
+			c1Fac = std::fabs(c1Fac)/(c1Norm*distance);
 		}
 		else
 			c1Fac = 0.5;//1.0;
 		if( T.wall(i).cell2() != T.background() &&
 				T.wall(i).cell2()->variable(directionIndex+dimension)>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
-				c2Fac += n_c2[d]*n_w[d]/(c2Norm*distance);
+				c2Fac += n_c2[d]*n_w[d];
+			c2Fac = std::fabs(c2Fac)/(c2Norm*distance);
 		}
 		else
 			c2Fac = 0.5;//1.0;
@@ -635,10 +639,10 @@ derivs(Tissue &T,
 			vertexDerivs[vertex1Index][d] += dx1dt;
 			vertexDerivs[vertex2Index][d] -= dx1dt;
 		}
-          if (numVariableIndexLevel() == 2) {
-               wallData[T.wall(i).index()][variableIndex(1, 0)] = (parameter(0) / wallData[T.wall(i).index()][variableIndex(0, 0)]);
+		if (numVariableIndexLevel() == 2) {
+			wallData[T.wall(i).index()][variableIndex(1, 0)] = (parameter(0) / wallData[T.wall(i).index()][variableIndex(0, 0)]);
 			wallData[T.wall(i).index()][variableIndex(1, 0)] *= (distance - wallData[T.wall(i).index()][variableIndex(0, 0)]);
-          }
+		}
  	}
 }
 
@@ -827,7 +831,8 @@ derivs(Tissue &T,
 		if( T.wall(i).cell1() != T.background() &&
 				cellData[T.wall(i).cell1()->index()][directionIndex+dimension]>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
-				c1Fac += n_c1[d]*n_w[d]/(c1Norm*distance);
+				c1Fac += n_c1[d]*n_w[d];
+			c1Fac = std::fabs(c1Fac)/(c1Norm*distance);
 			double conc=cellData[T.wall(i).cell1()->index()][variableIndex(1,0)];
 			c1FacConc = KPow/(KPow+std::pow(conc,parameter(4)));
 		}
@@ -836,7 +841,8 @@ derivs(Tissue &T,
 		if( T.wall(i).cell2() != T.background() &&
 				cellData[T.wall(i).cell2()->index()][directionIndex+dimension]>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
-				c2Fac += n_c2[d]*n_w[d]/(c2Norm*distance);
+				c2Fac += n_c2[d]*n_w[d];
+			c2Fac = std::fabs(c2Fac)/(c2Norm*distance);
 			double conc=cellData[T.wall(i).cell2()->index()][variableIndex(1,0)];
 			c1FacConc = KPow/(KPow+std::pow(conc,parameter(4)));
 		}
