@@ -149,7 +149,6 @@ CalculatePCAPlane(std::vector<double> &paraValue,
     std::cerr << "CalculatePCAPlane::"
 							<< "CalculatePCAPlane() "
 							<< "Uses one parameter: onlyInUpdateFlag "
-							<< "(-1 -> less than)" 
 							<< std::endl;
     exit(0);
   }

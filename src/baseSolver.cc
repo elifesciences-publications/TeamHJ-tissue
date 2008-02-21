@@ -180,8 +180,62 @@ void BaseSolver::print(std::ostream &os)
   NOld = cellData_.size();
   okOld = numOk_;
   badOld = numBad_;
-	
-  if( printFlag_==1 ) {//Print vertex and cell variables
+	///
+	/// Print vertex, cell, and wall variables
+  ///
+	if( printFlag_==0 ) {
+		if( tCount==0 )
+			os << numPrint_ << "\n";
+	  size_t Nv = vertexData_.size(); 
+		if( !Nv ) {
+			os << "0 0" << std::endl << "0 0" << std::endl;
+			return;
+		}
+		//Print the vertex positions
+		size_t dimension = vertexData_[0].size();
+		os << Nv << " " << dimension << std::endl;
+		for( size_t i=0 ; i<Nv ; ++i ) {
+			for( size_t d=0 ; d<dimension ; ++d )
+				os << vertexData_[i][d] << " ";
+			os << std::endl;
+		}
+		//os << std::endl;
+		//Print the cells, first connected vertecis and then variables
+		size_t Nc = cellData_.size();
+		int numPrintVar=cellData_[0].size()+3;
+		os << Nc << " " << numPrintVar << std::endl;
+		for( size_t i=0 ; i<Nc ; ++i ) {
+			size_t Ncv = T_->cell(i).numVertex(); 
+			os << Ncv << " ";
+			for( size_t k=0 ; k<Ncv ; ++k )
+				os << T_->cell(i).vertex(k)->index() << " ";
+			
+			for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+				os << cellData_[i][k] << " ";
+			os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+				 << T_->cell(i).numWall() << std::endl;
+		}		
+		// Print wall variables, first the two connected vertices and then the variables
+		numPrintVar=wallData_[0].size()+4;
+		size_t Nw = wallData_.size();
+		os << Nw << " " << numPrintVar << std::endl;
+		for( size_t i=0 ; i<Nw ; ++i ) {
+			//os << "2 ";
+			os << T_->wall(i).vertex1()->index() << " " 
+				 << T_->wall(i).vertex2()->index() << " ";
+			for( size_t k=0 ; k<wallData_[i].size() ; ++k )
+				os << wallData_[i][k] << " ";
+			double distance = T_->wall(i).lengthFromVertexPosition(vertexData_);
+			os << i << " " << distance
+				 << " " << distance-wallData_[i][0] << " " << (distance-wallData_[i][0])/wallData_[i][0]
+				 << std::endl;
+		}		
+		os << std::endl;
+  }
+	///
+	/// Print vertex and cell variables
+	///
+  else if( printFlag_==1 ) {
 		if( tCount==0 )
 			os << numPrint_ << "\n";
 	  size_t Nv = vertexData_.size(); 
@@ -215,7 +269,10 @@ void BaseSolver::print(std::ostream &os)
 		}		
 		os << std::endl;
   }
-  else if( printFlag_==2 ) {//Print vertex and wall variables
+	///
+	/// Print vertex and wall variables
+	///
+  else if( printFlag_==2 ) {
 		if( tCount==0 )
 			os << numPrint_ << "\n";
 		size_t Nv = vertexData_.size(); 
@@ -234,10 +291,7 @@ void BaseSolver::print(std::ostream &os)
 		//os << std::endl;
 		// Print the walls, first connected vertecis and then variables
 		size_t Nw = wallData_.size();
-		//
-		// Print wall variables
-		//
-		int numPrintVar=wallData_[0].size()+3;
+		int numPrintVar=wallData_[0].size()+4;
 		os << Nw << " " << numPrintVar << std::endl;
 		for( size_t i=0 ; i<Nw ; ++i ) {
 			os << "2 ";
@@ -245,13 +299,17 @@ void BaseSolver::print(std::ostream &os)
 				 << T_->wall(i).vertex2()->index() << " ";
 			for( size_t k=0 ; k<wallData_[i].size() ; ++k )
 				os << wallData_[i][k] << " ";
-			os << i << " " << T_->wall(i).lengthFromVertexPosition(vertexData_)
-				 << " " << T_->wall(i).lengthFromVertexPosition(vertexData_)-wallData_[i][0]
+			double distance = T_->wall(i).lengthFromVertexPosition(vertexData_);
+			os << i << " " << distance
+				 << " " << distance-wallData_[i][0] << " " << (distance-wallData_[i][0])/wallData_[i][0]
 				 << std::endl;
 		}		
 		os << std::endl;
   }
-  else if( printFlag_==3 ) {//Print cell variables for gnuplot
+	///
+	/// Print cell variables for gnuplot
+	///
+  else if( printFlag_==3 ) {
 		//Print the cells, first connected vertecis and then variables
 		size_t Nc = cellData_.size();
 		//os << Nc << " " << numPrintVar << std::endl;
@@ -273,7 +331,10 @@ void BaseSolver::print(std::ostream &os)
 		}				
 		os << std::endl;
   }
-	else if (printFlag_==4) {//For printing pin1 also in membranes
+	///
+	/// For printing pin1 also in membranes
+	///
+	else if (printFlag_==4) {
 		if( tCount==0 )
 			os << numPrint_ << "\n";
 		size_t Nv = vertexData_.size(); 
@@ -343,9 +404,8 @@ void BaseSolver::print(std::ostream &os)
 			}
 			std::cout << std::endl;
 		}
-//////////////////////////////////////////////////////////////////////
-//End Pij printing version3
- 
+    //////////////////////////////////////////////////////////////////////
+    //End Pij printing version3 
 	}
   else
     std::cerr << "BaseSolver::print() Wrong printFlag value\n";

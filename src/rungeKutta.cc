@@ -176,7 +176,8 @@ void RK5Adaptive::simulate(size_t verbose)
 					std::fabs(vertexDerivs_[i][j] * h) + tiny;
 		
     // Print if applicable 
-    if (printFlag_ && t_ >= printTime) {
+    //if (printFlag_ && t_ >= printTime) {
+    if (t_ >= printTime) {
       printTime += printDeltaTime;
       print();
     }
@@ -238,7 +239,8 @@ void RK5Adaptive::simulate(size_t verbose)
 				
     // If the end t is passed return (print if applicable)
     if (t_ >= endTime_) {
-      if (printFlag_) {
+      //if (printFlag_) {
+      if (1) {
 				// Update the derivatives
 				T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,
 									 vertexDerivs_);
