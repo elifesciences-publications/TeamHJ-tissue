@@ -226,6 +226,114 @@ derivs(Tissue &T,
 	}
 }
 
+WallGrowthStressSpatial::
+WallGrowthStressSpatial(std::vector<double> &paraValue, 
+			       std::vector< std::vector<size_t> > 
+			       &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //////////////////////////////////////////////////////////////////////
+  if( paraValue.size()!=6 ) {
+    std::cerr << "WallGrowthStressSpatial::"
+							<< "WallGrowthStressSpatial() "
+							<< "Uses six parameters k_growth, stretch_threshold "
+							<< "K_hill n_Hill "
+							<< "stretch_flag and linear_flag" << std::endl;
+    exit(0);
+  }
+	if( paraValue[4] != 0.0 && paraValue[4] != 1.0 ) {
+    std::cerr << "WallGrowthStressSpatial::"
+							<< "WallGrowthStressSpatial() "
+							<< "stretch_flag parameter must be 0 (stress used) or " 
+							<< "1 (stretch used)." << std::endl;
+    exit(0);
+  }
+	if( paraValue[5] != 0.0 && paraValue[5] != 1.0 ) {
+    std::cerr << "WallGrowthStressSpatial::"
+							<< "WallGrowthStressSpatial() "
+							<< "linear_flag parameter must be 0 (constant growth) or " 
+							<< "1 (length dependent growth)." << std::endl;
+    exit(0);
+  }
+	
+  if( indValue.size() != 2 || indValue[0].size() != 2 ) {
+    std::cerr << "WallGrowthStressSpatial::"
+							<< "WallGrowthStressSpatial() "
+							<< "Two variable index is used (wall length,spatial coordinate) at first "
+							<< "level, and force variable index at second."
+							<< std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //////////////////////////////////////////////////////////////////////
+  setId("WallGrowthStressSpatial");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+	Kpow_=std::pow(paraValue[2],paraValue[3]);
+  
+  //Set the parameter identities
+  //////////////////////////////////////////////////////////////////////
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "k_growth";
+	tmp[1] = "stress_threshold";
+	tmp[2] = "K_Hill";
+	tmp[3] = "n_Hill";
+	tmp[4] = "stretch_flag";
+	tmp[5] = "linear_flag";
+  setParameterId( tmp );
+}
+
+//! Derivative contribution for the growth
+/*! Deriving the time derivative contribution for the growth for all
+  walls in the tissue.
+*/
+void WallGrowthStressSpatial::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) {
+  
+  size_t numWalls = T.numWall();
+  size_t lengthIndex = variableIndex(0,0);
+  
+	size_t coordinate=variableIndex(0,1);
+	assert (coordinate<vertexData[0].size());
+
+  for( size_t i=0 ; i<numWalls ; ++i ) {
+    size_t v1 = T.wall(i).vertex1()->index();
+    size_t v2 = T.wall(i).vertex2()->index();
+		double stress=0.0;
+		if (!parameter(4)) {
+			for (size_t k=0; k<numVariableIndex(1); ++k)
+				stress += wallData[i][variableIndex(1,k)];
+		}
+		else {
+			double distance=0.0;
+			for( size_t d=0 ; d<vertexData[v1].size() ; d++ )
+				distance += (vertexData[v1][d]-vertexData[v2][d])*
+					(vertexData[v1][d]-vertexData[v2][d]);
+			distance = std::sqrt(distance);
+			stress = (distance-wallData[i][lengthIndex]) /
+				wallData[i][lengthIndex];
+		}
+    if (stress > parameter(1)) {
+			double distance = 8.0-0.5*(vertexData[v1][coordinate]+vertexData[v2][coordinate]);
+			double spatialFactor = Kpow_/(Kpow_+std::pow(distance,parameter(3)));
+
+			double growthRate = parameter(0)*(stress - parameter(1))*spatialFactor;
+
+
+			if (parameter(5))
+				growthRate *= wallData[i][lengthIndex];
+      wallDerivs[i][lengthIndex] += growthRate;
+		}
+	}
+}
+
 WallGrowthConstantStressConcentrationHill::
 WallGrowthConstantStressConcentrationHill(std::vector<double> &paraValue, 
 			       std::vector< std::vector<size_t> > 

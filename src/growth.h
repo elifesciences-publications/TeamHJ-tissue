@@ -107,6 +107,49 @@ class WallGrowthConstantStress : public BaseReaction {
 
 ///
 /// @brief Constant stress/strain-driven wall growth dependent on a
+/// distance to an maximal coordinate (e.g. tip)
+///
+/// Constant growth driven by a streched wall. The wall lengths, L, are
+/// updated only if the length is shorter than the distance between the
+///  vertices of the wall and then according to
+///
+///  dL/dt = p_0*(d_v-L-p_1)*p_2^p_3/(p_2^p_3+d^p_3) iff (d_v-L) > p_1
+///
+/// p_0 is the growth rate. 
+/// p_1 is a stress/strain threshold 
+/// p_2 is the K_Hill of the spatial factor
+/// p_3 is the n_Hill of the spatial factor
+/// p_4 is a flag for using stretch/strain instead of stress
+/// p_5 is a flag for using growth proportional to wall length (not constant)
+/// d_v is the distance between the two wall vertices.
+/// d is the distance between the max value and wall
+///
+///  In addition, the column index for the wall length, the distance
+///  coordinate should be given at first level and stress index in second.
+///
+class WallGrowthStressSpatial : public BaseReaction {
+  
+private:
+
+	double Kpow_;
+
+public:
+  
+  WallGrowthStressSpatial(std::vector<double> &paraValue, 
+													std::vector< std::vector<size_t> > 
+													&indValue );
+  
+  void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
+};
+
+///
+/// @brief Constant stress/strain-driven wall growth dependent on a
 /// concentration level in the cell
 ///
 /// Constant growth driven by a streched wall. The wall lengths, L, are
