@@ -71,7 +71,7 @@ derivs(Tissue &T,
     double distance=0.0;
     for( size_t d=0 ; d<dimension ; d++ )
       distance += (vertexData[v1][d]-vertexData[v2][d])*
-	(vertexData[v1][d]-vertexData[v2][d]);
+				(vertexData[v1][d]-vertexData[v2][d]);
     distance = std::sqrt(distance);
     double wallLength=wallData[i][wallLengthIndex];
     double coeff = parameter(0)*((1.0/wallLength)-(1.0/distance));
