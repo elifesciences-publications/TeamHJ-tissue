@@ -13,21 +13,45 @@
 #include<cmath>
 
 //!Updates vertices from an asymmetric wall spring potential
-class VertexFromWallSpringAsymmetric : public BaseReaction {
+class VertexFromWallSpring : public BaseReaction {
   
  public:
   
-  VertexFromWallSpringAsymmetric(std::vector<double> &paraValue, 
-				 std::vector< std::vector<size_t> > 
-				 &indValue );
+  VertexFromWallSpring(std::vector<double> &paraValue, 
+											 std::vector< std::vector<size_t> > 
+											 &indValue );
   
   void derivs(Tissue &T,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
+};
+
+///
+/// @brief Updates vertices from an asymmetric wall spring potential with a spatial factor
+///
+class VertexFromWallSpringSpatial : public BaseReaction {
+  
+private:
+	
+	double Kpow_;
+	
+public:
+  
+  VertexFromWallSpringSpatial(std::vector<double> &paraValue, 
+															std::vector< std::vector<size_t> > 
+															&indValue );
+  
+  void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
 };
 
 ///
@@ -82,31 +106,31 @@ public:
 };
 
 //!Updates vertices from an asymmetric epidermal wall spring potential
-class VertexFromEpidermalWallSpringAsymmetric : public BaseReaction {
+class VertexFromEpidermalWallSpring : public BaseReaction {
   
- public:
+public:
   
-  VertexFromEpidermalWallSpringAsymmetric(std::vector<double> &paraValue, 
-					  std::vector< std::vector<size_t> > 
-					  &indValue );
+  VertexFromEpidermalWallSpring(std::vector<double> &paraValue, 
+																std::vector< std::vector<size_t> > 
+																&indValue );
   
   void derivs(Tissue &T,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
 };
 
 //!Updates vertices from an asymmetric epidermal wall spring potential
-class VertexFromEpidermalCellWallSpringAsymmetric : public BaseReaction {
+class VertexFromEpidermalCellWallSpring : public BaseReaction {
   
  public:
   
-  VertexFromEpidermalCellWallSpringAsymmetric(std::vector<double> &paraValue, 
-																							std::vector< std::vector<size_t> > 
-																							&indValue );
+  VertexFromEpidermalCellWallSpring(std::vector<double> &paraValue, 
+																		std::vector< std::vector<size_t> > 
+																		&indValue );
   
   void derivs(Tissue &T,
 							std::vector< std::vector<double> > &cellData,

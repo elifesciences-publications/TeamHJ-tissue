@@ -51,23 +51,29 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 
   //Mechanical interactions between vertices
   //mechanicalSpring.h,mechanicalSpring.cc
-  else if(idValue=="VertexFromWallSpringAsymmetric")
-    return new VertexFromWallSpringAsymmetric(paraValue,indValue);
+  else if(idValue=="VertexFromWallSpring")
+    return new VertexFromWallSpring(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringConcentrationHill")
     return new VertexFromWallSpringConcentrationHill(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringMT")
     return new VertexFromWallSpringMT(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringMTHistory")
     return new VertexFromWallSpringMTHistory(paraValue,indValue);
-  else if(idValue=="VertexFromEpidermalWallSpringAsymmetric")
-    return new VertexFromEpidermalWallSpringAsymmetric(paraValue,indValue);
-  else if(idValue=="VertexFromEpidermalCellWallSpringAsymmetric")
-    return new VertexFromEpidermalCellWallSpringAsymmetric(paraValue,indValue);
+  else if(idValue=="VertexFromEpidermalWallSpring")
+    return new VertexFromEpidermalWallSpring(paraValue,indValue);
+  else if(idValue=="VertexFromEpidermalCellWallSpring")
+    return new VertexFromEpidermalCellWallSpring(paraValue,indValue);
   else if (idValue == "VertexFromWallSpringExperimental")
 	  return new VertexFromWallSpringExperimental(paraValue, indValue);
   else if(idValue=="VertexFromWallSpringMTConcentrationHill")
     return new VertexFromWallSpringMTConcentrationHill(paraValue,indValue);
-
+	else if (idValue=="VertexFromWallSpringAsymmetric" ||
+					 idValue=="VertexFromEpidermalWallSpringAsymmetric" ||
+					 idValue=="VertexFromEpidermalCellWallSpringAsymmetric") {
+		std::cerr << "BaseReaction::BaseReaction() All *SpringAsymmetric have been renamed "
+							<< "*Spring." << std::endl;
+		exit(-1);
+	}
   //Mechanical interactions between vertices
   //mechanical.h,mechanical.cc
   else if(idValue=="VertexFromCellPowerdiagram")
