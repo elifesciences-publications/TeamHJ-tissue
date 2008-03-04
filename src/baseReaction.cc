@@ -53,6 +53,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   //mechanicalSpring.h,mechanicalSpring.cc
   else if(idValue=="VertexFromWallSpring")
     return new VertexFromWallSpring(paraValue,indValue);
+  else if(idValue=="VertexFromWallSpringSpatial")
+    return new VertexFromWallSpringSpatial(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringConcentrationHill")
     return new VertexFromWallSpringConcentrationHill(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringMT")
