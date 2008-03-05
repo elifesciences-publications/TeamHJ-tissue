@@ -300,9 +300,15 @@ derivs(Tissue &T,
   size_t numWalls = T.numWall();
   size_t lengthIndex = variableIndex(0,0);
   
-	size_t coordinate=variableIndex(0,1);
-	assert (coordinate<vertexData[0].size());
-
+	// Prepare spatial factor
+	size_t sI=variableIndex(0,1);
+	assert (sI<vertexData[0].size());
+	size_t numVertices = vertexData.size();
+	double sMax= vertexData[0][sI];
+  for (size_t i=1; i<numVertices; ++i)
+		if (vertexData[i][sI]>sMax)
+			sMax=vertexData[i][sI];
+	
   for( size_t i=0 ; i<numWalls ; ++i ) {
     size_t v1 = T.wall(i).vertex1()->index();
     size_t v2 = T.wall(i).vertex2()->index();
@@ -321,7 +327,8 @@ derivs(Tissue &T,
 				wallData[i][lengthIndex];
 		}
     if (stress > parameter(1)) {
-			double distance = 8.0-0.5*(vertexData[v1][coordinate]+vertexData[v2][coordinate]);
+			// Calculate spatial factor
+			double distance = sMax-0.5*(vertexData[v1][sI]+vertexData[v2][sI]);
 			double spatialFactor = Kpow_/(Kpow_+std::pow(distance,parameter(3)));
 
 			double growthRate = parameter(0)*(stress - parameter(1))*spatialFactor;

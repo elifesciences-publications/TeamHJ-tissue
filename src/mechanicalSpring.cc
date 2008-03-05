@@ -100,7 +100,7 @@ VertexFromWallSpringSpatial(std::vector<double> &paraValue,
   if( paraValue.size()!=5 ) {
     std::cerr << "VertexFromWallSpringSpatial::"
 							<< "VertexFromWallSpringSpatial() "
-							<< "Uses two parameters k_min k_max K_spatial n_spatial frac_adhesion.\n";
+							<< "Uses five parameters k_min k_max K_spatial n_spatial frac_adhesion.\n";
     exit(0);
   }
   if( indValue.size() < 1 || indValue.size() > 2 
