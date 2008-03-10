@@ -268,7 +268,7 @@ update(Tissue *T,size_t i,
 	assert( numWallTmp==T->numWall() );
 	//Divide
 	T->divideCell(divCell,wI,w3I,v1Pos,v2Pos,cellData,wallData,vertexData,
-								cellDeriv,wallDeriv,vertexDeriv,variableIndex(0),
+								cellDeriv,wallDeriv,vertexDeriv,variableIndex(1),
 								parameter(2));
 	assert( numWallTmp+3 == T->numWall() );
 	
@@ -757,7 +757,7 @@ update(Tissue *T,size_t i,
 	assert( numWallTmp==T->numWall() );
 	//Divide
 	T->divideCell(divCell,wI,w3I,v1Pos,v2Pos,cellData,wallData,vertexData,
-								cellDeriv,wallDeriv,vertexDeriv,variableIndex(0),
+								cellDeriv,wallDeriv,vertexDeriv,variableIndex(1),
 								parameter(2));
 	assert( numWallTmp+3 == T->numWall() );
 	
