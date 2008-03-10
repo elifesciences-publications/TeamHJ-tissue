@@ -279,7 +279,6 @@ update(Tissue *T,size_t i,
 	//T->checkConnectivity(1);	
 }
 
-//!Constructor
 DivisionVolumeViaLongestWall3D::
 DivisionVolumeViaLongestWall3D(std::vector<double> &paraValue, 
 															 std::vector< std::vector<size_t> > 
@@ -413,6 +412,255 @@ update(Tissue *T,size_t i,
   assert( w3I != divCell->numWall() );
 	if( flag != 1 ) {
 		std::cerr << "divideVolumeViaLongestWall3D::update() Warning"
+							<< " more than one wall possible as connection "
+							<< "for cell " 
+							<< i << std::endl; 
+		for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
+			std::cerr << "0 " 
+								<< vertexData[divCell->wall(k)->vertex1()->index()][0]
+								<< " " 
+								<< vertexData[divCell->wall(k)->vertex1()->index()][1]
+								<< " " 
+								<< vertexData[divCell->wall(k)->vertex1()->index()][2]
+								<< "\n0 " 
+								<< vertexData[divCell->wall(k)->vertex2()->index()][0]
+								<< " " 
+								<< vertexData[divCell->wall(k)->vertex2()->index()][1]
+								<< " " 
+								<< vertexData[divCell->wall(k)->vertex2()->index()][2]
+								<< "\n\n\n";
+		}
+		for( size_t kk=0 ; kk<w3Tmp.size() ; ++kk ) {
+			size_t k = w3Tmp[kk];
+			std::cerr << "1 " 
+								<< vertexData[divCell->wall(k)->vertex1()->index()][0]
+								<< " " 
+								<< vertexData[divCell->wall(k)->vertex1()->index()][1]
+								<< " " 
+								<< vertexData[divCell->wall(k)->vertex1()->index()][2]
+								<< "\n1 " 
+								<< vertexData[divCell->wall(k)->vertex2()->index()][0]
+								<< " " 
+								<< vertexData[divCell->wall(k)->vertex2()->index()][1]
+								<< " " 
+								<< vertexData[divCell->wall(k)->vertex2()->index()][2]
+								<< "\n\n\n";
+		}
+		std::cerr << "2 " 
+							<< vertexData[divCell->wall(wI)->vertex1()->index()][0]
+							<< " " 
+							<< vertexData[divCell->wall(wI)->vertex1()->index()][1]
+							<< " " 
+							<< vertexData[divCell->wall(wI)->vertex1()->index()][2]
+							<< "\n2 " 
+							<< vertexData[divCell->wall(wI)->vertex2()->index()][0]
+							<< " " 
+							<< vertexData[divCell->wall(wI)->vertex2()->index()][1]
+							<< " " 
+							<< vertexData[divCell->wall(wI)->vertex2()->index()][2]
+							<< "\n\n\n";
+		std::cerr << "3 " 
+							<< vertexData[divCell->wall(w3I)->vertex1()->index()][0]
+							<< " " 
+							<< vertexData[divCell->wall(w3I)->vertex1()->index()][1]
+							<< " " 
+							<< vertexData[divCell->wall(w3I)->vertex1()->index()][2]
+							<< "\n3 " 
+							<< vertexData[divCell->wall(w3I)->vertex2()->index()][0]
+							<< " " 
+							<< vertexData[divCell->wall(w3I)->vertex2()->index()][1]
+							<< " " 
+							<< vertexData[divCell->wall(w3I)->vertex2()->index()][2]
+							<< "\n\n\n";
+		std::cerr << "4 " 
+							<< 0.5*(vertexData[divCell->wall(wI)->vertex1()->index()][0]+
+											vertexData[divCell->wall(wI)->vertex2()->index()][0])
+							<< " " 
+							<< 0.5*(vertexData[divCell->wall(wI)->vertex1()->index()][1]+
+											vertexData[divCell->wall(wI)->vertex2()->index()][1])
+							<< " " 
+							<< 0.5*(vertexData[divCell->wall(wI)->vertex1()->index()][2]+
+											vertexData[divCell->wall(wI)->vertex2()->index()][2])
+							<< "\n4 "
+							<< 0.5*(vertexData[divCell->wall(w3I)->vertex1()->index()][0]+
+											vertexData[divCell->wall(w3I)->vertex2()->index()][0])
+							<< " " 
+							<< 0.5*(vertexData[divCell->wall(w3I)->vertex1()->index()][1]+
+											vertexData[divCell->wall(w3I)->vertex2()->index()][1])
+							<< " " 
+							<< 0.5*(vertexData[divCell->wall(w3I)->vertex1()->index()][2]+
+											vertexData[divCell->wall(w3I)->vertex2()->index()][2])
+							<< "\n\n\n";
+		exit(-1);
+	}
+	
+  size_t v1w3I = divCell->wall(w3I)->vertex1()->index();
+  size_t v2w3I = divCell->wall(w3I)->vertex2()->index();
+  for( size_t d=0 ; d<dimension ; ++d )
+    v2Pos[d] = vertexData[v1w3I][d] + 
+			w3tTmp[w3tTmp.size()-1]*(vertexData[v2w3I][d]-vertexData[v1w3I][d]);
+	//v2Pos[d] = 0.5*(vertexData[v1w3I][d]+vertexData[v2w3I][d]);
+	
+  //Add one cell, three walls, and two vertices
+  //////////////////////////////////////////////////////////////////////
+	//Save number of walls
+	size_t numWallTmp=wallData.size();
+	assert( numWallTmp==T->numWall() );
+	//Divide
+	T->divideCell(divCell,wI,w3I,v1Pos,v2Pos,cellData,wallData,vertexData,
+								cellDeriv,wallDeriv,vertexDeriv,variableIndex(0),
+								parameter(2));
+	assert( numWallTmp+3 == T->numWall() );
+	
+	//Change length of new wall between the divided daugther cells 
+	wallData[numWallTmp][0] *= parameter(1);
+	
+	//Check that the division did not messed up the data structure
+	//T->checkConnectivity(1);	
+}
+
+DivisionVolumeViaLongestWall3DSpatial::
+DivisionVolumeViaLongestWall3DSpatial(std::vector<double> &paraValue, 
+																			std::vector< std::vector<size_t> > 
+																			&indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //////////////////////////////////////////////////////////////////////
+  if( paraValue.size()!=4 ) {
+    std::cerr << "DivisionVolumeViaLongestWall3DSpatial::"
+							<< "DivisionVolumeViaLongestWall3DSpatial() "
+							<< "Four parameters used V_threshold, LWall_frac LWall_threshold "
+							<< "and spatial_threshold." << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 1 ) {
+    std::cerr << "DivisionVolumeViaLongestWall3DSpatial::"
+							<< "DivisionVolumeViaLongestWall3DSpatial() "
+							<< "Variable indices for spatial direction in first and volume dependent cell "
+							<< "variables in second are needed." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //////////////////////////////////////////////////////////////////////
+  setId("DivisionVolumeViaLongestWall3DSpatial");
+	setNumChange(1);
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //////////////////////////////////////////////////////////////////////
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "V_threshold";
+	tmp[1] = "LWall_frac";
+	tmp[2] = "LWall_threshold";
+	tmp[3] = "spatial_threshold";
+  setParameterId( tmp );
+}
+
+int DivisionVolumeViaLongestWall3DSpatial::
+flag(Tissue *T,size_t i,
+     std::vector< std::vector<double> > &cellData,
+     std::vector< std::vector<double> > &wallData,
+     std::vector< std::vector<double> > &vertexData,
+     std::vector< std::vector<double> > &cellDerivs,
+     std::vector< std::vector<double> > &wallDerivs,
+     std::vector< std::vector<double> > &vertexDerivs ) {
+	
+	size_t sI=variableIndex(0,0);
+	assert( sI<vertexData[0].size());
+	if (i==0) {//Calculate max position
+		sMax_=vertexData[0][sI];
+		size_t numV=vertexData.size();
+		for (size_t i=1; i<numV; ++i)
+			if (vertexData[i][sI]>sMax_)
+				sMax_=vertexData[i][sI];
+	}
+	
+	std::vector<double> position=T->cell(i).positionFromVertex(vertexData);
+	double sDistance = sMax_-position[sI];
+  if( T->cell(i).calculateVolume(vertexData) > parameter(0) &&
+			sDistance<parameter(3) ) {
+    std::cerr << "Cell " << i << " marked for division with volume " 
+							<< T->cell(i).volume() << std::endl;
+    return 1;
+  } 
+  return 0;
+}
+
+void DivisionVolumeViaLongestWall3DSpatial::
+update(Tissue *T,size_t i,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDeriv,
+       std::vector< std::vector<double> > &wallDeriv,
+       std::vector< std::vector<double> > &vertexDeriv ) {
+  
+  Cell *divCell = &(T->cell(i));
+  size_t dimension = vertexData[0].size();
+  assert( divCell->numWall() > 1 );
+	assert( dimension==3 );
+	
+  //Find longest wall
+	//////////////////////////////////////////////////////////////////////
+  size_t wI=0;
+  double maxLength = divCell->wall(0)->setLengthFromVertexPosition(vertexData);
+  for( size_t k=1 ; k<divCell->numWall() ; ++k ) {
+    double tmpLength = divCell->wall(k)->setLengthFromVertexPosition(vertexData);
+    if( tmpLength > maxLength ) {
+      wI=k;
+      maxLength = tmpLength;
+    }
+  }   
+  
+  std::vector<double> nW(dimension),nW2(dimension),v1Pos(dimension),
+		v2Pos(dimension);
+  size_t v1wI = divCell->wall(wI)->vertex1()->index();
+  size_t v2wI = divCell->wall(wI)->vertex2()->index();
+  
+  for( size_t d=0 ; d<dimension ; ++d ) {
+    nW[d] = (vertexData[v1wI][d]-vertexData[v2wI][d])/maxLength;
+    v1Pos[d] = 0.5*(vertexData[v1wI][d]+vertexData[v2wI][d]);
+  }
+	
+  //Find intersection with another wall by looking at perpendicular plane
+	//////////////////////////////////////////////////////////////////////
+  size_t w3I=divCell->numWall();
+  //double minDist,w3s;
+	std::vector<size_t> w3Tmp;
+	std::vector<double> w3tTmp;
+  int flag=0;
+  for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
+    if( k!=wI ) {
+      size_t v1w3Itmp = divCell->wall(k)->vertex1()->index();
+      size_t v2w3Itmp = divCell->wall(k)->vertex2()->index();
+      std::vector<double> w3(dimension),w0(dimension);
+			double fac1=0.0,fac2=0.0;
+      for( size_t d=0 ; d<dimension ; ++d ) {
+				w3[d] = vertexData[v2w3Itmp][d]-vertexData[v1w3Itmp][d];
+				fac1 += nW[d]*(v1Pos[d]-vertexData[v1w3Itmp][d]);
+				fac2 += nW[d]*w3[d]; 
+      }
+			if( fac2 != 0.0 ) {//else parallell and not applicable
+				double t = fac1/fac2;
+				if( t>=0.0 && t<1.0 ) {//within wall
+					std::cerr << "wall " << k << " (t=" << t << " " << fac1 << "/"
+										<< fac2 
+										<< ") chosen as second wall"
+										<< std::endl;					
+					flag++;
+					w3I = k;
+					w3Tmp.push_back(k);
+					w3tTmp.push_back(t);
+				}
+      }
+    }
+  }
+  assert( w3I != wI );
+  assert( w3I != divCell->numWall() );
+	if( flag != 1 ) {
+		std::cerr << "divideVolumeViaLongestWall3DSpatial::update() Warning"
 							<< " more than one wall possible as connection "
 							<< "for cell " 
 							<< i << std::endl; 
