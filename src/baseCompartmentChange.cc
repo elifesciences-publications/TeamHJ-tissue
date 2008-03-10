@@ -26,6 +26,8 @@ createCompartmentChange(std::vector<double> &paraValue,
   //compartmentDivision.h,compartmentDivision.cc
   if(idValue=="DivisionVolumeViaLongestWall")
     return new DivisionVolumeViaLongestWall(paraValue,indValue);
+  if(idValue=="DivisionVolumeViaLongestWallSpatial")
+    return new DivisionVolumeViaLongestWallSpatial(paraValue,indValue);
   else if(idValue=="DivisionVolumeViaLongestWall3D")
     return new DivisionVolumeViaLongestWall3D(paraValue,indValue);
 	else if(idValue=="DivisionVolumeViaStrain")

@@ -41,6 +41,40 @@ class DivisionVolumeViaLongestWall : public BaseCompartmentChange {
 							std::vector< std::vector<double> > &vertexDerivs );  
 };
 
+///
+/// @brief Divides a cell when volume above a threshold and cell close enough to 'apex'
+///
+/// Divides a cell when volume above a threshold and cell within a distance
+/// from max. New wall is created prependicular to the longest cell wall.
+///
+class DivisionVolumeViaLongestWallSpatial : public BaseCompartmentChange {
+  
+private:
+	
+	double sMax_;
+	
+public:
+  
+  DivisionVolumeViaLongestWallSpatial(std::vector<double> &paraValue, 
+																			std::vector< std::vector<size_t> > 
+																			&indValue );
+  
+  int flag(Tissue *T,size_t i,
+					 std::vector< std::vector<double> > &cellData,
+					 std::vector< std::vector<double> > &wallData,
+					 std::vector< std::vector<double> > &vertexData,
+					 std::vector< std::vector<double> > &cellDerivs,
+					 std::vector< std::vector<double> > &wallDerivs,
+					 std::vector< std::vector<double> > &vertexDerivs );
+  void update(Tissue* T,size_t i,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );  
+};
+
 //!Divides a cell when volume above a threshold in 3D
 /*!Divides a cell when volume above a threshold. Same as
   DivisionVolumeViaLongestWall but used for surfaces in 3D.
