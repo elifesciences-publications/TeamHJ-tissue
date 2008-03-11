@@ -1668,14 +1668,18 @@ void ContinousMTDirection::derivs(Tissue &T,
 
 VertexFromCellPlane::
 VertexFromCellPlane(std::vector<double> &paraValue,
-																	std::vector< std::vector<size_t> > &indValue)
+										std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 1) {
+	if (paraValue.size() != 2) {
 		std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
-							<< "Uses one parameter: k_force" << std::endl;
+							<< "Uses two parameters: k_force and areaFlag" << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	
+	if (paraValue[1]!=0.0 && paraValue[1]!=1.0) {
+		std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
+							<< "areaFlag must be zero (no area included) or one (area included)." << std::endl;
+		exit(EXIT_FAILURE);
+	}
 	if (indValue.size() != 0) {
 		std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
 							<< std::endl
@@ -1820,8 +1824,10 @@ derivs(Tissue &T,
 			}
 		}
 		// Get the cell size
-		//double A = cell.calculateVolume(vertexData);
 		double A=1.0;
+		if (parameter(1)==1.0)
+			A = cell.calculateVolume(vertexData)/cell.numVertex();
+		
 		//update the vertex derivatives
 		for (size_t d=0; d<dimension; ++d) {
 			//escellData[n][d]=normal[d];
