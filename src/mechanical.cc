@@ -1693,6 +1693,7 @@ VertexFromCellPlane(std::vector<double> &paraValue,
 	
 	std::vector<std::string> tmp(numParameter());
 	tmp[0] = "k_force";
+	tmp[1] = "areaFlag";
 	
 	setParameterId(tmp);
 }
@@ -1843,9 +1844,14 @@ VertexFromCellPlaneNormalized::
 VertexFromCellPlaneNormalized(std::vector<double> &paraValue,
 															std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 1) {
+	if (paraValue.size() != 2) {
 		std::cerr << "VertexFromCellPlaneNormalized::VertexFromCellPlaneNormalized() " 
-							<< "Uses one parameter: k_force" << std::endl;
+							<< "Uses two parameters: k_force and areaFlag" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	if (paraValue[1]!=0.0 && paraValue[1]!=1.0) {
+		std::cerr << "VertexFromCellPlaneNormalized::VertexFromCellPlaneNormalized() " 
+							<< "areaFlag (p1) needs to be zero or one (1=area factor included)." << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	
@@ -1862,6 +1868,7 @@ VertexFromCellPlaneNormalized(std::vector<double> &paraValue,
 	
 	std::vector<std::string> tmp(numParameter());
 	tmp[0] = "k_force";
+	tmp[1] = "areaFlag";
 	
 	setParameterId(tmp);
 }
@@ -1995,8 +2002,10 @@ derivs(Tissue &T,
 			}
 		}
 		// Get the cell size
-		//double A = cell.calculateVolume(vertexData);
 		double A=1.0;
+		if (parameter(1)!=0.0)
+			A = cell.calculateVolume(vertexData)/cell.numVertex();
+		
 		//update the vertex derivatives
 		for (size_t d=0; d<dimension; ++d) {
 			//escellData[n][d]=normal[d];
@@ -2024,9 +2033,14 @@ VertexFromCellPlaneNormalizedSpatial::
 VertexFromCellPlaneNormalizedSpatial(std::vector<double> &paraValue,
 																		 std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 4) {
+	if (paraValue.size() != 5) {
 		std::cerr << "VertexFromCellPlaneNormalizedSpatial::VertexFromCellPlaneNormalizedSpatial() " 
-							<< "Uses four parameters: F_min F_max K_spatial n_spatial" << std::endl;
+							<< "Uses four parameters: F_min F_max K_spatial n_spatial areaFlag" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	if (paraValue[4]!=0.0 && paraValue[4]!=1.0) {
+		std::cerr << "VertexFromCellPlaneNormalizedSpatial::VertexFromCellPlaneNormalizedSpatial() " 
+							<< "areaFlag needs to be zero or one (1=area factor included)." << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	
@@ -2046,6 +2060,7 @@ VertexFromCellPlaneNormalizedSpatial(std::vector<double> &paraValue,
 	tmp[1] = "F_max";
 	tmp[2] = "K_spatial";
 	tmp[3] = "n_spatial";
+	tmp[4] = "areaFlag";
 	
 	setParameterId(tmp);
 	Kpow_= std::pow(paraValue[2],paraValue[3]);
@@ -2190,8 +2205,10 @@ derivs(Tissue &T,
 			}
 		}
 		// Get the cell size
-		//double A = cell.calculateVolume(vertexData);
 		double A=1.0;
+		if (parameter(4)!=0.0)
+			A = cell.calculateVolume(vertexData)/cell.numVertex();
+			
 		//update the vertex derivatives
 		for (size_t d=0; d<dimension; ++d) {
 			//escellData[n][d]=normal[d];
@@ -2223,9 +2240,14 @@ VertexFromCellPlaneSphereCylinder::
 VertexFromCellPlaneSphereCylinder(std::vector<double> &paraValue,
 																	std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 1) {
+	if (paraValue.size() != 2) {
 		std::cerr << "VertexFromCellPlaneSphereCylinder::VertexFromCellPlaneSphereCylinder() " 
-							<< "Uses one parameter: k_force" << std::endl;
+							<< "Uses two parameters: k_force and areaFlag" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	if (paraValue[1]!=0.0 && paraValue[1]!=1.0) {
+		std::cerr << "VertexFromCellPlaneSphereCylinder::VertexFromCellPlaneSphereCylinder() " 
+							<< "areaFlag (p1) needs to be zero or one (1=area factor included)." << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	
@@ -2242,6 +2264,7 @@ VertexFromCellPlaneSphereCylinder(std::vector<double> &paraValue,
 	
 	std::vector<std::string> tmp(numParameter());
 	tmp[0] = "k_force";
+	tmp[1] = "areaFlag";
 	
 	setParameterId(tmp);
 }
@@ -2290,8 +2313,10 @@ derivs(Tissue &T,
 				normal[d] = -normal[d];
 		}
 		// Introduce cell size
-		//double A = cell.calculateVolume(vertexData); 
+		
 		double A = 1.0;
+		if (parameter(1)!=0.0)
+			A = cell.calculateVolume(vertexData)/cell.numVertex(); 
 		for (size_t k=0; k<cell.numVertex(); ++k)
 			for (size_t d=0; d<dimension; ++d)
 				vertexDerivs[cell.vertex(k)->index()][d] += parameter(0) * A * normal[d];
@@ -2300,12 +2325,20 @@ derivs(Tissue &T,
 
 VertexFromCellPlaneSphereCylinderConcentrationHill::
 VertexFromCellPlaneSphereCylinderConcentrationHill(std::vector<double> &paraValue,
-																	std::vector< std::vector<size_t> > &indValue)
+																									 std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 4) {
+	if (paraValue.size() != 5) {
 		std::cerr << "VertexFromCellPlaneSphereCylinderConcentrationHill::"
 							<< "VertexFromCellPlaneSphereCylinderConcentrationHill() " 
-							<< "Uses four parameters: k_forceConst, k_forceHill, K_Hill, n_Hill" << std::endl;
+							<< "Uses five parameters: k_forceConst, k_forceHill, K_Hill, n_Hill areaFlag" 
+							<< std::endl;
+		exit(EXIT_FAILURE);
+	}
+	if (paraValue[4]!=0.0 && paraValue[4]!=1.0) {
+		std::cerr << "VertexFromCellPlaneSphereCylinderConcentrationHill::"
+							<< "VertexFromCellPlaneSphereCylinderConcentrationHill() " 
+							<< "areaFlag (p4) needs to be zero or one (1=area factor included)." 
+							<< std::endl;
 		exit(EXIT_FAILURE);
 	}
 	
@@ -2326,6 +2359,7 @@ VertexFromCellPlaneSphereCylinderConcentrationHill(std::vector<double> &paraValu
 	tmp[1] = "k_forceHill";
 	tmp[2] = "K_Hill";
 	tmp[3] = "n_Hill";
+	tmp[4] = "areaFlag";
 	
 	setParameterId(tmp);
 }
@@ -2377,6 +2411,11 @@ derivs(Tissue &T,
 				normal[d] = -normal[d];
 		}
 		double coeff = parameter(0) + parameter(1)*concpow/(concpow+Kpow);
+		double A=1.0;
+		if (parameter(4)!=0.0) {
+			A = cell.calculateVolume(vertexData)/cell.numVertex();
+			coeff *= A;
+		}
 		for (size_t k=0; k<cell.numVertex(); ++k)
 			for (size_t d=0; d<dimension; ++d)
 				vertexDerivs[cell.vertex(k)->index()][d] += coeff * normal[d];
