@@ -418,10 +418,10 @@ void BaseSolver::printInit(std::ostream &os) const
 					T_->numWall()==wallData_.size() &&
 					T_->numVertex()==vertexData_.size() );
 
-	// Increase resolution to max for doubles
+	// Increase resolution 
 	unsigned int oldPrecision = os.precision(); 
-	os.precision(60);
-	std::cerr << "Tissue::prinitInit(): old precision: " << oldPrecision << " new " 
+	os.precision(20);
+	std::cerr << "Tissue::printInit(): old precision: " << oldPrecision << " new " 
 						<< os.precision() << std::endl;	
 
   os << T_->numCell() << " " << T_->numWall() << " " << T_->numVertex() << std::endl;
@@ -461,7 +461,7 @@ void BaseSolver::printInit(std::ostream &os) const
     os << std::endl;
   }
   os << std::endl;
-
+	
   //Print cell data
   os << T_->numCell() << " " << T_->cell(0).numVariable() << std::endl;
   if( T_->cell(0).numVariable() ) {
@@ -473,6 +473,44 @@ void BaseSolver::printInit(std::ostream &os) const
     }
     os << std::endl;
   }  
+	os.precision(oldPrecision);
+}
+
+void BaseSolver::printInitFem(std::ostream &os) const
+{
+	assert( T_->numCell()==cellData_.size() && 
+					T_->numWall()==wallData_.size() &&
+					T_->numVertex()==vertexData_.size() );
+	
+	// Increase resolution 
+	unsigned int oldPrecision = os.precision(); 
+	os.precision(20);
+	//std::cerr << "Tissue::printInit(): old precision: " << oldPrecision << " new " 
+	//				<< os.precision() << std::endl;	
+	
+  //Print the vertex positions
+	size_t numV=vertexData_.size();
+	os << numV << " nodes" << std::endl;
+  for (size_t i=0; i<numV; ++i) {
+		assert( T_->vertex(i).numPosition()==vertexData_[i].size() );
+		os << i << " : ";
+    for (size_t j=0; j<T_->vertex(i).numPosition(); ++j )
+      os << vertexData_[i][j] << " ";
+    os << std::endl;
+  }
+  //os << std::endl;
+  
+  //Print cell connection data
+	size_t numC=T_->numCell();
+  os << numC << " faces" << std::endl;
+	for (size_t i=0; i<numC; ++i) {
+		os << i << " : ";
+		size_t numV=T_->cell(i).numVertex();
+		os << numV << ", ";
+		for (size_t k=0; k<numV; ++k)
+			os << T_->cell(i).vertex(k)->index() << " ";
+		os << std::endl;
+	}
 	os.precision(oldPrecision);
 }
 

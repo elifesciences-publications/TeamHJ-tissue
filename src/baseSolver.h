@@ -86,8 +86,22 @@ public:
 	/// Caveat: Not yet general, but will be...
 	///
 	void print(std::ostream &os=std::cout);
+	///
+	/// @brief Prints standard tissue init
+	///
+	/// Prints the current state in init format using the data matrices.
+	/// It also checks that sizes in data and tissue are equal.
+	///
 	void printInit(std::ostream &os) const;
+	/// 
+	/// @brief Prints init in Pawels FEM format
+	///
+	/// Prints the current state in Pawels FEM init format using vertexData and
+	/// tissue connections.
+	///
+	void printInitFem(std::ostream &os) const;
 	void printDebug(std::ostream &os) const;
+
 	virtual void readParameterFile(std::ifstream &IN);
 	virtual void simulate(size_t verbose=0);
 	
