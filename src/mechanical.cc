@@ -1829,13 +1829,17 @@ derivs(Tissue &T,
 		if (parameter(1)==1.0)
 			A = cell.calculateVolume(vertexData)/cell.numVertex();
 		
+		double coeff = parameter(0) * A;
 		//update the vertex derivatives
-		for (size_t d=0; d<dimension; ++d) {
-			//escellData[n][d]=normal[d];
-			for (size_t k=0; k<cell.numVertex(); ++k)
-				vertexDerivs[cell.vertex(k)->index()][d] += parameter(0) * A * normal[d];
-		}
-	}	
+		for (size_t k=0; k<cell.numVertex(); ++k) {
+			double vCoeff=coeff;
+			if (cell.vertex(k)->isBoundary(T.background()))
+				vCoeff *= 1.5;
+			for (size_t d=0; d<dimension; ++d) {
+				vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
+			}
+		}	
+	}
 	//std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
 	//				<< std::endl;
 }
@@ -2317,9 +2321,15 @@ derivs(Tissue &T,
 		double A = 1.0;
 		if (parameter(1)!=0.0)
 			A = cell.calculateVolume(vertexData)/cell.numVertex(); 
-		for (size_t k=0; k<cell.numVertex(); ++k)
+
+		double coeff = parameter(0) * A; 
+		for (size_t k=0; k<cell.numVertex(); ++k) {
+			double vCoeff=coeff;
+			if (cell.vertex(k)->isBoundary(T.background()))
+				vCoeff *= 1.5;
 			for (size_t d=0; d<dimension; ++d)
-				vertexDerivs[cell.vertex(k)->index()][d] += parameter(0) * A * normal[d];
+				vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
+		}
 	}	
 }
 
@@ -2416,9 +2426,13 @@ derivs(Tissue &T,
 			A = cell.calculateVolume(vertexData)/cell.numVertex();
 			coeff *= A;
 		}
-		for (size_t k=0; k<cell.numVertex(); ++k)
+		for (size_t k=0; k<cell.numVertex(); ++k) {
+			double vCoeff=coeff;
+			if (cell.vertex(k)->isBoundary(T.background()))
+				vCoeff *= 1.5;
 			for (size_t d=0; d<dimension; ++d)
-				vertexDerivs[cell.vertex(k)->index()][d] += coeff * normal[d];
+				vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
+		}
 	}	
 }
 
