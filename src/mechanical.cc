@@ -2433,7 +2433,7 @@ derivs(Tissue &T,
 			for (size_t d=0; d<dimension; ++d)
 				vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
 		}
-	}	
+	}
 }
 
 DebugReaction::DebugReaction(std::vector<double> &paraValue,
