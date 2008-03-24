@@ -31,6 +31,26 @@ class VertexNoUpdateFromPosition : public BaseReaction {
 };
 
 ///
+/// @brief Sets positional derivatives to zero for vertices at boundary  
+///
+class VertexNoUpdateBoundary : public BaseReaction {
+  
+ public:
+  
+  VertexNoUpdateBoundary(std::vector<double> &paraValue, 
+												 std::vector< std::vector<size_t> > 
+												 &indValue );
+  
+  void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
+};
+
+///
 /// @brief Moves the complete tissue such that the maximal value in specified direction is constant
 ///
 /// The translation is done at each update (i.e. after each ODE integration step)

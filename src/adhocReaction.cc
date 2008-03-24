@@ -75,6 +75,57 @@ derivs(Tissue &T,
 	vertexDerivs[i][d] = 0.0;
 }
 
+VertexNoUpdateBoundary::
+VertexNoUpdateBoundary(std::vector<double> &paraValue, 
+											 std::vector< std::vector<size_t> > 
+											 &indValue ) {
+  
+  //Do some checks on the parameters and variable indices
+  //
+  if (paraValue.size()) {
+    std::cerr << "VertexNoUpdateBoundary::"
+							<< "VertexNoUpdateBoundary() "
+							<< "Uses no parameters."
+							<< std::endl;
+    exit(0);
+  }
+  if (indValue.size()) {
+    std::cerr << "VertexNoUpdateBoundary::"
+							<< "VertexNoUpdateBoundary() "
+							<< "No variable indices used." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexNoUpdateBoundary");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  setParameterId( tmp );
+}
+
+void VertexNoUpdateBoundary::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{  
+  //Check the cancelation for every vertex
+  size_t numVertices = T.numVertex();
+  size_t dimension = vertexData[0].size();
+
+  for (size_t i=0; i<numVertices; ++i)
+    if (T.vertex(i).isBoundary(T.background())) 
+      for (size_t d=0; d<dimension; ++d)
+				vertexDerivs[i][d] = 0.0;
+}
+
 VertexTranslateToMax::
 VertexTranslateToMax(std::vector<double> &paraValue, 
 			   std::vector< std::vector<size_t> > 
