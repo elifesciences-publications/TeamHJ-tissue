@@ -106,11 +106,13 @@ class Tissue {
   inline const std::vector<Wall> & wall() const;
   inline const Wall & wall(size_t i) const;
   inline Wall & wall(size_t i);
+  inline Wall * wallP(size_t i);
   inline void addWall( Wall val );
   inline void removeWall( size_t index );
   inline const std::vector<Vertex> & vertex() const;
   inline const Vertex & vertex(size_t i) const;
   inline Vertex & vertex(size_t i);
+  inline Vertex * vertexP(size_t i);
 	inline size_t numDimension();
   inline void addVertex( Vertex val );
   inline void removeVertex( size_t index );
@@ -306,6 +308,11 @@ inline const Wall & Tissue::wall(size_t i) const { return wall_[i]; }
 //!Returns a reference to wall i 
 inline Wall & Tissue::wall(size_t i) { return wall_[i]; }
 
+///
+/// @brief Returns a pointer to wall i 
+///
+inline Wall * Tissue::wallP(size_t i) { return &wall_[i]; }
+
 //!Adds a wall to the vector
 inline void Tissue::addWall( Wall val ) { wall_.push_back(val);}
 
@@ -343,6 +350,10 @@ inline const Vertex & Tissue::vertex(size_t i) const { return vertex_[i]; }
 
 //!Returns a reference to vertex i 
 inline Vertex & Tissue::vertex(size_t i) { return vertex_[i]; }
+
+///
+/// @brief Returns a pointer to vertex i 
+inline Vertex * Tissue::vertexP(size_t i) { return &vertex_[i]; }
 
 inline size_t Tissue::numDimension() 
 {

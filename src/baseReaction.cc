@@ -154,6 +154,10 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new CenterCOM(paraValue,indValue); 
   else if(idValue=="CalculatePCAPlane")
     return new CalculatePCAPlane(paraValue,indValue); 
+  else if(idValue=="InitiateWallLength")
+    return new InitiateWallLength(paraValue,indValue); 
+  else if(idValue=="InitiateWallMesh")
+    return new InitiateWallMesh(paraValue,indValue); 
 	
   //Default, if nothing found
   else {

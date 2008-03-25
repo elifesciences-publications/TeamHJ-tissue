@@ -915,7 +915,7 @@ createTissueFromSpheres(std::vector< std::vector<double> > &y,
   setWallLengthFromVertexPosition();
   
   //Check that the tissue is ok
-	checkConnectivity(1);
+	checkConnectivity(verbose);
 
   //std::cerr << "CellWall:" << std::endl;
   //for(size_t i=0 ; i<cellWall.size() ; ++i ) {
@@ -2555,8 +2555,8 @@ void Tissue::checkConnectivity(size_t verbose)
 					if (cP->vertex(kPlus) != cP->wall(k)->vertex1() ||
 							cP->vertex(k) != cP->wall(k)->vertex2() ) {
 						std::cerr << "Tissue::checkConnectivity() "
-											<< "vertecis and walls not sorted correctly."
-											<< std::endl;
+											<< "1: vertices and walls not sorted correctly in cell " 
+											<< i << " wall " << cP->wall(k)->index() << std::endl;
 						++exitFlag;
 					}
 				}
@@ -2564,8 +2564,8 @@ void Tissue::checkConnectivity(size_t verbose)
 					if (cP->vertex(k) != cP->wall(k)->vertex1() ||
 							cP->vertex(kPlus) != cP->wall(k)->vertex2() ) {
 						std::cerr << "Tissue::checkConnectivity() "
-											<< "vertecis and walls not sorted correctly."
-											<< std::endl;
+											<< "2: vertices and walls not sorted correctly in cell "
+											<< i << " wall " << cP->wall(k)->index() << std::endl;
 						++exitFlag;
 					}
 				}
@@ -2575,8 +2575,8 @@ void Tissue::checkConnectivity(size_t verbose)
 					if (cP->vertex(kPlus) != cP->wall(k)->vertex1() ||
 							cP->vertex(k) != cP->wall(k)->vertex2() ) {
 						std::cerr << "Tissue::checkConnectivity() "
-											<< "vertecis and walls not sorted correctly."
-											<< std::endl;
+											<< "3: vertices and walls not sorted correctly in cell "
+											<< i << " wall " << cP->wall(k)->index() << std::endl;
 						++exitFlag;
 					}
 				}
@@ -2584,8 +2584,8 @@ void Tissue::checkConnectivity(size_t verbose)
 					if (cP->vertex(k) != cP->wall(k)->vertex1() ||
 							cP->vertex(kPlus) != cP->wall(k)->vertex2() ) {
 						std::cerr << "Tissue::checkConnectivity() "
-											<< "vertecis and walls not sorted correctly."
-											<< std::endl;
+											<< "4: vertices and walls not sorted correctly in cell "
+											<< i << " wall " << cP->wall(k)->index() << std::endl;
 						++exitFlag;
 					}
 				}
@@ -2694,8 +2694,8 @@ void Tissue::printInit(std::ostream &os) {
 	// Increase resolution to max for doubles
 	unsigned int oldPrecision = os.precision(); 
 	os.precision(15);
-	std::cerr << "Tissue::prinitInit(): old precision: " << oldPrecision << " new " 
-						<< os.precision() << std::endl;
+	//std::cerr << "Tissue::prinitInit(): old precision: " << oldPrecision << " new " 
+	//				<< os.precision() << std::endl;
 	
   os << numCell() << " " << numWall() << " " << numVertex() << std::endl;
 
@@ -2759,8 +2759,8 @@ void Tissue::printInit(std::vector< std::vector<double> > &cellData,
 	// Increase resolution to max for doubles
 	unsigned int oldPrecision = os.precision(); 
 	os.precision(15);
-	std::cerr << "Tissue::prinitInit(): old precision: " << oldPrecision << " new " 
-						<< os.precision() << std::endl;
+	//std::cerr << "Tissue::prinitInit(): old precision: " << oldPrecision << " new " 
+	//				<< os.precision() << std::endl;
 	
   os << numCell() << " " << numWall() << " " << numVertex() << std::endl;
 	

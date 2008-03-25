@@ -13,6 +13,33 @@
 #include "tissue.h"
 #include "baseCompartmentChange.h"
 
+///
+/// @brief Removes a cells with given indices
+///
+class RemovalIndex : public BaseCompartmentChange {
+  
+ public:
+  
+  RemovalIndex(std::vector<double> &paraValue, 
+							 std::vector< std::vector<size_t> > 
+							 &indValue );
+  
+  int flag(Tissue *T,size_t i,
+					 std::vector< std::vector<double> > &cellData,
+					 std::vector< std::vector<double> > &wallData,
+					 std::vector< std::vector<double> > &vertexData,
+					 std::vector< std::vector<double> > &cellDerivs,
+					 std::vector< std::vector<double> > &wallDerivs,
+					 std::vector< std::vector<double> > &vertexDerivs );
+  void update(Tissue* T,size_t i,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );  
+};
+
 //!Removes a cell when position outside a radius from origo
 class RemovalOutsideRadius : public BaseCompartmentChange {
   

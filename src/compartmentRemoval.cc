@@ -8,7 +8,75 @@
 #include"compartmentRemoval.h"
 #include"baseCompartmentChange.h"
 
-//!Constructor
+RemovalIndex::
+RemovalIndex(std::vector<double> &paraValue, 
+						 std::vector< std::vector<size_t> > 
+						 &indValue ) 
+{
+	//Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=0 ) {
+    std::cerr << "RemovalIndex::"
+							<< "RemovalIndex() "
+							<< "N parameters used." << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 1 ) {
+    std::cerr << "RemovalIndex::"
+							<< "RemovalIndex() "
+							<< "List of cell indices to be removed is used.\n";
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("RemovalIndex");
+	setNumChange(-1);
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  setParameterId( tmp );
+}
+
+int RemovalIndex::
+flag(Tissue *T,size_t i,
+     std::vector< std::vector<double> > &cellData,
+     std::vector< std::vector<double> > &wallData,
+     std::vector< std::vector<double> > &vertexData,
+     std::vector< std::vector<double> > &cellDerivs,
+     std::vector< std::vector<double> > &wallDerivs,
+     std::vector< std::vector<double> > &vertexDerivs ) {
+	
+	for (size_t k=0; k<numVariableIndex(0); ++k) {
+		if (i==variableIndex(0,k)) {
+			std::cerr << "Cell " << i 
+								<< " marked for removal due to index " 
+								<< i << std::endl;
+			return 1;
+		}
+	} 
+  return 0;
+}
+
+//! Updates the dividing cell by adding a prependicular wall from the longest
+/*! 
+ */
+void RemovalIndex::
+update(Tissue *T,size_t i,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDeriv,
+       std::vector< std::vector<double> > &wallDeriv,
+       std::vector< std::vector<double> > &vertexDeriv ) {
+  
+	//Remove cell and adjust its neighboring walls and vertices
+	T->removeCell(i,cellData,wallData,vertexData,cellDeriv,wallDeriv,
+								vertexDeriv);	
+}
+
 RemovalOutsideRadius::
 RemovalOutsideRadius(std::vector<double> &paraValue, 
 										 std::vector< std::vector<size_t> > 

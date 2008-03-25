@@ -157,4 +157,58 @@ public:
 							double h);
 };
 
+///
+/// @brief Initiate the wall length variables to a factor times the distance between the two vertices
+///
+/// Sets the wall length variables to be the distance between the two vertices times a factor.
+/// 
+class InitiateWallLength : public BaseReaction {
+  
+public:
+  
+  InitiateWallLength(std::vector<double> &paraValue, 
+										 std::vector< std::vector<size_t> > 
+										 &indValue );
+  
+	void initiate(Tissue &T,
+								std::vector< std::vector<double> > &cellData,
+								std::vector< std::vector<double> > &wallData,
+								std::vector< std::vector<double> > &vertexData);
+
+  void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
+};
+
+///
+/// @brief Adds additional vertices to all walls
+///
+/// 'Meshing' is applied by inserting additional vertices for all walls
+/// 
+class InitiateWallMesh : public BaseReaction {
+  
+public:
+  
+  InitiateWallMesh(std::vector<double> &paraValue, 
+									 std::vector< std::vector<size_t> > 
+									 &indValue );
+  
+	void initiate(Tissue &T,
+								std::vector< std::vector<double> > &cellData,
+								std::vector< std::vector<double> > &wallData,
+								std::vector< std::vector<double> > &vertexData);
+
+  void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
+};
+
 #endif //ADHOCREACTION_H

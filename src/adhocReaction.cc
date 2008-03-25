@@ -369,3 +369,192 @@ update(Tissue &T,
 			T.cell(i).calculatePCAPlane(vertexData);
 	}
 }
+
+InitiateWallLength::
+InitiateWallLength(std::vector<double> &paraValue, 
+									 std::vector< std::vector<size_t> > 
+									 &indValue ) 
+{
+  //
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=1 ) {
+    std::cerr << "InitiateWallLength::InitiateWallLength() "
+							<< "Uses one parameter, factor. " << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 0 ) {
+    std::cerr << "InitiateWallLength::"
+							<< "InitiateWallLength() "
+							<< "No variable indices used." << std::endl;
+    exit(0);
+  }
+	//
+  //Set the variable values
+  //
+  setId("InitiateWallLength");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  //
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+	tmp[0] = "factor";
+  setParameterId( tmp );
+}
+
+void InitiateWallLength::
+initiate(Tissue &T,
+				 std::vector< std::vector<double> > &cellData,
+				 std::vector< std::vector<double> > &wallData,
+				 std::vector< std::vector<double> > &vertexData)
+{
+	size_t dimension = vertexData[0].size();
+  size_t numWall = T.numWall();
+  
+  for (size_t i=0; i<numWall; ++i) {
+		double distance=0.0;
+		size_t v1I=T.wall(i).vertex1()->index();
+		size_t v2I=T.wall(i).vertex2()->index();
+		for (size_t d=0; d<dimension; ++d )
+			distance += (vertexData[v2I][d]-vertexData[v1I][d])*(vertexData[v2I][d]-vertexData[v1I][d]);
+		distance = std::sqrt(distance);
+		wallData[i][0] = parameter(0)*distance;
+	}
+}
+
+void InitiateWallLength::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{
+}
+
+InitiateWallMesh::
+InitiateWallMesh(std::vector<double> &paraValue, 
+								 std::vector< std::vector<size_t> > 
+								 &indValue ) 
+{
+  //
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=1 ) {
+    std::cerr << "InitiateWallMesh::InitiateWallMesh() "
+							<< "Uses one parameter, #of added vertices per wall." << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 0 ) {
+    std::cerr << "InitiateWallMesh::"
+							<< "InitiateWallMesh() "
+							<< "No variable indices used." << std::endl;
+    exit(0);
+  }
+	//
+  //Set the variable values
+  //
+  setId("InitiateWallMesh");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  //
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+	tmp[0] = "numAddedVerticesPerWall";
+  setParameterId( tmp );
+}
+
+void InitiateWallMesh::
+initiate(Tissue &T,
+				 std::vector< std::vector<double> > &cellData,
+				 std::vector< std::vector<double> > &wallData,
+				 std::vector< std::vector<double> > &vertexData)
+{
+	size_t dimension = vertexData[0].size();
+  size_t numWallOld = T.numWall();
+	size_t numWall = numWallOld;
+  size_t numVertex = T.numVertex();
+	size_t numMesh = (size_t) parameter(0);
+	if (!numMesh) 
+		return;
+	double scaleFactor = 1.0/(1.0+numMesh); 
+	
+  for (size_t i=0; i<numWallOld; ++i) {		
+		// Add the new walls and vertices, and set indices, 
+		// and wall lengths and vertex positions (into the data matrices)
+		wallData[i][0] *= scaleFactor;
+		size_t v1I = T.wall(i).vertex1()->index();
+		size_t v2I = T.wall(i).vertex2()->index();
+		std::vector<double> n(dimension);
+		for (size_t d=0; d<dimension; ++d)
+			n[d] = scaleFactor*(vertexData[v2I][d]-vertexData[v1I][d]);
+		for (size_t k=0; k<numMesh; ++k) {
+			T.addWall(T.wall(i));
+			T.wall(numWall+k).setIndex(numWall+k);
+			wallData.push_back(wallData[i]);//with the new correct length
+			T.addVertex(T.vertex(v1I));
+			T.vertex(numVertex+k).setIndex(numVertex+k);
+			vertexData.push_back(vertexData[v1I]);
+			for (size_t d=0; d<dimension; ++d)
+				vertexData[numVertex+k][d] += (k+1)*n[d];
+		}
+		// Adjust cell connections
+		size_t c1I = T.wall(i).cell1()->index();
+		size_t c2I = T.wall(i).cell2()->index();
+		for (size_t k=0; k<numMesh; ++k) {
+			T.cell(c1I).addWall(T.wallP(numWall+k));
+			T.cell(c2I).addWall(T.wallP(numWall+k));
+			T.cell(c1I).addVertex(T.vertexP(numVertex+k));
+			T.cell(c2I).addVertex(T.vertexP(numVertex+k));
+		}
+		// Adjust wall connections
+		T.wall(i).setVertex2(T.vertexP(numVertex));
+		for (size_t k=0; k<numMesh-1; ++k) {
+			T.wall(numWall+k).setVertex1(T.vertexP(numVertex+k));
+			T.wall(numWall+k).setVertex2(T.vertexP(numVertex+k+1));
+		}
+		T.wall(numWall+numMesh-1).setVertex1(T.vertexP(numVertex+numMesh-1));
+		// Adjust vertex connections
+		std::vector<Cell*> tmpCell;
+		if (T.wall(i).cell1()!=T.background())
+			tmpCell.push_back(T.wall(i).cell1());
+		if (T.wall(i).cell2()!=T.background())
+			tmpCell.push_back(T.wall(i).cell2());
+		std::vector<Wall*> tmpWall(2);
+		tmpWall[1] = T.wallP(i);
+		for (size_t k=0; k<numMesh; ++k) {
+			T.vertex(numVertex+k).setCell(tmpCell);
+			tmpWall[0] = tmpWall[1];
+			tmpWall[1] = T.wallP(numWall+k);
+			T.vertex(numVertex+k).setWall(tmpWall);
+		}
+		size_t numVertexWall = T.vertex(v2I).numWall();
+		size_t updatedFlag=0;
+		for (size_t k=0; k<numVertexWall; ++k) {
+			if (T.vertex(v2I).wall(k)==T.wallP(i)) {
+				T.vertex(v2I).setWall(k,T.wallP(numWall+numMesh-1));
+				++updatedFlag;
+			}
+		}
+		assert(updatedFlag==1);
+		numWall += numMesh;
+		numVertex += numMesh;
+	}
+	// Sort the walls and vertices in the cells again since things have been added
+	T.sortCellWallAndCellVertex();
+	T.checkConnectivity(1);
+}
+
+void InitiateWallMesh::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{
+}

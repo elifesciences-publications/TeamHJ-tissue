@@ -45,6 +45,8 @@ createCompartmentChange(std::vector<double> &paraValue,
   else if (idValue == "DivisionShortestPath")
 	  return new DivisionShortestPath(paraValue, indValue);
 	//compartmentRemoval.h,compartmentRemoval.cc
+  else if(idValue=="RemovalIndex")
+    return new RemovalIndex(paraValue,indValue);
   else if(idValue=="RemovalOutsideRadius")
     return new RemovalOutsideRadius(paraValue,indValue);
   else if(idValue=="RemovalOutsideRadiusEpidermis")

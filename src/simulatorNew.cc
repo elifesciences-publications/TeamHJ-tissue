@@ -69,7 +69,7 @@ int main(int argc,char *argv[]) {
 		std::cerr << "-help - Shows this message." << std::endl;
     exit(EXIT_FAILURE);
 	} else if (myConfig::argc() != 4 ) {
-		std::cout << "Type '" << argv[0] << " -help' for usage." << std::endl;
+		std::cerr << "Type '" << argv[0] << " -help' for usage." << std::endl;
 		exit(EXIT_FAILURE);
   }
 	

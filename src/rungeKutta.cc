@@ -57,6 +57,17 @@ void RK5Adaptive::simulate(size_t verbose)
   if( vertexData_.size() && vertexData_.size() != vertexDerivs_.size() ) {
     vertexDerivs_.resize( vertexData_.size(),vertexData_[0]);
   }
+  // Initiate reactions and direction for those where it is applicable
+  T_->initiateReactions(cellData_, wallData_, vertexData_);
+	if (cellData_.size()!=cellDerivs_.size())
+		cellDerivs_.resize(cellData_.size(),cellDerivs_[0]);
+	if (wallData_.size()!=wallDerivs_.size())
+		wallDerivs_.resize(wallData_.size(),wallDerivs_[0]);
+	if (vertexData_.size()!=vertexDerivs_.size())
+		vertexDerivs_.resize(vertexData_.size(),vertexDerivs_[0]);
+  T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_,
+				    vertexDerivs_);
+
   assert( cellData_.size() == T_->numCell() && 
 					cellData_.size()==cellDerivs_.size() );
   assert( wallData_.size() == T_->numWall() && 
@@ -119,10 +130,6 @@ void RK5Adaptive::simulate(size_t verbose)
     yTempRkckV[i].resize(vertexData_[i].size());
 	}
 
-  // Initiate reactions and direction for those where it is applicable
-  T_->initiateReactions(cellData_, wallData_, vertexData_);
-  T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_,
-				    vertexDerivs_);
   // Initiate print times
   //////////////////////////////////////////////////////////////////////
   double printTime = endTime_ + tiny;
@@ -547,6 +554,18 @@ void RK4::simulate(size_t verbose)
   if( vertexData_.size() && vertexData_.size() != vertexDerivs_.size() ) {
     vertexDerivs_.resize( vertexData_.size(),vertexData_[0]);
   }
+
+  // Initiate reactions and direction for those where it is applicable
+  T_->initiateReactions(cellData_, wallData_, vertexData_);
+	if (cellData_.size()!=cellDerivs_.size())
+		cellDerivs_.resize(cellData_.size(),cellDerivs_[0]);
+	if (wallData_.size()!=wallDerivs_.size())
+		wallDerivs_.resize(wallData_.size(),wallDerivs_[0]);
+	if (vertexData_.size()!=vertexDerivs_.size())
+		vertexDerivs_.resize(vertexData_.size(),vertexDerivs_[0]);
+  T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_,
+				    vertexDerivs_);
+
   assert( cellData_.size() == T_->numCell() && 
 					cellData_.size()==cellDerivs_.size() );
   assert( wallData_.size() == T_->numWall() && 
