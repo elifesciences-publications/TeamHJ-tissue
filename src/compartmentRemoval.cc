@@ -18,7 +18,7 @@ RemovalIndex(std::vector<double> &paraValue,
   if( paraValue.size()!=0 ) {
     std::cerr << "RemovalIndex::"
 							<< "RemovalIndex() "
-							<< "N parameters used." << std::endl;
+							<< "No parameters used." << std::endl;
     exit(0);
   }
   if( indValue.size() != 1 ) {
@@ -47,22 +47,17 @@ flag(Tissue *T,size_t i,
      std::vector< std::vector<double> > &vertexData,
      std::vector< std::vector<double> > &cellDerivs,
      std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) {
-	
-	for (size_t k=0; k<numVariableIndex(0); ++k) {
-		if (i==variableIndex(0,k)) {
-			std::cerr << "Cell " << i 
-								<< " marked for removal due to index " 
-								<< i << std::endl;
-			return 1;
-		}
-	} 
+     std::vector< std::vector<double> > &vertexDerivs ) 
+{	
+	// Should only be done once!
+	static int updateFlag=1;
+	if (updateFlag) {
+		updateFlag=0;
+		return 1;
+	}
   return 0;
 }
 
-//! Updates the dividing cell by adding a prependicular wall from the longest
-/*! 
- */
 void RemovalIndex::
 update(Tissue *T,size_t i,
        std::vector< std::vector<double> > &cellData,
@@ -72,9 +67,9 @@ update(Tissue *T,size_t i,
        std::vector< std::vector<double> > &wallDeriv,
        std::vector< std::vector<double> > &vertexDeriv ) {
   
-	//Remove cell and adjust its neighboring walls and vertices
-	T->removeCell(i,cellData,wallData,vertexData,cellDeriv,wallDeriv,
-								vertexDeriv);	
+	//Remove all cells listed and adjust its neighboring walls and vertices
+	T->removeCells(variableIndex(0),cellData,wallData,vertexData,cellDeriv,wallDeriv,
+								 vertexDeriv);	
 }
 
 RemovalOutsideRadius::

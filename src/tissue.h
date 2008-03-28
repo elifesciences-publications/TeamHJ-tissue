@@ -86,21 +86,6 @@ class Tissue {
 	inline Cell * cellP(size_t i);
   inline void addCell( Cell val );
   inline void removeCell( size_t index );
-  void removeEpidermalCells(std::vector< std::vector<double> > &cellData,
-			    std::vector< std::vector<double> > &wallData,
-			    std::vector< std::vector<double> > &vertexData,
-			    std::vector< std::vector<double> > &cellDeriv,
-			    std::vector< std::vector<double> > &wallDeriv,
-			    std::vector< std::vector<double> > &vertexDeriv,
-			    double radialThreshold=0.0);
-  void removeEpidermalCellsAtDistance(std::vector< std::vector<double> > &cellData,
-				      std::vector< std::vector<double> > &wallData,
-				      std::vector< std::vector<double> > &vertexData,
-				      std::vector< std::vector<double> > &cellDeriv,
-				      std::vector< std::vector<double> > &wallDeriv,
-				      std::vector< std::vector<double> > &vertexDeriv,
-				      double radialThreshold,double max,
-				      size_t direction);
   inline Cell* background();
 	inline Direction* direction();
   inline const std::vector<Wall> & wall() const;
@@ -173,7 +158,9 @@ class Tissue {
 															std::vector< std::vector<double> > &cellDeriv,
 															std::vector< std::vector<double> > &wallDeriv,
 															std::vector< std::vector<double> > &vertexDeriv );
-  //!Updates topology and variables for a cell removal
+	///
+  /// @brief Updates topology and variables for a cell removal
+	///
   void removeCell(size_t cellIndex,
 									std::vector< std::vector<double> > &cellData,
 									std::vector< std::vector<double> > &wallData,
@@ -181,7 +168,40 @@ class Tissue {
 									std::vector< std::vector<double> > &cellDeriv,
 									std::vector< std::vector<double> > &wallDeriv,
 									std::vector< std::vector<double> > &vertexDeriv );			
-  //! Updates topology and variables for cell division
+	///
+	/// @brief Calls removeCell() for all indices given in the vector
+	///
+  void removeCells(std::vector<size_t> &cellIndex,
+									 std::vector< std::vector<double> > &cellData,
+									 std::vector< std::vector<double> > &wallData,
+									 std::vector< std::vector<double> > &vertexData,
+									 std::vector< std::vector<double> > &cellDeriv,
+									 std::vector< std::vector<double> > &wallDeriv,
+									 std::vector< std::vector<double> > &vertexDeriv );			
+	///
+	/// @brief Calls removeCell() for all cells that are at boundary and outside a radial threshold
+	///
+  void removeEpidermalCells(std::vector< std::vector<double> > &cellData,
+														std::vector< std::vector<double> > &wallData,
+														std::vector< std::vector<double> > &vertexData,
+														std::vector< std::vector<double> > &cellDeriv,
+														std::vector< std::vector<double> > &wallDeriv,
+														std::vector< std::vector<double> > &vertexDeriv,
+														double radialThreshold=0.0);
+	///
+	/// @brief Calls removeCell() for all cells that are at the boundary and away from the max
+	///
+  void removeEpidermalCellsAtDistance(std::vector< std::vector<double> > &cellData,
+																			std::vector< std::vector<double> > &wallData,
+																			std::vector< std::vector<double> > &vertexData,
+																			std::vector< std::vector<double> > &cellDeriv,
+																			std::vector< std::vector<double> > &wallDeriv,
+																			std::vector< std::vector<double> > &vertexDeriv,
+																			double radialThreshold,double max,
+																			size_t direction);
+	///
+  /// @brief Updates topology and variables for cell division
+	///
   void divideCell( Cell *divCell, size_t w1, size_t w2, 
 									 std::vector<double> &v1Pos,
 									 std::vector<double> &v2Pos,
@@ -193,14 +213,22 @@ class Tissue {
 									 std::vector< std::vector<double> > &vertexDeriv,
 									 std::vector<size_t> &volumeChangeList,
 									 double threshold=0.0);
-  
-  //!Sorts cell.wall and cell.vertex vectors to be cyclic 
+  ///
+  /// @brief Sorts cell.wall and cell.vertex vectors to be cyclic 
+	///
   void sortCellWallAndCellVertex(Cell* cell=NULL);
+	///
+	/// @brief Recursive algorithm to sort all cells in a tissue
+	///
 	void sortCellRecursive( Cell* cell, std::vector<size_t> &sortedFlag, size_t &numSorted);
-  //!Checks all connectivities for errors
+	///
+  /// @brief Checks all connectivities as well as cell sort for inconsistencies
+	///
   void checkConnectivity(size_t verbose=0);
   
-  ///Finds maxima in a variable column for the cells 
+  ///
+	/// @brief Finds maxima in a variable column for the cells 
+	///
   unsigned int findPeaksGradientAscent( std::vector< std::vector<double> > &cellData, 
 																				size_t col, std::vector<size_t> &cellMax,
 																				std::vector<size_t> &flag );

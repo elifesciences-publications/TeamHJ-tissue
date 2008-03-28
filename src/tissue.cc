@@ -1424,6 +1424,7 @@ void Tissue::removeCell(size_t cellIndex,
 												std::vector< std::vector<double> > &wallDeriv,
 												std::vector< std::vector<double> > &vertexDeriv ) 
 {
+	assert(cellIndex<numCell());
 	std::vector<size_t> wallRemove;
 	//Mark walls for removal via index or change wallCell to background
 	//To be removed if connected to removed cell(by default) and background
@@ -1574,6 +1575,27 @@ void Tissue::removeCell(size_t cellIndex,
 	//checkConnectivity(1);
 	std::cerr << numCR << " cells, " << numWR << " walls, and "
 						<< numVR << " vertices removed in total" << std::endl;
+}
+
+void Tissue::
+removeCells(std::vector<size_t> &cellIndex,
+						std::vector< std::vector<double> > &cellData,
+						std::vector< std::vector<double> > &wallData,
+						std::vector< std::vector<double> > &vertexData,
+						std::vector< std::vector<double> > &cellDeriv,
+						std::vector< std::vector<double> > &wallDeriv,
+						std::vector< std::vector<double> > &vertexDeriv ) 
+{
+	// Sort the indices to make sure highest indices are removed first 
+	// (since removed index is occupied with the last one)
+	sort(cellIndex.begin(),cellIndex.end());
+	
+	size_t numRemove = cellIndex.size();
+	for (size_t ii=0; ii<numRemove; ++ii) {
+		size_t i = numRemove-(ii+1);
+		removeCell(cellIndex[i],cellData,wallData,vertexData,cellDeriv,wallDeriv,
+							 vertexDeriv);
+	}
 }
 
 void Tissue::
