@@ -785,6 +785,194 @@ update(Tissue &T, double h,
 	}
 }
 
+StrainDirectionWall::
+StrainDirectionWall(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 1) {
+		std::cerr << "StrainDirectionWall::StrainDirectionWall() " 
+							<< "One parameter is used orientation_flag (0 for direction parallel with "
+							<< "strain, 1 for direction perpendicular to strain)" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 1 || indValue[0].size() != 1 ) {
+		std::cerr << "StrainDirectionWall::StrainDirectionWall() \n"
+							<< "First level: Start of cell direction index is used."
+							<< std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	setId("StrainDirectionWall");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize(numParameter());
+	tmp[0] = "orientation_flag";
+	setParameterId(tmp);
+}
+
+void StrainDirectionWall::
+initiate(Tissue &T,
+				 std::vector< std::vector<double> > &cellData,
+				 std::vector< std::vector<double> > &wallData,
+				 std::vector< std::vector<double> > &vertexData,
+				 std::vector< std::vector<double> > &cellDerivs,
+				 std::vector< std::vector<double> > &wallDerivs,
+				 std::vector< std::vector<double> > &vertexDerivs)
+{
+	// No initialization
+}
+
+void StrainDirectionWall::
+update(Tissue &T, double h,
+			 std::vector< std::vector<double> > &cellData,
+			 std::vector< std::vector<double> > &wallData,
+			 std::vector< std::vector<double> > &vertexData,
+			 std::vector< std::vector<double> > &cellDerivs,
+			 std::vector< std::vector<double> > &wallDerivs,
+			 std::vector< std::vector<double> > &vertexDerivs)
+{
+	T.derivs(cellData,wallData,vertexData,cellDerivs,wallDerivs,vertexDerivs);
+	size_t dimension = vertexData[0].size();
+	if (dimension==2) { 
+		for (size_t n = 0; n < T.numCell(); ++n) {
+			Cell &cell = T.cell(n);
+			
+			if (cellData[cell.index()][variableIndex(0, 0) + dimension] == 0) {
+				continue;
+			}
+			
+			double enumerator = 0.0;
+			double denominator = 0.0;
+			
+			for (size_t i = 0; i < cell.numWall(); ++i) {
+				Wall *wall = cell.wall(i);
+				size_t v1I=wall->vertex1()->index();
+				size_t v2I=wall->vertex2()->index();
+				
+				double wx = vertexData[v1I][0] - vertexData[v2I][0];
+				double wy = vertexData[v1I][1] - vertexData[v2I][1];				
+				
+				// Dodgy error check. Might have to improve it.
+				if (wx < 0) {
+					wx *= -1.0;
+					wy *= -1.0;
+				}
+				double sigma = std::atan2(wy, wx);
+				
+				double c = std::cos(2.0 * sigma);
+				double s = std::sin(2.0 * sigma);
+				
+				double strain = 0.0, distance=0.0, distance2=0.0;
+				for (size_t d=0; d<dimension; ++d) {
+					distance += ((vertexData[v1I][d] - vertexData[v2I][d]) *
+											 (vertexData[v1I][d] - vertexData[v2I][d]));
+					distance2 += ((vertexData[v1I][d] + vertexDerivs[v1I][d]
+												 - vertexData[v2I][d] - vertexDerivs[v2I][d]) *
+												(vertexData[v1I][d] + vertexDerivs[v1I][d]
+												 - vertexData[v2I][d] - vertexDerivs[v2I][d]));
+				}
+				distance = std::sqrt(distance);
+				distance2 = std::sqrt(distance);
+				strain = (distance2-distance) / distance;
+				
+				enumerator += strain * s;
+				denominator += strain * c;
+			}
+			
+			double angle = std::atan2(enumerator, denominator);
+			
+			double x = std::cos(0.5 * angle);
+			double y = std::sin(0.5 * angle);
+			
+			if (parameter(0) == 0) {
+				cellData[cell.index()][variableIndex(0, 0) + 0] = x;
+				cellData[cell.index()][variableIndex(0, 0) + 1] = y;
+			} else {
+				cellData[cell.index()][variableIndex(0, 0) + 0] = - y;
+				cellData[cell.index()][variableIndex(0, 0) + 1] = x;
+			}
+		}
+	}
+	else if (dimension==3) {
+		for (size_t n = 0; n < T.numCell(); ++n) {
+			Cell cell = T.cell(n);
+			
+			if (cellData[cell.index()][variableIndex(0, 0) + dimension] == 0) {
+				continue;
+			}
+			// This calculation should now be done in reaction CalculatePCAPlane
+			//cell.calculatePCAPlane(vertexData);
+			std::vector< std::vector<double> > axes = cell.getPCAPlane();
+			std::vector< std::pair<double, double> > vertices = cell.projectVerticesOnPCAPlane(vertexData);
+			
+			double enumerator = 0.0;
+			double denominator = 0.0;
+			
+			for (size_t i = 0; i < cell.numWall(); ++i) {
+				size_t ii = (i+1)%cell.numWall();
+				Wall *wall = cell.wall(i);
+				
+				double wx = vertices[i].first - vertices[ii].first;
+				double wy = vertices[i].second - vertices[ii].second;
+				
+				// Dodgy error check. Might have to improve it.
+				if (wx < 0) {
+					wx *= -1.0;
+					wy *= -1.0;
+				}
+				double sigma = std::atan2(wy, wx);
+				
+				double c = std::cos(2.0 * sigma);
+				double s = std::sin(2.0 * sigma);
+				
+				size_t v1I=wall->vertex1()->index();
+				size_t v2I=wall->vertex2()->index();
+				double strain = 0.0, distance=0.0, distance2=0.0;
+				for (size_t d=0; d<dimension; ++d) {
+					distance += ((vertexData[v1I][d] - 
+												vertexData[v2I][d]) *
+											 (vertexData[v1I][d] - 
+												vertexData[v2I][d]));
+					distance2 += ((vertexData[v1I][d] + vertexDerivs[v1I][d] - 
+												 vertexData[v2I][d] - vertexDerivs[v2I][d]) *
+												(vertexData[v1I][d] + vertexDerivs[v1I][d] - 
+												 vertexData[v2I][d] - vertexDerivs[v2I][d]));
+				}
+				distance = std::sqrt(distance);
+				distance2 = std::sqrt(distance2);
+				strain = ((distance-wallData[wall->index()][variableIndex(1, 0)]) /
+									wallData[wall->index()][variableIndex(1, 0)]);
+				enumerator += strain * s;
+				denominator += strain * c;
+			}
+			
+			double angle = std::atan2(enumerator, denominator);
+			
+			double x = std::cos(0.5 * angle);
+			double y = std::sin(0.5 * angle);
+			
+			
+			if (parameter(0) == 1) {
+				//Use perpendicular direction
+				double tmp = -y;
+				y = x;
+				x = tmp;
+			}
+			std::vector<double> dir(dimension);
+			double norm=0.0;
+			for (size_t d=0; d<dimension; ++d) {
+				dir[d] = x * axes[0][d] + y * axes[1][d];
+				norm += dir[d]*dir[d];
+			}
+			norm = 1.0/std::sqrt(norm);
+			for (size_t d=0; d<dimension; ++d)
+				cellData[cell.index()][variableIndex(0, 0) + d] = dir[d] * norm;
+		}		
+	}
+}
+
 PCAPlaneDirection::
 PCAPlaneDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
 {

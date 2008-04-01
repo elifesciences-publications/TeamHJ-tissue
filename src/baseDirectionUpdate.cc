@@ -27,6 +27,8 @@ BaseDirectionUpdate::createDirectionUpdate(std::vector<double> &paraValue,
     return new WallDirection(paraValue,indValue);
   else if(idValue=="StrainDirection")
     return new StrainDirection(paraValue,indValue);
+  else if(idValue=="StrainDirectionWall")
+    return new StrainDirectionWall(paraValue,indValue);
   else if(idValue=="GradientDirection")
     return new GradientDirection(paraValue,indValue);
   else if (idValue == "ForceDirection")

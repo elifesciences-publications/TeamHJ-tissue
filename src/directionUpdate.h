@@ -70,6 +70,9 @@ class WallDirection : public BaseDirectionUpdate {
 ///
 /// @brief The direction follows the direction of the cell strain
 ///
+/// It is based on the Goodall and Green (1986) calculation of the 
+/// maximal strain direction.
+///
 class StrainDirection : public BaseDirectionUpdate {
   
  public:
@@ -92,6 +95,34 @@ class StrainDirection : public BaseDirectionUpdate {
 								std::vector< std::vector<double> > &cellDerivs,
 								std::vector< std::vector<double> > &wallDerivs,
 								std::vector< std::vector<double> > &vertexDerivs );
+};
+
+///
+/// @brief Direction is updated from strain averaged over the wall strains
+///
+/// The strain is calculated for each wall and is used to calculate an
+/// averaged direction for the cell.
+/// 
+class StrainDirectionWall : public BaseDirectionUpdate
+{
+ public:
+  StrainDirectionWall(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue );
+  
+  void initiate(Tissue &T,
+								std::vector< std::vector<double> > &cellData,
+								std::vector< std::vector<double> > &wallData,
+								std::vector< std::vector<double> > &vertexData,
+								std::vector< std::vector<double> > &cellDerivs,
+								std::vector< std::vector<double> > &wallDerivs,
+								std::vector< std::vector<double> > &vertexDerivs);
+	
+  void update(Tissue &T, double h,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs);
 };
 
 ///
