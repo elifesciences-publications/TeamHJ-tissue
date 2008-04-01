@@ -147,6 +147,8 @@ size_t jacobiTransformation(std::vector< std::vector<double> > A, std::vector< s
 		}
 
 		++iterations;
+		if (iterations>100 && !iterations%100)
+			std::cerr << "jacobiTransform iterations: " << iterations << std::endl;
 	}
 
 	// Fix diagonal output vector.

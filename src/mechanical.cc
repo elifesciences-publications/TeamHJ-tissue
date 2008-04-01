@@ -1716,10 +1716,7 @@ derivs(Tissue &T,
 	unsigned int numFlipNormal=0;
 	for (size_t n = 0; n < T.numCell(); ++n) {
 		Cell cell = T.cell(n);
-		// This calculation should now be done in reaction CalculatePCAPlane
-		//cell.calculatePCAPlane(vertexData);
 		unsigned int flipFlag=0;
-		
 		std::vector<double> normal = cell.getNormalToPCAPlane();
 		double norm=0.0;
 		for (size_t d=0; d<dimension; ++d)
@@ -1775,8 +1772,8 @@ derivs(Tissue &T,
 				normal[d] = -normal[d];
 		}
 		else if (scalarProdSignSum==0) {
-			//std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
-			//				<< std::endl;
+			std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
+								<< std::endl;
 			if (std::fabs(scalarProdSum)>0.01) {
 				if (scalarProdSum<0.0) {
 					numFlipNormal++;
@@ -1828,7 +1825,7 @@ derivs(Tissue &T,
 		double A=1.0;
 		if (parameter(1)==1.0)
 			A = cell.calculateVolume(vertexData)/cell.numVertex();
-		
+
 		double coeff = parameter(0) * A;
 		//update the vertex derivatives
 		for (size_t k=0; k<cell.numVertex(); ++k) {

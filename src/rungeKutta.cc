@@ -34,8 +34,9 @@ void RK5Adaptive::simulate(size_t verbose)
   double tiny = 1e-9*eps_; // Caveat! Using new definition
   double  h, hNext, hDid;
   
+	//
   //Check that h1 and endTime - startTime are > 0
-  //////////////////////////////////////////////////////////////////////
+  //
   if (h1_ > 0.0 && (endTime_ - startTime_) > 0.0)
     h = h1_;
   else {//either h or (endTime-startTime) <=0
@@ -44,7 +45,7 @@ void RK5Adaptive::simulate(size_t verbose)
 							<< "No simulation performed.\n";
     exit(-1);
   }
-
+	
 	//
 	// Check that sizes of permanent data is ok
 	//
@@ -66,7 +67,7 @@ void RK5Adaptive::simulate(size_t verbose)
 	if (vertexData_.size()!=vertexDerivs_.size())
 		vertexDerivs_.resize(vertexData_.size(),vertexDerivs_[0]);
   T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_,
-				    vertexDerivs_);
+												vertexDerivs_);
 
   assert( cellData_.size() == T_->numCell() && 
 					cellData_.size()==cellDerivs_.size() );
@@ -616,7 +617,6 @@ void RK4::simulate(size_t verbose)
     printTime=startTime_-tiny;
     printDeltaTime=(endTime_-startTime_)/double(numPrint_-1);
   }
-  
   // Go
   //////////////////////////////////////////////////////////////////////
   t_=startTime_;
@@ -630,7 +630,8 @@ void RK4::simulate(size_t verbose)
 							 vertexDerivs_);
     
     //Print if applicable 
-    if( printFlag_ && t_ >= printTime ) {
+    //if( printFlag_ && t_ >= printTime ) {
+    if( t_ >= printTime ) {
       printTime += printDeltaTime;
       print();
     }
@@ -677,7 +678,8 @@ void RK4::simulate(size_t verbose)
     }
     t_ += h_;
   }
-  if( printFlag_ ) {
+  //if( printFlag_ ) {
+  if (1) {
     //Update the derivatives
     T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,
 							 vertexDerivs_);
@@ -699,7 +701,6 @@ void RK4::rk4(std::vector< std::vector<double> > &ytCell,
 {  
   double hh=0.5*h_;
   double h6=h_/6.0;
-	
 	// Take first half step
 	// Is this first derivs calculation needed?
 	T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,vertexDerivs_);
@@ -742,7 +743,6 @@ void RK4::rk4(std::vector< std::vector<double> > &ytCell,
 			ytVertex[i][j] = vertexData_[i][j] + h_*dymVertex[i][j];
 			dymVertex[i][j] = dytVertex[i][j];
 		}
-		
 	// Take full step
 	T_->derivs(ytCell,ytWall,ytVertex,dytCell,dytWall,dytVertex);
 	for( size_t i=0 ; i<cellData_.size() ; ++i )

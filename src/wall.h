@@ -52,8 +52,14 @@ class Wall {
 																	 &vertexData);
   inline size_t numVariable() const;
   inline double variable(size_t i) const;
-
+	///
+	/// @brief Sets all wall variables to values provided in the vector
+	///
   inline void setVariable(std::vector<double> variable);
+	///
+	/// @brief Adds a new variable to the variable vector
+	///
+	inline void addVariable(double val);
 
   inline void setIndex( size_t value );
   inline void setCell(Cell *v1,Cell *v2);
@@ -128,6 +134,10 @@ inline void Wall::setVariable(std::vector<double> variable)
 	variable_ = variable;
 }
 
+inline void Wall::addVariable(double val)
+{
+	variable_.push_back(val);
+}
 
 //!Sets the index variable
 inline void Wall::setIndex( size_t value ) { index_ = value; }
