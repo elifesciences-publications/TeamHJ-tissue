@@ -16,8 +16,32 @@
 #include "vertex.h"
 #include "wall.h"
 
+///
+/// @brief Adds a variable to each cell.
+///
+/// Adds a variable to each cell, where the values are defined by type:
+///
+/// type=uniform: A constant value, given in p[0]
+///
 int addCellVariable(Tissue &T,std::vector<double> &p,std::string &type);
+///
+/// @brief Adds a variable to each wall.
+///
+/// @see addCellVariable()
+///
 int addWallVariable(Tissue &T,std::vector<double> &p,std::string &type);
+///
+/// @brief Adjust vertex positions such that all walls have a length above a threshold value.
+///
+/// p[0] sets a threshold, and all vetex positions are adjusted such that all cells are at least 
+/// p[0] in length.
+///
+int minimalWallLength(Tissue &T,std::vector<double> &p);
+///
+/// @brief Sets all wall lengths to be equal to a factor times the distance between the vertices.
+///
+int wallLengthFromDistance(Tissue &T,std::vector<double> &p);
+
 
 int main(int argc,char *argv[]) {
 	
@@ -42,8 +66,6 @@ int main(int argc,char *argv[]) {
 	
 	// Get current time (at start of program)
   myTimes::getTime();
-	
-	
 	std::string configFile(getenv("HOME"));
 	configFile.append("/.tissue");
 	myConfig::initConfig(argc, argv, configFile);
@@ -97,8 +119,11 @@ int main(int argc,char *argv[]) {
 	addCellVariable(T,p,type);
 	addCellVariable(T,p,type);
 	
+	p[0]=0.2;
+	minimalWallLength(T,p);
 	
-
+	p[0]=1.0;
+	wallLengthFromDistance(T,p);
 
 	//
   // Print init in specified format
@@ -118,6 +143,7 @@ int main(int argc,char *argv[]) {
 		std::cerr << "Warning: main() - Format " << initFormat << " not recognized. "
 							<< "No init file written." << std::endl;
 	}
+	std::cerr << "Init manipulation done." << std::endl;
 }
 
 int addCellVariable(Tissue &T,std::vector<double> &p,std::string &type)
@@ -147,5 +173,55 @@ int addWallVariable(Tissue &T,std::vector<double> &p,std::string &type)
 		std::cerr << "addWallVariable does not accept type " << type << std::endl;
 		exit(-1);
 	}	
+	return 0;
+}
+
+int minimalWallLength(Tissue &T,std::vector<double> &p)
+{
+	assert( p.size()==1 );
+	size_t numW=T.numWall();
+	for (size_t i=0; i<numW; ++i) {
+		double distance=0.0;
+		Vertex *v1=T.wall(i).vertex1();
+		Vertex *v2=T.wall(i).vertex2();
+		size_t dimension=v1->numPosition();
+		std::vector<double> n(dimension);
+		for (size_t d=0; d<dimension; ++d) {
+			distance += ((v2->position(d) - v1->position(d)) *
+									 (v2->position(d) - v1->position(d)));
+			n[d] = v2->position(d) - v1->position(d);
+		}
+		distance = std::sqrt(distance);
+		if (distance<p[0]) {
+			double normFactor = 1.0/distance; 
+			for (size_t d=0; d<dimension; ++d)
+				n[d] *= normFactor;
+			double addDistance=0.5*(p[0]-distance);
+			std::vector<double> v1New(dimension),v2New(dimension);
+			for (size_t d=0; d<dimension; ++d) {
+				v1New[d] = v1->position(d)-addDistance*n[d];
+				v2New[d] = v2->position(d)+addDistance*n[d];
+			}
+			v1->setPosition( v1New );
+			v2->setPosition( v2New );
+		}
+	}
+	return 0;
+}
+
+int wallLengthFromDistance(Tissue &T,std::vector<double> &p)
+{
+	assert( p.size()==1 );
+	size_t numW=T.numWall();
+	for (size_t i=0; i<numW; ++i) {
+		double distance=0.0;
+		Vertex *v1=T.wall(i).vertex1();
+		Vertex *v2=T.wall(i).vertex2();
+		for (size_t d=0; d<v1->numPosition(); ++d)
+			distance += ((v2->position(d) - v1->position(d)) *
+									 (v2->position(d) - v1->position(d)));
+		distance = std::sqrt(distance);
+		T.wall(i).setLength(p[0]*distance);
+	}
 	return 0;
 }
