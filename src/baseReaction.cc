@@ -158,6 +158,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new InitiateWallLength(paraValue,indValue); 
   else if(idValue=="InitiateWallMesh")
     return new InitiateWallMesh(paraValue,indValue); 
+  else if(idValue=="StrainTest")
+    return new StrainTest(paraValue,indValue); 
 	
   //Default, if nothing found
   else {

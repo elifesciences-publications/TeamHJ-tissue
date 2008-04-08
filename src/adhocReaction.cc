@@ -558,3 +558,86 @@ derivs(Tissue &T,
        std::vector< std::vector<double> > &vertexDerivs ) 
 {
 }
+
+StrainTest::
+StrainTest(std::vector<double> &paraValue, 
+								 std::vector< std::vector<size_t> > 
+								 &indValue ) 
+{
+  //
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()<2 ) {
+    std::cerr << "StrainTest::StrainTest() "
+							<< "Uses at least two parameters, version, angle and optional parameters." << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 0 ) {
+    std::cerr << "StrainTest::"
+							<< "StrainTest() "
+							<< "No variable indices used." << std::endl;
+    exit(0);
+  }
+	//
+  //Set the variable values
+  //
+  setId("StrainTest");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  //
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+	tmp[0] = "version";
+	tmp[1] = "angle";
+  setParameterId( tmp );
+}
+
+void StrainTest::
+initiate(Tissue &T,
+				 std::vector< std::vector<double> > &cellData,
+				 std::vector< std::vector<double> > &wallData,
+				 std::vector< std::vector<double> > &vertexData)
+{
+}
+
+void StrainTest::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{
+	size_t dimension=vertexData[0].size();
+	double angleRad = 2*3.14159*parameter(1)/360;
+	assert(dimension==2);
+	std::vector<double> n(dimension);
+	n[0] = std::cos(angleRad);
+	n[1] = std::sin(angleRad);
+	if (parameter(0)==0.0) {
+		if (numParameter()!=2) {
+			std::cerr << "StrainTest::derivs() version " << parameter(0) << " requires " << 2
+								<< " parameters." << std::endl;
+			exit(-1);
+		}
+		for (size_t d=0; d<dimension; ++d) {
+			double sign = vertexData[3][d]>0.0 ? 1.0 : -1.0;
+			vertexDerivs[3][d] = n[d]*sign;
+		}
+	}
+	else if (parameter(0)==1.0) {
+		if (numParameter()!=2) {
+			std::cerr << "StrainTest::derivs() version " << parameter(0) << " requires " << 2
+								<< " parameters." << std::endl;
+			exit(-1);
+		}
+		for (size_t vI=0; vI<vertexData.size(); ++vI) {
+			for (size_t d=0; d<dimension; ++d) {
+				double sign = vertexData[vI][d]>0.0 ? 1.0 : -1.0;
+				vertexDerivs[vI][d] = n[d]*sign;
+			}
+		}
+	}	
+}

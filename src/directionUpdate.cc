@@ -357,15 +357,18 @@ update(Tissue &T, double h,
 			std::cerr << "StrainDirection::update() Determinant zero\n";
 			exit(-1);
 		}
-		double tau = std::atan2( A[0][0]-A[1][1],A[0][1]+A[1][0] );
-		double omega = std::atan2( A[0][0]+A[1][1],A[0][1]-A[1][0] );
+		//double tau = std::atan2( A[0][0]-A[1][1],A[0][1]+A[1][0] );
+		//double omega = std::atan2( A[0][0]+A[1][1],A[0][1]-A[1][0] );
+		double tau = std::atan2( A[0][1]+A[1][0],A[0][0]-A[1][1] );
+		double omega = std::atan2( A[0][1]-A[1][0],A[0][0]+A[1][1] );
 		double theta = 0.5*(tau-omega);
+		//double phi = 0.5*(tau+omega);
 		
 		//Create direction for update
 		std::vector<double> n(dimension);
 		double v = theta;
 		if( parameter(0)==1.0 )		
-			v = theta - 0.5 * M_PI;
+			v = v - 0.5 * M_PI;
 
 // 		double a = A[0][0];
 // 		double b = A[0][1];
@@ -874,7 +877,7 @@ update(Tissue &T, double h,
 												 - vertexData[v2I][d] - vertexDerivs[v2I][d]));
 				}
 				distance = std::sqrt(distance);
-				distance2 = std::sqrt(distance);
+				distance2 = std::sqrt(distance2);
 				strain = (distance2-distance) / distance;
 				
 				enumerator += strain * s;
@@ -885,7 +888,6 @@ update(Tissue &T, double h,
 			
 			double x = std::cos(0.5 * angle);
 			double y = std::sin(0.5 * angle);
-			
 			if (parameter(0) == 0) {
 				cellData[cell.index()][variableIndex(0, 0) + 0] = x;
 				cellData[cell.index()][variableIndex(0, 0) + 1] = y;
