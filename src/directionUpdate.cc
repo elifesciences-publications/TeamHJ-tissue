@@ -944,8 +944,7 @@ update(Tissue &T, double h,
 				}
 				distance = std::sqrt(distance);
 				distance2 = std::sqrt(distance2);
-				strain = ((distance-wallData[wall->index()][variableIndex(1, 0)]) /
-									wallData[wall->index()][variableIndex(1, 0)]);
+				strain = (distance2-distance) / distance;
 				enumerator += strain * s;
 				denominator += strain * c;
 			}
