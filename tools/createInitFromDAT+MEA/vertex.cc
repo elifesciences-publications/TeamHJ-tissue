@@ -2,6 +2,7 @@
 #include <iostream>
 #include "cell.h"
 #include "vertex.h"
+#include "wall.h"
 
 std::vector<Vertex *> Vertex::vertices;
 
