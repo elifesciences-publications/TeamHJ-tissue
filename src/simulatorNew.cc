@@ -28,7 +28,7 @@ int main(int argc,char *argv[]) {
 	myConfig::registerOption("verbose", 1);
 	myConfig::registerOption("debug_output", 1);
 	
-	int verboseFlag=1;
+	int verboseFlag=2;
 	std::string verboseString;
 	verboseString = myConfig::getValue("verbose", 0);
 	if( !verboseString.empty() ) {

@@ -299,6 +299,7 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 	
 	std::vector<double> pos(dimension);
 	std::vector<size_t> cellName;
+	// Read information about vertices
 	for( size_t i=0 ; i<numVertexVal ; ++i ) {
 		size_t tmp,numVertexCell;
 		IN >> tmp;
@@ -327,6 +328,7 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 	}
 	IN.close();
 	
+	
 	if( verbose>1 ) {
 		std::cerr << "Vertices:" << std::endl;
 		for (size_t i=0; i<numVertex(); ++i) {
@@ -341,7 +343,7 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 
 		std::cerr << "Cells:" << std::endl;
 		for (size_t i=0; i<numCell(); ++i) {
-			std::cerr << cell(i).index() << "\t";
+			std::cerr << cell(i).index() << " (" << cellName[i] << ")\t";
 			for (size_t k=0; k<cell(i).numVertex(); ++k)
 				std::cerr << cell(i).vertex(k)->index() << " ";
 			std::cerr << std::endl;
@@ -387,7 +389,7 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 	// Extract walls towards boundary
 	//assert( c1==static_cast<size_t>(-1) || c1<numCell() );
 	for (size_t i=0; i<numCell(); ++i) {
-		if (cell(i).numVertex() != cell(i).numWall()) {
+		if (cell(i).numVertex() != cell(i).numWall() && cell(i).numVertex()>2 ) {
 			//Sort vertices
 			size_t Nv = cell(i).numVertex();
 			std::vector<double> cellCenter = cell(i).positionFromVertex();
@@ -417,7 +419,24 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 					for (size_t vv=0; vv<cell(i).vertex(vI2)->numWall(); ++vv)
 						if (cell(i).vertex(vI1)->wall(v) == cell(i).vertex(vI2)->wall(vv) )
 							hasWall++;
-				assert(hasWall<=1);
+				if (hasWall>1) {
+					std::cerr << "Tissue::readMerryInit() More than one vertex pair are connected "
+										<< "for cell " << i << " (" << cellName[i] << ")" << std::endl;
+					std::cerr << "Vertices: ";
+					for (size_t kk=0; kk<cell(i).numVertex(); ++kk)
+						std::cerr << cell(i).vertex(kk)->index() << " ";
+					std::cerr << std::endl;
+					std::cerr << "Walls: ";
+					for (size_t kk=0; kk<cell(i).numWall(); ++kk)
+						std::cerr << cell(i).wall(kk)->index() << " ";
+					std::cerr << std::endl;					
+					for (size_t v=0; v<cell(i).vertex(vI1)->numWall(); ++v)
+						for (size_t vv=0; vv<cell(i).vertex(vI2)->numWall(); ++vv)
+							if (cell(i).vertex(vI1)->wall(v) == cell(i).vertex(vI2)->wall(vv) )
+								std::cerr << cell(i).vertex(vI1)->wall(v)->index()<< " " 
+													<<  cell(i).vertex(vI2)->wall(vv)->index() << std::endl;
+					exit(-1);
+				}
 				if (!hasWall) {
 					//Add wall between vertices and add cell and bg
 					size_t numWallBefore=numWall();
