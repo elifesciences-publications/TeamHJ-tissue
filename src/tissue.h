@@ -298,7 +298,6 @@ inline Cell* Tissue::cellP(size_t i) {return &cell_[i];}
 //!Adds a cell to the vector
 inline void Tissue::addCell( Cell val ) { cell_.push_back(val);}
 
-//!Removes cell at index and moves last cell into that position 
 inline void Tissue::removeCell( size_t index ) {
 	assert(index<numCell());
 	Cell *cp = &cell_[numCell()-1];

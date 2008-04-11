@@ -298,11 +298,12 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
     vertex(i).setIndex(i);
 	
 	std::vector<double> pos(dimension);
-	std::vector<size_t> cellName;
+	std::vector<size_t> cellName,vertexName;
 	// Read information about vertices
 	for( size_t i=0 ; i<numVertexVal ; ++i ) {
 		size_t tmp,numVertexCell;
 		IN >> tmp;
+		vertexName.push_back(tmp);
 		for( size_t dim=0 ; dim<dimension ; ++dim )
 			IN >> pos[dim];
 		vertex(i).setPosition(pos);
@@ -468,11 +469,15 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 				}
 			}
 		}
+		else {
+			removeCell(i);
+		}
 	}
 	if (verbose)
 		std::cerr << numCell() << " cells and " << numVertex() 
 							<< " vertices and " << numWall() << " walls extracted by "
 							<< "readMerryInit()" << std::endl;
+	checkConnectivity(verbose);
 	sortCellWallAndCellVertex();
 	checkConnectivity(verbose);
 }
