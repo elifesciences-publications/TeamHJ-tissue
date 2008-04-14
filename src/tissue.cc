@@ -327,6 +327,47 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 			cell(cellIndex).addVertex(&(vertex(i)));
 		}
 	}
+	// Reading the walls as well
+	size_t numWallVal;
+	IN >> numWallVal;
+	// Store vertexName,vertexIndex pairs in a hash table
+	std::hash vertexNameToIndex(numVertex());
+	for (size_t i=0; i<numVertex(); ++i)
+		vertexNameToIndex[vertexName[i]].set(i);
+	
+	for (size_t i=0; i<numWallVal; ++i) {
+		Wall tmpWall;
+		tmpWall.setIndex(i);
+		size_t v1Name,v2Name;
+		IN >> v1Name;
+		IN >> v2Name;
+		Vertex *tmpVertex1(vertex(vertexNameToIndex[v1Name]));
+		Vertex *tmpVertex2(vertex(vertexNameToIndex[v2Name]));
+		tmpWall.setVertex1(tmpVertex1);
+		tmpWall.setVertex2(tmpVertex2);
+		// Find neighboring cells as well
+		size_t numFoundCell=0;
+		for (size_t c1I=0; c1I<tmpVertex1->numCell(); ++c1I)
+			for (size_t c2I=0; c2I<tmpVertex2->numCell(); ++c2I)
+				if (tmpVertex1->cell(c1I)==tmpVertex2->cell(c2I)) {
+					if (numFoundCell==0) {
+						tmpWall.setCell1(tmpVertex1->cell(c1I));
+					}
+					else if (numFoundCell==1) {
+						tmpWall.setCell2(tmpVertex1->cell(c1I));
+					}
+					++numFoundCell;
+				}
+		if (numFoundCell==1) {
+			tmpWall.setCell2(background());
+			++numFoundCell;
+		}
+		if (numFoundCell!=2) {
+			std::cerr << "Tissue::readMerryInit() Found " << numFoundCell
+								<< " cells for wall " << i << std::endl;
+			exit(-1);
+		} 
+	}
 	IN.close();
 	
 	
@@ -349,8 +390,16 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 				std::cerr << cell(i).vertex(k)->index() << " ";
 			std::cerr << std::endl;
 		}
+		std::cerr << "Walls:" << std::endl;
+		for (size_t i=0; i<numWall(); ++i) {
+			std::cerr << wall(i).index() << "\t";
+			std::cerr << wall(i).cell1()->index() << " " << wall(i).cell2()->index()
+								<< wall(i).vertex1()->index() << " " << wall(i).vertex2()->index()
+								<< std::endl;
+		}
+
 	}
-	
+	return;
 	// Extract internal walls
 	for (size_t i=0; i<numCell(); ++i) {
 		for (size_t ii=i+1; ii<numCell(); ++ii) {
