@@ -205,12 +205,12 @@ void RK5Adaptive::simulate(size_t verbose)
 		//
     // Check for discrete and reaction updates
     //
-		T_->updateReactions(cellData_,wallData_,vertexData_,h);
 		T_->updateDirection(h,cellData_,wallData_,vertexData_,cellDerivs_,
 												wallDerivs_,vertexDerivs_);
+		T_->updateReactions(cellData_,wallData_,vertexData_,h);
     T_->checkCompartmentChange(cellData_,wallData_,vertexData_,
 															 cellDerivs_,wallDerivs_,vertexDerivs_ );
-
+		
 		// Check the tissue connectivity in each step
 		T_->checkConnectivity(1);
 		
@@ -649,9 +649,9 @@ void RK4::simulate(size_t verbose)
 		//
     // Check for discrete and reaction updates
     //
-		T_->updateReactions(cellData_,wallData_,vertexData_,h_);
 		T_->updateDirection(h_,cellData_,wallData_,vertexData_,cellDerivs_,
 												wallDerivs_,vertexDerivs_);
+		T_->updateReactions(cellData_,wallData_,vertexData_,h_);
     T_->checkCompartmentChange(cellData_,wallData_,vertexData_,
 															 cellDerivs_,wallDerivs_,vertexDerivs_ );
 		

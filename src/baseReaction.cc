@@ -9,6 +9,7 @@
 
 #include "baseReaction.h"
 #include "adhocReaction.h"
+#include "directionReaction.h"
 #include "growth.h"
 #include "mechanical.h"
 #include "mechanicalSpring.h"
@@ -110,8 +111,6 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new EpidermalRadialForce(paraValue, indValue);
   else if (idValue == "PerpendicularWallPressure")
 	  return new PerpendicularWallPressure(paraValue, indValue);
-  else if (idValue == "ContinousMTDirection")
-	  return new ContinousMTDirection(paraValue, indValue);
   else if (idValue == "VertexFromCellPlane")
 	  return new VertexFromCellPlane(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneNormalized")
@@ -143,6 +142,12 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if(idValue=="AuxinTransportCellCellNoGeometry")
     return new AuxinTransportCellCellNoGeometry(paraValue,indValue); 
 
+	//directionReaction.h, directionUpdate.cc
+  else if (idValue == "ContinousMTDirection")
+	  return new ContinousMTDirection(paraValue, indValue);
+  else if (idValue == "UpdateMTDirection")
+	  return new UpdateMTDirection(paraValue, indValue);
+	
 	//adhocReaction.h,adhocReaction.cc
   else if(idValue=="VertexNoUpdateFromPosition")
     return new VertexNoUpdateFromPosition(paraValue,indValue); 

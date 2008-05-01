@@ -115,11 +115,15 @@ int main(int argc,char *argv[]) {
 	addWallVariable(T,p,type);
 	addWallVariable(T,p,type);
 	
-	p[0] = 1.0;
+	p[0] = 0.0;
 	addCellVariable(T,p,type);
-	addCellVariable(T,p,type);
+ 	addCellVariable(T,p,type);
+ 	p[0] = 1.0;
+ 	addCellVariable(T,p,type);
+ 	addCellVariable(T,p,type);
+ 	addCellVariable(T,p,type);
 	
-	p[0]=0.2;
+	p[0]=0.5;
 	minimalWallLength(T,p);
 	
 	p[0]=1.0;

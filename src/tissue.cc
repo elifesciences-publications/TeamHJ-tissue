@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <cmath>
+#include <map>
 #include <set>
 #include <string>
 #include <utility>
@@ -331,9 +332,9 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 	size_t numWallVal;
 	IN >> numWallVal;
 	// Store vertexName,vertexIndex pairs in a hash table
-	std::hash vertexNameToIndex(numVertex());
+	std::map<size_t,size_t> vertexNameToIndex;
 	for (size_t i=0; i<numVertex(); ++i)
-		vertexNameToIndex[vertexName[i]].set(i);
+		vertexNameToIndex[vertexName[i]] = i;
 	
 	for (size_t i=0; i<numWallVal; ++i) {
 		Wall tmpWall;
@@ -341,8 +342,14 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 		size_t v1Name,v2Name;
 		IN >> v1Name;
 		IN >> v2Name;
-		Vertex *tmpVertex1(vertex(vertexNameToIndex[v1Name]));
-		Vertex *tmpVertex2(vertex(vertexNameToIndex[v2Name]));
+		if (vertexNameToIndex.find(v1Name) == vertexNameToIndex.end() ||
+				vertexNameToIndex.find(v2Name) == vertexNameToIndex.end() ) {
+			std::cerr << "Tissue::readMerryInit() Vertex read from file (in wall list) not found."
+								<< std::endl;
+			exit(-1);
+		}
+		Vertex *tmpVertex1(vertexP(vertexNameToIndex[v1Name]));
+		Vertex *tmpVertex2(vertexP(vertexNameToIndex[v2Name]));
 		tmpWall.setVertex1(tmpVertex1);
 		tmpWall.setVertex2(tmpVertex2);
 		// Find neighboring cells as well
@@ -365,8 +372,23 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 		if (numFoundCell!=2) {
 			std::cerr << "Tissue::readMerryInit() Found " << numFoundCell
 								<< " cells for wall " << i << std::endl;
+			std::cerr << "Vertices: " << tmpVertex1->index() << " (" << v1Name << ") " 
+								<< tmpVertex2->index() << " (" << v2Name << ")" << std::endl;
+			for (size_t c1I=0; c1I<tmpVertex1->numCell(); ++c1I)
+				for (size_t c2I=0; c2I<tmpVertex2->numCell(); ++c2I)
+					std::cerr << tmpVertex1->cell(c1I)->index() << " " << tmpVertex2->cell(c2I)->index()
+										<< std::endl;
 			exit(-1);
 		} 
+		// Add the wall to tissue (including pointers from cells and vertices)
+		addWall(tmpWall);
+		Wall *tmpWallP=wallP(numWall()-1);
+		tmpVertex1->addWall(tmpWallP);
+		tmpVertex2->addWall(tmpWallP);
+		if (tmpWallP->cell1()!=background())
+			tmpWallP->cell1()->addWall(tmpWallP);
+		if (tmpWallP->cell2()!=background())
+			tmpWallP->cell2()->addWall(tmpWallP);
 	}
 	IN.close();
 	
@@ -393,13 +415,22 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 		std::cerr << "Walls:" << std::endl;
 		for (size_t i=0; i<numWall(); ++i) {
 			std::cerr << wall(i).index() << "\t";
-			std::cerr << wall(i).cell1()->index() << " " << wall(i).cell2()->index()
+			std::cerr << wall(i).cell1()->index() << " " << wall(i).cell2()->index()<< " "
 								<< wall(i).vertex1()->index() << " " << wall(i).vertex2()->index()
 								<< std::endl;
 		}
 
 	}
+
+	if (verbose)
+		std::cerr << numCell() << " cells and " << numVertex() 
+							<< " vertices and " << numWall() << " walls extracted by "
+							<< "readMerryInit()" << std::endl;
+	sortCellWallAndCellVertex();
+	checkConnectivity(verbose);
+
 	return;
+	
 	// Extract internal walls
 	for (size_t i=0; i<numCell(); ++i) {
 		for (size_t ii=i+1; ii<numCell(); ++ii) {
