@@ -165,6 +165,8 @@ void UpdateMTDirection::update(Tissue &T,
 	size_t dimension=vertexData[0].size();
 	size_t inIndex=variableIndex(0,0);
 	size_t outIndex=variableIndex(1,0);
+	if (parameter(0)==0.0)
+		return;
 	for (size_t i=0; i<numCell; ++i) {
 		for (size_t d=0; d<dimension; ++d)
 			cellData[i][outIndex+d] += parameter(0)*h*(cellData[i][inIndex+d]-cellData[i][outIndex+d]);
