@@ -55,6 +55,40 @@ public:
 };
 
 ///
+/// @brief Updates vertices from an asymmetric wall spring potential with a spatial MT factor
+///
+/// This function has a base level for the spring constant and then adds a
+/// factor dependent on the MT direction in the cells as well as a spatial
+/// factor. The spring constant of the wall is determined by:
+///
+/// @f[ k = p_0 + (p_1 + p_2*spatialFactor)*mtFactor @f]
+///
+/// where the spatial factor is determined by a Hill function and the MT
+/// factor comes from the absolute value of the scalar products of the wall
+/// vector and cell direction vectors.
+///
+class VertexFromWallSpringMTSpatial : public BaseReaction {
+  
+private:
+	
+	double Kpow_;
+	
+public:
+  
+  VertexFromWallSpringMTSpatial(std::vector<double> &paraValue, 
+																std::vector< std::vector<size_t> > 
+																&indValue );
+  
+  void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
+};
+
+///
 /// @brief Updates vertices from an spatially asymmetric wall spring potential
 /// given by microtubule directions
 ///

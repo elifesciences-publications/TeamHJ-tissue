@@ -60,6 +60,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromWallSpringConcentrationHill(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringMT")
     return new VertexFromWallSpringMT(paraValue,indValue);
+  else if(idValue=="VertexFromWallSpringMTSpatial")
+    return new VertexFromWallSpringMTSpatial(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringMTHistory")
     return new VertexFromWallSpringMTHistory(paraValue,indValue);
   else if(idValue=="VertexFromEpidermalWallSpring")

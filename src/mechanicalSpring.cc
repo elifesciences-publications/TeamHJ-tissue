@@ -316,6 +316,149 @@ initiate(Tissue &T,
 {
 }
 
+VertexFromWallSpringMTSpatial::
+VertexFromWallSpringMTSpatial(std::vector<double> &paraValue, 
+														std::vector< std::vector<size_t> > 
+														&indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=6 ) {
+    std::cerr << "VertexFromWallSpringMTSpatial::"
+							<< "VertexFromWallSpringMTSpatial() "
+							<< "Uses six parameters k_0 k_minMT k_maxMT K_spatial n_spatial frac_adhesion."
+							<< std::endl;
+    exit(0);
+  }
+  if( indValue.size() < 1 || indValue.size() > 2 
+			|| indValue[0].size() != 3 
+			|| (indValue.size()==2 && indValue[1].size() != 1) ) {
+    std::cerr << "VertexFromWallSpringMTSpatial::"
+							<< "VertexFromWallSpringMTSpatial() "
+							<< "Wall length index, MT direction start index and spatial coordinate given in"
+							<< " first level, and optionally wall variable save index in second."
+							<< std::endl;
+    exit(0);
+  }
+	
+  // Set the variable values
+  setId("VertexFromWallSpringMTSpatial");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "k_0";
+  tmp[1] = "k_minMT";
+  tmp[2] = "k_maxMT";
+  tmp[3] = "K_spatial";
+  tmp[4] = "n_spatial";
+  tmp[5] = "frac_adh";
+  setParameterId( tmp );
+	Kpow_=std::pow(parameter(3),parameter(4));
+}
+
+void VertexFromWallSpringMTSpatial::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) {
+  
+  // Do the update for each wall
+  size_t numWalls = T.numWall();
+  size_t wallLengthIndex = variableIndex(0,0);
+	size_t directionIndex = variableIndex(0,1);
+	size_t dimension = vertexData[0].size();
+  
+	// Initiate positional factor
+	size_t sI = variableIndex(0,2);
+	size_t numVertices = T.numVertex();
+	assert (sI<vertexData[0].size());
+	double max = vertexData[0][sI];
+	for (size_t i=1; i<numVertices; ++i)
+		if (vertexData[i][sI]>max)
+			max=vertexData[i][sI];
+	
+	// Calculate update from each wall
+  for( size_t i=0 ; i<numWalls ; ++i ) {
+    size_t v1 = T.wall(i).vertex1()->index();
+    size_t v2 = T.wall(i).vertex2()->index();
+    assert( vertexData[v2].size()==dimension );
+		
+    //Calculate shared factors
+    double distance=0.0,c1Norm=0.0,c2Norm=0.0;
+		std::vector<double> n_w(dimension),n_c1(dimension),n_c2(dimension);
+    for( size_t d=0 ; d<dimension ; d++ ) {
+			n_w[d] = vertexData[v2][d]-vertexData[v1][d];
+			distance += n_w[d]*n_w[d];
+			if( T.wall(i).cell1() != T.background() && 
+					cellData[T.wall(i).cell1()->index()][directionIndex+dimension]>0.5 ) {
+				n_c1[d] = cellData[T.wall(i).cell1()->index()][directionIndex+d];
+				c1Norm += n_c1[d]*n_c1[d];
+			}
+			if( T.wall(i).cell2() != T.background() &&
+					cellData[T.wall(i).cell2()->index()][directionIndex+dimension]>0.5 ) {
+				n_c2[d] = cellData[T.wall(i).cell2()->index()][directionIndex+d];
+				c2Norm += n_c2[d]*n_c2[d];			
+			}
+		}
+    distance = std::sqrt( distance );
+		c1Norm = std::sqrt( c1Norm );
+		c2Norm = std::sqrt( c2Norm );
+
+		// Calculate MT factors
+		double c1Fac=0.0,c2Fac=0.0;
+		if( T.wall(i).cell1() != T.background() &&
+				cellData[T.wall(i).cell1()->index()][directionIndex+dimension]>0.5 ) {
+			for( size_t d=0 ; d<dimension ; d++ )		
+				c1Fac += n_c1[d]*n_w[d];
+			c1Fac = std::fabs(c1Fac)/(c1Norm*distance);
+		}
+		else
+			c1Fac = 0.5;//1.0;
+		if( T.wall(i).cell2() != T.background() &&
+				cellData[T.wall(i).cell2()->index()][directionIndex+dimension]>0.5 ) {
+			for( size_t d=0 ; d<dimension ; d++ )		
+				c2Fac += n_c2[d]*n_w[d];
+			c2Fac = std::fabs(c2Fac)/(c2Norm*distance);
+		}
+		else
+			c2Fac = 0.5;//1.0;
+		double mtFactor = (parameter(1)+parameter(2)*(2.0-c1Fac-c2Fac));
+		
+		//Calculate positional factor
+		double pos = 0.5*(vertexData[v1][sI]+vertexData[v2][sI]);
+		double posFactor = max-pos;
+		posFactor = std::pow(posFactor,parameter(4));
+		
+		double wallLength=wallData[i][wallLengthIndex];
+		double coeff = ((1.0/wallLength)-(1.0/distance));
+    if( distance <= 0.0 && wallLength <=0.0 ) {
+      //std::cerr << i << " - " << wallLength << " " << distance << std::endl;
+      coeff = 0.0;
+    }
+		// Multiply with positional and MT factor
+		coeff *= parameter(0) + mtFactor*posFactor/(Kpow_+posFactor); 
+		
+		// Multiply with compression factor
+    if( distance>wallLength )
+      coeff *=parameter(5);
+		
+		//Save force in wall variable if appropriate
+		if( numVariableIndexLevel()>1 )
+			wallData[i][variableIndex(1,0)] = coeff*distance;
+    
+    //Update both vertices for each dimension
+    for(size_t d=0 ; d<dimension ; d++ ) {
+      double div = (vertexData[v1][d]-vertexData[v2][d])*coeff;
+      vertexDerivs[v1][d] -= div;
+      vertexDerivs[v2][d] += div;
+    }
+  }
+}
+
 VertexFromWallSpringMTHistory::
 VertexFromWallSpringMTHistory(std::vector<double> &paraValue, 
 															std::vector< std::vector<size_t> > 
@@ -864,7 +1007,7 @@ VertexFromWallSpringMTConcentrationHill(std::vector<double> &paraValue,
 							<< "VertexFromWallSpringMTConcentrationHill() "
 							<< "Wall length index and cell MT direction start index"
 							<< "given at first level, conc index at second,"
-							<< " and optionally wall variable save index in second.\n";
+							<< " and optionally wall variable save index in third.\n";
     exit(0);
   }
   //Set the variable values
