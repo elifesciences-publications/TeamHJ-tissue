@@ -57,6 +57,10 @@ class Wall {
 	///
   inline void setVariable(std::vector<double> variable);
 	///
+	/// @brief Sets a wall variable with index iVal to value provided in val
+	///
+  inline void setVariable(size_t iVal,double val);	
+	///
 	/// @brief Adds a new variable to the variable vector
 	///
 	inline void addVariable(double val);
@@ -128,6 +132,11 @@ inline size_t Wall::numVariable() const { return variable_.size(); }
 
 //!Returns variable i
 inline double Wall::variable(size_t i) const { return variable_[i];}
+
+inline void Wall::setVariable(size_t iVal,double val)
+{
+	variable_[iVal] = val;
+}
 
 inline void Wall::setVariable(std::vector<double> variable)
 {

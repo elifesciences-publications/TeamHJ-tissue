@@ -31,6 +31,12 @@ int addCellVariable(Tissue &T,std::vector<double> &p,std::string &type);
 ///
 int addWallVariable(Tissue &T,std::vector<double> &p,std::string &type);
 ///
+/// @brief Sets a variable value in each wall.
+///
+/// The constant value given in p[0] is set in wall variables with index p[1].
+///
+int setWallVariable(Tissue &T,std::vector<double> &p,std::string &type);
+///
 /// @brief Adjust vertex positions such that all walls have a length above a threshold value.
 ///
 /// p[0] sets a threshold, and all vetex positions are adjusted such that all cells are at least 
@@ -109,21 +115,25 @@ int main(int argc,char *argv[]) {
 	std::vector<double> p;
 	std::string type("uniform");
 	
-	p.resize(1);
+	p.resize(2);
 	p[0]=0.0;
+	p[1]=0;
 	//type = new std::string("uniform");
-	addWallVariable(T,p,type);
-	addWallVariable(T,p,type);
+	setWallVariable(T,p,type);
+
+	p.resize(1);
+	//addWallVariable(T,p,type);
+	//addWallVariable(T,p,type);
 	
-	p[0] = 0.0;
-	addCellVariable(T,p,type);
- 	addCellVariable(T,p,type);
- 	p[0] = 1.0;
- 	addCellVariable(T,p,type);
- 	addCellVariable(T,p,type);
- 	addCellVariable(T,p,type);
+	//p[0] = 0.0;
+	//addCellVariable(T,p,type);
+ 	//addCellVariable(T,p,type);
+ 	//p[0] = 1.0;
+ 	//addCellVariable(T,p,type);
+ 	//addCellVariable(T,p,type);
+ 	//addCellVariable(T,p,type);
 	
-	p[0]=0.5;
+	p[0]=0.3;
 	minimalWallLength(T,p);
 	
 	p[0]=1.0;
@@ -172,6 +182,22 @@ int addWallVariable(Tissue &T,std::vector<double> &p,std::string &type)
 		size_t numW=T.numWall();
 		for (size_t i=0; i<numW; ++i)
 			T.wall(i).addVariable(p[0]);
+	}
+	else {
+		std::cerr << "addWallVariable does not accept type " << type << std::endl;
+		exit(-1);
+	}	
+	return 0;
+}
+
+int setWallVariable(Tissue &T,std::vector<double> &p,std::string &type)
+{
+	if (type.compare("uniform")==0) {
+		assert( p.size()==2 );
+		size_t index = size_t(p[1]);
+		size_t numW=T.numWall();
+		for (size_t i=0; i<numW; ++i)
+			T.wall(i).setVariable(index,p[0]);
 	}
 	else {
 		std::cerr << "addWallVariable does not accept type " << type << std::endl;
