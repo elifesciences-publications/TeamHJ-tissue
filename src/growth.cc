@@ -236,7 +236,7 @@ WallGrowthStressSpatial(std::vector<double> &paraValue,
   if( paraValue.size()!=6 ) {
     std::cerr << "WallGrowthStressSpatial::"
 							<< "WallGrowthStressSpatial() "
-							<< "Uses six parameters k_growth, stretch_threshold "
+							<< "Uses six parameters k_growth, stress(stretch)_threshold "
 							<< "K_hill n_Hill "
 							<< "stretch_flag and linear_flag" << std::endl;
     exit(0);
@@ -299,15 +299,22 @@ derivs(Tissue &T,
   
   size_t numWalls = T.numWall();
   size_t lengthIndex = variableIndex(0,0);
+	size_t dimension = vertexData[0].size();
   
 	// Prepare spatial factor
 	size_t sI=variableIndex(0,1);
 	assert (sI<vertexData[0].size());
 	size_t numVertices = vertexData.size();
 	double sMax= vertexData[0][sI];
+	double maxI=0;
   for (size_t i=1; i<numVertices; ++i)
-		if (vertexData[i][sI]>sMax)
+		if (vertexData[i][sI]>sMax) {
 			sMax=vertexData[i][sI];
+			maxI=i;
+		}
+	std::vector<double> maxPos(dimension);
+	for (size_t d=0; d<dimension; ++d)
+		maxPos[d] = vertexData[maxI][d];
 	
   for( size_t i=0 ; i<numWalls ; ++i ) {
     size_t v1 = T.wall(i).vertex1()->index();
@@ -319,7 +326,7 @@ derivs(Tissue &T,
 		}
 		else {
 			double distance=0.0;
-			for( size_t d=0 ; d<vertexData[v1].size() ; d++ )
+			for( size_t d=0 ; d<dimension ; ++d )
 				distance += (vertexData[v1][d]-vertexData[v2][d])*
 					(vertexData[v1][d]-vertexData[v2][d]);
 			distance = std::sqrt(distance);
@@ -328,12 +335,17 @@ derivs(Tissue &T,
 		}
     if (stress > parameter(1)) {
 			// Calculate spatial factor
-			double distance = sMax-0.5*(vertexData[v1][sI]+vertexData[v2][sI]);
-			double spatialFactor = Kpow_/(Kpow_+std::pow(distance,parameter(3)));
-
+			double maxDistance = 0.0;
+			for (size_t d=0; d<dimension; ++d) {
+				double pos = 0.5*(vertexData[v1][d]+vertexData[v2][d]);
+				maxDistance += (maxPos[d]-pos)*(maxPos[d]-pos);
+			}
+			maxDistance = std::sqrt(maxDistance);
+			double spatialFactor = Kpow_/(Kpow_+std::pow(maxDistance,parameter(3)));
+			
 			double growthRate = parameter(0)*(stress - parameter(1))*spatialFactor;
-
-
+			
+			
 			if (parameter(5))
 				growthRate *= wallData[i][lengthIndex];
       wallDerivs[i][lengthIndex] += growthRate;

@@ -1750,6 +1750,212 @@ derivs(Tissue &T,
 	//				<< std::endl;
 }
 
+VertexFromCellPlaneSpatial::
+VertexFromCellPlaneSpatial(std::vector<double> &paraValue,
+										std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 5) {
+		std::cerr << "VertexFromCellPlaneSpatial::VertexFromCellPlaneSpatial() " 
+							<< "Uses five parameters: k_min, k_max, K_spatial, n_spatial and areaFlag." 
+							<< std::endl;
+		exit(EXIT_FAILURE);
+	}
+	if (paraValue[4]!=0.0 && paraValue[4]!=1.0) {
+		std::cerr << "VertexFromCellPlaneSpatial::VertexFromCellPlaneSpatial() " 
+							<< "areaFlag must be zero (no area included) or one (area included)." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	if (indValue.size() != 1 || indValue[0].size() != 1) {
+		std::cerr << "VertexFromCellPlaneSpatial::VertexFromCellPlaneSpatial() " 
+							<< std::endl
+							<< "Variable index for spatial max index is used." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	setId("VertexFromCellPlaneSpatial");
+	setParameter(paraValue);
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp[0] = "k_min";
+	tmp[1] = "k_max";
+	tmp[2] = "K_spatial";
+	tmp[3] = "n_spatial";
+	tmp[4] = "areaFlag";
+	
+	setParameterId(tmp);
+	Kpow_= std::pow(paraValue[2],paraValue[3]);
+
+}
+
+void VertexFromCellPlaneSpatial::
+derivs(Tissue &T,
+			 std::vector< std::vector<double> > &cellData,
+			 std::vector< std::vector<double> > &wallData,
+			 std::vector< std::vector<double> > &vertexData,
+			 std::vector< std::vector<double> > &cellDerivs,
+			 std::vector< std::vector<double> > &wallDerivs,
+			 std::vector< std::vector<double> > &vertexDerivs)
+{
+	size_t dimension = vertexData[0].size();
+	if (dimension!=3) {
+		std::cerr << "VertexFromCellPlaneSpatial::VertexFromCellPlaneSpatial() " 
+							<< "Only implemented for three dimensions." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	size_t sI=variableIndex(0,0);
+	assert (sI<vertexData[0].size());
+	double max = vertexData[0][sI];
+	size_t maxI=0;
+	size_t numVertices = vertexData.size();
+	for (size_t i=1; i<numVertices; ++i)
+		if (vertexData[i][sI]>max) {
+			max=vertexData[i][sI];
+			maxI=i;
+		}
+	std::vector<double> maxPos(dimension);
+	for (size_t d=0; d<dimension; ++d)
+		maxPos[d] = vertexData[maxI][d];
+	
+	unsigned int numFlipNormal=0;
+	for (size_t n = 0; n < T.numCell(); ++n) {
+		Cell cell = T.cell(n);
+		unsigned int flipFlag=0;
+		std::vector<double> normal = cell.getNormalToPCAPlane();
+		double norm=0.0;
+		for (size_t d=0; d<dimension; ++d)
+			norm += normal[d]*normal[d];
+		if (norm != 1.0) {
+			norm = std::sqrt(norm);
+			assert(norm>0.0);
+			double normFac = 1.0/norm; 
+			for (size_t d=0; d<dimension; ++d)
+				normal[d] *= normFac;
+		}
+		
+		std::vector<int> scalarProdSign(cell.numVertex());
+		std::vector<double> scalarProdVal(cell.numVertex());
+		double scalarProdSum=0.0;
+		for (size_t k=0; k<cell.numVertex(); ++k) {
+			size_t k2=(k+1)%cell.numVertex();
+			size_t k3=(k+2)%cell.numVertex();
+			//Make sure ((v2-v1)x(v3-v2))n has same sign for all cells
+			assert(cell.numVertex()>2);
+			std::vector<double> nw1(dimension),nw2(dimension);
+			for (size_t d=0; d<dimension; ++d) {
+				nw1[d] = vertexData[cell.vertex(k2)->index()][d]-vertexData[cell.vertex(k)->index()][d];
+				nw2[d] = vertexData[cell.vertex(k3)->index()][d]-vertexData[cell.vertex(k2)->index()][d];
+			}
+			//cross product
+			double scalarProd=0.0;
+			for (size_t d1=0; d1<dimension; ++d1) {
+				size_t d2=(d1+1)%dimension;
+				size_t d3=(d1+2)%dimension;
+				scalarProd += (nw1[d1]*nw2[d2]-nw1[d2]*nw2[d1])*normal[d3];
+			}
+			scalarProdVal[k] = scalarProd;
+			scalarProdSum += scalarProd;
+			if (scalarProd>0.0)
+				scalarProdSign[k]=1;
+			else
+				scalarProdSign[k]=-1;
+		}
+//  		for (size_t k=1; k<cell.numVertex(); ++k)
+//  			if (scalarProdSign[k]!=scalarProdSign[0]) {
+//  				std::cerr << "Cell " << n << " has diverging signs on scalar product." << std::endl;
+//  				break;
+//  			}
+		int scalarProdSignSum=0;
+		for (size_t k=0; k<scalarProdSign.size(); ++k)
+			scalarProdSignSum += scalarProdSign[k];
+		
+		if (scalarProdSignSum<0) {
+			numFlipNormal++;
+			flipFlag=1;
+			for (size_t d=0; d<dimension; ++d)
+				normal[d] = -normal[d];
+		}
+		else if (scalarProdSignSum==0) {
+			std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
+								<< std::endl;
+			if (std::fabs(scalarProdSum)>0.01) {
+				if (scalarProdSum<0.0) {
+					numFlipNormal++;
+					flipFlag=1;
+					for (size_t d=0; d<dimension; ++d)
+						normal[d] = -normal[d];
+				}
+			}
+			else {
+				std::vector<double> center = cell.positionFromVertex(vertexData);
+				// Print all walls
+				for (size_t k=0; k<cell.numWall(); ++k) {
+					std::cerr << "0 "; 
+					for (size_t d=0; d<dimension; ++d)
+						std::cerr << vertexData[cell.wall(k)->vertex1()->index()][d] << " ";
+					std::cerr << std::endl << "0 "; 
+					for (size_t d=0; d<dimension; ++d)
+						std::cerr << vertexData[cell.wall(k)->vertex2()->index()][d] << " ";
+					std::cerr << std::endl << std::endl;
+				}		 
+				std::cerr << "1 "; 
+				for (size_t d=0; d<dimension; ++d)
+					std::cerr << vertexData[cell.wall(0)->vertex1()->index()][d] << " ";
+				std::cerr << std::endl << std::endl;
+				std::cerr << "2 "; 
+				for (size_t d=0; d<dimension; ++d)
+					std::cerr << center[d] << " ";
+				std::cerr << std::endl << "2 ";
+				for (size_t d=0; d<dimension; ++d)
+					std::cerr << center[d]+normal[d] << " ";
+				std::cerr << std::endl << std::endl;
+				std::cerr << "3 "; 
+				for (size_t d=0; d<dimension; ++d)
+					std::cerr << normal[d] << " ";
+				std::cerr << std::endl << std::endl;
+				std::cerr << "4 "; 
+				for (size_t i=0; i<scalarProdVal.size(); ++i)
+					std::cerr << scalarProdVal[i] << " ";
+				std::cerr << std::endl << std::endl;
+				std::cerr << "5 "; 
+				for (size_t i=0; i<scalarProdSign.size(); ++i)
+					std::cerr << scalarProdSign[i] << " ";
+				std::cerr << std::endl << std::endl;
+				
+				exit(-1);
+			}
+		}
+		// Get the cell size
+		double A=1.0;
+		if (parameter(4)==1.0)
+			A = cell.calculateVolume(vertexData)/cell.numVertex();
+		// Calculate the spatial factor
+
+		double maxDistance=0.0;
+		std::vector<double> cellPos = cell.positionFromVertex(vertexData);
+		for (size_t d=0; d<dimension; ++d)
+			maxDistance += (maxPos[d]-cellPos[d])*(maxPos[d]-cellPos[d]);
+		maxDistance = std::sqrt(maxDistance);
+		double sFactor = std::pow(maxDistance,parameter(3));
+		sFactor = parameter(1)*Kpow_/(Kpow_+sFactor);
+
+		double coeff = (parameter(0)+sFactor) * A;
+		
+		
+		//update the vertex derivatives
+		for (size_t k=0; k<cell.numVertex(); ++k) {
+			double vCoeff=coeff;
+			if (cell.vertex(k)->isBoundary(T.background()))
+				vCoeff *= 1.5;
+			for (size_t d=0; d<dimension; ++d) {
+				vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
+			}
+		}	
+	}
+	//std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
+	//				<< std::endl;
+}
+
 VertexFromCellPlaneNormalized::
 VertexFromCellPlaneNormalized(std::vector<double> &paraValue,
 															std::vector< std::vector<size_t> > &indValue)
@@ -1996,10 +2202,18 @@ derivs(Tissue &T,
 	size_t numVertices=vertexData.size();
 	assert (sI<dimension);
 	double sMax=vertexData[0][sI];
+	double maxI=0;
 	for (size_t i=1; i<numVertices; ++i)
-		if (vertexData[i][sI]>sMax)
+		if (vertexData[i][sI]>sMax) {
 			sMax=vertexData[i][sI];
-	
+			maxI=i;
+		}
+
+	std::vector<double> maxPos(dimension);
+	for (size_t d=0; d<dimension; ++d)
+		maxPos[d] = vertexData[maxI][d];
+
+
 	std::vector<double> tmpD(dimension);
 	std::vector< std::vector<double> > vertexDerivsTmp(vertexDerivs.size(),tmpD);
 	unsigned int numFlipNormal=0;
@@ -2134,8 +2348,11 @@ derivs(Tissue &T,
 			norm += vertexDerivsTmp[i][d]*vertexDerivsTmp[i][d];
 		double normFac = 1.0/std::sqrt(norm);
 		// Calculate spatial factor
-		double sFactor = sMax-vertexData[i][sI];
-		sFactor = std::pow(sFactor,parameter(3));
+		double maxDistance=0.0;
+		for (size_t d=0; d<dimension; ++d)
+			maxDistance += (maxPos[d]-vertexData[i][d])*(maxPos[d]-vertexData[i][d]);
+		maxDistance = std::sqrt(maxDistance);
+		double sFactor = std::pow(maxDistance,parameter(3));
 		sFactor = parameter(1)*Kpow_/(Kpow_+sFactor);
 		for (size_t d=0; d<dimension; ++d) {
 			vertexDerivsTmp[i][d] *= normFac;

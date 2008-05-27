@@ -141,22 +141,28 @@ derivs(Tissue &T,
   // Do the update for each wall
   size_t numWalls = T.numWall();
   size_t wallLengthIndex = variableIndex(0,0);
+	size_t dimension = vertexData[0].size();
   
 	// Initiate positional factor
 	size_t sI = variableIndex(0,1);
 	size_t numVertices = T.numVertex();
 	assert (sI<vertexData[0].size());
 	double max = vertexData[0][sI];
+	double maxI = 0;
 	for (size_t i=1; i<numVertices; ++i)
-		if (vertexData[i][sI]>max)
+		if (vertexData[i][sI]>max) {
 			max=vertexData[i][sI];
+			maxI = i;
+		}
+	std::vector<double> maxPos(dimension);
+	for (size_t d=0; d<dimension; ++d)
+		maxPos[d] = vertexData[maxI][d];
 	
 	// Calculate update from each wall
   for( size_t i=0 ; i<numWalls ; ++i ) {
     size_t v1 = T.wall(i).vertex1()->index();
     size_t v2 = T.wall(i).vertex2()->index();
-    size_t dimension = vertexData[v1].size();
-    assert( vertexData[v2].size()==dimension );
+    assert( vertexData[v1].size()==dimension && vertexData[v2].size()==dimension);
     //Calculate shared factors
     double distance=0.0;
     for( size_t d=0 ; d<dimension ; d++ )
@@ -170,9 +176,13 @@ derivs(Tissue &T,
       coeff = 0.0;
     }
 		//Calculate positional factor
-		double pos = 0.5*(vertexData[v1][sI]+vertexData[v2][sI]);
-		double posFactor = max-pos;
-		posFactor = std::pow(posFactor,parameter(3));
+		double maxDistance = 0.0;
+		for (size_t d=0; d<dimension; ++d) {
+			double pos = 0.5*(vertexData[v1][sI]+vertexData[v2][sI]);
+			maxDistance += (maxPos[d]-pos)*(maxPos[d]-pos);
+		}
+		maxDistance = std::sqrt(maxDistance);
+		double posFactor = std::pow(maxDistance,parameter(3));
 		posFactor = parameter(0) + parameter(1)*posFactor/(Kpow_+posFactor); 
 		coeff *= posFactor;
 
