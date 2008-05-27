@@ -121,10 +121,10 @@ VertexFromCellPressure(std::vector<double> &paraValue,
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
-  if( paraValue.size()!=1 ) {
+  if( paraValue.size()!=2 ) {
     std::cerr << "VertexFromCellPressure::"
 	      << "VertexFromCellPressure() "
-	      << "Uses one parameter K_force.\n";
+	      << "Uses two parameters K_force and normalizeVolumeFlag.\n";
     exit(0);
   }
   if( indValue.size() != 0 ) {
@@ -143,12 +143,10 @@ VertexFromCellPressure(std::vector<double> &paraValue,
   //////////////////////////////////////////////////////////////////////
   std::vector<std::string> tmp( numParameter() );
   tmp[0] = "K_force";
+  tmp[1] = "f_V_norm";
   setParameterId( tmp );
 }
 
-//! Derivative contribution for asymmetric wall springs on vertices
-/*! 
-*/
 void VertexFromCellPressure::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -177,13 +175,15 @@ derivs(Tissue &T,
       size_t v1I = tmpCell.vertex(k)->index();
       size_t v2I = tmpCell.vertex((k+1)%(tmpCell.numVertex()))->index();
       cellVolume += vertexData[v1I][0]*vertexData[v2I][1]-
-	vertexData[v1I][1]*vertexData[v2I][0];
+				vertexData[v1I][1]*vertexData[v2I][0];
     }
     cellVolume = 0.5*cellVolume;
     double factor=0.5*parameter(0);
     if( cellVolume<0.0 ) 
-      factor =-factor;
-    
+      factor = -factor;
+    if (parameter(1)==1)
+			factor /= std::fabs(cellVolume);
+
     for( size_t k=0 ; k<tmpCell.numVertex() ; ++k ) {
       size_t v1I = tmpCell.vertex(k)->index();
       size_t v1PlusI = tmpCell.vertex((k+1)%(tmpCell.numVertex()))->index();

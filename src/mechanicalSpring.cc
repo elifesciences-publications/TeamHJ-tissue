@@ -275,7 +275,7 @@ derivs(Tissue &T,
 			c1Fac = std::fabs(c1Fac)/(c1Norm*distance);
 		}
 		else
-			c1Fac = 0.5;//1.0;
+			c1Fac = 1.0;//0.5
 		if( T.wall(i).cell2() != T.background() &&
 				cellData[T.wall(i).cell2()->index()][directionIndex+dimension]>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
@@ -283,7 +283,7 @@ derivs(Tissue &T,
 			c2Fac = std::fabs(c2Fac)/(c2Norm*distance);
 		}
 		else
-			c2Fac = 0.5;//1.0;
+			c2Fac = 1.0;//0.5
 		
     double wallLength=wallData[i][wallLengthIndex];
     double coeff = (parameter(0)+parameter(1)*(2.0-c1Fac-c2Fac))*
@@ -334,7 +334,7 @@ VertexFromWallSpringMTSpatial(std::vector<double> &paraValue,
 			|| (indValue.size()==2 && indValue[1].size() != 1) ) {
     std::cerr << "VertexFromWallSpringMTSpatial::"
 							<< "VertexFromWallSpringMTSpatial() "
-							<< "Wall length index, MT direction start index and spatial coordinate given in"
+							<< "Wall length index, MT direction start index and spatial max index given in"
 							<< " first level, and optionally wall variable save index in second."
 							<< std::endl;
     exit(0);
@@ -373,13 +373,20 @@ derivs(Tissue &T,
 	size_t dimension = vertexData[0].size();
   
 	// Initiate positional factor
-	size_t sI = variableIndex(0,2);
 	size_t numVertices = T.numVertex();
+	size_t sI=variableIndex(0,2);
 	assert (sI<vertexData[0].size());
 	double max = vertexData[0][sI];
+	size_t maxI=0;
 	for (size_t i=1; i<numVertices; ++i)
-		if (vertexData[i][sI]>max)
+		if (vertexData[i][sI]>max) {
 			max=vertexData[i][sI];
+			maxI=i;
+		}
+	std::vector<double> maxPos(dimension);
+	for (size_t d=0; d<dimension; ++d)
+		maxPos[d] = vertexData[maxI][d];
+
 	
 	// Calculate update from each wall
   for( size_t i=0 ; i<numWalls ; ++i ) {
@@ -429,9 +436,13 @@ derivs(Tissue &T,
 		double mtFactor = (parameter(1)+parameter(2)*(2.0-c1Fac-c2Fac));
 		
 		//Calculate positional factor
-		double pos = 0.5*(vertexData[v1][sI]+vertexData[v2][sI]);
-		double posFactor = max-pos;
-		posFactor = std::pow(posFactor,parameter(4));
+		double maxDistance=0.0;
+		for (size_t d=0; d<dimension; ++d) {
+			double pos = 0.5*(vertexData[v1][d]+vertexData[v2][d]);
+			maxDistance += (maxPos[d]-pos)*(maxPos[d]-pos);
+		}
+		maxDistance = std::sqrt(distance);
+		double posFactor = std::pow(maxDistance,parameter(4));
 		
 		double wallLength=wallData[i][wallLengthIndex];
 		double coeff = ((1.0/wallLength)-(1.0/distance));
