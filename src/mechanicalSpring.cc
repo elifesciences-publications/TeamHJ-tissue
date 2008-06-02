@@ -148,7 +148,7 @@ derivs(Tissue &T,
 	size_t numVertices = T.numVertex();
 	assert (sI<vertexData[0].size());
 	double max = vertexData[0][sI];
-	double maxI = 0;
+	size_t maxI = 0;
 	for (size_t i=1; i<numVertices; ++i)
 		if (vertexData[i][sI]>max) {
 			max=vertexData[i][sI];
