@@ -44,6 +44,13 @@ int setWallVariable(Tissue &T,std::vector<double> &p,std::string &type);
 ///
 int minimalWallLength(Tissue &T,std::vector<double> &p);
 ///
+/// @brief Adjust wall resting lengths such that all walls have a length above a threshold value.
+///
+/// p[0] sets a threshold, and all wall resting lengths are adjusted such that all walls are at 
+/// most p[0] in resting length.
+///
+int maximalWallLength(Tissue &T,std::vector<double> &p);
+///
 /// @brief Sets all wall lengths to be equal to a factor times the distance between the vertices.
 ///
 int wallLengthFromDistance(Tissue &T,std::vector<double> &p);
@@ -115,29 +122,32 @@ int main(int argc,char *argv[]) {
 	std::vector<double> p;
 	std::string type("uniform");
 	
-	p.resize(2);
-	p[0]=0.0;
-	p[1]=0;
+	//p.resize(2);
+	//p[0]=0.0;
+	//p[1]=0;
 	//type = new std::string("uniform");
-	setWallVariable(T,p,type);
+	//setWallVariable(T,p,type);
 
 	p.resize(1);
-	//addWallVariable(T,p,type);
-	//addWallVariable(T,p,type);
+	addWallVariable(T,p,type);
+	addWallVariable(T,p,type);
 	
-	//p[0] = 0.0;
-	//addCellVariable(T,p,type);
- 	//addCellVariable(T,p,type);
- 	//p[0] = 1.0;
- 	//addCellVariable(T,p,type);
- 	//addCellVariable(T,p,type);
- 	//addCellVariable(T,p,type);
+	p[0] = 0.0;
+	addCellVariable(T,p,type);
+ 	addCellVariable(T,p,type);
+ 	p[0] = 1.0;
+ 	addCellVariable(T,p,type);
+ 	addCellVariable(T,p,type);
+ 	addCellVariable(T,p,type);
 	
-	p[0]=0.3;
+	p[0]=1.0;
 	minimalWallLength(T,p);
 	
 	p[0]=1.0;
 	wallLengthFromDistance(T,p);
+
+	p[0]=10.0;
+	maximalWallLength(T,p);
 
 	//
   // Print init in specified format
@@ -209,6 +219,7 @@ int setWallVariable(Tissue &T,std::vector<double> &p,std::string &type)
 int minimalWallLength(Tissue &T,std::vector<double> &p)
 {
 	assert( p.size()==1 );
+	int count=0;
 	size_t numW=T.numWall();
 	for (size_t i=0; i<numW; ++i) {
 		double distance=0.0;
@@ -234,8 +245,38 @@ int minimalWallLength(Tissue &T,std::vector<double> &p)
 			}
 			v1->setPosition( v1New );
 			v2->setPosition( v2New );
+			++count;
 		}
 	}
+	std::cerr << "minimalWallLength(T,p) adjusted (lengthened) " << count 
+						<< " walls to length " << p[0] << " by moving vertices." << std::endl;	
+	return 0;
+}
+
+int maximalWallLength(Tissue &T,std::vector<double> &p)
+{
+	assert( p.size()==1 );
+	int count=0;
+	size_t numW=T.numWall();
+	for (size_t i=0; i<numW; ++i) {
+		double distance=0.0;
+		Vertex *v1=T.wall(i).vertex1();
+		Vertex *v2=T.wall(i).vertex2();
+		size_t dimension=v1->numPosition();
+		std::vector<double> n(dimension);
+		for (size_t d=0; d<dimension; ++d) {
+			distance += ((v2->position(d) - v1->position(d)) *
+									 (v2->position(d) - v1->position(d)));
+			n[d] = v2->position(d) - v1->position(d);
+		}
+		distance = std::sqrt(distance);
+		if (distance>p[0]) {
+			T.wall(i).setLength( p[0] );
+			++count;
+		}
+	}
+	std::cerr << "maximalWallLength(T,p) adjusted (shortened) " << count 
+						<< " walls to resting length " << p[0] << std::endl;
 	return 0;
 }
 
