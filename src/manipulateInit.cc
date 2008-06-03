@@ -54,6 +54,12 @@ int maximalWallLength(Tissue &T,std::vector<double> &p);
 /// @brief Sets all wall lengths to be equal to a factor times the distance between the vertices.
 ///
 int wallLengthFromDistance(Tissue &T,std::vector<double> &p);
+///
+/// @brief Removes all 2-vertices and adjust the tissue accordingly
+///
+/// A 2-vertex is only connected to two walls (cells) which could be replaced with a single wall.
+///
+int removeTwoVertices(Tissue &T,std::vector<double> &p);
 
 
 int main(int argc,char *argv[]) {
@@ -295,4 +301,14 @@ int wallLengthFromDistance(Tissue &T,std::vector<double> &p)
 		T.wall(i).setLength(p[0]*distance);
 	}
 	return 0;
+}
+
+int removeTwoVertices(Tissue &T,std::vector<double> &p) 
+{
+	assert( p.size()==0 );
+	size_t numV=T.numVertex();
+	for (size_t i=0; i<numV; ++i) {
+		if (T.vertex(i).numWall()==2)
+			T.removeTwoVertex(i);
+	}
 }

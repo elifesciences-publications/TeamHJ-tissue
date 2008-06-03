@@ -2366,6 +2366,31 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 	//checkConnectivity(1);
 }
 
+void Tissue::removeTwoVertex( size_t index ) 
+{
+	if (vertex(i).numWall() != 2) {
+		std::cerr << "Tissue::removeTwoVertex() Vertex not a two-vertex, not removed!" 
+							<< std::endl;
+		return;
+	}
+	Vertex* v=vertex(i);
+	Wall* w1=vertex(i).wall(0);
+	Wall* w2=vertex(i).wall(1);
+	assert(v->numCell()==2);
+	Cell* c1=vertex(i).cell(0);
+	Cell* c2=vertex(i).cell(1);
+	// Get 'neighboring' vertices from walls
+	Vertex* v1=w1->vertex1();
+	if (v1==v)
+		v1=w1->vertex2();
+	Vertex* v2=w2->vertex1();
+	if (v2==v)
+		v2=w2->vertex2();
+
+	// Remove v,w2 from c1 and c2 (if not background)
+
+}
+
 void Tissue::sortCellWallAndCellVertex(Cell *cell) 
 {	
 	std::cerr << "Tissue::sortCellWallAndCellVertex()" << std::endl;

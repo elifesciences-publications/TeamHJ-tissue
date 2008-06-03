@@ -101,6 +101,14 @@ class Tissue {
 	inline size_t numDimension();
   inline void addVertex( Vertex val );
   inline void removeVertex( size_t index );
+	///
+	/// @brief Removes a two-vertex and updates connecting walls and cells.
+	///
+	/// A two-vertex has only two connected walls (cells). This function removes
+	/// such a vertex, and merge the two connecting walls into one, and removes
+	/// the connections to the vertex from connecting cells.
+	///
+  inline void removeTwoVertex( size_t index );
   inline BaseReaction* reaction(size_t i) const;
   inline BaseCompartmentChange* compartmentChange(size_t i) const;
   
