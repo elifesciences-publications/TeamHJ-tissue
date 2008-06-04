@@ -1097,7 +1097,8 @@ derivs(Tissue &T,
 				cellData[T.wall(i).cell1()->index()][directionIndex+dimension]>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
 				c1Fac += n_c1[d]*n_w[d];
-			c1Fac = std::fabs(c1Fac)/(c1Norm*distance);
+			c1Fac /= (c1Norm*distance);
+			c1Fac = c1Fac*c1Fac;
 			double conc=cellData[T.wall(i).cell1()->index()][variableIndex(1,0)];
 			c1FacConc = KPow/(KPow+std::pow(conc,parameter(4)));
 		}
@@ -1107,7 +1108,8 @@ derivs(Tissue &T,
 				cellData[T.wall(i).cell2()->index()][directionIndex+dimension]>0.5 ) {
 			for( size_t d=0 ; d<dimension ; d++ )		
 				c2Fac += n_c2[d]*n_w[d];
-			c2Fac = std::fabs(c2Fac)/(c2Norm*distance);
+			c2Fac /= (c2Norm*distance);
+			c2Fac = c2Fac*c2Fac;
 			double conc=cellData[T.wall(i).cell2()->index()][variableIndex(1,0)];
 			c1FacConc = KPow/(KPow+std::pow(conc,parameter(4)));
 		}

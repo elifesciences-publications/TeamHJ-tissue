@@ -2368,17 +2368,21 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 
 void Tissue::removeTwoVertex( size_t index ) 
 {
-	if (vertex(i).numWall() != 2) {
+	if (vertex(index).numWall() != 2) {
 		std::cerr << "Tissue::removeTwoVertex() Vertex not a two-vertex, not removed!" 
 							<< std::endl;
 		return;
 	}
-	Vertex* v=vertex(i);
-	Wall* w1=vertex(i).wall(0);
-	Wall* w2=vertex(i).wall(1);
-	assert(v->numCell()==2);
-	Cell* c1=vertex(i).cell(0);
-	Cell* c2=vertex(i).cell(1);
+	Vertex* v=vertexP(index);
+	Wall* w1=vertex(index).wall(0);
+	Wall* w2=vertex(index).wall(1);
+	assert(v->numCell()==1 || v->numCell()==2);
+	Cell* c1=vertex(index).cell(0);
+	Cell* c2;
+	if (v->numCell()==2)
+		c2=vertex(index).cell(1);
+	else
+		c2=background();
 	// Get 'neighboring' vertices from walls
 	Vertex* v1=w1->vertex1();
 	if (v1==v)
@@ -2386,9 +2390,83 @@ void Tissue::removeTwoVertex( size_t index )
 	Vertex* v2=w2->vertex1();
 	if (v2==v)
 		v2=w2->vertex2();
-
+	
 	// Remove v,w2 from c1 and c2 (if not background)
-
+	if (c1!=background()) {
+		size_t numW=c1->numWall();
+		size_t numV=c1->numVertex();
+		assert(numW>3 && numW==numV);
+		std::vector<Vertex*> newV(numV-1);
+		std::vector<Wall*> newW(numV-1);
+		size_t vI=0;
+		size_t wI=0;
+		for (size_t i=0; i<numV; ++i) {
+			if (c1->vertex(i) != v)
+				newV[vI++]=c1->vertex(i);
+			if (c1->wall(i) != w2)
+				newW[wI++]=c1->wall(i);
+		}
+		if (vI!=numV-1 || wI!=numW-1) {
+			std::cerr << "Tissue::removeTwoVertex Vertex or wall to be removed not found in cell."
+								<< std::endl;
+			std::cerr << "Cell: " << c1->index() << " NumVertex(wall): " << c1->numVertex() << " ("
+								<< c1->numWall() << ") Vertex: " << v->index() << " Wall: "
+								<< w2->index() << " vI: " << vI << " wI: " << wI << std::endl;
+			exit(-1);
+		}
+		c1->setVertex(newV);
+		c1->setWall(newW);
+	}		
+	if (c2!=background()) {
+		size_t numW=c2->numWall();
+		size_t numV=c2->numVertex();
+		assert(numW>3 && numW==numV);
+		std::vector<Vertex*> newV(numV-1);
+		std::vector<Wall*> newW(numV-1);
+		size_t vI=0;
+		size_t wI=0;
+		for (size_t i=0; i<numV; ++i) {
+			if (c2->vertex(i) != v)
+				newV[vI++]=c2->vertex(i);
+			if (c2->wall(i) != w2)
+				newW[wI++]=c2->wall(i);
+		}
+		if (vI!=numV-1 || wI!=numW-1) {
+			std::cerr << "Tissue::removeTwoVertex Vertex or wall to be removed not found in cell."
+								<< std::endl;
+			std::cerr << "Cell: " << c2->index() << " NumVertex(wall): " << c2->numVertex() << " ("
+								<< c2->numWall() << ") Vertex: " << v->index() << " Wall: "
+								<< w2->index() << " vI: " << vI << " wI: " << wI << std::endl;
+			exit(-1);
+		}
+		c2->setVertex(newV);
+		c2->setWall(newW);
+	}		
+	// Update w1
+	if (w1->vertex1()==v && w1->vertex2()==v1)
+		w1->setVertex1(v2);
+	else if (w1->vertex2()==v && w1->vertex1()==v1)
+		w1->setVertex2(v2);
+	else {
+		std::cerr << "Tissue::removeTwoVertex() Wrong in updating wall." << std::endl; 
+		exit(-1);
+	}
+	// update w1 length?
+	// Update v2 to connect to w1 instead of w2
+	size_t numW=v2->numWall();
+	size_t updateFlag=0;
+	for (size_t i=0; i<numW; ++i)
+		if (v2->wall(i)==w2) {
+			v2->setWall(i,w1);
+			++updateFlag;
+		}
+	if (updateFlag!=1) {
+		std::cerr << "Tissue::removeTwoVertex() Update of v2 wrong." << std::endl;
+		exit(-1);
+	}
+	// Remove v and w2
+	removeVertex(v->index());
+	removeWall(w2->index());
 }
 
 void Tissue::sortCellWallAndCellVertex(Cell *cell) 

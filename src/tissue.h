@@ -108,7 +108,7 @@ class Tissue {
 	/// such a vertex, and merge the two connecting walls into one, and removes
 	/// the connections to the vertex from connecting cells.
 	///
-  inline void removeTwoVertex( size_t index );
+  void removeTwoVertex( size_t index );
   inline BaseReaction* reaction(size_t i) const;
   inline BaseCompartmentChange* compartmentChange(size_t i) const;
   

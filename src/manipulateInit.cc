@@ -134,26 +134,28 @@ int main(int argc,char *argv[]) {
 	//type = new std::string("uniform");
 	//setWallVariable(T,p,type);
 
+	//p.resize(0);
+	//removeTwoVertices(T,p);
+	//p.resize(1);
+	//addWallVariable(T,p,type);
+	//addWallVariable(T,p,type);
+	//p[0] = 0.0;
+	//addCellVariable(T,p,type);
+ 	//addCellVariable(T,p,type);
+ 	//p[0] = 1.0;
+ 	//addCellVariable(T,p,type);
+ 	//addCellVariable(T,p,type);
+ 	//addCellVariable(T,p,type);
+	
+	//p[0]=1.0;
+	//minimalWallLength(T,p);
+	
 	p.resize(1);
-	addWallVariable(T,p,type);
-	addWallVariable(T,p,type);
-	
-	p[0] = 0.0;
-	addCellVariable(T,p,type);
- 	addCellVariable(T,p,type);
- 	p[0] = 1.0;
- 	addCellVariable(T,p,type);
- 	addCellVariable(T,p,type);
- 	addCellVariable(T,p,type);
-	
-	p[0]=1.0;
-	minimalWallLength(T,p);
-	
 	p[0]=1.0;
 	wallLengthFromDistance(T,p);
 
-	p[0]=10.0;
-	maximalWallLength(T,p);
+	//p[0]=10.0;
+	//maximalWallLength(T,p);
 
 	//
   // Print init in specified format
@@ -306,9 +308,9 @@ int wallLengthFromDistance(Tissue &T,std::vector<double> &p)
 int removeTwoVertices(Tissue &T,std::vector<double> &p) 
 {
 	assert( p.size()==0 );
-	size_t numV=T.numVertex();
-	for (size_t i=0; i<numV; ++i) {
+	for (size_t i=0; i<T.numVertex(); ++i) {
 		if (T.vertex(i).numWall()==2)
-			T.removeTwoVertex(i);
+			T.removeTwoVertex(i--);
 	}
+	return 0;
 }
