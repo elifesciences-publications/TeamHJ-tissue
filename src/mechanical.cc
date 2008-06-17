@@ -1745,6 +1745,9 @@ derivs(Tissue &T,
 				vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
 			}
 		}	
+		// For saving normals in direction used for test plotting
+		//for (size_t d=0; d<dimension; ++d)
+		//cellData[cell.index()][d] = normal[d];
 	}
 	//std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
 	//				<< std::endl;

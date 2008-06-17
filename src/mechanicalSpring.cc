@@ -985,7 +985,7 @@ derivs(Tissue &T,
 		}
 		if( T.wall(i).cell2() != T.background() ) {
 			double conc = cellData[T.wall(i).cell2()->index()][concentrationIndex];
-			c1Fac = KPow/(KPow+std::pow(conc,parameter(3)));
+			c2Fac = KPow/(KPow+std::pow(conc,parameter(3)));
 		}
 		
     double wallLength=wallData[i][wallLengthIndex];
@@ -1111,7 +1111,7 @@ derivs(Tissue &T,
 			c2Fac /= (c2Norm*distance);
 			c2Fac = c2Fac*c2Fac;
 			double conc=cellData[T.wall(i).cell2()->index()][variableIndex(1,0)];
-			c1FacConc = KPow/(KPow+std::pow(conc,parameter(4)));
+			c2FacConc = KPow/(KPow+std::pow(conc,parameter(4)));
 		}
 		else
 			c2Fac = 0.5;//1.0;

@@ -48,6 +48,13 @@ class Wall {
   inline Vertex* vertex1() const;
   inline Vertex* vertex2() const;
   inline double length() const;
+	///
+	/// @brief Returns the wall length calculated from the vertex positions stored in T.vertex()
+	///
+  double lengthFromVertexPosition();
+	///
+	/// @brief Returns the wall length calculated from the vertex positions in vertexData
+	///
   double lengthFromVertexPosition( std::vector< std::vector<double> > 
 																	 &vertexData);
   inline size_t numVariable() const;

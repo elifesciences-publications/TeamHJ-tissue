@@ -60,6 +60,23 @@ int wallLengthFromDistance(Tissue &T,std::vector<double> &p);
 /// A 2-vertex is only connected to two walls (cells) which could be replaced with a single wall.
 ///
 int removeTwoVertices(Tissue &T,std::vector<double> &p);
+///
+/// @brief Scales space (vertex positions and wall resting lengths) such that
+/// the maximal area is about p[0]
+///
+/// Scales vertex positions and wall resting lengths with a factor
+/// sqrt(p[0])/sqrt(A_{max}) where A_{max} is the maximal area of a cell.
+///
+int scaleSpaceToMaxArea(Tissue &T,std::vector<double> &p);
+///
+/// @brief Scales space (vertex positions and wall resting lengths) such that
+/// the maximal wall length is p[0]
+///
+/// Scales vertex positions and wall resting lengths with a factor
+/// p[0]/l_{max} where l_{max} is the maximal length of a wall (defined from
+/// its two vertex positions).
+///
+int scaleSpaceToMaxWallLength(Tissue &T,std::vector<double> &p);
 
 
 int main(int argc,char *argv[]) {
@@ -136,7 +153,9 @@ int main(int argc,char *argv[]) {
 
 	//p.resize(0);
 	//removeTwoVertices(T,p);
+
 	//p.resize(1);
+	//p[0]=0.0;
 	//addWallVariable(T,p,type);
 	//addWallVariable(T,p,type);
 	//p[0] = 0.0;
@@ -147,8 +166,12 @@ int main(int argc,char *argv[]) {
  	//addCellVariable(T,p,type);
  	//addCellVariable(T,p,type);
 	
-	//p[0]=1.0;
-	//minimalWallLength(T,p);
+	p.resize(1);
+	p[0]=3.0;
+	scaleSpaceToMaxArea(T,p);
+
+	p[0]=0.2;
+	minimalWallLength(T,p);
 	
 	p.resize(1);
 	p[0]=1.0;
@@ -312,5 +335,66 @@ int removeTwoVertices(Tissue &T,std::vector<double> &p)
 		if (T.vertex(i).numWall()==2)
 			T.removeTwoVertex(i--);
 	}
+	return 0;
+}
+
+int scaleSpaceToMaxArea(Tissue &T,std::vector<double> &p)
+{
+	assert( p.size()==1 );
+	// Find maximal area
+	double maxA=0.0;
+	size_t numC = T.numCell();
+	for (size_t i=0; i<numC; ++i) {
+		double tmpA = T.cell(i).calculateVolume();
+		if (tmpA>maxA)
+			maxA=tmpA;
+	}
+	assert(maxA>0.0);
+	// Rescale space with a factor sqrt(p)/sqrt(maxA)
+	// space is in vector positions and wall lengths
+	double scaleFactor = std::sqrt(p[0]/maxA);
+	size_t numV = T.numVertex();
+	size_t numW = T.numWall();
+	size_t dimension = T.vertex(0).numPosition();
+	std::vector<double> tmpPosition(dimension);
+	for (size_t i=0; i<numV; ++i) {
+		for (size_t d=0; d<dimension; ++d)
+			tmpPosition[d] = scaleFactor*T.vertex(i).position(d);
+		T.vertex(i).setPosition(tmpPosition);
+	}
+	for (size_t i=0; i<numW; ++i)
+		T.wall(i).setLength(scaleFactor*T.wall(i).length());
+
+	std::cerr << "Scaled maximal area from " << maxA << " to ~" << p[0] << std::endl;
+	return 0;
+}
+
+int scaleSpaceToMaxWallLength(Tissue &T,std::vector<double> &p)
+{
+	assert( p.size()==1 );
+	// Find maximal wall length (from vertex positions)
+	double maxL=0.0;
+	size_t numW = T.numWall();
+	for (size_t i=0; i<numW; ++i) {
+		double tmpL = T.wall(i).lengthFromVertexPosition();
+		if (tmpL>maxL)
+			maxL=tmpL;
+	}
+	assert(maxL>0.0);
+	// Rescale space with a factor p/maxL
+	// space is in vector positions and wall lengths
+	double scaleFactor = p[0]/maxL;
+	size_t numV = T.numVertex();
+	size_t dimension = T.vertex(0).numPosition();
+	std::vector<double> tmpPosition(dimension);
+	for (size_t i=0; i<numV; ++i) {
+		for (size_t d=0; d<dimension; ++d)
+			tmpPosition[d] = scaleFactor*T.vertex(i).position(d);
+		T.vertex(i).setPosition(tmpPosition);
+	}
+	for (size_t i=0; i<numW; ++i)
+		T.wall(i).setLength(scaleFactor*T.wall(i).length());
+	
+	std::cerr << "Scaled maximal wallDistance from " << maxL << " to ~" << p[0] << std::endl;
 	return 0;
 }

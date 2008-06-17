@@ -62,9 +62,16 @@ setLengthFromVertexPosition( std::vector< std::vector<double> >
   return length();
 }
 
-///
-/// @brief Returns the wall length calculated from the vertex positions
-///
+double Wall::lengthFromVertexPosition()
+{
+  size_t dimension = vertex1()->numPosition();
+  double distance=0.0;
+  for( size_t d=0 ; d<dimension ; ++d )
+    distance += ( vertex1()->position(d)-vertex2()->position(d) ) *
+			( vertex1()->position(d)-vertex2()->position(d) );
+  return std::sqrt(distance);
+}
+
 double Wall::lengthFromVertexPosition( std::vector< std::vector<double> > 
 																			 &vertexData)
 {
