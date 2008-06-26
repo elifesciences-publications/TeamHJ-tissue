@@ -1064,3 +1064,97 @@ update(Tissue &T, double h,
 		exit(EXIT_FAILURE);
 	}
 }
+
+VertexStressDirection::
+VertexStressDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 1) {
+		std::cerr << "VertexStressDirection::VertexStressDirection() " 
+		<< "One parameter is used orientation_flag (0 for direction parallel with "
+		<< "stress, 1 for direction perpendicular to stress)" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 1 || indValue[0].size() != 1) {
+		std::cerr << "VertexStressDirection::VertexStressDirection() \n"
+		<< "First level: Start of cell direction index are used.\n";
+		exit(EXIT_FAILURE);
+	}
+	
+	setId("VertexStressDirection");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize(numParameter());
+	tmp[0] = "orientation_flag";
+	setParameterId(tmp);
+}
+  
+void VertexStressDirection::initiate(Tissue &T,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs)
+{
+	// No initialization
+}
+
+void VertexStressDirection::update(Tissue &T, double h,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs)
+{
+ 	size_t dimensions = vertexData[0].size();
+
+	for (size_t n = 0; n < T.numCell(); ++n) {
+		Cell cell = T.cell(n);
+
+		double S = 0.0;
+		double C = 0.0;
+
+		// Check direction flag. Do we have a direction?
+		if (cellData[cell.index()][variableIndex(0, 0) + dimensions] == 0) {
+			continue;
+		}
+
+		std::vector< std::vector<double> > E = cell.getPCAPlane();
+		
+		for (size_t i = 0; i < cell.numVertex(); ++i) {
+			Vertex *vertex = cell.vertex(i);
+			
+			std::vector<double> stressDirection = vertex->getStressDirection();
+
+			double x = 0.0;
+			double y = 0.0;
+			
+			for (size_t j = 0; j < dimensions; ++j) {
+				x += stressDirection[j] * E[0][j];
+				y += stressDirection[j] * E[1][j];
+			}
+
+			double angle = 2.0 * std::atan2(y, x);
+			
+			S += std::sin(angle);
+			C += std::cos(angle);
+		}
+
+		double direction = 0.5 * std::atan2(S, C);
+
+		if (parameter(0) == 1) {
+			direction += 0.5 * M_PI;
+		}
+
+		for (size_t i = 0; i < dimensions; ++i) {
+			cellData[cell.index()][variableIndex(0, 0) + i] = std::cos(direction) * E[0][i] + std::sin(direction) * E[1][i];
+		}
+	}
+}
+
+
+

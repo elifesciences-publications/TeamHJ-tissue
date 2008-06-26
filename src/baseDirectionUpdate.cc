@@ -37,6 +37,8 @@ BaseDirectionUpdate::createDirectionUpdate(std::vector<double> &paraValue,
 	  return new StretchDirection(paraValue, indValue);
   else if (idValue == "PCAPlaneDirection")
 	  return new PCAPlaneDirection(paraValue, indValue);
+  else if (idValue == "VertexStressDirection")
+	  return new VertexStressDirection(paraValue, indValue);
   //Default, if nothing found
   else {
 	  std::cerr << "\nBaseDirectionUpdate::createDirectionUpdate() WARNING: DirectionUpdatetype "

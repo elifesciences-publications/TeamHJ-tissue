@@ -171,6 +171,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new InitiateWallMesh(paraValue,indValue); 
   else if(idValue=="StrainTest")
     return new StrainTest(paraValue,indValue); 
+  else if(idValue=="CalculateVertexStressDirection")
+	  return new CalculateVertexStressDirection(paraValue,indValue); 
 	
   //Default, if nothing found
   else {

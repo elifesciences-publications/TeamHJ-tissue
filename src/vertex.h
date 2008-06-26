@@ -31,6 +31,8 @@ class Vertex {
   
   std::vector<double> position_;
   
+	/** The stress direction. */
+	std::vector<double> stressDirection_;
   
  public:
   
@@ -95,6 +97,13 @@ class Vertex {
 	///
 	/// @return 1 if boundary and 0 otherwise.
 	int isBoundary(Cell *background) const;
+
+	/** Calculate stress direction for the vertex. */
+	void calculateStressDirection(std::vector< std::vector<double> > &vertexData, 
+		std::vector< std::vector<double> > &wallData, std::vector<size_t> wallForceIndexes);
+
+	/** Get stress direction for the vertex. */ 
+	std::vector<double> getStressDirection(void) const;
 };
 
 inline size_t Vertex::index() const { return index_; }

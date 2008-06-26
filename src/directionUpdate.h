@@ -218,4 +218,26 @@ public:
 							std::vector< std::vector<double> > &vertexDerivs);
 };
 
+class VertexStressDirection : public BaseDirectionUpdate
+{
+public:
+	VertexStressDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
+	
+	void initiate(Tissue &T,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+	
+	void update(Tissue &T, double h,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+};
+
 #endif

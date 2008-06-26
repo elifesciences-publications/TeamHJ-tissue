@@ -641,3 +641,75 @@ derivs(Tissue &T,
 		}
 	}	
 }
+
+CalculateVertexStressDirection::CalculateVertexStressDirection(std::vector<double> &paraValue, 
+	std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 1) {
+		std::cerr << "CalculateVertexStressDirection::CalculateVertexStressDirection() "
+		<< "Uses one parameter: onlyInUpdateFlag\n";
+		exit(0);
+	}
+	
+	if (indValue.size() != 1) {
+		std::cerr << "CalculateVertexStressDirection::CalculateVertexStressDirection() "
+		<< "Wall force indexes.\n";
+		exit(0);
+	}
+	
+	setId("CalculateVertexStressDirection");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp[0] = "onlyInUpdateFlag";
+	setParameterId(tmp);
+
+	for (size_t i = 0; i < indValue[0].size(); ++i) {
+		wallForceIndexes_.push_back(indValue[0][i]);
+	}
+}
+
+void CalculateVertexStressDirection::initiate(Tissue &T,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData)
+{
+	if (parameter(0) == 1.0) {
+		size_t numVertex = T.numVertex();
+		
+		for (size_t i = 0; i < numVertex; ++i) {
+			T.vertex(i).calculateStressDirection(vertexData, wallData, wallForceIndexes_);
+		}
+	}
+}
+
+void CalculateVertexStressDirection::derivs(Tissue &T,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs) 
+{
+	if (parameter(0) != 1.0) {
+		size_t numVertex = T.numVertex();
+		for (size_t i=0; i<numVertex; ++i) {
+			T.vertex(i).calculateStressDirection(vertexData, wallData, wallForceIndexes_);
+		}
+	}
+}
+
+void CalculateVertexStressDirection::update(Tissue &T,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	double h)
+{
+	if (parameter(0) == 1.0) {
+		size_t numVertex = T.numVertex();
+		for (size_t i=0; i<numVertex; ++i) {
+			T.vertex(i).calculateStressDirection(vertexData, wallData, wallForceIndexes_);
+		}
+	}
+}

@@ -1,58 +1,74 @@
-all : ../bin/simulatorNew
-#../bin/optimizer
+# Makefile copied from organism.
 
-# C++ Compiler
-CXX = c++
+# This Makefile should automatically keeps track of dependencies in the
+# code. It saves dependencies in *.d files and includes them whenever
+# necessary. The dependency part is based on Scott McPeak's Makefile at
+# http://www.cs.berkeley.edu/~smcpeak/autodepend/autodepend.html. The
+# other parts are based on Simon's Makefile and tons of obscure
+# webpages I no longer recall.  
+#
+#'make' build executable files
+# 	'bin/simulator' and 'bin/optimizer' 
+#
+#'make debug'	Compiles with -g and no optimization 
+#
+#'make gprof'	Compiles with -pg and no optimization 
+#
+#'make clean' 	removes all .o, executables and .d 
 
-BINDIR = ../bin
+SHELL = /bin/sh
+#Compilers and flags
+CXX = g++
+CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi -static
+LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi -static    
 
-# Optimized
-CXXFLAGS     = -O3 -DNDEBUG -funroll-loops -Wall -ansi -pedantic
-LDFLAGS    = -O3 -DNDEBUG -funroll-loops -Wall -ansi -pedantic
+#Sourcefiles etc.
+SIM_SRC = simulatorNew.cc
+SIM_OBJ = $(SIM_SRC:.cc=.o)
+SRC_DIR = ./
+SRCS := $(wildcard $(SRC_DIR:/=/*.cc))
+OBJS = $(SRCS:.cc=.o)
+DEP = makedep.rule
 
-#CXXFLAGS     = -O3 -funroll-loops -Wall -ansi -pedantic
-#LDFLAGS    = -O3 -funroll-loops -Wall -ansi -pedantic
+#Binaries
+SIMULATOR = ../bin/simulatorNew
 
-# Including all assert calls
-#CXXFLAGS     = -O3
-#LDFLAGS    = -O3
+all: $(SIMULATOR)
 
-# For compiling code for the cluster
-#CXXFLAGS     = -O3
-#LDFLAGS    = -O3 -static -all-static
+$(SIMULATOR): $(OBJS) $(SIM_OBJ)
+	$(CXX) $(SIM_OBJ) $(OBJS) $(LDFLAGS) -o $(SIMULATOR) 
 
-# for gprof time testing
-#CXXFLAGS     = -O3 -pg -DNDEBUG
-#LDFLAGS    = -O3 -pg -DNDEBUG
+$(SIM_OBJ) : $(SIM_SRC)
 
-#CPPPATH      = ~/include
-#LIBPATH      = ~/lib
+# pull in dependency info for *existing* .o files
+-include $(OBJS:.o=.d)
 
-# For development 
-# CXXFLAGS     = -O0 -Wall -ansi -pedantic -g
-# LDFLAGS    = -O0 -Wall -ansi -pedantic -g
+# Compile and generate dependency info.  The two first lines fixes a
+# bug in gcc(?), and prints dir/foo.o: dir/foo.cc... in the dependency
+# file instead of foo.o: dir/foo.cc... as is done by gcc. The other
+# two lines use a trick to get make to detect name changes etc.
+%.o: %.cc
+	$(CXX) -o $*.o -c $(CXXFLAGS) $*.cc
+	$(CXX) -MM $(CXXFLAGS) $*.cc > $*.d
+	@mv -f $*.d $*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
+	@rm -f $*.d.tmp
 
-# CXXFLAGS     = -O3 -Wall -ansi -pedantic -g
-# LDFLAGS    = -O3 -Wall -ansi -pedantic -g
-
-# List of object files.
-OBJECTS = tissue.o cell.o wall.o vertex.o baseReaction.o growth.o mechanical.o mechanicalSpring.o baseCompartmentChange.o compartmentDivision.o compartmentRemoval.o network.o direction.o baseDirectionUpdate.o baseDirectionDivision.o directionUpdate.o directionDivision.o myConfig.o myFiles.o myRandom.o myTimes.o mySignal.o rungeKutta.o baseSolver.o math.o
-
-# simulatorSolver
-
-../bin/simulatorNew : $(OBJECTS) simulatorNew.o
-	c++ simulatorNew.o $(OBJECTS) $(LDFLAGS) -o $(BINDIR)/simulatorNew
-
-#../bin/optimizer: $(OBJECTS) optimizer.o
-#	c++ optimizer.o $(OBJECTS) $(LDFLAGS) -o $(BINDIR)/optimizer
+debug:
+	make "CXXFLAGS = -g -pedantic -Wall -ansi" "LDFLAGS = -g -pedantic -Wall -ansi" 		
+gprof:
+	make "CXXFLAGS = -pg -pedantic -Wall -ansi" "LDFLAGS = -pg -pedantic -Wall -ansi" 		
 
 
-# Build rules
+.PHONY: clean
 
-simulator.o : simulator.cc
-#optimizer.o : optimizer.cc
-
-$(OBJECTS): %.o: %.cc %.h
-
-clean :
-	rm *.o
+clean:
+	rm -f $(OBJS)
+	rm -f $(SIM_OBJ)
+	rm -f $(OPT_OBJ)
+	rm -f $(SIMULATOR)
+	rm -f $(OPTIMIZER)
+	rm -f *.d
+	rm -f */*.d
