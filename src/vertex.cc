@@ -81,13 +81,26 @@ void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertex
 			force += wallForceIndexes[0];
 		}
 
+		std::vector<double> n(dimensions);
+		double A = 0.0;
+
 		for (size_t j = 0; j < dimensions; ++j) {
 			if (v1 == this) {
-				walls[i][j] = force * (vertexData[v2->index()][j] - vertexData[v1->index()][j]);
+				n[j] = vertexData[v2->index()][j] - vertexData[v1->index()][j];
 			} else {
-				walls[i][j] = force * (vertexData[v1->index()][j] - vertexData[v2->index()][j]);
+				n[j] = vertexData[v1->index()][j] - vertexData[v2->index()][j];
 			}
-			
+			A += n[j] * n[j];
+		}
+
+		A = std::sqrt(A);
+
+		for (size_t j = 0; j < dimensions; ++j) {
+			n[j] /= A;
+		}
+		
+		for (size_t j = 0; j < dimensions; ++j) {
+			walls[i][j] = force * n[j];
 			mean[j] += walls[i][j];
 		}
 	}
