@@ -31,14 +31,18 @@ BaseDirectionUpdate::createDirectionUpdate(std::vector<double> &paraValue,
     return new StrainDirectionWall(paraValue,indValue);
   else if(idValue=="GradientDirection")
     return new GradientDirection(paraValue,indValue);
-  else if (idValue == "ForceDirection")
-	  return new ForceDirection(paraValue, indValue);
+  else if (idValue == "WallStressDirection")
+	  return new WallStressDirection(paraValue, indValue);
   else if (idValue == "StretchDirection")
 	  return new StretchDirection(paraValue, indValue);
   else if (idValue == "PCAPlaneDirection")
 	  return new PCAPlaneDirection(paraValue, indValue);
   else if (idValue == "VertexStressDirection")
 	  return new VertexStressDirection(paraValue, indValue);
+  else if (idValue == "ForceDirection") {
+		std::cerr << "ForceDirection renamed into WallStressDirection." << std::endl;
+		exit(-1);
+	}
   //Default, if nothing found
   else {
 	  std::cerr << "\nBaseDirectionUpdate::createDirectionUpdate() WARNING: DirectionUpdatetype "

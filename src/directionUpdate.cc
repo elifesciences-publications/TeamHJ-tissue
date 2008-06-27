@@ -447,24 +447,24 @@ update(Tissue &T, double h,
   
 }
 
-ForceDirection::
-ForceDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
+WallStressDirection::
+WallStressDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
 {
 	if (paraValue.size() != 1) {
-		std::cerr << "ForceDirection::ForceDirection() " 
+		std::cerr << "WallStressDirection::WallStressDirection() " 
 							<< "One parameter is used orientation_flag (0 for direction parallel with "
 							<< "force, 1 for direction perpendicular to force)" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
 	if (indValue.size() != 2 || indValue[0].size() != 1) {
-		std::cerr << "ForceDirection::ForceDirection() \n"
+		std::cerr << "WallStressDirection::WallStressDirection() \n"
 							<< "First level: Start of cell direction index are used.\n"
 							<< "Second level: Wall force indices\n";
 		exit(EXIT_FAILURE);
 	}
 
-	setId("ForceDirection");
+	setId("WallStressDirection");
 	setParameter(paraValue);  
 	setVariableIndex(indValue);
 	
@@ -474,7 +474,7 @@ ForceDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> 
 	setParameterId(tmp);
 }
   
-void ForceDirection::initiate(Tissue &T,
+void WallStressDirection::initiate(Tissue &T,
 						std::vector< std::vector<double> > &cellData,
 						std::vector< std::vector<double> > &wallData,
 						std::vector< std::vector<double> > &vertexData,
@@ -485,7 +485,7 @@ void ForceDirection::initiate(Tissue &T,
 	// No initialization
 }
 
-void ForceDirection::update(Tissue &T, double h,
+void WallStressDirection::update(Tissue &T, double h,
 					   std::vector< std::vector<double> > &cellData,
 					   std::vector< std::vector<double> > &wallData,
 					   std::vector< std::vector<double> > &vertexData,
