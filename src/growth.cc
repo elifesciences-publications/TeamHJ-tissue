@@ -284,10 +284,6 @@ WallGrowthStressSpatial(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Derivative contribution for the growth
-/*! Deriving the time derivative contribution for the growth for all
-  walls in the tissue.
-*/
 void WallGrowthStressSpatial::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -306,7 +302,7 @@ derivs(Tissue &T,
 	assert (sI<vertexData[0].size());
 	size_t numVertices = vertexData.size();
 	double sMax= vertexData[0][sI];
-	double maxI=0;
+	size_t maxI=0;
   for (size_t i=1; i<numVertices; ++i)
 		if (vertexData[i][sI]>sMax) {
 			sMax=vertexData[i][sI];
@@ -411,10 +407,6 @@ WallGrowthStressSpatialSingle(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Derivative contribution for the growth
-/*! Deriving the time derivative contribution for the growth for all
-  walls in the tissue.
-*/
 void WallGrowthStressSpatialSingle::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
