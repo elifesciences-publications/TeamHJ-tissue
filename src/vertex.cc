@@ -78,7 +78,7 @@ void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertex
 
 		double force = 0.0;
 		for (size_t j = 0; j < wallForceIndexes.size(); ++j) {
-			force += wallForceIndexes[0];
+			force += wallData[w->index()][wallForceIndexes[j]];
 		}
 
 		std::vector<double> n(dimensions);
