@@ -103,6 +103,7 @@ void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertex
 			walls[i][j] = force * n[j];
 			mean[j] += walls[i][j];
 		}
+
 	}
 
  	for (size_t i = 0; i < dimensions; ++i) {
@@ -203,11 +204,9 @@ void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertex
  		}
  	}	
 
-	double angle = std::atan2(d[max1], d[max2]);
-
 	stressDirection_.resize(dimensions);
 	for (size_t i = 0; i < dimensions; ++i) {
-		stressDirection_[i] = std::cos(angle) * E_[0][i] + std::sin(angle) * E_[1][i];
+		stressDirection_[i] = d[max1] * E_[0][i] + d[max2] * E_[1][i];
 	}
 }
 

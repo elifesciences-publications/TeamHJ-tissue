@@ -1132,16 +1132,19 @@ void VertexStressDirection::update(Tissue &T, double h,
 
 			double x = 0.0;
 			double y = 0.0;
-			
+			double weight = 0.0;
+
 			for (size_t j = 0; j < dimensions; ++j) {
 				x += stressDirection[j] * E[0][j];
 				y += stressDirection[j] * E[1][j];
+				weight += stressDirection[j] * stressDirection[j];
 			}
-
-			double angle = 2.0 * std::atan2(y, x);
 			
-			S += std::sin(angle);
-			C += std::cos(angle);
+			double angle = 2.0 * std::atan2(y, x);
+			weight = std::sqrt(weight);
+
+			S += weight * std::sin(angle);
+			C += weight * std::cos(angle);
 		}
 
 		double direction = 0.5 * std::atan2(S, C);
