@@ -88,6 +88,10 @@ class Vertex {
 //!Sets the position from a vector
   inline void setPosition(std::vector<double> &pos);
 	///
+	/// @brief Sets a vertex position in dimension d.
+	///
+	inline void setPosition(size_t d, double pos);
+	///
 	/// @brief Check if the vertex is at the boundary of the tissue.
 	///
 	/// A boundary vertex is defined from whether any of the connected walls is
@@ -125,5 +129,6 @@ inline void Vertex::setWall( size_t index,Wall* val ) { wall_[index]=val; }
 inline void Vertex::setWall( std::vector<Wall*> &val ) { wall_=val; }
 inline void Vertex::addWall( Wall* val ) { wall_.push_back(val); }
 inline void Vertex::setPosition(std::vector<double> &pos) { position_=pos; }
+inline void Vertex::setPosition(size_t d,double pos) { position_[d]=pos; }
 
 #endif

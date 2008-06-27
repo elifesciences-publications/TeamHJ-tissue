@@ -356,7 +356,8 @@ void BaseSolver::print(std::ostream &os)
 		// For membrane PIN1 printing (version3)
 		//////////////////////////////////////////////////////////////////////
 		os << Nc << std::endl;
-		size_t auxinI=5,pinI=6,auxI=7,xI=8;
+		size_t pinI=6,xI=8;
+		//size_t auxinI=5,auxI=7;
 		std::vector<double> parameter(8);
 		parameter[0]=0.1;
 		for( size_t i=0 ; i<Nc ; ++i ) {

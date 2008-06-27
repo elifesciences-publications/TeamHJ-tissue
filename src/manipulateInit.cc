@@ -77,7 +77,26 @@ int scaleSpaceToMaxArea(Tissue &T,std::vector<double> &p);
 /// its two vertex positions).
 ///
 int scaleSpaceToMaxWallLength(Tissue &T,std::vector<double> &p);
-
+///
+/// @brief Flips a variable value around a given value
+///
+/// Takes a variable and flips the value for all cells/walls/vertices around a
+/// given value.
+///
+/// p[0] is a cell (0) wall (1) vertex (2) flag, p[1] is the variable index,
+/// and p[2] is the center value.
+///
+int flipVariable(Tissue &T,std::vector<double> &p);
+///
+/// @brief Translates a variable value with given value
+///
+/// Takes a variable and translates the value for all cells/walls/vertices
+/// such that the maximal (minimal) value is a given value.
+///
+/// p[0] is a cell (0) wall (1) vertex (2) flag, p[1] is the variable index,
+/// p[2] is the border value, and p[3] is the max (0) or min (1) flag.
+///
+int translateVariableToBorder(Tissue &T,std::vector<double> &p);
 
 int main(int argc,char *argv[]) {
 	
@@ -151,26 +170,58 @@ int main(int argc,char *argv[]) {
 	//type = new std::string("uniform");
 	//setWallVariable(T,p,type);
 
-	//p.resize(0);
-	//removeTwoVertices(T,p);
+	// For synthetic templates ///////////////////////
+	p.resize(0);
+	removeTwoVertices(T,p);
+	//////////////////////////////////////////////////
 
-	//p.resize(1);
-	//p[0]=0.0;
-	//addWallVariable(T,p,type);
-	//addWallVariable(T,p,type);
-	//p[0] = 0.0;
-	//addCellVariable(T,p,type);
- 	//addCellVariable(T,p,type);
- 	//p[0] = 1.0;
- 	//addCellVariable(T,p,type);
- 	//addCellVariable(T,p,type);
- 	//addCellVariable(T,p,type);
-	
 	p.resize(1);
-	p[0]=3.0;
+	// Wall variables 0 0
+	p[0]=0.0;
+	addWallVariable(T,p,type);
+	addWallVariable(T,p,type);
+	// Direction 1
+	p[0] = 0.0;
+	addCellVariable(T,p,type);
+ 	addCellVariable(T,p,type);
+ 	p[0] = 1.0;
+ 	addCellVariable(T,p,type);
+ 	addCellVariable(T,p,type);
+	// Direction 2
+	p[0] = 0.0;
+	addCellVariable(T,p,type);
+ 	addCellVariable(T,p,type);
+ 	p[0] = 1.0;
+ 	addCellVariable(T,p,type);
+ 	addCellVariable(T,p,type);
+	// Additional variables 1 1 0 1 1
+ 	addCellVariable(T,p,type);
+ 	addCellVariable(T,p,type);
+	p[0] = 0.0;
+ 	addCellVariable(T,p,type);
+	p[0] = 1.0;
+ 	addCellVariable(T,p,type);
+ 	addCellVariable(T,p,type);
+	
+	// For experimental template /////////////////////
+	//p.resize(3);
+	//p[0] = 2;// vertex
+	//p[1] = 2;// z
+	//p[2] = 0.0;// flip around 0
+	//flipVariable(T,p);
+	//p.resize(4);
+	//p[0] = 2;// vertex
+	//p[1] = 2;// z
+	//p[2] = 0.0;// move to 0
+	//p[3] = 1;// move min
+	//translateVariableToBorder(T,p);
+	//////////////////////////////////////////////////
+
+	p.resize(1);
+	p[0]=1.0;
 	scaleSpaceToMaxArea(T,p);
 
-	p[0]=0.2;
+	p[0]=0.1;
 	minimalWallLength(T,p);
 	
 	p.resize(1);
@@ -208,6 +259,8 @@ int addCellVariable(Tissue &T,std::vector<double> &p,std::string &type)
 		size_t numC=T.numCell();
 		for (size_t i=0; i<numC; ++i)
 			T.cell(i).addVariable(p[0]);
+		std::cerr << "addCellVariable() Uniform cell variable with value " << p[0] << " added."
+							<< std::endl;
 	}
 	else {
 		std::cerr << "addCellVariable does not accept type " << type << std::endl;
@@ -223,6 +276,8 @@ int addWallVariable(Tissue &T,std::vector<double> &p,std::string &type)
 		size_t numW=T.numWall();
 		for (size_t i=0; i<numW; ++i)
 			T.wall(i).addVariable(p[0]);
+		std::cerr << "addWallVariable() Uniform wall variable with value " << p[0] << " added."
+							<< std::endl;
 	}
 	else {
 		std::cerr << "addWallVariable does not accept type " << type << std::endl;
@@ -331,10 +386,14 @@ int wallLengthFromDistance(Tissue &T,std::vector<double> &p)
 int removeTwoVertices(Tissue &T,std::vector<double> &p) 
 {
 	assert( p.size()==0 );
+	int count=0;
 	for (size_t i=0; i<T.numVertex(); ++i) {
-		if (T.vertex(i).numWall()==2)
+		if (T.vertex(i).numWall()==2) {
 			T.removeTwoVertex(i--);
+			++count;
+		}
 	}
+	std::cerr << "removeTwoVertices() " << count << " two-vertices removed." << std::endl;
 	return 0;
 }
 
@@ -398,3 +457,102 @@ int scaleSpaceToMaxWallLength(Tissue &T,std::vector<double> &p)
 	std::cerr << "Scaled maximal wallDistance from " << maxL << " to ~" << p[0] << std::endl;
 	return 0;
 }
+
+int flipVariable(Tissue &T,std::vector<double> &p)
+{
+	assert( p.size()==3 );
+
+	size_t flag = size_t(p[0]);
+	size_t index = size_t(p[1]);
+	double centerValue = p[2];
+
+	if (flag==0) {//cell variable
+		std::cerr << "flipVariable() not implemented for cells yet." << std::endl;
+		exit(-1);
+	}
+	else if (flag==1) {//wall variable
+		std::cerr << "flipVariable() not implemented for walls yet." << std::endl;
+		exit(-1);
+	}
+	else if (flag==2) {//vertex variable (position)
+		size_t dimension = T.vertex(0).numPosition();
+		assert(dimension>index);
+		size_t numV = T.numVertex();
+		for (size_t i=0; i<numV; ++i) {
+			double delta = T.vertex(i).position(index)-centerValue;
+			T.vertex(i).setPosition(index,T.vertex(i).position(index) - 2*delta);
+		}
+		std::cerr << "flipVariable() Position " << index << " flipped around " << centerValue
+							<< "." << std::endl;
+		return 0;
+	}
+	else {
+		std::cerr << "flipVariable() wrong flag given as p[0]." << std::endl;
+		exit(-1);
+	}
+}
+
+int translateVariableToBorder(Tissue &T,std::vector<double> &p)
+{
+	assert( p.size()==4 );
+
+	size_t flag = size_t(p[0]);
+	size_t index = size_t(p[1]);
+	double border = p[2];
+	size_t maxMinFlag = size_t(p[3]);
+
+	if (flag==0) {//cell variable
+		std::cerr << "translateVariableToBorder() not implemented for cells yet." << std::endl;
+		exit(-1);
+	}
+	else if (flag==1) {//wall variable
+		std::cerr << "translateVariableToBorder() not implemented for walls yet." << std::endl;
+		exit(-1);
+	}
+	else if (flag==2) {//vertex variable (position)
+		size_t dimension = T.vertex(0).numPosition();
+		assert(dimension>index);
+		size_t numV = T.numVertex();
+
+		if (maxMinFlag==0) {//translate such that max is at given border
+			double max = T.vertex(0).position(index);
+			for (size_t i=1; i<numV; ++i) {
+				if (T.vertex(i).position(index)>max)
+					max=T.vertex(i).position(index);
+			}
+			double delta = max-border;
+			for (size_t i=0; i<numV; ++i) {
+				T.vertex(i).setPosition(index,T.vertex(i).position(index) - delta);
+			}
+		}
+		else if (maxMinFlag==1) {//translate such that min is at given border
+			double min = T.vertex(0).position(index);
+			for (size_t i=1; i<numV; ++i) {
+				if (T.vertex(i).position(index)<min)
+					min=T.vertex(i).position(index);
+			}
+			double delta = min-border;
+			for (size_t i=0; i<numV; ++i) {
+				T.vertex(i).setPosition(index,T.vertex(i).position(index) - delta);
+			}
+		}
+		else {
+			std::cerr << "translateVariableToBorder() wrong minmaxflag given as p[3]." << std::endl;
+			exit(-1);
+		}
+		std::cerr << "translateVariableToBorder() Vertex positions in dimension " << index 
+							<< " translated such that ";
+		if (maxMinFlag==0)
+			std::cerr << "max";
+		else
+			std::cerr << "min";
+		std::cerr << " translated to " << border << "." << std::endl;
+		return 0;
+	}
+	else {
+		std::cerr << "translateVariableToBorder() wrong flag given as p[0]." << std::endl;
+		exit(-1);
+	}
+}
+
+		
