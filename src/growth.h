@@ -88,11 +88,11 @@ class WallGrowthExponentialStressTruncated : public BaseReaction {
 ///  In addition, the column index for the wall length and the cell
 ///  concentration should be given.
 ///
-class WallGrowthConstantStress : public BaseReaction {
+class WallGrowthStress : public BaseReaction {
   
  public:
   
-  WallGrowthConstantStress(std::vector<double> &paraValue, 
+  WallGrowthStress(std::vector<double> &paraValue, 
 			   std::vector< std::vector<size_t> > 
 			   &indValue );
   
@@ -216,11 +216,11 @@ public:
 ///  In addition, the column index for the wall length and the cell
 ///  concentration should be given.
 ///
-class WallGrowthConstantStressConcentrationHill : public BaseReaction {
+class WallGrowthStressConcentrationHill : public BaseReaction {
   
 public:
   
-  WallGrowthConstantStressConcentrationHill(std::vector<double> &paraValue, 
+  WallGrowthStressConcentrationHill(std::vector<double> &paraValue, 
 																						std::vector< std::vector<size_t> > 
 																						&indValue );
   

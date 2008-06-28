@@ -130,46 +130,47 @@ derivs(Tissue &T,
   }
 }
 
-WallGrowthConstantStress::
-WallGrowthConstantStress(std::vector<double> &paraValue, 
+WallGrowthStress::
+WallGrowthStress(std::vector<double> &paraValue, 
 			       std::vector< std::vector<size_t> > 
 			       &indValue ) {
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
   if( paraValue.size()!=4 ) {
-    std::cerr << "WallGrowthConstantStress::"
-							<< "WallGrowthConstantStress() "
-							<< "Uses four parameters k_growth, stretch_threshold "
-							<< "stretch_flag and linear_flag" << std::endl;
+    std::cerr << "WallGrowthStress::"
+							<< "WallGrowthStress() "
+							<< "Uses four parameters k_growth, stress_threshold "
+							<< "stretch_flag and linear_flag (0 cost, 1 prop to wall length)" 
+							<< std::endl;
     exit(0);
   }
 	if( paraValue[2] != 0.0 && paraValue[2] != 1.0 ) {
-    std::cerr << "WallGrowthConstantStress::"
-							<< "WallGrowthConstantStress() "
+    std::cerr << "WallGrowthStress::"
+							<< "WallGrowthStress() "
 							<< "stretch_flag parameter must be 0 (stress used) or " 
 							<< "1 (stretch used)." << std::endl;
     exit(0);
   }
 	if( paraValue[3] != 0.0 && paraValue[3] != 1.0 ) {
-    std::cerr << "WallGrowthConstantStress::"
-							<< "WallGrowthConstantStress() "
+    std::cerr << "WallGrowthStress::"
+							<< "WallGrowthStress() "
 							<< "linear_flag parameter must be 0 (constant growth) or " 
 							<< "1 (length dependent growth)." << std::endl;
     exit(0);
   }
 	
   if( indValue.size() != 2 || indValue[0].size() != 1 ) {
-    std::cerr << "WallGrowthConstantStress::"
-							<< "WallGrowthConstantStress() "
-							<< "One variable index is used (wall length) at first "
-							<< "level, and spring constant variable indices at second"
+    std::cerr << "WallGrowthStress::"
+							<< "WallGrowthStress() "
+							<< "One variable index is used (wall length index) at first "
+							<< "level, and stress variable indices at second"
 							<< std::endl;
     exit(0);
   }
   //Set the variable values
   //////////////////////////////////////////////////////////////////////
-  setId("WallGrowthConstantStress");
+  setId("WallGrowthStress");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
@@ -188,7 +189,7 @@ WallGrowthConstantStress(std::vector<double> &paraValue,
 /*! Deriving the time derivative contribution for the growth for all
   walls in the tissue.
 */
-void WallGrowthConstantStress::
+void WallGrowthStress::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
        std::vector< std::vector<double> > &wallData,
@@ -464,38 +465,38 @@ derivs(Tissue &T,
 	}
 }
 
-WallGrowthConstantStressConcentrationHill::
-WallGrowthConstantStressConcentrationHill(std::vector<double> &paraValue, 
+WallGrowthStressConcentrationHill::
+WallGrowthStressConcentrationHill(std::vector<double> &paraValue, 
 			       std::vector< std::vector<size_t> > 
 			       &indValue ) {
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
   if( paraValue.size()!=7 ) {
-    std::cerr << "WallGrowthConstantStressConcentrationHill::"
-							<< "WallGrowthConstantStressConcentrationHill() "
+    std::cerr << "WallGrowthStressConcentrationHill::"
+							<< "WallGrowthStressConcentrationHill() "
 							<< "Uses seven parameters k_growthConst, k_growthHill, K_Hill, n_Hill,"
 							<< " stretch_threshold stretch_flag and linear_flag" << std::endl;
     exit(0);
   }
 	if( paraValue[5] != 0.0 && paraValue[5] != 1.0 ) {
-    std::cerr << "WallGrowthConstantStressConcentrationHill::"
-							<< "WallGrowthConstantStressConcentrationHill() "
+    std::cerr << "WallGrowthStressConcentrationHill::"
+							<< "WallGrowthStressConcentrationHill() "
 							<< "stretch_flag parameter must be 0 (stress used) or " 
 							<< "1 (stretch used)." << std::endl;
     exit(0);
   }
 	if( paraValue[6] != 0.0 && paraValue[6] != 1.0 ) {
-    std::cerr << "WallGrowthConstantStressConcentrationHill::"
-							<< "WallGrowthConstantStressConcentrationHill() "
+    std::cerr << "WallGrowthStressConcentrationHill::"
+							<< "WallGrowthStressConcentrationHill() "
 							<< "linear_flag parameter must be 0 (constant growth) or " 
 							<< "1 (length dependent growth)." << std::endl;
     exit(0);
   }
 	
   if( indValue.size() != 2 || indValue[0].size() != 2 ) {
-    std::cerr << "WallGrowthConstantStressConcentrationHill::"
-							<< "WallGrowthConstantStressConcentrationHill() "
+    std::cerr << "WallGrowthStressConcentrationHill::"
+							<< "WallGrowthStressConcentrationHill() "
 							<< "wall length index and concentration index at first "
 							<< "level, and spring constant variable indices at second"
 							<< std::endl;
@@ -503,7 +504,7 @@ WallGrowthConstantStressConcentrationHill(std::vector<double> &paraValue,
   }
   //Set the variable values
   //////////////////////////////////////////////////////////////////////
-  setId("WallGrowthConstantStressConcentrationHill");
+  setId("WallGrowthStressConcentrationHill");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
@@ -522,7 +523,7 @@ WallGrowthConstantStressConcentrationHill(std::vector<double> &paraValue,
 /*! Deriving the time derivative contribution for the growth for all
   walls in the tissue.
 */
-void WallGrowthConstantStressConcentrationHill::
+void WallGrowthStressConcentrationHill::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
        std::vector< std::vector<double> > &wallData,

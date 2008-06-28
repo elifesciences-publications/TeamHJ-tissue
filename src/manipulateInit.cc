@@ -171,8 +171,8 @@ int main(int argc,char *argv[]) {
 	//setWallVariable(T,p,type);
 
 	// For synthetic templates ///////////////////////
-	p.resize(0);
-	removeTwoVertices(T,p);
+	//p.resize(0);
+	//removeTwoVertices(T,p);
 	//////////////////////////////////////////////////
 
 	p.resize(1);
@@ -180,19 +180,21 @@ int main(int argc,char *argv[]) {
 	p[0]=0.0;
 	addWallVariable(T,p,type);
 	addWallVariable(T,p,type);
-	// Direction 1
-	p[0] = 0.0;
-	addCellVariable(T,p,type);
- 	addCellVariable(T,p,type);
- 	p[0] = 1.0;
- 	addCellVariable(T,p,type);
- 	addCellVariable(T,p,type);
+	// Direction 1 (already in .original files)
+ 	//p[0] = 1.0;
+ 	//addCellVariable(T,p,type);
+	//p[0] = 0.0;
+	//addCellVariable(T,p,type);
+ 	//addCellVariable(T,p,type);
+ 	//p[0] = 1.0;
+ 	//addCellVariable(T,p,type);
 	// Direction 2
+	p[0] = 1.0;
+ 	addCellVariable(T,p,type);
 	p[0] = 0.0;
 	addCellVariable(T,p,type);
  	addCellVariable(T,p,type);
  	p[0] = 1.0;
- 	addCellVariable(T,p,type);
  	addCellVariable(T,p,type);
 	// Additional variables 1 1 0 1 1
  	addCellVariable(T,p,type);
@@ -204,17 +206,17 @@ int main(int argc,char *argv[]) {
  	addCellVariable(T,p,type);
 	
 	// For experimental template /////////////////////
-	//p.resize(3);
-	//p[0] = 2;// vertex
-	//p[1] = 2;// z
-	//p[2] = 0.0;// flip around 0
-	//flipVariable(T,p);
-	//p.resize(4);
-	//p[0] = 2;// vertex
-	//p[1] = 2;// z
-	//p[2] = 0.0;// move to 0
-	//p[3] = 1;// move min
-	//translateVariableToBorder(T,p);
+	p.resize(3);
+	p[0] = 2;// vertex
+	p[1] = 2;// z
+	p[2] = 0.0;// flip around 0
+	flipVariable(T,p);
+	p.resize(4);
+	p[0] = 2;// vertex
+	p[1] = 2;// z
+	p[2] = 0.0;// move to 0
+	p[3] = 1;// move min
+	translateVariableToBorder(T,p);
 	//////////////////////////////////////////////////
 
 	p.resize(1);
