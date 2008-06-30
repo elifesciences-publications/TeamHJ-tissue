@@ -736,6 +736,13 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 	// Calculate the correlation matrix.
 	
 	std::vector< std::vector<double> > R(dimensions, dimensions);
+
+	for (size_t i = 0; i < dimensions; ++i) {
+		for (size_t j = 0; j < dimensions; ++j) {
+			R[i][j] = 0.0;
+		}
+	}
+
 	for (size_t k = 0; k < dimensions; ++k) {
 		for (size_t l = 0; l < dimensions; ++l) {
 			for (size_t i = 0; i < numberOfVertices; ++i) {

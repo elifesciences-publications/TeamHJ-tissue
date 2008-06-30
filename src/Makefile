@@ -19,8 +19,8 @@
 SHELL = /bin/sh
 #Compilers and flags
 CXX = g++
-CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi -static
-LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi -static    
+CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi
+LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi 
 
 #Sourcefiles etc.
 SIM_SRC = simulatorNew.cc
