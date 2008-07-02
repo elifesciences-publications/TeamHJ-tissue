@@ -89,10 +89,11 @@ VertexNoUpdateBoundary(std::vector<double> &paraValue,
 							<< std::endl;
     exit(0);
   }
-  if (indValue.size()) {
+  if (indValue.size()!=0 && indValue.size()!=1) {
     std::cerr << "VertexNoUpdateBoundary::"
 							<< "VertexNoUpdateBoundary() "
-							<< "No variable indices used." << std::endl;
+							<< "Either no variable indices is used (all directions fixed), " 
+							<< "or fixed directions are given in first level." << std::endl;
     exit(0);
   }
   //Set the variable values
@@ -119,11 +120,21 @@ derivs(Tissue &T,
   //Check the cancelation for every vertex
   size_t numVertices = T.numVertex();
   size_t dimension = vertexData[0].size();
+	if (numVariableIndexLevel())
+		for (size_t dI=0; dI<numVariableIndex(0); ++dI)
+			assert(variableIndex(0,dI)<dimension);
 
   for (size_t i=0; i<numVertices; ++i)
-    if (T.vertex(i).isBoundary(T.background())) 
-      for (size_t d=0; d<dimension; ++d)
-				vertexDerivs[i][d] = 0.0;
+    if (T.vertex(i).isBoundary(T.background())) {
+			if (numVariableIndexLevel()) {
+				for (size_t dI=0; dI<numVariableIndex(0); ++dI)
+					vertexDerivs[i][variableIndex(0,dI)] = 0.0;
+			}
+			else {
+				for (size_t d=0; d<dimension; ++d)
+					vertexDerivs[i][d] = 0.0;
+			}
+		}
 }
 
 VertexTranslateToMax::
