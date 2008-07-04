@@ -68,11 +68,10 @@ void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertex
 	
 	// Copy wall force data to temporary container and calculate mean values.
  
-	std::vector< std::vector<double> > walls(numberOfWalls, dimensions);
-	std::vector<double> mean(dimensions, 0.0);
+	std::vector< std::vector<double> > walls(2 * numberOfWalls, dimensions);
 
-	for (size_t i = 0; i < numberOfWalls; ++i) {
-		Wall *w = wall(i);
+	for (size_t i = 0; i < wall_.size(); ++i) {
+		Wall *w = wall_[i];
 		Vertex *v1 = w->vertex1();
 		Vertex *v2 = w->vertex2();
 
@@ -100,23 +99,14 @@ void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertex
 		}
 		
 		for (size_t j = 0; j < dimensions; ++j) {
-			walls[i][j] = force * n[j];
-			mean[j] += walls[i][j];
+			walls[2 * i + 0][j] = force * n[j];
+			walls[2 * i + 1][j] = -force * n[j];
 		}
-
 	}
 
- 	for (size_t i = 0; i < dimensions; ++i) {
- 		mean[i] /= numberOfWalls;
- 	}
-	
- 	// Subtract mean from data to get an expectation value equal to zero.
-
- 	for (size_t i = 0; i < numberOfWalls; ++i) {
- 		for (size_t j = 0; j < dimensions; ++j) {
- 			walls[i][j] -= mean[j];
- 		}
- 	}
+	//
+	// Mean is always equal to zero so no need to subtract it.
+	//
 
  	// Calculate the correlation matrix.
 	
@@ -148,7 +138,6 @@ void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertex
        
  	double max = 0.0;
  	size_t max1 = d.size();
- 	size_t max2 = d.size();
 
  	max = 0.0;
  	for (size_t i = 0; i < d.size(); ++i) {
@@ -158,49 +147,21 @@ void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertex
  		}
  	}
 
- 	max = 0.0;
- 	for (size_t i = 0; i < d.size(); ++i) {
- 		if (std::abs(d[i]) >= max && i != max1) {
- 			max2 = i;
- 			max = std::abs(d[i]);
- 		}
- 	}
-
- 	if (max1 == d.size() || max2 == d.size()) {
+ 	if (max1 == d.size()) {
  		std::cerr << "Vertex::calculateStressDirection(): Unexpected behaviour." << std::endl;
  		exit(EXIT_FAILURE);
  	}
 
   	// Find orthonormal basis.
-
-	std::vector< std::vector<double> > E_(2);
+ 
+	std::vector< std::vector<double> > E_(1);
 	E_[0].resize(dimensions);
-	E_[1].resize(dimensions);
 
  	for (size_t i = 0; i < dimensions; ++i) {
- 		//		E_[0][i] = V[max1][i];
+  		//		E_[0][i] = V[max1][i];
  		E_[0][i] = V[i][max1];
  	}
 	
- 	double s = 0.0;
-	
- 	double numerator = 0.0;
- 	double denominator = 0.0;
- 	for (size_t i = 0; i < dimensions; ++i) {
- 		// 		numerator += V[max1][i] * V[max2][i];
- 		// 		denominator += V[max1][i] * V[max1][i];
- 		numerator += V[i][max1] * V[i][max2];
- 		denominator += V[i][max1] * V[i][max1];
- 	}
-	
-        // assert(denominator>0.0);
- 	s = -numerator / denominator;
-	
- 	for (size_t i = 0; i < dimensions; ++i) {
- 		// 		E_[1][i] = s * E_[0][i] + V[max2][i];
- 		E_[1][i] = s * E_[0][i] + V[i][max2];
- 	}
-
  	for (size_t i = 0; i < E_.size(); ++i) {
  		double sum = 0.0;
  		for (size_t j = 0; j < dimensions; ++j) {
@@ -213,7 +174,7 @@ void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertex
 
 	stressDirection_.resize(dimensions);
 	for (size_t i = 0; i < dimensions; ++i) {
-		stressDirection_[i] = d[max1] * E_[0][i] + d[max2] * E_[1][i];
+		stressDirection_[i] = d[max1] * E_[0][i];
 	}
 }
 
