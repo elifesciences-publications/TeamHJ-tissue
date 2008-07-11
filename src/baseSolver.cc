@@ -331,6 +331,45 @@ void BaseSolver::print(std::ostream &os)
 		}				
 		os << std::endl;
   }
+
+  else if (printFlag_ == 99) {
+	  size_t dimensions = vertexData_[0].size();
+	  
+	  for (size_t i = 0; i < T_->numVertex(); ++i) {
+		  Vertex *vertex = T_->vertexP(i);
+		  
+		  std::vector<double> vertexPosition(dimensions);
+		  
+		  std::cout << t_ << " ";
+		  
+		  for (size_t j = 0; j < dimensions; ++j) {
+			  std::cout << (vertexPosition[j] = vertexData_[vertex->index()][j]) << " ";
+		  }
+
+// 		  std::cout << "\n";
+
+// 		  std::cout << t_ << " ";
+
+		  std::vector<double> stressDirection = vertex->getStressDirection();
+
+		  double A = 0.0;
+		  
+		  for (size_t j = 0; j < stressDirection.size(); ++j) {
+			  A += (stressDirection[j] * stressDirection[j]);
+		  }
+
+		  A = std::sqrt(A);
+
+		  for (size_t j = 0; j < stressDirection.size(); ++j) {
+			  std::cout << (stressDirection[j] / A) << " ";
+		  }
+
+		  std::cout << "\n";
+
+		  std::cout << "\n";
+	  }
+  }
+
 	///
 	/// For printing pin1 also in membranes
 	///
