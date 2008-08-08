@@ -1,8 +1,8 @@
 //
-// Filename     : simulator.cc
-// Description  : Simulates a tissue using a 4th or 5th order Runge-Kutta
+// Filename     : manipulateInit.cc
+// Description  : Reads an init file, makes some manipulations, and prints a new init file.
 // Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
-// Created      : June 2007
+// Created      : June 2008
 // Revision     : $Id:$
 //
 #include <fstream>
