@@ -7,7 +7,7 @@
 // Revision     : $Id:$
 //
 #include <cmath>
-
+#include <set>
 #include "baseSolver.h"
 #include "rungeKutta.h"
 #include "myConfig.h"
@@ -332,6 +332,84 @@ void BaseSolver::print(std::ostream &os)
 		os << std::endl;
   }
 
+  else if (printFlag_ == 98) {
+
+	  std::cout << "=====================================================================\n";
+
+	  for (size_t i = 0; i < T_->numCell(); ++i) {
+ 		  Cell &cell = T_->cell(i);
+
+		  std::cout << "Cell index = " << cell.index() << "\n";
+
+		  for (size_t j = 0; j < cell.numWall(); ++j)
+		  {
+			  std::cout << "\tWall index = " << cell.wall(j)->index() << "\n";
+		  }
+	  }
+
+	  for (size_t i = 0; i < T_->numWall(); ++i) {
+		  Wall &wall = T_->wall(i);
+
+		  std::cout << "Wall index = " << wall.index() << "\n";
+
+		  std::cout << "\tCell index = " << wall.cell1()->index() << "\n";
+		  std::cout << "\tCell index = " << wall.cell2()->index() << "\n";
+	  }
+
+
+
+// 	  std::list<int> neighbors;
+
+// 	  for (size_t i = 0; i < T_->numCell(); ++i) {
+// 		  Cell &cell = T_->cell(i);
+
+// 		  std::cout << "cell index = " << cell.index() << "\n";
+
+// 		  if (cell.isNeighbor(T_->background())) {
+// 			  continue;
+// 		  } else {
+// 			  std::set<Cell *> candidates;
+
+// 			  for (size_t j = 0; j < cell.numWall(); ++j)
+// 			  {
+// 				  Wall *wall = cell.wall(j);
+
+// 				  if (wall->cell1() != &cell) {
+// 					  candidates.insert(wall->cell1());
+// 					  std::cout << "Add cell index " << wall->cell1()->index() << "\n";
+// 				  }
+
+// 				  if (wall->cell2() != &cell) {
+// 					  candidates.insert(wall->cell2());
+// 					  std::cout << "Add cell index " << wall->cell2()->index() << "\n";
+
+// 				  }
+				  
+// 			  }
+			  
+// 			  if (!candidates.empty()) {
+// 				  neighbors.push_back(candidates.size());
+// 				  std::cout << "SIZE = " << candidates.size() << "\n";
+// 			  }
+// 		  }
+// 	  }
+
+// 	  if (neighbors.empty()) {
+// 		  std::cout << "0 0\n";
+// 		  return;
+// 	  } 
+
+// 	  std::vector<int> histogram(*(std::max_element(neighbors.begin(), neighbors.end())) + 1, 0);
+
+// 	  for (std::list<int>::const_iterator i = neighbors.begin(), e = neighbors.end(); i != e; ++i) {
+// 		  ++histogram[*i];
+// 	  }
+
+// 	  for (size_t i = 0; i < histogram.size(); ++i) {
+// 		  std::cout << i << " " << histogram[i] << "\n";
+// 	  }
+  }
+
   else if (printFlag_ == 99) {
 	  size_t dimensions = vertexData_[0].size();
 	  
@@ -365,9 +443,9 @@ void BaseSolver::print(std::ostream &os)
 		  }
 
 		  std::cout << "\n";
-
-		  std::cout << "\n";
+		  
 	  }
+	  std::cout << "\n";
   }
 
 	///
