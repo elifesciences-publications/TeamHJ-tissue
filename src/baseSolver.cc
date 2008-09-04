@@ -448,22 +448,23 @@ void BaseSolver::print(std::ostream &os)
 		// For membrane PIN1 printing (version3)
 		//////////////////////////////////////////////////////////////////////
 		os << Nc << std::endl;
-		size_t pinI=6,xI=8;
-		//size_t auxinI=5,auxI=7;
+		size_t pinI=8,xI=9;
+		//size_t auxinI=4,mI=7;
 		std::vector<double> parameter(8);
 		parameter[0]=0.1;
+		parameter[3]=0.01;
 		for( size_t i=0 ; i<Nc ; ++i ) {
 			size_t Ncv = T_->cell(i).numVertex(); 
 			os << Ncv << " ";
 			for( size_t k=0 ; k<Ncv ; ++k )
 				os << T_->cell(i).vertex(k)->index() << " ";
 			
-			//Transport
+			//pin polarization
 			//////////////////////////////////////////////////////////////////////
 			size_t numWalls=T_->cell(i).numWall();
 			
 			//Polarization coefficient normalization constant
-			double sum=1.0;
+			double sum=0.0;
 			std::vector<double> Pij(numWalls);
 			for( size_t n=0 ; n<numWalls ; ++n ) {
 				if( T_->cell(i).wall(n)->cell1() != T_->background() &&
@@ -485,20 +486,85 @@ void BaseSolver::print(std::ostream &os)
 			//sum /= numWalls;//For adjusting for different num neigh
 			
 			if( sum >= 0.0 )
-				std::cout << parameter[3]*cellData_[i][pinI] / sum << " ";
+				os << parameter[3]*cellData_[i][pinI] / sum << " ";
 			else
-				std::cout << "0.0 ";
+				os << "0.0 ";
 			
 			for( size_t n=0 ; n<numWalls ; ++n ) {
 				double pol=0.0;
 				if( sum != 0.0 )
 					pol = cellData_[i][pinI] * Pij[n] / sum;
-				std::cout << pol << " ";
+				os << pol << " ";
 			}
-			std::cout << std::endl;
+			os << std::endl;
 		}
     //////////////////////////////////////////////////////////////////////
     //End Pij printing version3 
+	}
+	///
+	/// For printing pin1 also in membranes
+	///
+	else if (printFlag_==5) {
+		if( tCount==0 )
+			os << numPrint_ << "\n";
+		size_t Nv = vertexData_.size(); 
+		if( !Nv ) {
+			os << "0 0" << std::endl << "0 0" << std::endl;
+			return;
+		}
+		//Print the vertex positions
+		size_t dimension = vertexData_[0].size();
+		os << T_->numVertex() << " " << dimension << std::endl;
+		for( size_t i=0 ; i<Nv ; ++i ) {
+			for( size_t d=0 ; d<dimension ; ++d )
+				os << vertexData_[i][d] << " ";
+			os << std::endl;
+		}
+		os << std::endl;
+		//Print the cells, first connected vertecis and then variables
+		size_t Nc = cellData_.size();
+		// For membrane PIN1 printing wall version
+		//////////////////////////////////////////////////////////////////////
+		os << Nc << std::endl;
+		size_t pinI=8,xI=1;
+		//size_t auxinI=4,mI=7;
+		std::vector<double> parameter(8);
+		parameter[0]=0.1;
+		parameter[3]=0.01;
+		for( size_t i=0 ; i<Nc ; ++i ) {
+			size_t Ncv = T_->cell(i).numVertex(); 
+			os << Ncv << " ";
+			for( size_t k=0 ; k<Ncv ; ++k )
+				os << T_->cell(i).vertex(k)->index() << " ";
+			
+			//pin polarization
+			//////////////////////////////////////////////////////////////////////
+			size_t numWalls=T_->cell(i).numWall();
+			
+			//Polarization coefficient normalization constant
+			double sum=0.0;
+			std::vector<double> Pij(numWalls);
+			for( size_t n=0 ; n<numWalls ; ++n ) {
+				size_t neighI = T_->cell(i).wall(n)->index();
+				sum += Pij[n] = wallData_[ neighI ][ xI ];
+				//sum += Pij[n] = (1.0-parameter[2]) + 
+				//parameter[2]*cellData_[ neighI ][xI];
+			}
+			if( sum >= 0.0 )
+				os << parameter[3]*cellData_[i][pinI] / sum << " ";
+			else
+				os << "0.0 ";
+			
+			for( size_t n=0 ; n<numWalls ; ++n ) {
+				double pol=0.0;
+				if( sum != 0.0 )
+					pol = cellData_[i][pinI] * Pij[n] / sum;
+				os << pol << " ";
+			}
+			os << std::endl;
+		}
+    //////////////////////////////////////////////////////////////////////
+    //End Pij printing wall version
 	}
   else
     std::cerr << "BaseSolver::print() Wrong printFlag value\n";

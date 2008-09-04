@@ -9,14 +9,14 @@
 #include <fstream>
 #include<vector>
 
-// #include "cell.h"
-// #include "tissue.h"
+#include "cell.h"
+#include "tissue.h"
 #include "myConfig.h"
 #include "myFiles.h"
 //#include "mySignal.h"
 #include "myTimes.h"
-// #include "vertex.h"
-// #include "wall.h"
+#include "vertex.h"
+#include "wall.h"
 
 ///
 /// @brief Extracts a timePoint state and adds it into a Tissue
@@ -82,22 +82,27 @@ int main(int argc,char *argv[]) {
 	std::vector< std::vector< std::vector<size_t> > > cellVertex,wallVertex;
 	readData(dataFile,cellData,wallData,vertexPos,cellVertex,wallVertex);
 
-// 	// Print time point in init format
-// 	std::string initFormat;
-// 	initFormat = myConfig::getValue("init_output_format",0);
-// 	if (initFormat.empty() || initFormat.compare("tissue")==0) {
-// 		std::cerr << "Printing init to standard out using tissue format." << std::endl;
-// 		T.printInit(std::cout);
-// 	}
-// 	else if (initFormat.compare("fem")==0) {
-// 		std::cerr << "Printing init to standard out using fem format." << std::endl;
-// 		std::cerr << "NOT YET!" << std::endl;
-// 		//T.printInitFem(std::cout);
-// 	}
-// 	else {
-// 		std::cerr << "Warning: main() - Format " << initFormat << " not recognized. "
-// 							<< "No init file written." << std::endl;
-// 	}
+
+	size_t t=10;
+	Tissue T(cellData[t],wallData[t],vertexPos[t],cellVertex[t],wallVertex[t]);
+	
+
+	// Print time point in init format
+	std::string initFormat;
+	initFormat = myConfig::getValue("init_output_format",0);
+	if (initFormat.empty() || initFormat.compare("tissue")==0) {
+		std::cerr << "Printing init to standard out using tissue format." << std::endl;
+		T.printInit(std::cout);
+	}
+	else if (initFormat.compare("fem")==0) {
+		std::cerr << "Printing init to standard out using fem format." << std::endl;
+		std::cerr << "NOT YET!" << std::endl;
+		//T.printInitFem(std::cout);
+	}
+	else {
+		std::cerr << "Warning: main() - Format " << initFormat << " not recognized. "
+							<< "No init file written." << std::endl;
+	}
  	std::cerr << "Data manipulation done." << std::endl;
 }
 
@@ -116,8 +121,7 @@ void readData( std::string dataFile,
     exit(-1);
   }
   
-  int numTimeStep,numVertex,d,dimension;
-  double tmp;
+  size_t numTimeStep,numVertex,d,dimension;
 	std::vector<double> timePoint;
   
   IN >> numTimeStep;

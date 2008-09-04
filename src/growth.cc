@@ -141,7 +141,7 @@ WallGrowthStress(std::vector<double> &paraValue,
     std::cerr << "WallGrowthStress::"
 							<< "WallGrowthStress() "
 							<< "Uses four parameters k_growth, stress_threshold "
-							<< "stretch_flag and linear_flag (0 cost, 1 prop to wall length)" 
+							<< "stretch_flag and linear_flag (0 const, 1 prop to wall length)" 
 							<< std::endl;
     exit(0);
   }
@@ -160,11 +160,11 @@ WallGrowthStress(std::vector<double> &paraValue,
     exit(0);
   }
 	
-  if( indValue.size() != 2 || indValue[0].size() != 1 ) {
+  if( (indValue.size()!=1 && indValue.size()!=2) || indValue[0].size() != 1 || (paraValue[2]==0 && (indValue.size()!=2 || !indValue[1].size())) ) {
     std::cerr << "WallGrowthStress::"
 							<< "WallGrowthStress() "
 							<< "One variable index is used (wall length index) at first "
-							<< "level, and stress variable indices at second"
+							<< "level, and stress variable indices at second (if stretch_flag not set)."
 							<< std::endl;
     exit(0);
   }

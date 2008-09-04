@@ -42,14 +42,40 @@ class Tissue {
 	
  public:
   
+	///
+	/// @brief Empty constructor
+	///
   Tissue();
+	///
+	/// @brief Copy constructor
+	///
   Tissue( const Tissue & tissueCopy );
+	///
+	/// @brief Constructor from vectors of cells, walls and vertices
+	///
   Tissue( const std::vector<Cell> &cellVal,
-	  const std::vector<Wall> &wallVal,
-	  const std::vector<Vertex> &vertexVal );
+					const std::vector<Wall> &wallVal,
+					const std::vector<Vertex> &vertexVal );
+	///
+	/// @brief Constructor from reading init file
+	///
   Tissue( const char *initFile, int verbose=0 );
+	///
+	/// @brief Constructor from reading init file
+	///
   Tissue( std::string initFile, int verbose=0 );
-  
+	///
+	/// @brief Constructor from cell-, wall- and vertex-data extracted from output data file
+	///
+	Tissue( std::vector< std::vector<double> > &cellData,
+					std::vector< std::vector<double> > &wallData,
+					std::vector< std::vector<double> > &vertexData,
+					std::vector< std::vector<size_t> > &cellVertex,
+					std::vector< std::vector<size_t> > &wallVertex,
+					int verbose=0);
+	///
+	/// @brief Destructor
+	///
   ~Tissue();
 
   void readInit(const char *initFile,int verbose=0);

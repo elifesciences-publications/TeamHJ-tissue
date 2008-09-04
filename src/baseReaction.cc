@@ -139,6 +139,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	//network.h,network.cc
   else if(idValue=="AuxinModelSimple1")
     return new AuxinModelSimple1(paraValue,indValue); 
+  else if(idValue=="AuxinModelSimple1Wall")
+    return new AuxinModelSimple1Wall(paraValue,indValue); 
   else if(idValue=="AuxinModelSimple2")
     return new AuxinModelSimple2(paraValue,indValue); 
   else if(idValue=="AuxinModelSimple3")

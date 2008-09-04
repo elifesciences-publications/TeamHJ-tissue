@@ -59,15 +59,180 @@ Tissue::Tissue( const char *initFile, int verbose ) {
 }
 
 
-Tissue::Tissue( std::string initFile, int verbose ) {
+Tissue::Tissue( std::string initFile, int verbose ) 
+{
   cell_.reserve(10000);
   wall_.reserve(10000);
   vertex_.reserve(10000);
-
+	
   Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
   background_ = tmpCell;
   readInit(initFile,verbose);
 }
+
+Tissue::Tissue( std::vector< std::vector<double> > &cellData,
+								std::vector< std::vector<double> > &wallData,
+								std::vector< std::vector<double> > &vertexData,
+								std::vector< std::vector<size_t> > &cellVertex,
+								std::vector< std::vector<size_t> > &wallVertex,
+								int verbose)
+{
+  cell_.reserve(10000);
+  wall_.reserve(10000);
+  vertex_.reserve(10000);
+	
+  Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
+  background_ = tmpCell;
+	
+	size_t numCell = cellData.size();
+	size_t numWall = wallData.size();
+	size_t numVertex = vertexData.size();
+  setNumCell( numCell );
+  setNumWall( numWall );
+  setNumVertex( numVertex );
+	assert( numCell );
+  assert( numWall );
+  assert( numVertex );
+  
+  //Set all indeces to the placement in the vectors
+  for( size_t i=0 ; i<numCell ; ++i )
+    cell(i).setIndex(i);
+  for( size_t i=0 ; i<numWall ; ++i )
+    wall(i).setIndex(i);
+  for( size_t i=0 ; i<numVertex ; ++i )
+    vertex(i).setIndex(i);
+  //
+  // set cell variables
+  //
+	size_t numCellVar = cellData[0].size();
+  if( numCellVar ) {
+    for( size_t i=0 ; i<numCell ; ++i ) {
+			if (cellData[i].size() != numCellVar) {
+				std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+									<< "Wrong number of variables in cell " << i << std::endl;
+				exit(-1);
+			}
+      for( size_t j=0 ; j<numCellVar ; ++j ) {
+				cell(i).addVariable(cellData[i][j]);
+      }
+    }
+	}
+	//
+  // Set wall data
+  //
+	if (wallData[0].size() < 1) {
+		std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+							<< " At least wall length must be given in wall variables." << std::endl; 
+		exit(-1);
+	}
+	size_t numWallVar=wallData.size();
+	for (size_t i = 0; i < numWall; ++i) {
+		if (wallData[i].size() != numWallVar) {
+			std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+								<< "Wrong number of variables in wall " << i << std::endl;
+			exit(-1);
+		}
+		wall(i).setLength(wallData[i][0]);
+		for (size_t j=1; j<numWallVar; ++j) {
+			wall(i).addVariable(wallData[i][j]);
+		}
+	}
+	//
+  //Set vertex positions
+  //
+  size_t dimension = vertexData[0].size();
+	assert( dimension==2 || dimension==3 );
+  for( size_t i=0 ; i<numVertex ; ++i ) {
+		if (vertexData[i].size() != dimension) {
+			std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+								<< "Wrong dimension in vertex " << i << std::endl;
+			exit(-1);
+		}
+    vertex(i).setPosition(vertexData[i]);
+  }
+	//
+	// Set connectivity
+  //
+	// Cell-Vertex
+	//
+	if (numCell!=cellVertex.size()) {
+		std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+							<< "Cell number in cell variables not same as in cell vertex." << std::endl;
+		exit(-1);
+	}
+	for (size_t i=0; i<numCell; ++i) {
+		size_t numCellVertex=cellVertex.size();
+		for (size_t k=0; k<numCellVertex; ++k) {
+			size_t j=cellVertex[i][k];
+			cell(i).addVertex( vertexP(j) );
+			vertex(j).addCell( cellP(i) );
+		}
+	}
+  //
+	// Wall-Vertex
+	//
+	if (numWall!=wallVertex.size()) {
+		std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+							<< "Wall number in wall variables not same as in wall vertex." << std::endl;
+		exit(-1);
+	}
+	for (size_t i=0; i<numWall; ++i) {
+		size_t numWallVertex=wallVertex.size();
+		assert (numWallVertex==2);
+		size_t j1=wallVertex[i][0];
+		size_t j2=wallVertex[i][1];
+		vertex(j1).addWall( wallP(i) );
+		vertex(j2).addWall( wallP(i) );
+		wall(i).setVertex( vertexP(j1),vertexP(j2) );
+	}
+	//
+	// Cell-Wall
+	//
+	// For each wall, find one or two cells that have the same vertex pair. 
+	// If two cells connect wall with these, and if one connect wall with this and background.
+	//
+	for (size_t wI=0; wI<numWall; ++wI) {
+		size_t cellCount=0;
+		std::vector<size_t> cI(2,numCell);
+		size_t vI1=wallVertex[wI][0];
+		size_t vI2=wallVertex[wI][1];
+		for (size_t i=0; i<numCell; ++i) {
+			size_t cellVertexCount=0;
+			for (size_t k=0; k<cellVertex[i].size(); ++k) {
+				if (cellVertex[i][k]==vI1 || cellVertex[i][k]==vI2) {
+					++cellVertexCount;
+				}
+			}
+			if (cellVertexCount==2) {//cell and wall connected
+				if (cellCount>1) {
+					std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+										<< " More than two cells found to wall " << wI << std::endl;
+					exit(-1);
+				}
+				cell(i).addWall(wallP(wI));
+				cI[cellCount] = i;
+				++cellCount;
+			}
+		}
+		if (cellCount==1) {
+			wall(wI).setCell( cellP(cI[0]),background() );
+		}
+		else if (cellCount==2) {
+			wall(wI).setCell( cellP(cI[0]),cellP(cI[1]) );
+		}
+		else {
+			std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+								<< " Wrong number of cells found to wall " << wI << std::endl;
+			exit(-1);
+		}		
+	}
+
+	//Sort all cellWalls and cellVertices to comply with area calculations
+	//and plotting
+	sortCellWallAndCellVertex();
+	checkConnectivity(verbose);
+}
+
 
 Tissue::~Tissue() {
 }
