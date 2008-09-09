@@ -306,4 +306,88 @@ class DivisionShortestPath : public BaseCompartmentChange
 	int sign(double a);
 };
 
+class DivisionShortestPathGiantCells : public BaseCompartmentChange
+{
+public:
+	struct Candidate {
+		double distance;
+		size_t wall1;
+		size_t wall2;
+		double px, py;
+		double qx, qy;
+	};
+	
+	DivisionShortestPathGiantCells(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > &indValue);
+	
+	int flag(Tissue *T, size_t i,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+	
+	void update(Tissue* T, size_t i,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);  
+	
+	double astar(double sigma, double A, double B);
+	double f(double a, double sigma, double A, double B);
+	int sign(double a);
+};
+
+class DivisionRandom : public BaseCompartmentChange
+{
+public:
+	DivisionRandom(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
+  
+	int flag(Tissue *T, size_t i,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+	
+	void update(Tissue* T, size_t i,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);  
+
+	/** Returns an integer between 0 and n - 1. */
+	int random(int n);
+};
+
+class DivisionVolumeRandomDirectionGiantCells : public BaseCompartmentChange
+{
+public:
+	
+	DivisionVolumeRandomDirectionGiantCells(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > &indValue);
+  
+	int flag(Tissue *T, size_t i,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+
+	void update(Tissue* T, size_t i,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);  
+};
+
 #endif

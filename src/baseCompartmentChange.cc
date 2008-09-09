@@ -44,6 +44,12 @@ createCompartmentChange(std::vector<double> &paraValue,
 	  return new DivisionForceDirection(paraValue, indValue);
   else if (idValue == "DivisionShortestPath")
 	  return new DivisionShortestPath(paraValue, indValue);
+  else if (idValue == "DivisionShortestPathGiantCells")
+	  return new DivisionShortestPathGiantCells(paraValue, indValue);
+  else if (idValue == "DivisionRandom")
+	  return new DivisionRandom(paraValue, indValue);
+  else if(idValue=="DivisionVolumeRandomDirectionGiantCells")
+	  return new DivisionVolumeRandomDirectionGiantCells(paraValue,indValue);
 	//compartmentRemoval.h,compartmentRemoval.cc
   else if(idValue=="RemovalIndex")
     return new RemovalIndex(paraValue,indValue);
@@ -51,6 +57,8 @@ createCompartmentChange(std::vector<double> &paraValue,
     return new RemovalOutsideRadius(paraValue,indValue);
   else if(idValue=="RemovalOutsideRadiusEpidermis")
     return new RemovalOutsideRadiusEpidermis(paraValue,indValue);
+  else if(idValue=="RemovalOutsideRadiusEpidermisMk2")
+    return new RemovalOutsideRadiusEpidermisMk2(paraValue,indValue);
   else if(idValue=="RemovalOutsideMaxDistanceEpidermis")
     return new RemovalOutsideMaxDistanceEpidermis(paraValue,indValue);
   else if(idValue=="RemovalOutsidePosition")

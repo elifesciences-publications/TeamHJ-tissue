@@ -364,7 +364,7 @@ void BaseSolver::print(std::ostream &os)
 	  }
 	  
 	  if (neighbors.empty()) {
-		  std::cout << "0 0\n";
+		  std::cout << "> 0\n";
 		  return;
 	  } 
 	  
@@ -380,6 +380,7 @@ void BaseSolver::print(std::ostream &os)
 		  sum += *i;
 	  }
 	  
+	  std::cout << "> " <<  histogram.size() << "\n";
 	  for (size_t i = 0; i < histogram.size(); ++i) {
 		  std::cout << i << " " << (double) histogram[i] / sum << "\n";
 	  }

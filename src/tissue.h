@@ -216,12 +216,24 @@ class Tissue {
 	/// @brief Calls removeCell() for all cells that are at boundary and outside a radial threshold
 	///
   void removeEpidermalCells(std::vector< std::vector<double> > &cellData,
-														std::vector< std::vector<double> > &wallData,
+ 														std::vector< std::vector<double> > &wallData,
 														std::vector< std::vector<double> > &vertexData,
 														std::vector< std::vector<double> > &cellDeriv,
 														std::vector< std::vector<double> > &wallDeriv,
 														std::vector< std::vector<double> > &vertexDeriv,
 														double radialThreshold=0.0);
+
+	///
+	/// @brief Calls removeCell() for all cells that are at boundary and outside (all vertices) a radial threshold
+	///
+	void removeEpidermalCellsMk2(std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDeriv,
+		std::vector< std::vector<double> > &wallDeriv,
+		std::vector< std::vector<double> > &vertexDeriv,
+		double radialThreshold = 0.0);
+
 	///
 	/// @brief Calls removeCell() for all cells that are at the boundary and away from the max
 	///

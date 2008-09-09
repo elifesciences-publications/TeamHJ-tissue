@@ -143,4 +143,27 @@ public:
 							std::vector< std::vector<double> > &vertexDerivs );  
 };
 
+//!Removes a cell when position outside a radius from origo (Mk2: Only removes cell if all vertices are outside the radius)
+class RemovalOutsideRadiusEpidermisMk2 : public BaseCompartmentChange
+{
+public:
+	RemovalOutsideRadiusEpidermisMk2(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
+  
+	int flag(Tissue *T, size_t i,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+	
+	void update(Tissue* T, size_t i,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);  
+};
+
 #endif

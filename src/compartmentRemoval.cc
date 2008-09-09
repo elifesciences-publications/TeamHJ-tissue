@@ -414,3 +414,83 @@ update(Tissue *T,size_t i,
 								vertexDeriv);
 }
 
+
+
+RemovalOutsideRadiusEpidermisMk2::RemovalOutsideRadiusEpidermisMk2(std::vector<double> &paraValue, 
+	std::vector< std::vector<size_t> > &indValue) 
+{
+	//Do some checks on the parameters and variable indeces
+	//////////////////////////////////////////////////////////////////////
+	if (paraValue.size() != 2) {
+		std::cerr << "RemovalOutsideRadiusEpidermisMk2::RemovalOutsideRadiusEpidermis() "
+		<< "Two parameters used, R_threshold1 and R_threshold2\n";
+
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 0) {
+		std::cerr << "RemovalOutsideRadiusEpidermis::"
+		<< "RemovalOutsideRadiusEpidermis() "
+		<< "No variable index is used.\n";
+		
+		exit(EXIT_FAILURE);
+	}
+
+	//Set the variable values
+	//////////////////////////////////////////////////////////////////////
+	setId("RemovalOutsideRadiusEpidermisMk2");
+	setNumChange(-2);
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	//Set the parameter identities
+	//////////////////////////////////////////////////////////////////////
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize(numParameter());
+	tmp[0] = "R_threshold1";
+	tmp[0] = "R_threshold2";
+	setParameterId(tmp);
+}
+
+int RemovalOutsideRadiusEpidermisMk2::flag(Tissue *T, size_t i,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs)
+{
+	//Calculate cell center from vertices positions
+	std::vector<double> cellCenter;
+	cellCenter = T->cell(i).positionFromVertex(vertexData);
+	assert( cellCenter.size() == vertexData[0].size() );
+	double R = 0.0;
+	for (size_t d = 0; d < cellCenter.size(); ++d) {
+		R += cellCenter[d]*cellCenter[d];
+	}
+	R = std::sqrt(R);
+	if (R > parameter(0)) {
+		std::cerr << "Epidermal cells outside " << parameter(1) 
+		<< " marked for removal due to cell " << i 
+		<< " at radial distance " << R << std::endl;
+
+		return 1;
+	} 
+	return 0;
+}
+
+void RemovalOutsideRadiusEpidermisMk2::update(Tissue *T, size_t i,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDeriv,
+	std::vector< std::vector<double> > &wallDeriv,
+	std::vector< std::vector<double> > &vertexDeriv)
+{
+	//Remove cell and adjust its neighboring walls and vertices
+	T->removeEpidermalCellsMk2(cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv, parameter(1));
+	
+	//Check that the removal did not mess up the data structure
+	//T->checkConnectivity(1);	
+}
+

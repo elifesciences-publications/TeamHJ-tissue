@@ -1911,6 +1911,66 @@ removeEpidermalCells(std::vector< std::vector<double> > &cellData,
 	}
 }
 
+void Tissue::removeEpidermalCellsMk2(std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDeriv,
+	std::vector< std::vector<double> > &wallDeriv,
+	std::vector< std::vector<double> > &vertexDeriv,
+	double radialThreshold) 
+{
+	size_t dimensions = vertexData[0].size();
+	std::vector<size_t> cellR;
+
+	//Mark cells for removal (sorted with highest index first)
+	for (size_t i = 0; i < numCell(); ++i) {
+		size_t cellI = numCell() - 1 - i;
+
+		if (cell(cellI).isNeighbor(background())) {
+ 			if (radialThreshold > 0.0) { //check that cell is outside
+				Cell &c = cell(cellI);
+
+				bool marked = true;
+
+				for (size_t j = 0; j < c.numVertex(); ++j) {
+					Vertex *vertex = c.vertex(j);
+
+					double r = 0.0;
+					
+					for (size_t d = 0; d < dimensions; ++d) {
+						r += vertexData[vertex->index()][d] * vertexData[vertex->index()][d];
+					}
+					
+					if (r < radialThreshold * radialThreshold) {
+						marked = false;
+						break;
+					}
+				}
+
+				if (marked == true) {
+					cellR.push_back(cellI);
+				}
+			}
+			else {
+				cellR.push_back(cellI);
+			}
+		}
+	}
+
+	std::cerr << "Removing " << cellR.size() << " epidermal cells:" << std::endl;
+	for (size_t i = 0; i < cellR.size(); ++i) {
+		std::cerr << cellR[i] << " ";
+	}
+
+	std::cerr << std::endl;
+	
+	//Remove cells
+	for (size_t i = 0; i < cellR.size(); ++i) {
+		removeCell(cellR[i], cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);
+		//checkConnectivity(1);
+	}
+}
+
 void Tissue::
 removeEpidermalCellsAtDistance(std::vector< std::vector<double> > &cellData,
 															 std::vector< std::vector<double> > &wallData,
