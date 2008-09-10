@@ -16,6 +16,7 @@
 #include <vector>
 #include "tissue.h"
 #include "wall.h"
+#include "myFiles.h"
 
 Tissue::Tissue() {  
   cell_.reserve(10000);
@@ -790,26 +791,23 @@ void Tissue::readModel(std::ifstream &IN,int verbose) {
 }
 
 //!Reads a model from a file
-void Tissue::readModel(const char *fileName, int verbose) {
-
-  std::ifstream IN(fileName);
-  if( !IN ) {
-    std::cerr << "Tissue::readModel(char*) - "
-	      << "Cannot open file " << fileName << "\n\n\7";exit(-1);}
-  readModel(IN,verbose);
+void Tissue::readModel(const char *fileName, int verbose) 
+{
+  std::string tmp(fileName);
+  readModel(tmp,verbose);
 }
 
 //!Reads a model from file 
-void Tissue::readModel(std::string fileName, int verbose) {
-  
+void Tissue::readModel(std::string fileName, int verbose) 
+{  
   const char* fName = fileName.c_str();
-  std::ifstream IN(fName);
+  std::istream *IN = myFiles::openFile(fName);
   if( !IN ) {
     std::cerr << "Tissue::readModel(std::string) - "
 							<< "Cannot open file " << fileName << "\n\n\7";
 		exit(-1);
 	}
-  readModel(IN,verbose);
+  readModel((std::ifstream &) *IN,verbose);
 }
 
 size_t wallFromCellPair(std::vector< std::pair<size_t,size_t> > &wallCell,
