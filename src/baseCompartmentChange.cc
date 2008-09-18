@@ -50,6 +50,8 @@ createCompartmentChange(std::vector<double> &paraValue,
 	  return new DivisionRandom(paraValue, indValue);
   else if(idValue=="DivisionVolumeRandomDirectionGiantCells")
 	  return new DivisionVolumeRandomDirectionGiantCells(paraValue,indValue);
+  else if(idValue == "DivisionMainAxis")
+	  return new DivisionMainAxis(paraValue,indValue); 
 	//compartmentRemoval.h,compartmentRemoval.cc
   else if(idValue=="RemovalIndex")
     return new RemovalIndex(paraValue,indValue);

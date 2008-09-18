@@ -8,6 +8,7 @@
 #include "baseCompartmentChange.h"
 #include "compartmentDivision.h"
 #include "myRandom.h"
+#include "math.h"
 
 DivisionVolumeViaLongestWall::
 DivisionVolumeViaLongestWall(std::vector<double> &paraValue, 
@@ -2966,3 +2967,211 @@ void DivisionVolumeRandomDirectionGiantCells::update(Tissue *T, size_t cellI,
 	//T->checkConnectivity(1);		
 }
 
+DivisionMainAxis::DivisionMainAxis(std::vector<double> &paraValue, 
+	std::vector< std::vector<size_t> > &indValue)
+{
+	//Do some checks on the parameters and variable indeces
+	//////////////////////////////////////////////////////////////////////
+	if (paraValue.size() != 4) {
+		std::cerr << "DivisionMainAxis::DivisionMainAxis() "
+		<< "Four parameters are used V_threshold, Lwall_fraction, Lwall_threshold, and direction flag (0 = perpendicular to main axis, 1 = parallel to main axis)\n";
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 1) {
+		std::cerr << "DivisionMainAxis::DivisionMainAxis() "
+		<< "First level: Variable indices for volume dependent cell variables are used.\n";
+		exit(EXIT_FAILURE);
+	}
+
+	//Set the variable values
+	//////////////////////////////////////////////////////////////////////
+	setId("DivisionMainAxis");
+	setNumChange(1);
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	//Set the parameter identities
+	//////////////////////////////////////////////////////////////////////
+	std::vector<std::string> tmp( numParameter() );
+	tmp.resize( numParameter() );
+	tmp[0] = "V_threshold";
+	tmp[1] = "LWall_frac";
+	tmp[2] = "LWall_threshold";
+	tmp[3] = "direction flag";
+	setParameterId( tmp );
+}
+
+int DivisionMainAxis::flag(Tissue *T, size_t i,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs)
+{
+	if (T->cell(i).calculateVolume(vertexData) > parameter(0)) {
+		std::cerr << "Cell " << i << " marked for division with volume " << T->cell(i).volume() << std::endl;
+		return 1;
+	} else { 
+		return 0;
+	}
+}
+
+void DivisionMainAxis::update(Tissue *T, size_t cellI,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDeriv,
+	std::vector< std::vector<double> > &wallDeriv,
+	std::vector< std::vector<double> > &vertexDeriv)
+{
+	
+	Cell &cell = T->cell(cellI);
+	size_t dimension = vertexData[0].size();
+	
+	if (dimension != 2) {
+		std::cerr << "DivisionMainAxis only supports two dimensions.\n";
+		exit(EXIT_FAILURE);
+	}
+	
+	std::vector<double> com(2);
+	
+	for (size_t i = 0, e = cell.numVertex(); i < e; ++i) {
+		size_t vertexIndex = cell.vertex(i)->index();
+		
+		com[0] += vertexData[vertexIndex][0];
+		com[1] += vertexData[vertexIndex][1];
+	}
+	
+	com[0] /= cell.numVertex();
+	com[1] /= cell.numVertex();
+	
+	std::vector<double> n = getMainAxis(cell, vertexData);
+
+	if (parameter(3) == 0)
+	{
+		double tmp = n[0];
+		n[0] = -n[1];
+		n[1] = tmp;
+	}
+
+	std::vector<Candidate> candidates;
+
+	for (size_t i = 0, e = cell.numWall(); i < e; ++i) {
+		Wall *wall = cell.wall(i);
+		
+		double ax = vertexData[wall->vertex1()->index()][0];
+		double ay = vertexData[wall->vertex1()->index()][1];
+		double bx = vertexData[wall->vertex2()->index()][0];
+		double by = vertexData[wall->vertex2()->index()][1];
+		
+		double s = ((ax - com[0]) * n[1] - (ay - com[1]) * n[0]) / ((ax - bx) * n[1] - (ay - by) * n[0]);
+
+		if (s != s) {
+			continue;
+		}
+
+		if (s >= 0.0 && s <= 1.0) {
+			Candidate candidate;
+			
+			candidate.s = s;
+			candidate.index  = i;
+			candidate.p.resize(2);
+			candidate.p[0] = ax + s * (bx - ax);
+			candidate.p[1] = ay + s * (by - ay);
+			
+			candidates.push_back(candidate);
+		}
+	}
+
+	if (candidates.size() < 2) {
+		std::cerr << "DivisionMainAxis: Unable to find enough candidates.\n";
+		exit(EXIT_FAILURE);
+	}
+	
+	if (candidates.size() > 2) {
+		std::cerr << "DivisionMainAxis: Warning, more than two candidates could be found.\n";
+	}
+	
+	std::sort(candidates.begin(), candidates.end(), CompareCandidate());
+	
+	Candidate &c1 = candidates[0];
+	Candidate &c2 = candidates[1];
+	
+	size_t numWallTmp=wallData.size();
+	
+	T->divideCell(&cell, c1.index, c2.index, c1.p, c2.p, cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv, variableIndex(0), parameter(2));
+	
+	//Change length of new wall between the divided daugther cells 
+	wallData[numWallTmp][0] *= parameter(1);
+}
+
+std::vector<double> DivisionMainAxis::getMainAxis(Cell &cell, std::vector< std::vector<double> > &vertexData)
+{
+	size_t dimensions = vertexData[0].size();
+	size_t numberOfVertices = cell.numVertex();
+	
+	// Copy vertex data to temporary container and calculate mean values.
+	
+	std::vector< std::vector<double> > vertices(numberOfVertices, dimensions);
+	std::vector<double> mean(dimensions, 0.0);
+	
+	for (size_t i = 0; i < numberOfVertices; ++i) {
+		Vertex *v = cell.vertex(i);
+		for (size_t j = 0; j < dimensions; ++j) {
+			vertices[i][j] = vertexData[v->index()][j];
+			mean[j] += vertexData[v->index()][j];
+		}
+	}
+	
+	for (size_t i = 0; i < dimensions; ++i) {
+		mean[i] /= numberOfVertices;
+	}
+	
+	// Subtract mean from data to get an expectation value equal to zero.
+	
+	for (size_t i = 0; i < numberOfVertices; ++i) {
+		for (size_t j = 0; j < dimensions; ++j) {
+			vertices[i][j] -= mean[j];
+		}
+	}
+	
+	// Calculate the correlation matrix.
+	
+	std::vector< std::vector<double> > R(dimensions, dimensions);
+	
+	for (size_t i = 0; i < dimensions; ++i) {
+		for (size_t j = 0; j < dimensions; ++j) {
+			R[i][j] = 0.0;
+		}
+	}
+	
+	for (size_t k = 0; k < dimensions; ++k) {
+		for (size_t l = 0; l < dimensions; ++l) {
+			for (size_t i = 0; i < numberOfVertices; ++i) {
+				R[k][l] += vertices[i][k] * vertices[i][l];
+			}
+			R[k][l] /= numberOfVertices;
+		}
+	}
+	
+	// Find the eigenvectors with the two greatests corresponding eigenvalues.
+	
+	std::vector< std::vector<double> > candidates;
+	
+	std::vector< std::vector<double> > V;
+	std::vector<double> d;
+	
+	jacobiTransformation(R , V, d);
+	
+	size_t max = d.size();
+	
+	for (size_t i = 0; i < d.size(); ++i) {
+		if (std::abs(d[i]) >= std::abs(d[max])) {
+			max = i;
+		}
+	}
+	
+	return V[max];
+}

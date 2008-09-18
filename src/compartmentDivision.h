@@ -390,4 +390,48 @@ public:
 		std::vector< std::vector<double> > &vertexDerivs);  
 };
 
+class DivisionMainAxis : public BaseCompartmentChange
+{
+public:
+	
+	DivisionMainAxis(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > &indValue);
+  
+	int flag(Tissue *T, size_t i,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+	
+	void update(Tissue* T, size_t i,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);  
+
+	std::vector<double> getMainAxis(Cell &cell, std::vector< std::vector<double> > &vertexData);
+
+private:
+	struct Candidate
+	{
+		double s;
+		size_t index;
+		std::vector<double> p;
+	};
+	
+	class CompareCandidate
+	{
+	public:
+		bool operator()(const Candidate &a, const Candidate &b)
+		{
+			return std::abs(a.s) > std::abs(b.s);
+		}
+	};
+};
+
 #endif
+
