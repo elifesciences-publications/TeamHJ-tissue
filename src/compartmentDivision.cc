@@ -2016,9 +2016,13 @@ int DivisionShortestPath::flag(Tissue *T, size_t i,
 						 std::vector< std::vector<double> > &vertexDerivs)
 {
 	if (T->cell(i).calculateVolume(vertexData) > parameter(0)) {
-		std::cerr << "Cell " << i << " marked for division with volume " 
-				<< T->cell(i).volume() << std::endl;
-		return 1;
+		std::vector<Candidate> candidates = getCandidates(T, i, cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs);
+
+		if (candidates.size() > 0) {
+			std::cerr << "Cell " << i << " marked for division with volume " 
+			<< T->cell(i).volume() << std::endl;
+			return 1;
+		}
 	} 
 	return 0;
 }
@@ -2030,6 +2034,60 @@ void DivisionShortestPath::update(Tissue* T, size_t i,
 						    std::vector< std::vector<double> > &cellDerivs,
 						    std::vector< std::vector<double> > &wallDerivs,
 						    std::vector< std::vector<double> > &vertexDerivs)
+{
+	Cell cell = T->cell(i);
+
+	assert(cell.numWall() > 1);
+	assert(vertexData[0].size() == 2); // Make sure dimension == 2
+
+	std::vector<Candidate> candidates = getCandidates(T, i, cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs);
+
+	if (candidates.size() == 0) {
+		std::cerr << "Error: DivisionShortestPath::update() unable to find any good candidates." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	Candidate winner = { std::numeric_limits<double>::max(), 0, 0, 0, 0, 0, 0 };
+	for (size_t i = 0; i < candidates.size(); ++i) {
+		if (candidates[i].distance < winner.distance) {
+			winner = candidates[i];
+		}
+	}
+
+// 	std::cerr << "Winner: " << std::endl
+// 		  << " distance = " << winner.distance << std::endl
+// 		  << " p = (" << winner.px << ", " << winner.py << ")" << std::endl
+// 		  << " q = (" << winner.qx << ", " << winner.qy << ")" << std::endl;
+
+	size_t numWallTmp = wallData.size();
+        assert(numWallTmp == T->numWall());
+
+	std::vector<double> p(2);
+	p[0] = winner.px;
+	p[1] = winner.py;
+	std::vector<double> q(2);
+	q[0] = winner.qx;
+	q[1] = winner.qy;
+
+	T->divideCell(&cell, winner.wall1, winner.wall2, p, q, cellData, wallData, vertexData,
+		cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), parameter(2));
+	
+	assert (numWallTmp + 3 == T->numWall());
+	
+	//Change length of new wall between the divided daugther cells
+	wallData[numWallTmp][0] *= parameter(1);
+	
+	//Check that the division did not mess up the data structure
+	//T->checkConnectivity(1);
+}
+
+std::vector<DivisionShortestPath::Candidate> DivisionShortestPath::getCandidates(Tissue* T, size_t i,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs)
 {
 	Cell cell = T->cell(i);
 
@@ -2206,43 +2264,7 @@ void DivisionShortestPath::update(Tissue* T, size_t i,
 		}
 	}	
 
-	if (candidates.size() == 0) {
-		std::cerr << "Error: DivisionShortestPath::update() unable to find any good candidates." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-
-	Candidate winner = { std::numeric_limits<double>::max(), 0, 0, 0, 0, 0, 0 };
-	for (size_t i = 0; i < candidates.size(); ++i) {
-		if (candidates[i].distance < winner.distance) {
-			winner = candidates[i];
-		}
-	}
-
-// 	std::cerr << "Winner: " << std::endl
-// 		  << " distance = " << winner.distance << std::endl
-// 		  << " p = (" << winner.px << ", " << winner.py << ")" << std::endl
-// 		  << " q = (" << winner.qx << ", " << winner.qy << ")" << std::endl;
-
-	size_t numWallTmp = wallData.size();
-        assert(numWallTmp == T->numWall());
-
-	std::vector<double> p(2);
-	p[0] = winner.px;
-	p[1] = winner.py;
-	std::vector<double> q(2);
-	q[0] = winner.qx;
-	q[1] = winner.qy;
-
-	T->divideCell(&cell, winner.wall1, winner.wall2, p, q, cellData, wallData, vertexData,
-								cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), parameter(2));
-	
-	assert (numWallTmp + 3 == T->numWall());
-	
-	//Change length of new wall between the divided daugther cells
-	wallData[numWallTmp][0] *= parameter(1);
-	
-	//Check that the division did not mess up the data structure
-	//T->checkConnectivity(1);
+	return candidates;
 }
 
 double DivisionShortestPath::astar(double sigma, double A, double B)
