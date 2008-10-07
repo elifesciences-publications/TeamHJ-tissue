@@ -2878,16 +2878,17 @@ std::vector<double> DivisionMainAxis::getMainAxis(Cell &cell, std::vector< std::
 DivisionShortestPathGiantCells::DivisionShortestPathGiantCells(std::vector<double> &paraValue, 
 								   std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 3) {
+	if (paraValue.size() != 4) {
 		std::cerr << "DivisionShortestPathGiantCells::DivisionShortestPathGiantCells() "
-				<< "Three parameters are used V_threshold, Lwall_fraction and Lwall_threshold." << std::endl;
+		<< "Four parameters are used V_threshold, Lwall_fraction, Lwall_threshold, and giant cell factor to V_threshold.\n";
 		exit(EXIT_FAILURE);
 	}
 	
-	if (indValue.size() != 1) {
+	if (indValue.size() != 2 || (indValue.size() == 2 && indValue[1].size() != 1)) {
 		std::cerr << "DivisionShortestPathGiantCells::DivisionShortestPathGiantCells() "
-				<< "First level: Variable indices for volume dependent cell "
-				<< "variables are used.\n";
+		<< "First level: Variable indices for volume dependent cell "
+		<< "variables are used.\n"
+		<< "Second level: Varible index for giant cell flag.\n";
 		exit(EXIT_FAILURE);
 	}
 	
@@ -2895,12 +2896,13 @@ DivisionShortestPathGiantCells::DivisionShortestPathGiantCells(std::vector<doubl
 	setNumChange(1);
 	setParameter(paraValue);  
 	setVariableIndex(indValue);
-  
+	
 	std::vector<std::string> tmp(numParameter());
 	tmp.resize (numParameter());
 	tmp[0] = "V_threshold";
 	tmp[1] = "Lwall_fraction";
 	tmp[2] = "Lwall_threshold";
+	tmp[3] = "Giant cell factor";
 	setParameterId(tmp);
 }
 
