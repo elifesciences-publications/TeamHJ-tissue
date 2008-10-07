@@ -2309,329 +2309,6 @@ int DivisionShortestPath::sign(double a)
 }
 
 
-DivisionShortestPathGiantCells::DivisionShortestPathGiantCells(std::vector<double> &paraValue, 
-	std::vector< std::vector<size_t> > &indValue)
-{
-	if (paraValue.size() != 4) {
-		std::cerr << "DivisionShortestPathGiantCells::DivisionShortestPathGiantCells() "
-		<< "Four parameters are used V_threshold, Lwall_fraction, Lwall_threshold, and giant cell factor to V_threshold.\n";
-		exit(EXIT_FAILURE);
-	}
-	
-	if (indValue.size() != 2 || (indValue.size() == 2 && indValue[1].size() != 1)) {
-		std::cerr << "DivisionShortestPathGiantCells::DivisionShortestPathGiantCells() "
-		<< "First level: Variable indices for volume dependent cell "
-		<< "variables are used.\n"
-		<< "Second level: Varible index for giant cell flag.\n";
-		exit(EXIT_FAILURE);
-	}
-	
-	setId("DivisionShortestPathGiantCells");
-	setNumChange(1);
-	setParameter(paraValue);  
-	setVariableIndex(indValue);
-  
-	std::vector<std::string> tmp(numParameter());
-	tmp.resize (numParameter());
-	tmp[0] = "V_threshold";
-	tmp[1] = "Lwall_fraction";
-	tmp[2] = "Lwall_threshold";
-	tmp[3] = "Giant cell factor";
-	setParameterId(tmp);
-}
-
-int DivisionShortestPathGiantCells::flag(Tissue *T, size_t i,
-						 std::vector< std::vector<double> > &cellData,
-						 std::vector< std::vector<double> > &wallData,
-						 std::vector< std::vector<double> > &vertexData,
-						 std::vector< std::vector<double> > &cellDerivs,
-						 std::vector< std::vector<double> > &wallDerivs,
-						 std::vector< std::vector<double> > &vertexDerivs)
-{
-	if (cellData[i][variableIndex(1, 0)] == 1 && T->cell(i).calculateVolume(vertexData) > parameter(0) * parameter(3)) {
-		std::cerr << "Giant Cell " << i << " marked for division with volume " 
-		<< T->cell(i).volume() << std::endl;
-		return 1;
-		
-	} else if (cellData[i][variableIndex(1, 0)] == 0 && T->cell(i).calculateVolume(vertexData) > parameter(0)) {
-		std::cerr << "Cell " << i << " marked for division with volume " 
-		<< T->cell(i).volume() << std::endl;
-		return 1;
-	} 
-	return 0;
-}
-
-void DivisionShortestPathGiantCells::update(Tissue* T, size_t i,
-						    std::vector< std::vector<double> > &cellData,
-						    std::vector< std::vector<double> > &wallData,
-						    std::vector< std::vector<double> > &vertexData,
-						    std::vector< std::vector<double> > &cellDerivs,
-						    std::vector< std::vector<double> > &wallDerivs,
-						    std::vector< std::vector<double> > &vertexDerivs)
-{
-	Cell cell = T->cell(i);
-
-	assert(cell.numWall() > 1);
-	assert(vertexData[0].size() == 2); // Make sure dimension == 2
-
-	std::vector<double> o = cell.positionFromVertex(vertexData);
-	double ox = o[0];
-	double oy = o[1];
-
-	std::vector<Candidate> candidates;
-
-	for (size_t i = 0; i < cell.numWall() - 1; ++i) {
-		for (size_t j = i + 1; j < cell.numWall(); ++j) {
-			Wall *wall1 = cell.wall(i);
-			Wall *wall2 = cell.wall(j);
-			size_t wall1Index = i;
-			size_t wall2Index = j;
-
-// 			std::cerr << "i = " << wall1->index() << " : j = " << wall2->index() << std::endl;
-//  			std::cerr << "o = (" << ox << ", " << oy << ")" << std::endl;
-
-			double x1x;
-			double x1y;
-			double x2x;
-			double x2y;
-			
-			double vx;
-			double vy;
-
-			double x1px;
-			double x1py;
-			double x2px;
-			double x2py;
-			
-			double ux;
-			double uy;
-
-			bool flippedVectors;
-
-			do {
-				flippedVectors = false;
-
-				x1x = vertexData[wall1->vertex1()->index()][0];
-				x1y = vertexData[wall1->vertex1()->index()][1];
-				x2x = vertexData[wall1->vertex2()->index()][0];
-				x2y = vertexData[wall1->vertex2()->index()][1];
-				
-				vx = x2x - x1x;
-				vy = x2y - x1y;
-				
-				if (vx * (oy - x1y) - vy * (ox - x1x) > 0) {
-//  					std::cerr << "Change v" << std::endl;
-					double tmpx = x1x;
-					double tmpy = x1y;
-					x1x = x2x;
-					x1y = x2y;
-					x2x = tmpx;
-					x2y = tmpy;
-					vx = -vx;
-					vy = -vy;
-				}
-
-
-				x1px = vertexData[wall2->vertex1()->index()][0];
-				x1py = vertexData[wall2->vertex1()->index()][1];
-				x2px = vertexData[wall2->vertex2()->index()][0];
-				x2py = vertexData[wall2->vertex2()->index()][1];
-				
-				ux = x2px - x1px;
-				uy = x2py - x1py;
-				
-				if (ux * (oy - x1py) - uy * (ox - x1px) < 0) {
-//  					std::cerr << "Change u" << std::endl;
-					double tmpx = x1px;
-					double tmpy = x1py;
-					x1px = x2px;
-					x1py = x2py;
-					x2px = tmpx;
-					x2py = tmpy;
-					ux = -ux;
-					uy = -uy;
-				}
-
-				if (vx * uy - vy * ux > 0) {
-//  					std::cerr << "Flipped walls" << std::endl;
-					Wall *tmp = wall1;
-					wall1 = wall2;
-					wall2 = tmp;
-					size_t tmpIndex = wall1Index;
-					wall1Index = wall2Index;
-					wall2Index = tmpIndex;
-					flippedVectors = true;
-				}
-			} while (flippedVectors == true);
-
-			double wx = ox - x1x;
-			double wy = oy - x1y;
-			double wpx = ox - x1px;
-			double wpy = oy - x1py;
-			
-			double dvx = wx - ((vx * wx + vy * wy) / (vx * vx + vy * vy)) * vx;
-			double dvy = wy - ((vx * wx + vy * wy) / (vx * vx + vy * vy)) * vy;
-			double dux = wpx - ((ux * wpx + uy * wpy) / (ux * ux + uy * uy)) * ux;
-			double duy = wpy - ((ux * wpx + uy * wpy) / (ux * ux + uy * uy)) * uy;
-
-
-// 			std::cerr << " x1 = (" << x1x << ", " << x1y << ")" << std::endl;
-// 			std::cerr << " x2 = (" << x2x << ", " << x2y << ")" << std::endl;
-// 			std::cerr << " x1p = (" << x1px << ", " << x1py << ")" << std::endl;
-// 			std::cerr << " x2p = (" << x2px << ", " << x2py << ")" << std::endl;
-
-// 			std::cerr << " v = (" << vx << ", " << vy << ")" << std::endl;
-// 			std::cerr << " u = (" << ux << ", " << uy << ")" << std::endl;
-// 			std::cerr << " w = (" << wx << ", " << wy << ")" << std::endl;
-// 			std::cerr << " wp = (" << wpx << ", " << wpy << ")" << std::endl;
-// 			std::cerr << " dv = (" << dvx << ", " << dvy << ")" << std::endl;
-// 			std::cerr << " du = (" << dux << ", " << duy << ")" << std::endl;
-
-
-			double A = std::sqrt(dvx * dvx + dvy * dvy);
-			double B = std::sqrt(dux * dux + duy * duy);
-
-			double sigma = std::acos((vx * ux + vy * uy) / (std::sqrt(vx * vx + vy * vy) * std::sqrt(ux * ux + uy * uy)));
-
-			double alpha = astar(sigma, A, B);
-			double beta = M_PI + sigma - alpha;
-
-			double t = (vx * wx + vy * wy) / (vx * vx + vy * vy);
-			double tp = t + (1.0 / std::sqrt(vx * vx + vy * vy)) * A * std::sin(alpha - 0.50 * M_PI) / std::sin(alpha);
-
-			double s = (ux * wpx + uy * wpy) / (ux * ux + uy * uy);
-			double sp = s + (1.0 / std::sqrt(ux * ux + uy * uy)) * B * std::sin(beta - 0.50 * M_PI) / std::sin(beta);
-
-			double px = x1x + tp * vx;
-			double py = x1y + tp * vy;
-		    
-			double qx = x1px + sp * ux;
-			double qy = x1py + sp * uy;
-
-// 			std::cerr << " sigma = " << sigma << std::endl
-// 				  << " alpha = " << alpha << std::endl
-// 				  << " beta = " << beta << std::endl
-// 				  << " A = " << A << std::endl
-// 				  << " B = " << B << std::endl
-// 				  << " px = " << px << std::endl
-// 				  << " py = " << py << std::endl
-// 				  << " qx = " << qx << std::endl
-// 				  << " qy = " << qy << std::endl
-// 				  << " tp = " << tp << std::endl
-// 				  << " sp = " << sp << std::endl;
-
-
-			double distance = std::sqrt((qx - px) * (qx - px) + (qy - py) * (qy - py));
-
-//   			std::cerr << " distance = " << distance << std::endl;
-
-			if (tp <= 0.0 || tp >= 1.0 || sp <= 0.0 || sp >= 1.0) {
-//   				std::cerr << "Discard" << std::endl;
-				continue;
-			} else {
-//  				std::cerr << "Keep" << std::endl;
-				Candidate candidate;
-				candidate.distance = distance;
-				candidate.px = px;
-				candidate.py = py;
-				candidate.qx = qx;
-				candidate.qy = qy;
-				candidate.wall1 = wall1Index;
-				candidate.wall2 = wall2Index;
-
-				candidates.push_back(candidate);
-			}
-		}
-	}	
-
-	if (candidates.size() == 0) {
-		std::cerr << "Error: DivisionShortestPathGiantCells::update() unable to find any good candidates." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-
-	Candidate winner = { std::numeric_limits<double>::max(), 0, 0, 0, 0, 0, 0 };
-	for (size_t i = 0; i < candidates.size(); ++i) {
-		if (candidates[i].distance < winner.distance) {
-			winner = candidates[i];
-		}
-	}
-
-// 	std::cerr << "Winner: " << std::endl
-// 		  << " distance = " << winner.distance << std::endl
-// 		  << " p = (" << winner.px << ", " << winner.py << ")" << std::endl
-// 		  << " q = (" << winner.qx << ", " << winner.qy << ")" << std::endl;
-
-	size_t numWallTmp = wallData.size();
-        assert(numWallTmp == T->numWall());
-
-	std::vector<double> p(2);
-	p[0] = winner.px;
-	p[1] = winner.py;
-	std::vector<double> q(2);
-	q[0] = winner.qx;
-	q[1] = winner.qy;
-
-	T->divideCell(&cell, winner.wall1, winner.wall2, p, q, cellData, wallData, vertexData,
-								cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), parameter(2));
-
-	size_t daughterIndex = T->numCell() - 1;
-	
- 	if (myRandom::Rnd() < 0.5) {
- 		cellData[daughterIndex][variableIndex(1, 0)] = 1;
- 	} else {
- 		cellData[daughterIndex][variableIndex(1, 0)] = 0;
- 	}
-	
-	assert (numWallTmp + 3 == T->numWall());
-	
-	//Change length of new wall between the divided daugther cells
-	wallData[numWallTmp][0] *= parameter(1);
-	
-	//Check that the division did not mess up the data structure
-	//T->checkConnectivity(1);
-}
-
-double DivisionShortestPathGiantCells::astar(double sigma, double A, double B)
-{
-     double a = 0;
-     double b = M_PI;
-     double e = b - a;
-     double u = f(a, sigma, A, B);
-     double v = f(b, sigma, A, B);
-     double c;
-
-     if (sign(u) == sign(v)) {
-	     return 0;
-     }
-
-     for (size_t k = 0; k < 10; ++k) {
-          e = 0.5 * e;
-          c = a + e;
-          double w = f(c, sigma, A, B);
-
-          if (sign(w) != sign(u)) {
-               b = c;
-               v = w;
-          } else {
-               a = c;
-               u = w;
-          }
-     }
-     return c;
-}
-
-double DivisionShortestPathGiantCells::f(double a, double sigma, double A, double B)
-{
-     double tmp = - A * std::cos(a) / (std::sin(a) * std::sin(a));
-     tmp += B * std::cos(M_PI + sigma - a) / (std::sin(sigma - a) * std::sin(sigma - a));
-     return tmp;
-}
-
-int DivisionShortestPathGiantCells::sign(double a)
-{
-     return (a >= 0) ? +1 : -1;
-}
-
 
 DivisionRandom::DivisionRandom(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
 {
@@ -3197,3 +2874,342 @@ std::vector<double> DivisionMainAxis::getMainAxis(Cell &cell, std::vector< std::
 	
 	return V[max];
 }
+
+DivisionShortestPathGiantCells::DivisionShortestPathGiantCells(std::vector<double> &paraValue, 
+								   std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 3) {
+		std::cerr << "DivisionShortestPathGiantCells::DivisionShortestPathGiantCells() "
+				<< "Three parameters are used V_threshold, Lwall_fraction and Lwall_threshold." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 1) {
+		std::cerr << "DivisionShortestPathGiantCells::DivisionShortestPathGiantCells() "
+				<< "First level: Variable indices for volume dependent cell "
+				<< "variables are used.\n";
+		exit(EXIT_FAILURE);
+	}
+	
+	setId("DivisionShortestPathGiantCells");
+	setNumChange(1);
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+  
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize (numParameter());
+	tmp[0] = "V_threshold";
+	tmp[1] = "Lwall_fraction";
+	tmp[2] = "Lwall_threshold";
+	setParameterId(tmp);
+}
+
+int DivisionShortestPathGiantCells::flag(Tissue *T, size_t i,
+						 std::vector< std::vector<double> > &cellData,
+						 std::vector< std::vector<double> > &wallData,
+						 std::vector< std::vector<double> > &vertexData,
+						 std::vector< std::vector<double> > &cellDerivs,
+						 std::vector< std::vector<double> > &wallDerivs,
+						 std::vector< std::vector<double> > &vertexDerivs)
+{
+	if (cellData[i][variableIndex(1, 0)] == 1 && T->cell(i).calculateVolume(vertexData) > parameter(0) * parameter(3)) {
+		std::vector<Candidate> candidates = getCandidates(T, i, cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs);
+		
+		if (candidates.size() > 0) {
+			std::cerr << "Giant Cell " << i << " marked for division with volume " 
+			<< T->cell(i).volume() << std::endl;
+			return 1;
+		}
+	} else if (cellData[i][variableIndex(1, 0)] == 0 && T->cell(i).calculateVolume(vertexData) > parameter(0)) {
+		std::vector<Candidate> candidates = getCandidates(T, i, cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs);
+		
+		if (candidates.size() > 0) {
+			std::cerr << "Cell " << i << " marked for division with volume " 
+			<< T->cell(i).volume() << std::endl;
+			return 1;
+		}
+	} 
+	return 0;
+}
+
+void DivisionShortestPathGiantCells::update(Tissue* T, size_t i,
+						    std::vector< std::vector<double> > &cellData,
+						    std::vector< std::vector<double> > &wallData,
+						    std::vector< std::vector<double> > &vertexData,
+						    std::vector< std::vector<double> > &cellDerivs,
+						    std::vector< std::vector<double> > &wallDerivs,
+						    std::vector< std::vector<double> > &vertexDerivs)
+{
+	Cell cell = T->cell(i);
+
+	assert(cell.numWall() > 1);
+	assert(vertexData[0].size() == 2); // Make sure dimension == 2
+
+	std::vector<Candidate> candidates = getCandidates(T, i, cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs);
+
+	if (candidates.size() == 0) {
+		std::cerr << "Error: DivisionShortestPathGiantCells::update() unable to find any good candidates." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	Candidate winner = { std::numeric_limits<double>::max(), 0, 0, 0, 0, 0, 0 };
+	for (size_t i = 0; i < candidates.size(); ++i) {
+		if (candidates[i].distance < winner.distance) {
+			winner = candidates[i];
+		}
+	}
+
+// 	std::cerr << "Winner: " << std::endl
+// 		  << " distance = " << winner.distance << std::endl
+// 		  << " p = (" << winner.px << ", " << winner.py << ")" << std::endl
+// 		  << " q = (" << winner.qx << ", " << winner.qy << ")" << std::endl;
+
+	size_t numWallTmp = wallData.size();
+        assert(numWallTmp == T->numWall());
+
+	std::vector<double> p(2);
+	p[0] = winner.px;
+	p[1] = winner.py;
+	std::vector<double> q(2);
+	q[0] = winner.qx;
+	q[1] = winner.qy;
+
+	T->divideCell(&cell, winner.wall1, winner.wall2, p, q, cellData, wallData, vertexData,
+		cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), parameter(2));
+	
+	assert (numWallTmp + 3 == T->numWall());
+	
+	//Change length of new wall between the divided daugther cells
+	wallData[numWallTmp][0] *= parameter(1);
+	
+	//Check that the division did not mess up the data structure
+	//T->checkConnectivity(1);
+}
+
+std::vector<DivisionShortestPathGiantCells::Candidate> DivisionShortestPathGiantCells::getCandidates(Tissue* T, size_t i,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs)
+{
+	Cell cell = T->cell(i);
+
+	assert(cell.numWall() > 1);
+	assert(vertexData[0].size() == 2); // Make sure dimension == 2
+
+	std::vector<double> o = cell.positionFromVertex(vertexData);
+	double ox = o[0];
+	double oy = o[1];
+
+	std::vector<Candidate> candidates;
+
+	for (size_t i = 0; i < cell.numWall() - 1; ++i) {
+		for (size_t j = i + 1; j < cell.numWall(); ++j) {
+			Wall *wall1 = cell.wall(i);
+			Wall *wall2 = cell.wall(j);
+			size_t wall1Index = i;
+			size_t wall2Index = j;
+
+// 			std::cerr << "i = " << wall1->index() << " : j = " << wall2->index() << std::endl;
+//  			std::cerr << "o = (" << ox << ", " << oy << ")" << std::endl;
+
+			double x1x;
+			double x1y;
+			double x2x;
+			double x2y;
+			
+			double vx;
+			double vy;
+
+			double x1px;
+			double x1py;
+			double x2px;
+			double x2py;
+			
+			double ux;
+			double uy;
+
+			bool flippedVectors;
+
+			do {
+				flippedVectors = false;
+
+				x1x = vertexData[wall1->vertex1()->index()][0];
+				x1y = vertexData[wall1->vertex1()->index()][1];
+				x2x = vertexData[wall1->vertex2()->index()][0];
+				x2y = vertexData[wall1->vertex2()->index()][1];
+				
+				vx = x2x - x1x;
+				vy = x2y - x1y;
+				
+				if (vx * (oy - x1y) - vy * (ox - x1x) > 0) {
+//  					std::cerr << "Change v" << std::endl;
+					double tmpx = x1x;
+					double tmpy = x1y;
+					x1x = x2x;
+					x1y = x2y;
+					x2x = tmpx;
+					x2y = tmpy;
+					vx = -vx;
+					vy = -vy;
+				}
+
+
+				x1px = vertexData[wall2->vertex1()->index()][0];
+				x1py = vertexData[wall2->vertex1()->index()][1];
+				x2px = vertexData[wall2->vertex2()->index()][0];
+				x2py = vertexData[wall2->vertex2()->index()][1];
+				
+				ux = x2px - x1px;
+				uy = x2py - x1py;
+				
+				if (ux * (oy - x1py) - uy * (ox - x1px) < 0) {
+//  					std::cerr << "Change u" << std::endl;
+					double tmpx = x1px;
+					double tmpy = x1py;
+					x1px = x2px;
+					x1py = x2py;
+					x2px = tmpx;
+					x2py = tmpy;
+					ux = -ux;
+					uy = -uy;
+				}
+
+				if (vx * uy - vy * ux > 0) {
+//  					std::cerr << "Flipped walls" << std::endl;
+					Wall *tmp = wall1;
+					wall1 = wall2;
+					wall2 = tmp;
+					size_t tmpIndex = wall1Index;
+					wall1Index = wall2Index;
+					wall2Index = tmpIndex;
+					flippedVectors = true;
+				}
+			} while (flippedVectors == true);
+
+			double wx = ox - x1x;
+			double wy = oy - x1y;
+			double wpx = ox - x1px;
+			double wpy = oy - x1py;
+			
+			double dvx = wx - ((vx * wx + vy * wy) / (vx * vx + vy * vy)) * vx;
+			double dvy = wy - ((vx * wx + vy * wy) / (vx * vx + vy * vy)) * vy;
+			double dux = wpx - ((ux * wpx + uy * wpy) / (ux * ux + uy * uy)) * ux;
+			double duy = wpy - ((ux * wpx + uy * wpy) / (ux * ux + uy * uy)) * uy;
+
+
+// 			std::cerr << " x1 = (" << x1x << ", " << x1y << ")" << std::endl;
+// 			std::cerr << " x2 = (" << x2x << ", " << x2y << ")" << std::endl;
+// 			std::cerr << " x1p = (" << x1px << ", " << x1py << ")" << std::endl;
+// 			std::cerr << " x2p = (" << x2px << ", " << x2py << ")" << std::endl;
+
+// 			std::cerr << " v = (" << vx << ", " << vy << ")" << std::endl;
+// 			std::cerr << " u = (" << ux << ", " << uy << ")" << std::endl;
+// 			std::cerr << " w = (" << wx << ", " << wy << ")" << std::endl;
+// 			std::cerr << " wp = (" << wpx << ", " << wpy << ")" << std::endl;
+// 			std::cerr << " dv = (" << dvx << ", " << dvy << ")" << std::endl;
+// 			std::cerr << " du = (" << dux << ", " << duy << ")" << std::endl;
+
+
+			double A = std::sqrt(dvx * dvx + dvy * dvy);
+			double B = std::sqrt(dux * dux + duy * duy);
+
+			double sigma = std::acos((vx * ux + vy * uy) / (std::sqrt(vx * vx + vy * vy) * std::sqrt(ux * ux + uy * uy)));
+
+			double alpha = astar(sigma, A, B);
+			double beta = M_PI + sigma - alpha;
+
+			double t = (vx * wx + vy * wy) / (vx * vx + vy * vy);
+			double tp = t + (1.0 / std::sqrt(vx * vx + vy * vy)) * A * std::sin(alpha - 0.50 * M_PI) / std::sin(alpha);
+
+			double s = (ux * wpx + uy * wpy) / (ux * ux + uy * uy);
+			double sp = s + (1.0 / std::sqrt(ux * ux + uy * uy)) * B * std::sin(beta - 0.50 * M_PI) / std::sin(beta);
+
+			double px = x1x + tp * vx;
+			double py = x1y + tp * vy;
+		    
+			double qx = x1px + sp * ux;
+			double qy = x1py + sp * uy;
+
+// 			std::cerr << " sigma = " << sigma << std::endl
+// 				  << " alpha = " << alpha << std::endl
+// 				  << " beta = " << beta << std::endl
+// 				  << " A = " << A << std::endl
+// 				  << " B = " << B << std::endl
+// 				  << " px = " << px << std::endl
+// 				  << " py = " << py << std::endl
+// 				  << " qx = " << qx << std::endl
+// 				  << " qy = " << qy << std::endl
+// 				  << " tp = " << tp << std::endl
+// 				  << " sp = " << sp << std::endl;
+
+
+			double distance = std::sqrt((qx - px) * (qx - px) + (qy - py) * (qy - py));
+
+//   			std::cerr << " distance = " << distance << std::endl;
+
+			if (tp <= 0.0 || tp >= 1.0 || sp <= 0.0 || sp >= 1.0) {
+//   				std::cerr << "Discard" << std::endl;
+				continue;
+			} else {
+//  				std::cerr << "Keep" << std::endl;
+				Candidate candidate;
+				candidate.distance = distance;
+				candidate.px = px;
+				candidate.py = py;
+				candidate.qx = qx;
+				candidate.qy = qy;
+				candidate.wall1 = wall1Index;
+				candidate.wall2 = wall2Index;
+
+				candidates.push_back(candidate);
+			}
+		}
+	}	
+
+	return candidates;
+}
+
+double DivisionShortestPathGiantCells::astar(double sigma, double A, double B)
+{
+     double a = 0;
+     double b = M_PI;
+     double e = b - a;
+     double u = f(a, sigma, A, B);
+     double v = f(b, sigma, A, B);
+     double c;
+
+     if (sign(u) == sign(v)) {
+	     return 0;
+     }
+
+     for (size_t k = 0; k < 10; ++k) {
+          e = 0.5 * e;
+          c = a + e;
+          double w = f(c, sigma, A, B);
+
+          if (sign(w) != sign(u)) {
+               b = c;
+               v = w;
+          } else {
+               a = c;
+               u = w;
+          }
+     }
+     return c;
+}
+
+double DivisionShortestPathGiantCells::f(double a, double sigma, double A, double B)
+{
+     double tmp = - A * std::cos(a) / (std::sin(a) * std::sin(a));
+     tmp += B * std::cos(M_PI + sigma - a) / (std::sin(sigma - a) * std::sin(sigma - a));
+     return tmp;
+}
+
+int DivisionShortestPathGiantCells::sign(double a)
+{
+     return (a >= 0) ? +1 : -1;
+}
+

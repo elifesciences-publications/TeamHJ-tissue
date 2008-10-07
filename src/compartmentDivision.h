@@ -343,6 +343,14 @@ public:
 		std::vector< std::vector<double> > &cellDerivs,
 		std::vector< std::vector<double> > &wallDerivs,
 		std::vector< std::vector<double> > &vertexDerivs);  
+
+	std::vector<DivisionShortestPathGiantCells::Candidate> getCandidates(Tissue* T, size_t i,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
 	
 	double astar(double sigma, double A, double B);
 	double f(double a, double sigma, double A, double B);
