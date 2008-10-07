@@ -332,6 +332,28 @@ void BaseSolver::print(std::ostream &os)
 		os << std::endl;
   }
 
+  else if (printFlag_ == 97) {
+	  for (size_t i = 0; i < T_->numCell(); ++i) {
+		  Cell &cell = T_->cell(i);
+		  
+		  if (cell.isNeighbor(T_->background())) {
+			  continue;
+		  }
+		  
+		  double length = 0.0;
+		  
+		  for (size_t j = 0; j < cell.numWall(); ++j) {
+			  Wall *wall = cell.wall(j);
+			  
+			  length += wall->lengthFromVertexPosition(vertexData_);
+		  }
+		  
+		  double area = cell.calculateVolume(vertexData_, 0);
+		  
+		  std::cout << length / area << "\n";
+	  }
+  }
+
   else if (printFlag_ == 98) {
 	  std::list<int> neighbors;
 
