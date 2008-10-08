@@ -350,7 +350,7 @@ void BaseSolver::print(std::ostream &os)
 		  
 		  double area = cell.calculateVolume(vertexData_, 0);
 		  
-		  std::cout << length / area << "\n";
+		  std::cout << std::pow(length, 2.0) / area << "\n";
 	  }
   }
 
