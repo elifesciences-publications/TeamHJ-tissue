@@ -2979,6 +2979,14 @@ void DivisionShortestPathGiantCells::update(Tissue* T, size_t i,
 	T->divideCell(&cell, winner.wall1, winner.wall2, p, q, cellData, wallData, vertexData,
 		cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), parameter(2));
 	
+	size_t daughterIndex = T->numCell() - 1;
+	
+	if (myRandom::Rnd() < 0.5) {
+		cellData[daughterIndex][variableIndex(1, 0)] = 1;
+	} else {
+		cellData[daughterIndex][variableIndex(1, 0)] = 0;
+	}
+
 	assert (numWallTmp + 3 == T->numWall());
 	
 	//Change length of new wall between the divided daugther cells
