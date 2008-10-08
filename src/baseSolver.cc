@@ -370,6 +370,11 @@ void BaseSolver::print(std::ostream &os)
 
 			  double c = udotv / (absu * absv);
 
+			  while (std::abs(c) > 1.0)
+			  {
+				  c *= 0.99;
+			  }
+
 			  std::cout << std::acos(c) << "\n";
 		  }
 	  }
