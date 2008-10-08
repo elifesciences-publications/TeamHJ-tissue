@@ -332,6 +332,49 @@ void BaseSolver::print(std::ostream &os)
 		os << std::endl;
   }
 
+  else if (printFlag_ == 96) {
+	  size_t dimensions = vertexData_[0].size();
+	  
+	  for (size_t i = 0; i < T_->numCell(); ++i) {
+		  Cell &cell = T_->cell(i);
+
+		  if (cell.isNeighbor(T_->background())) {
+			  continue;
+		  }
+
+		  for (size_t j = 0; j < cell.numVertex(); ++j) {
+			  Vertex *v1 = cell.vertex((j - 1 + cell.numVertex()) % cell.numVertex());
+			  Vertex *v2 = cell.vertex(j % cell.numVertex());
+			  Vertex *v3 = cell.vertex((j + 1) % cell.numVertex());
+
+			  std::vector<double> u(dimensions);
+			  std::vector<double> v(dimensions);
+
+			  for (size_t d = 0; d < dimensions; ++d) {
+				  u[d] = vertexData_[v1->index()][d] - vertexData_[v2->index()][d];
+				  v[d] = vertexData_[v3->index()][d] - vertexData_[v2->index()][d];
+			  }
+
+			  double udotv = 0.0;
+			  double absu = 0.0;
+			  double absv = 0.0;
+
+			  for (size_t d = 0; d < dimensions; ++d) {
+				  udotv += u[d] * v[d];
+				  absu += std::pow(u[d], 2.0);
+				  absv += std::pow(v[d], 2.0);
+			  }
+
+			  absu = std::sqrt(absu);
+			  absv = std::sqrt(absv);
+
+			  double c = udotv / (absu * absv);
+
+			  std::cout << std::acos(c) << "\n";
+		  }
+	  }
+  }
+
   else if (printFlag_ == 97) {
 	  for (size_t i = 0; i < T_->numCell(); ++i) {
 		  Cell &cell = T_->cell(i);
