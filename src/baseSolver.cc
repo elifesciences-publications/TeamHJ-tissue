@@ -342,6 +342,8 @@ void BaseSolver::print(std::ostream &os)
 			  continue;
 		  }
 
+		  std::vector<double> angles;
+
 		  for (size_t j = 0; j < cell.numVertex(); ++j) {
 			  Vertex *v1 = cell.vertex((j - 1 + cell.numVertex()) % cell.numVertex());
 			  Vertex *v2 = cell.vertex(j % cell.numVertex());
@@ -375,8 +377,18 @@ void BaseSolver::print(std::ostream &os)
 				  c *= 0.99;
 			  }
 
-			  std::cout << std::acos(c) << "\n";
+			  angles.push_back(std::acos(c));
 		  }
+
+		  std::vector<double>::iterator iterator;
+
+		  iterator = std::min_element(angles.begin(), angles.end());
+		  double min = *iterator;
+
+		  iterator = std::max_element(angles.begin(), angles.end());
+		  double max = *iterator;
+
+		  std::cout << max / min << "\n";
 	  }
   }
 
