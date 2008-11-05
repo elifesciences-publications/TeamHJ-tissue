@@ -1338,17 +1338,9 @@ update(Tissue *T,size_t cellI,
 	size_t numV = divCell->numVertex();
   assert( divCell->numWall() > 2 );
 	assert( dimension==2 );
-	
-	std::vector<double> xMean(dimension),yMean(dimension);
-	
-	for( size_t i=0 ; i<numV ; ++i ) {
-		size_t vI = divCell->vertex(i)->index();
-		xMean[0] += vertexData[vI][0];
-		xMean[1] += vertexData[vI][1];
-	}
-	xMean[0] /= numV;
-	xMean[1] /= numV;
-	
+
+	std::vector<double> com = divCell->positionFromVertex(vertexData);
+		
 	std::vector<double> n(dimension);
 	double phi=2*3.14*myRandom::Rnd();
 	n[0] = std::sin(phi);
@@ -1371,7 +1363,7 @@ update(Tissue *T,size_t cellI,
 		std::vector<double> w3(dimension),w0(dimension);
 		for( size_t d=0 ; d<dimension ; ++d ) {
 			w3[d] = vertexData[v2Tmp][d]-vertexData[v1Tmp][d];
-			w0[d] = xMean[d]-vertexData[v1Tmp][d];
+			w0[d] = com[d]-vertexData[v1Tmp][d];
 		}
 		double a=0.0,b=0.0,c=0.0,d=0.0,e=0.0;//a=1.0
 		for( size_t dim=0 ; dim<dimension ; ++dim ) {
