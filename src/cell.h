@@ -8,6 +8,7 @@
 #ifndef CELL_H
 #define CELL_H
 
+#include<algorithm>
 #include<assert.h>
 #include<cmath>
 #include<fstream>

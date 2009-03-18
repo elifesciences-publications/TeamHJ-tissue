@@ -5,6 +5,8 @@
  * Created      : July 2006
  * Revision     : $Id:$
  */
+#include<limits>
+
 #include "baseCompartmentChange.h"
 #include "compartmentDivision.h"
 #include "myRandom.h"
@@ -1321,9 +1323,6 @@ flag(Tissue *T,size_t i,
   return 0;
 }
 
-//! Updates the dividing cell by adding a prependicular wall from the longest
-/*! 
- */
 void DivisionVolumeRandomDirection::
 update(Tissue *T,size_t cellI,
        std::vector< std::vector<double> > &cellData,
@@ -1335,127 +1334,127 @@ update(Tissue *T,size_t cellI,
   
   Cell *divCell = &(T->cell(cellI));
   size_t dimension = vertexData[0].size();
-	size_t numV = divCell->numVertex();
+  //size_t numV = divCell->numVertex();
   assert( divCell->numWall() > 2 );
-	assert( dimension==2 );
-
-	std::vector<double> com = divCell->positionFromVertex(vertexData);
-		
-	std::vector<double> n(dimension);
-	double phi=2*3.14*myRandom::Rnd();
-	n[0] = std::sin(phi);
-	n[1] = std::cos(phi);
-
-	//Find two (and two only) intersecting walls
-	//////////////////////////////////////////////////////////////////////
+  assert( dimension==2 );
+  
+  std::vector<double> com = divCell->positionFromVertex(vertexData);
+  
+  std::vector<double> n(dimension);
+  double phi=2*3.14*myRandom::Rnd();
+  n[0] = std::sin(phi);
+  n[1] = std::cos(phi);
+  
+  //Find two (and two only) intersecting walls
+  //////////////////////////////////////////////////////////////////////
   std::vector<size_t> wI(2);
   std::vector<double> s(2);
   wI[0]=0;
-	wI[1]=divCell->numWall();
-	s[0]=s[1]=-1.0;
+  wI[1]=divCell->numWall();
+  s[0]=s[1]=-1.0;
   //double minDist,w3s;
-	std::vector<size_t> w3Tmp;
-	std::vector<double> w3tTmp;
+  std::vector<size_t> w3Tmp;
+  std::vector<double> w3tTmp;
   int flag=0;
   for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
-		size_t v1Tmp = divCell->wall(k)->vertex1()->index();
-		size_t v2Tmp = divCell->wall(k)->vertex2()->index();
-		std::vector<double> w3(dimension),w0(dimension);
-		for( size_t d=0 ; d<dimension ; ++d ) {
-			w3[d] = vertexData[v2Tmp][d]-vertexData[v1Tmp][d];
-			w0[d] = com[d]-vertexData[v1Tmp][d];
-		}
-		double a=0.0,b=0.0,c=0.0,d=0.0,e=0.0;//a=1.0
-		for( size_t dim=0 ; dim<dimension ; ++dim ) {
-			a += n[dim]*n[dim];
-			b += n[dim]*w3[dim];
-			c += w3[dim]*w3[dim];
-			d += n[dim]*w0[dim];
-			e += w3[dim]*w0[dim];
-		}
-		double fac=a*c-b*b;//a*c-b*b
-		if( fac>0.0 ) {//else parallell and not applicable
-			fac = 1.0/fac;
-			//double s = fac*(b*e-c*d);
-			double t = fac*(a*e-b*d);//fac*(a*e-b*d)
-			if( t>=0.0 && t<1.0 ) {//within wall
-				//double dx0 = w0[0] +fac*((b*e-c*d)*nW2[0]+()*w3[0]); 					
-				w3Tmp.push_back(k);
-				w3tTmp.push_back(t);
-				std::cerr << "Dividing cell " << divCell->index() << " via wall "
-									<< k << " at t=" << t << std::endl;
-				if( flag<2 ) {
-					s[flag] = t;
-					wI[flag] = k;
-				}				
-				flag++;
+    size_t v1Tmp = divCell->wall(k)->vertex1()->index();
+    size_t v2Tmp = divCell->wall(k)->vertex2()->index();
+    std::vector<double> w3(dimension),w0(dimension);
+    for( size_t d=0 ; d<dimension ; ++d ) {
+      w3[d] = vertexData[v2Tmp][d]-vertexData[v1Tmp][d];
+      w0[d] = com[d]-vertexData[v1Tmp][d];
+    }
+    double a=0.0,b=0.0,c=0.0,d=0.0,e=0.0;//a=1.0
+    for( size_t dim=0 ; dim<dimension ; ++dim ) {
+      a += n[dim]*n[dim];
+      b += n[dim]*w3[dim];
+      c += w3[dim]*w3[dim];
+      d += n[dim]*w0[dim];
+      e += w3[dim]*w0[dim];
+    }
+    double fac=a*c-b*b;//a*c-b*b
+    if( fac>0.0 ) {//else parallell and not applicable
+      fac = 1.0/fac;
+      //double s = fac*(b*e-c*d);
+      double t = fac*(a*e-b*d);//fac*(a*e-b*d)
+      if( t>=0.0 && t<1.0 ) {//within wall
+	//double dx0 = w0[0] +fac*((b*e-c*d)*nW2[0]+()*w3[0]); 					
+	w3Tmp.push_back(k);
+	w3tTmp.push_back(t);
+	std::cerr << "Dividing cell " << divCell->index() << " via wall "
+		  << k << " at t=" << t << std::endl;
+	if( flag<2 ) {
+	  s[flag] = t;
+	  wI[flag] = k;
+	}				
+	flag++;
 			}
-		}
-	}
+    }
+  }
   assert( wI[1] != divCell->numWall() && wI[0] != wI[1] );
-	if( flag != 2 ) {
-		std::cerr << "divideVolumeVisStrain::update Warning"
-							<< " not two walls possible as connection "
-							<< "for cell " 
-							<< cellI << std::endl; 
-		for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
-			std::cerr << "0 " 
-								<< vertexData[divCell->wall(k)->vertex1()->index()][0]
-								<< " " 
-								<< vertexData[divCell->wall(k)->vertex1()->index()][1]
-								<< "\n0 " 
-								<< vertexData[divCell->wall(k)->vertex2()->index()][0]
-								<< " " 
-								<< vertexData[divCell->wall(k)->vertex2()->index()][1]
-								<< "\n\n\n";
-		}
-		for( size_t kk=0 ; kk<w3Tmp.size() ; ++kk ) {
-			size_t k = w3Tmp[kk];
-			std::cerr << "1 " 
-								<< vertexData[divCell->wall(k)->vertex1()->index()][0]
-								<< " " 
-								<< vertexData[divCell->wall(k)->vertex1()->index()][1]
-								<< "\n1 " 
-								<< vertexData[divCell->wall(k)->vertex2()->index()][0]
-								<< " " 
-								<< vertexData[divCell->wall(k)->vertex2()->index()][1]
-								<< "\n\n\n";
-		}
-		std::cerr << "2 " 
-							<< vertexData[divCell->wall(wI[0])->vertex1()->index()][0]
-							<< " " 
-							<< vertexData[divCell->wall(wI[0])->vertex1()->index()][1]
-							<< "\n2 " 
-							<< vertexData[divCell->wall(wI[0])->vertex2()->index()][0]
-							<< " " 
-							<< vertexData[divCell->wall(wI[0])->vertex2()->index()][1]
-							<< "\n\n\n";
-		std::cerr << "3 " 
-							<< vertexData[divCell->wall(wI[1])->vertex1()->index()][0]
-							<< " " 
-							<< vertexData[divCell->wall(wI[1])->vertex1()->index()][1]
-							<< "\n3 " 
-							<< vertexData[divCell->wall(wI[1])->vertex2()->index()][0]
-							<< " " 
-							<< vertexData[divCell->wall(wI[1])->vertex2()->index()][1]
-							<< "\n\n\n";
-		std::cerr << "4 " 
-							<< 0.5*(vertexData[divCell->wall(wI[0])->vertex1()->index()][0]+
-											vertexData[divCell->wall(wI[0])->vertex2()->index()][0])
-							<< " " 
-							<< 0.5*(vertexData[divCell->wall(wI[0])->vertex1()->index()][1]+
-											vertexData[divCell->wall(wI[0])->vertex2()->index()][1])
-							<< "\n4 "
-							<< 0.5*(vertexData[divCell->wall(wI[1])->vertex1()->index()][0]+
-											vertexData[divCell->wall(wI[1])->vertex2()->index()][0])
-							<< " " 
-							<< 0.5*(vertexData[divCell->wall(wI[1])->vertex1()->index()][1]+
-											vertexData[divCell->wall(wI[1])->vertex2()->index()][1])
-							<< "\n\n\n";
-			exit(-1);
-	}	
-	//Addition of new vertices at walls at position 's' 
-	std::vector<double> v1Pos(dimension),v2Pos(dimension);
+  if( flag != 2 ) {
+    std::cerr << "divideVolumeVisStrain::update Warning"
+	      << " not two walls possible as connection "
+	      << "for cell " 
+	      << cellI << std::endl; 
+    for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
+      std::cerr << "0 " 
+		<< vertexData[divCell->wall(k)->vertex1()->index()][0]
+		<< " " 
+		<< vertexData[divCell->wall(k)->vertex1()->index()][1]
+		<< "\n0 " 
+		<< vertexData[divCell->wall(k)->vertex2()->index()][0]
+		<< " " 
+		<< vertexData[divCell->wall(k)->vertex2()->index()][1]
+		<< "\n\n\n";
+    }
+    for( size_t kk=0 ; kk<w3Tmp.size() ; ++kk ) {
+      size_t k = w3Tmp[kk];
+      std::cerr << "1 " 
+		<< vertexData[divCell->wall(k)->vertex1()->index()][0]
+		<< " " 
+		<< vertexData[divCell->wall(k)->vertex1()->index()][1]
+		<< "\n1 " 
+		<< vertexData[divCell->wall(k)->vertex2()->index()][0]
+		<< " " 
+		<< vertexData[divCell->wall(k)->vertex2()->index()][1]
+		<< "\n\n\n";
+    }
+    std::cerr << "2 " 
+	      << vertexData[divCell->wall(wI[0])->vertex1()->index()][0]
+	      << " " 
+	      << vertexData[divCell->wall(wI[0])->vertex1()->index()][1]
+	      << "\n2 " 
+	      << vertexData[divCell->wall(wI[0])->vertex2()->index()][0]
+	      << " " 
+	      << vertexData[divCell->wall(wI[0])->vertex2()->index()][1]
+	      << "\n\n\n";
+    std::cerr << "3 " 
+	      << vertexData[divCell->wall(wI[1])->vertex1()->index()][0]
+	      << " " 
+	      << vertexData[divCell->wall(wI[1])->vertex1()->index()][1]
+	      << "\n3 " 
+	      << vertexData[divCell->wall(wI[1])->vertex2()->index()][0]
+	      << " " 
+	      << vertexData[divCell->wall(wI[1])->vertex2()->index()][1]
+	      << "\n\n\n";
+    std::cerr << "4 " 
+	      << 0.5*(vertexData[divCell->wall(wI[0])->vertex1()->index()][0]+
+		      vertexData[divCell->wall(wI[0])->vertex2()->index()][0])
+	      << " " 
+	      << 0.5*(vertexData[divCell->wall(wI[0])->vertex1()->index()][1]+
+		      vertexData[divCell->wall(wI[0])->vertex2()->index()][1])
+	      << "\n4 "
+	      << 0.5*(vertexData[divCell->wall(wI[1])->vertex1()->index()][0]+
+		      vertexData[divCell->wall(wI[1])->vertex2()->index()][0])
+	      << " " 
+	      << 0.5*(vertexData[divCell->wall(wI[1])->vertex1()->index()][1]+
+		      vertexData[divCell->wall(wI[1])->vertex2()->index()][1])
+	      << "\n\n\n";
+    exit(-1);
+  }	
+  //Addition of new vertices at walls at position 's' 
+  std::vector<double> v1Pos(dimension),v2Pos(dimension);
   size_t v1I = divCell->wall(wI[0])->vertex1()->index();
   size_t v2I = divCell->wall(wI[0])->vertex2()->index();
   for( size_t d=0 ; d<dimension ; ++d )
@@ -1464,27 +1463,24 @@ update(Tissue *T,size_t cellI,
   v2I = divCell->wall(wI[1])->vertex2()->index();
   for( size_t d=0 ; d<dimension ; ++d )
     v2Pos[d] = vertexData[v1I][d]+s[1]*(vertexData[v2I][d]-vertexData[v1I][d]);
-	
+  
   //Add one cell, three walls, and two vertices
   //////////////////////////////////////////////////////////////////////
-	//Save number of walls
-	size_t numWallTmp=wallData.size();
-	assert( numWallTmp==T->numWall() );
-	//Divide
-	T->divideCell(divCell,wI[0],wI[1],v1Pos,v2Pos,cellData,wallData,vertexData,
-								cellDeriv,wallDeriv,vertexDeriv,variableIndex(0),
-								parameter(2));
-	assert( numWallTmp+3 == T->numWall() );
-	
-	//Change length of new wall between the divided daugther cells 
-	wallData[numWallTmp][0] *= parameter(1);
-	
-	//Check that the division did not mess up the data structure
-	//T->checkConnectivity(1);		
+  //Save number of walls
+  size_t numWallTmp=wallData.size();
+  assert( numWallTmp==T->numWall() );
+  //Divide
+  T->divideCell(divCell,wI[0],wI[1],v1Pos,v2Pos,cellData,wallData,vertexData,
+		cellDeriv,wallDeriv,vertexDeriv,variableIndex(0),
+		parameter(2));
+  assert( numWallTmp+3 == T->numWall() );
+  
+  //Change length of new wall between the divided daugther cells 
+  wallData[numWallTmp][0] *= parameter(1);
+  
+  //Check that the division did not mess up the data structure
+  //T->checkConnectivity(1);		
 }
-
-
-
 
 DivisionForceDirection::DivisionForceDirection(std::vector<double> &paraValue,
 									  std::vector< std::vector<size_t> > &indValue)
@@ -2027,50 +2023,50 @@ void DivisionShortestPath::update(Tissue* T, size_t i,
 						    std::vector< std::vector<double> > &wallDerivs,
 						    std::vector< std::vector<double> > &vertexDerivs)
 {
-	Cell cell = T->cell(i);
-
-	assert(cell.numWall() > 1);
-	assert(vertexData[0].size() == 2); // Make sure dimension == 2
-
-	std::vector<Candidate> candidates = getCandidates(T, i, cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs);
-
-	if (candidates.size() == 0) {
-		std::cerr << "Error: DivisionShortestPath::update() unable to find any good candidates." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-
-	Candidate winner = { std::numeric_limits<double>::max(), 0, 0, 0, 0, 0, 0 };
-	for (size_t i = 0; i < candidates.size(); ++i) {
-		if (candidates[i].distance < winner.distance) {
-			winner = candidates[i];
-		}
-	}
+  Cell cell = T->cell(i);
+  
+  assert(cell.numWall() > 1);
+  assert(vertexData[0].size() == 2); // Make sure dimension == 2
+  
+  std::vector<Candidate> candidates = getCandidates(T, i, cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs);
+  
+  if (candidates.size() == 0) {
+    std::cerr << "Error: DivisionShortestPath::update() unable to find any good candidates." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  Candidate winner = { std::numeric_limits<double>::max(), 0, 0, 0, 0, 0, 0 };
+  for (size_t i = 0; i < candidates.size(); ++i) {
+    if (candidates[i].distance < winner.distance) {
+      winner = candidates[i];
+    }
+  }
 
 // 	std::cerr << "Winner: " << std::endl
 // 		  << " distance = " << winner.distance << std::endl
 // 		  << " p = (" << winner.px << ", " << winner.py << ")" << std::endl
 // 		  << " q = (" << winner.qx << ", " << winner.qy << ")" << std::endl;
 
-	size_t numWallTmp = wallData.size();
-        assert(numWallTmp == T->numWall());
-
-	std::vector<double> p(2);
-	p[0] = winner.px;
-	p[1] = winner.py;
-	std::vector<double> q(2);
-	q[0] = winner.qx;
-	q[1] = winner.qy;
-
-	T->divideCell(&cell, winner.wall1, winner.wall2, p, q, cellData, wallData, vertexData,
+  size_t numWallTmp = wallData.size();
+  assert(numWallTmp == T->numWall());
+  
+  std::vector<double> p(2);
+  p[0] = winner.px;
+  p[1] = winner.py;
+  std::vector<double> q(2);
+  q[0] = winner.qx;
+  q[1] = winner.qy;
+  
+  T->divideCell(&cell, winner.wall1, winner.wall2, p, q, cellData, wallData, vertexData,
 		cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), parameter(2));
-	
-	assert (numWallTmp + 3 == T->numWall());
-	
-	//Change length of new wall between the divided daugther cells
-	wallData[numWallTmp][0] *= parameter(1);
-	
-	//Check that the division did not mess up the data structure
-	//T->checkConnectivity(1);
+  
+  assert (numWallTmp + 3 == T->numWall());
+  
+  //Change length of new wall between the divided daugther cells
+  wallData[numWallTmp][0] *= parameter(1);
+  
+  //Check that the division did not mess up the data structure
+  //T->checkConnectivity(1);
 }
 
 std::vector<DivisionShortestPath::Candidate> DivisionShortestPath::getCandidates(Tissue* T, size_t i,
@@ -2805,7 +2801,10 @@ std::vector<double> DivisionMainAxis::getMainAxis(Cell &cell, std::vector< std::
 	
 	// Copy vertex data to temporary container and calculate mean values.
 	
-	std::vector< std::vector<double> > vertices(numberOfVertices, dimensions);
+	std::vector< std::vector<double> > vertices(numberOfVertices);
+	for (size_t i = 0; i < numberOfVertices; ++i) {
+	  vertices[i].resize(dimensions);
+	}
 	std::vector<double> mean(dimensions, 0.0);
 	
 	for (size_t i = 0; i < numberOfVertices; ++i) {
@@ -2830,12 +2829,13 @@ std::vector<double> DivisionMainAxis::getMainAxis(Cell &cell, std::vector< std::
 	
 	// Calculate the correlation matrix.
 	
-	std::vector< std::vector<double> > R(dimensions, dimensions);
+	std::vector< std::vector<double> > R(dimensions);
 	
 	for (size_t i = 0; i < dimensions; ++i) {
-		for (size_t j = 0; j < dimensions; ++j) {
-			R[i][j] = 0.0;
-		}
+	  R[i].resize(dimensions);
+	  for (size_t j = 0; j < dimensions; ++j) {
+	    R[i][j] = 0.0;
+	  }
 	}
 	
 	for (size_t k = 0; k < dimensions; ++k) {

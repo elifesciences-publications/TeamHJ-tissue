@@ -6,6 +6,7 @@
  * Revision     : $Id: baseCompartmentChange.cc,v 1.25 2006/03/18 00:05:14 henrik Exp $
  */
 #include<vector>
+#include<cstdlib>
 
 #include"baseCompartmentChange.h"
 #include"compartmentDivision.h"
