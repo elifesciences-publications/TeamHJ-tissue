@@ -7,14 +7,14 @@
 //
 #include <fstream>
 
-#include "baseSolver.h"
-#include "cell.h"
-#include "tissue.h"
-#include "myConfig.h"
-#include "mySignal.h"
-#include "myTimes.h"
-#include "vertex.h"
-#include "wall.h"
+#include "../baseSolver.h"
+#include "../cell.h"
+#include "../myConfig.h"
+#include "../mySignal.h"
+#include "../myTimes.h"
+#include "../tissue.h"
+#include "../vertex.h"
+#include "../wall.h"
 
 int main(int argc,char *argv[]) {
 	

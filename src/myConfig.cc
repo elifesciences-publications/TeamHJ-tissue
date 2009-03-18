@@ -5,10 +5,11 @@
 // Created      : March 2007
 // Revision     : $Id: myConfig.cc 217 2007-03-30 11:53:16Z henrik $
 //
-
-#include <iostream>
+#include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include <sstream>
+
 #include "myConfig.h"
 #include "myFiles.h"
 

@@ -477,16 +477,15 @@ int flipVariable(Tissue &T,std::vector<double> &p)
 		exit(-1);
 	}
 	else if (flag==2) {//vertex variable (position)
-		size_t dimension = T.vertex(0).numPosition();
-		assert(dimension>index);
-		size_t numV = T.numVertex();
-		for (size_t i=0; i<numV; ++i) {
-			double delta = T.vertex(i).position(index)-centerValue;
-			T.vertex(i).setPosition(index,T.vertex(i).position(index) - 2*delta);
-		}
-		std::cerr << "flipVariable() Position " << index << " flipped around " << centerValue
-							<< "." << std::endl;
-		return 0;
+	  assert(T.vertex(0).numPosition()>index);
+	  size_t numV = T.numVertex();
+	  for (size_t i=0; i<numV; ++i) {
+	    double delta = T.vertex(i).position(index)-centerValue;
+	    T.vertex(i).setPosition(index,T.vertex(i).position(index) - 2*delta);
+	  }
+	  std::cerr << "flipVariable() Position " << index << " flipped around " << centerValue
+		    << "." << std::endl;
+	  return 0;
 	}
 	else {
 		std::cerr << "flipVariable() wrong flag given as p[0]." << std::endl;
@@ -512,48 +511,47 @@ int translateVariableToBorder(Tissue &T,std::vector<double> &p)
 		exit(-1);
 	}
 	else if (flag==2) {//vertex variable (position)
-		size_t dimension = T.vertex(0).numPosition();
-		assert(dimension>index);
-		size_t numV = T.numVertex();
-
-		if (maxMinFlag==0) {//translate such that max is at given border
-			double max = T.vertex(0).position(index);
-			for (size_t i=1; i<numV; ++i) {
-				if (T.vertex(i).position(index)>max)
-					max=T.vertex(i).position(index);
-			}
-			double delta = max-border;
-			for (size_t i=0; i<numV; ++i) {
-				T.vertex(i).setPosition(index,T.vertex(i).position(index) - delta);
-			}
-		}
-		else if (maxMinFlag==1) {//translate such that min is at given border
-			double min = T.vertex(0).position(index);
-			for (size_t i=1; i<numV; ++i) {
-				if (T.vertex(i).position(index)<min)
-					min=T.vertex(i).position(index);
-			}
-			double delta = min-border;
-			for (size_t i=0; i<numV; ++i) {
-				T.vertex(i).setPosition(index,T.vertex(i).position(index) - delta);
-			}
-		}
-		else {
-			std::cerr << "translateVariableToBorder() wrong minmaxflag given as p[3]." << std::endl;
-			exit(-1);
-		}
-		std::cerr << "translateVariableToBorder() Vertex positions in dimension " << index 
-							<< " translated such that ";
-		if (maxMinFlag==0)
-			std::cerr << "max";
-		else
-			std::cerr << "min";
-		std::cerr << " translated to " << border << "." << std::endl;
-		return 0;
+	  assert(T.vertex(0).numPosition()>index);
+	  size_t numV = T.numVertex();
+	  
+	  if (maxMinFlag==0) {//translate such that max is at given border
+	    double max = T.vertex(0).position(index);
+	    for (size_t i=1; i<numV; ++i) {
+	      if (T.vertex(i).position(index)>max)
+		max=T.vertex(i).position(index);
+	    }
+	    double delta = max-border;
+	    for (size_t i=0; i<numV; ++i) {
+	      T.vertex(i).setPosition(index,T.vertex(i).position(index) - delta);
+	    }
+	  }
+	  else if (maxMinFlag==1) {//translate such that min is at given border
+	    double min = T.vertex(0).position(index);
+	    for (size_t i=1; i<numV; ++i) {
+	      if (T.vertex(i).position(index)<min)
+		min=T.vertex(i).position(index);
+	    }
+	    double delta = min-border;
+	    for (size_t i=0; i<numV; ++i) {
+	      T.vertex(i).setPosition(index,T.vertex(i).position(index) - delta);
+	    }
+	  }
+	  else {
+	    std::cerr << "translateVariableToBorder() wrong minmaxflag given as p[3]." << std::endl;
+	    exit(-1);
+	  }
+	  std::cerr << "translateVariableToBorder() Vertex positions in dimension " << index 
+		    << " translated such that ";
+	  if (maxMinFlag==0)
+	    std::cerr << "max";
+	  else
+	    std::cerr << "min";
+	  std::cerr << " translated to " << border << "." << std::endl;
+	  return 0;
 	}
 	else {
-		std::cerr << "translateVariableToBorder() wrong flag given as p[0]." << std::endl;
-		exit(-1);
+	  std::cerr << "translateVariableToBorder() wrong flag given as p[0]." << std::endl;
+	  exit(-1);
 	}
 }
 

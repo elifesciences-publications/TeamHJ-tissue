@@ -1,16 +1,17 @@
-/**
- * Filename     : vertex.cc
- * Description  : A class describing a vertex
- * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
- * Created      : April 2006
- * Revision     : $Id:$
- */
+///
+/// Filename     : vertex.cc
+/// Description  : A class describing a vertex
+/// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+/// Created      : April 2006
+/// Revision     : $Id:$
+///
+#include <cmath>
+#include <cstdlib>
+#include <vector>
 
+#include "math.h"
 #include "vertex.h"
 #include "wall.h"
-#include "math.h"
-#include <cmath>
-#include <vector>
 
 Vertex::Vertex() 
 {
@@ -63,61 +64,64 @@ int Vertex::isBoundary(Cell *background) const
 void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertexData,
 	std::vector< std::vector<double> > &wallData, std::vector<size_t> wallForceIndexes)
 {
-	size_t dimensions = vertexData[0].size();
-	size_t numberOfWalls = wall_.size();
-	
-	// Copy wall force data to temporary container and calculate mean values.
- 
-	std::vector< std::vector<double> > walls(2 * numberOfWalls, dimensions);
-
-	for (size_t i = 0; i < wall_.size(); ++i) {
-		Wall *w = wall_[i];
-		Vertex *v1 = w->vertex1();
-		Vertex *v2 = w->vertex2();
-
-		double force = 0.0;
-		for (size_t j = 0; j < wallForceIndexes.size(); ++j) {
-			force += wallData[w->index()][wallForceIndexes[j]];
-		}
-
-		std::vector<double> n(dimensions);
-		double A = 0.0;
-
-		for (size_t j = 0; j < dimensions; ++j) {
-			if (v1 == this) {
-				n[j] = vertexData[v2->index()][j] - vertexData[v1->index()][j];
-			} else {
-				n[j] = vertexData[v1->index()][j] - vertexData[v2->index()][j];
-			}
-			A += n[j] * n[j];
-		}
-
-		A = std::sqrt(A);
-
-		for (size_t j = 0; j < dimensions; ++j) {
-			n[j] /= A;
-		}
-		
-		for (size_t j = 0; j < dimensions; ++j) {
-			walls[2 * i + 0][j] = force * n[j];
-			walls[2 * i + 1][j] = -force * n[j];
-		}
+  size_t dimensions = vertexData[0].size();
+  size_t numberOfWalls = wall_.size();
+  
+  // Copy wall force data to temporary container and calculate mean values.
+  
+  std::vector< std::vector<double> > walls(2 * numberOfWalls);
+  for (size_t i = 0; i < walls.size(); ++i) {
+    walls[i].resize(dimensions);
+  }
+  for (size_t i = 0; i < wall_.size(); ++i) {
+    Wall *w = wall_[i];
+    Vertex *v1 = w->vertex1();
+    Vertex *v2 = w->vertex2();
+    
+    double force = 0.0;
+    for (size_t j = 0; j < wallForceIndexes.size(); ++j) {
+      force += wallData[w->index()][wallForceIndexes[j]];
+    }
+    
+    std::vector<double> n(dimensions);
+    double A = 0.0;
+    
+    for (size_t j = 0; j < dimensions; ++j) {
+	    if (v1 == this) {
+	      n[j] = vertexData[v2->index()][j] - vertexData[v1->index()][j];
+	    } else {
+	      n[j] = vertexData[v1->index()][j] - vertexData[v2->index()][j];
+	    }
+	    A += n[j] * n[j];
+	  }
+	  
+	  A = std::sqrt(A);
+	  
+	  for (size_t j = 0; j < dimensions; ++j) {
+	    n[j] /= A;
+	  }
+	  
+	  for (size_t j = 0; j < dimensions; ++j) {
+	    walls[2 * i + 0][j] = force * n[j];
+	    walls[2 * i + 1][j] = -force * n[j];
+	  }
 	}
-
+	
 	//
 	// Mean is always equal to zero so no need to subtract it.
 	//
 
  	// Calculate the correlation matrix.
 	
- 	std::vector< std::vector<double> > R(dimensions, dimensions);
+ 	std::vector< std::vector<double> > R(dimensions);
 
 	for (size_t i = 0; i < dimensions; ++i) {
-		for (size_t j = 0; j < dimensions; ++j) {
-			R[i][j] = 0.0;
+	  R[i].resize(dimensions);
+	  for (size_t j = 0; j < dimensions; ++j) {
+	    R[i][j] = 0.0;
 		}
 	}
-
+	
  	for (size_t k = 0; k < dimensions; ++k) {
  		for (size_t l = 0; l < dimensions; ++l) {
  			for (size_t i = 0; i < numberOfWalls; ++i) {
@@ -148,8 +152,8 @@ void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertex
  	}
 
  	if (max1 == d.size()) {
- 		std::cerr << "Vertex::calculateStressDirection(): Unexpected behaviour." << std::endl;
- 		exit(EXIT_FAILURE);
+	  std::cerr << "Vertex::calculateStressDirection(): Unexpected behaviour." << std::endl;
+	  exit(EXIT_FAILURE);
  	}
 
   	// Find orthonormal basis.

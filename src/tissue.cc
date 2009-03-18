@@ -178,8 +178,7 @@ Tissue::Tissue( std::vector< std::vector<double> > &cellData,
 		exit(-1);
 	}
 	for (size_t i=0; i<numWall; ++i) {
-		size_t numWallVertex=wallVertex.size();
-		assert (numWallVertex==2);
+		assert (wallVertex.size()==2);
 		size_t j1=wallVertex[i][0];
 		size_t j2=wallVertex[i][1];
 		vertex(j1).addWall( wallP(i) );
@@ -814,8 +813,8 @@ size_t wallFromCellPair(std::vector< std::pair<size_t,size_t> > &wallCell,
 			size_t c1,size_t c2) {
 
   for( size_t i=0 ; i<wallCell.size() ; ++i )
-    if( wallCell[i].first==c1 && wallCell[i].second==c2 ||
-	wallCell[i].first==c2 && wallCell[i].second==c1 )
+    if( (wallCell[i].first==c1 && wallCell[i].second==c2) ||
+	(wallCell[i].first==c2 && wallCell[i].second==c1) )
       return i;
   return static_cast<size_t>(-1);
 }
@@ -1789,10 +1788,10 @@ void Tissue::removeCell(size_t cellIndex,
 	}
 	//Remove walls connected to cellIndex and background
 	for( size_t k=0 ; k<cell(cellIndex).numWall() ; ++k ) {
-		if( cell(cellIndex).wall(k)->cell1() == background() &&
-				cell(cellIndex).wall(k)->cell2() == &cell(cellIndex) ||
-				cell(cellIndex).wall(k)->cell2() == background() &&
-				cell(cellIndex).wall(k)->cell1() == &cell(cellIndex) ) {
+	  if( ( cell(cellIndex).wall(k)->cell1() == background() &&
+		cell(cellIndex).wall(k)->cell2() == &cell(cellIndex) ) ||
+	      ( cell(cellIndex).wall(k)->cell2() == background() &&
+		cell(cellIndex).wall(k)->cell1() == &cell(cellIndex) ) ) {
 			size_t wI=cell(cellIndex).wall(k)->index();
 			//std::cerr << wI << " " << numWall() << " " << wallData.size() << std::endl;
 			assert( wI<wallData.size() );

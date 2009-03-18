@@ -710,11 +710,12 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 
 	// Copy vertex data to temporary container and calculate mean values.
  
-	std::vector< std::vector<double> > vertices(numberOfVertices, dimensions);
+	std::vector< std::vector<double> > vertices(numberOfVertices);
 	std::vector<double> mean(dimensions, 0.0);
 
 	for (size_t i = 0; i < numberOfVertices; ++i) {
 		Vertex *v = vertex(i);
+		vertices[i].resize(dimensions);
 		for (size_t j = 0; j < dimensions; ++j) {
 			vertices[i][j] = vertexData[v->index()][j];
 			mean[j] += vertexData[v->index()][j];
@@ -735,12 +736,13 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 
 	// Calculate the correlation matrix.
 	
-	std::vector< std::vector<double> > R(dimensions, dimensions);
+	std::vector< std::vector<double> > R(dimensions);
 
 	for (size_t i = 0; i < dimensions; ++i) {
-		for (size_t j = 0; j < dimensions; ++j) {
-			R[i][j] = 0.0;
-		}
+	  R[i].resize(dimensions);
+	  for (size_t j = 0; j < dimensions; ++j) {
+	    R[i][j] = 0.0;
+	  }
 	}
 
 	for (size_t k = 0; k < dimensions; ++k) {
@@ -844,11 +846,12 @@ projectVerticesOnPCAPlane(std::vector< std::vector<double> > &vertexData)
 
 	// Copy vertex data to temporary container and calculate mean values.
  
-	std::vector< std::vector<double> > vertices(numberOfVertices, dimensions);
+	std::vector< std::vector<double> > vertices(numberOfVertices);
 	std::vector<double> mean(dimensions, 0.0);
 	
 	for (size_t i = 0; i < numberOfVertices; ++i) {
 		Vertex *v = vertex(i);
+		vertices[i].resize(dimensions);
 		for (size_t j = 0; j < dimensions; ++j) {
 			vertices[i][j] = vertexData[v->index()][j];
 			mean[j] += vertexData[v->index()][j];

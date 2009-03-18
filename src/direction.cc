@@ -5,8 +5,10 @@
 // Created      : June 2007
 // Revision     : $Id:$
 //
-#include <iostream>
+#include <cstdlib>
 #include <fstream>
+#include <iostream>
+
 #include "baseDirectionUpdate.h"
 #include "baseDirectionDivision.h"
 #include "direction.h"
@@ -29,7 +31,7 @@ Direction::Direction( char *inFile )
   std::ifstream IN( inFile );
   if( !IN ) {
     std::cerr << "Direction::Direction() - "
-							<< "Cannot open file " << inFile << "\n\n\7";exit(-1);}
+	      << "Cannot open file " << inFile << "\n\n\7";exit(-1);}
   readDirection(IN);
 }
 

@@ -23,7 +23,7 @@ CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi
 LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi 
 
 #Sourcefiles etc.
-SIM_SRC = simulator.cc
+SIM_SRC = simulator/simulator.cc
 SIM_OBJ = $(SIM_SRC:.cc=.o)
 SRC_DIR = ./
 SRCS := $(wildcard $(SRC_DIR:/=/*.cc))

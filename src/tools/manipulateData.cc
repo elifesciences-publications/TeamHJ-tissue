@@ -121,8 +121,8 @@ void readData( std::string dataFile,
     exit(-1);
   }
   
-  size_t numTimeStep,numVertex,d,dimension;
-	std::vector<double> timePoint;
+  size_t numTimeStep,numVertex,d,dimension=-1;
+  std::vector<double> timePoint;
   
   IN >> numTimeStep;
   timePoint.resize(numTimeStep);
@@ -131,25 +131,25 @@ void readData( std::string dataFile,
   cellVertex.resize(numTimeStep);
   wallVertex.resize(numTimeStep);
   vertexPos.resize(numTimeStep);
-	
+  
   for( size_t t=0 ; t<numTimeStep ; ++t ) {
     //Read vertex positions
-		IN >> numVertex;
-		IN >> d;
-		if (t==0) {
-			dimension=d;
-		}
-		if (d!=dimension) {
-			std::cerr << "readData() Dimension at time point " << t << " wrong." 
-								<< std::endl;
-			exit(-1);
-		}
+    IN >> numVertex;
+    IN >> d;
+    if (t==0) {
+      dimension=d;
+    }
+    if (d!=dimension) {
+      std::cerr << "readData() Dimension at time point " << t << " wrong." 
+		<< std::endl;
+      exit(-1);
+    }
     IN >> timePoint[t];
     vertexPos[t].resize(numVertex);
     for( size_t i=0 ; i<numVertex ; ++i ) {
       vertexPos[t][i].resize( dimension );
       for( size_t j=0 ; j<d ; ++j )
-				IN >> vertexPos[t][i][j];
+	IN >> vertexPos[t][i][j];
     }
     size_t numCell,numVar;
     //Read cell data
@@ -162,10 +162,10 @@ void readData( std::string dataFile,
       IN >> numCellVertex;
       cellVertex[t][i].resize(numCellVertex);
       for( size_t k=0 ; k<numCellVertex ; ++k )
-				IN >> cellVertex[t][i][k];
+	IN >> cellVertex[t][i][k];
       cellData[t][i].resize(numVar);
       for( size_t k=0 ; k<numVar ; ++k )
-				IN >> cellData[t][i][k];
+	IN >> cellData[t][i][k];
     }
     size_t numWall,numVarWall;
     //Read wall data
@@ -178,10 +178,10 @@ void readData( std::string dataFile,
       //IN >> numWallVertex;
       wallVertex[t][i].resize(numWallVertex);
       for( size_t k=0 ; k<numWallVertex ; ++k )
-				IN >> wallVertex[t][i][k];
+	IN >> wallVertex[t][i][k];
       wallData[t][i].resize(numVarWall);
       for( size_t k=0 ; k<numVarWall ; ++k )
-				IN >> wallData[t][i][k];
+	IN >> wallData[t][i][k];
     }		
   }
 }
