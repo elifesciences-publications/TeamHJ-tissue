@@ -18,16 +18,42 @@ class VertexFromWallSpring : public BaseReaction {
  public:
   
   VertexFromWallSpring(std::vector<double> &paraValue, 
-											 std::vector< std::vector<size_t> > 
-											 &indValue );
+		       std::vector< std::vector<size_t> > 
+		       &indValue );
   
   void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
+};
+
+///
+/// @brief Updates vertices from an asymmetric wall spring potential
+/// where the spring constants are taken from two wall variables
+///
+/// This class updates according to a spring potential where two
+/// spring constants are set from elsewhere, i.e. values are taken
+/// from two variables representing the values for the TWO parts of
+/// the wall connected to the two neighboring cells. 
+///
+class VertexFromDoubleWallSpring : public BaseReaction {
+  
+ public:
+  
+  VertexFromDoubleWallSpring(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > 
+			     &indValue );
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
 ///
@@ -35,23 +61,23 @@ class VertexFromWallSpring : public BaseReaction {
 ///
 class VertexFromWallSpringSpatial : public BaseReaction {
   
-private:
-	
-	double Kpow_;
-	
-public:
+ private:
+  
+  double Kpow_;
+  
+ public:
   
   VertexFromWallSpringSpatial(std::vector<double> &paraValue, 
-															std::vector< std::vector<size_t> > 
-															&indValue );
+			      std::vector< std::vector<size_t> > 
+			      &indValue );
   
   void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
 ///
@@ -69,23 +95,23 @@ public:
 ///
 class VertexFromWallSpringMTSpatial : public BaseReaction {
   
-private:
-	
-	double Kpow_;
-	
-public:
+ private:
+  
+  double Kpow_;
+  
+ public:
   
   VertexFromWallSpringMTSpatial(std::vector<double> &paraValue, 
-																std::vector< std::vector<size_t> > 
-																&indValue );
+				std::vector< std::vector<size_t> > 
+				&indValue );
   
   void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
 ///
@@ -94,23 +120,23 @@ public:
 ///
 class VertexFromWallSpringMT : public BaseReaction {
   
-public:
+ public:
   
   VertexFromWallSpringMT(std::vector<double> &paraValue, 
-												 std::vector< std::vector<size_t> > 
-												 &indValue );
+			 std::vector< std::vector<size_t> > 
+			 &indValue );
   
   void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
-	void initiate(Tissue &T,
-								std::vector< std::vector<double> > &cellData,
-								std::vector< std::vector<double> > &wallData,
-								std::vector< std::vector<double> > &vertexData );
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
+  void initiate(Tissue &T,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData );
 };
 
 ///
@@ -120,41 +146,41 @@ public:
 ///
 class VertexFromWallSpringMTHistory : public BaseReaction {
   
-public:
+ public:
   
   VertexFromWallSpringMTHistory(std::vector<double> &paraValue, 
-																std::vector< std::vector<size_t> > 
-																&indValue );
+				std::vector< std::vector<size_t> > 
+				&indValue );
   
   void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
-	void initiate(Tissue &T,
-								std::vector< std::vector<double> > &cellData,
-								std::vector< std::vector<double> > &wallData,
-								std::vector< std::vector<double> > &vertexData);
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
+  void initiate(Tissue &T,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData);
 };
 
 //!Updates vertices from an asymmetric epidermal wall spring potential
 class VertexFromEpidermalWallSpring : public BaseReaction {
   
-public:
+ public:
   
   VertexFromEpidermalWallSpring(std::vector<double> &paraValue, 
-																std::vector< std::vector<size_t> > 
-																&indValue );
+				std::vector< std::vector<size_t> > 
+				&indValue );
   
   void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
 //!Updates vertices from an asymmetric epidermal wall spring potential
@@ -163,31 +189,31 @@ class VertexFromEpidermalCellWallSpring : public BaseReaction {
  public:
   
   VertexFromEpidermalCellWallSpring(std::vector<double> &paraValue, 
-																		std::vector< std::vector<size_t> > 
-																		&indValue );
+				    std::vector< std::vector<size_t> > 
+				    &indValue );
   
   void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
 class VertexFromWallSpringExperimental : public BaseReaction
 {
  public:
-	VertexFromWallSpringExperimental(std::vector<double> &paraValue,
-							   std::vector< std::vector<size_t> > &indValue);
-
-	void derivs(Tissue &T,
-			  std::vector< std::vector<double> > &cellData,
-			  std::vector< std::vector<double> > &wallData,
-			  std::vector< std::vector<double> > &vertexData,
-			  std::vector< std::vector<double> > &cellDerivs,
-			  std::vector< std::vector<double> > &wallDerivs,
-			  std::vector< std::vector<double> > &vertexDerivs);
+  VertexFromWallSpringExperimental(std::vector<double> &paraValue,
+				   std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
 };
 
 ///
@@ -199,8 +225,8 @@ class VertexFromWallSpringConcentrationHill : public BaseReaction {
  public:
   
   VertexFromWallSpringConcentrationHill(std::vector<double> &paraValue, 
-				 std::vector< std::vector<size_t> > 
-				 &indValue );
+					std::vector< std::vector<size_t> > 
+					&indValue );
   
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
@@ -213,19 +239,19 @@ class VertexFromWallSpringConcentrationHill : public BaseReaction {
 
 class VertexFromWallSpringMTConcentrationHill : public BaseReaction {
   
-public:
+ public:
   
   VertexFromWallSpringMTConcentrationHill(std::vector<double> &paraValue, 
-																					std::vector< std::vector<size_t> > 
-																					&indValue );
+					  std::vector< std::vector<size_t> > 
+					  &indValue );
   
   void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
 #endif

@@ -13,26 +13,26 @@
 
 VertexFromWallSpring::
 VertexFromWallSpring(std::vector<double> &paraValue, 
-															 std::vector< std::vector<size_t> > 
-															 &indValue ) 
+		     std::vector< std::vector<size_t> > 
+		     &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
   if( paraValue.size()!=2 ) {
     std::cerr << "VertexFromWallSpring::"
-							<< "VertexFromWallSpring() "
-							<< "Uses two parameters K_force frac_adhesion.\n";
+	      << "VertexFromWallSpring() "
+	      << "Uses two parameters K_force frac_adhesion.\n";
     exit(0);
   }
   if( indValue.size() < 1 || indValue.size() > 2 
-			|| indValue[0].size() != 1 
-			|| (indValue.size()==2 && indValue[1].size() != 1) ) {
+      || indValue[0].size() != 1 
+      || (indValue.size()==2 && indValue[1].size() != 1) ) {
     std::cerr << "VertexFromWallSpring::"
-							<< "VertexFromWallSpring() "
-							<< "Wall length index given in first level,"
-							<< " and optionally wall variable save index in second.\n";
+	      << "VertexFromWallSpring() "
+	      << "Wall length index given in first level,"
+	      << " and optionally wall variable save index in second.\n";
     exit(0);
   }
-
+  
   // Set the variable values
   setId("VertexFromWallSpring");
   setParameter(paraValue);  
@@ -67,7 +67,7 @@ derivs(Tissue &T,
     double distance=0.0;
     for( size_t d=0 ; d<dimension ; d++ )
       distance += (vertexData[v1][d]-vertexData[v2][d])*
-				(vertexData[v1][d]-vertexData[v2][d]);
+	(vertexData[v1][d]-vertexData[v2][d]);
     distance = std::sqrt(distance);
     double wallLength=wallData[i][wallLengthIndex];
     double coeff = parameter(0)*((1.0/wallLength)-(1.0/distance));
@@ -81,6 +81,90 @@ derivs(Tissue &T,
 		//Save force in wall variable if appropriate
 		if( numVariableIndexLevel()>1 )
 			wallData[i][variableIndex(1,0)] = coeff*distance;
+    
+    //Update both vertices for each dimension
+    for(size_t d=0 ; d<dimension ; d++ ) {
+      double div = (vertexData[v1][d]-vertexData[v2][d])*coeff;
+      vertexDerivs[v1][d] -= div;
+      vertexDerivs[v2][d] += div;
+    }
+  }
+}
+
+VertexFromDoubleWallSpring::
+VertexFromDoubleWallSpring(std::vector<double> &paraValue, 
+			   std::vector< std::vector<size_t> > 
+			   &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=2 ) {
+    std::cerr << "VertexFromDoubleWallSpring::"
+	      << "VertexFromDoubleWallSpring() "
+	      << "Uses two parameters K_force frac_adhesion.\n";
+    exit(0);
+  }
+  if( indValue.size() < 2 || indValue.size() > 3 
+      || indValue[0].size() != 1
+      || indValue[1].size() != 2
+      || (indValue.size()==3 && indValue[2].size() != 1) ) {
+    std::cerr << "VertexFromDoubleWallSpring::"
+	      << "VertexFromDoubleWallSpring() "
+	      << "Wall length index given in first level,"
+	      << " the two wall k variable indices in second,"
+	      << " and optionally wall variable save index in third.\n";
+    exit(0);
+  }
+  
+  // Set the variable values
+  setId("VertexFromDoubleWallSpring");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "K_force";
+  tmp[1] = "frac_adh";
+  setParameterId( tmp );
+}
+
+void VertexFromDoubleWallSpring::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) {
+  
+  //Do the update for each wall
+  size_t numWalls = T.numWall();
+  size_t wallLengthIndex = variableIndex(0,0);
+  size_t wall1kIndex = variableIndex(1,0);
+  size_t wall2kIndex = variableIndex(1,1);
+
+  for( size_t i=0 ; i<numWalls ; ++i ) {
+    size_t v1 = T.wall(i).vertex1()->index();
+    size_t v2 = T.wall(i).vertex2()->index();
+    size_t dimension = vertexData[v1].size();
+    assert( vertexData[v2].size()==dimension );
+    //Calculate shared factors
+    double distance=0.0;
+    for( size_t d=0 ; d<dimension ; d++ )
+      distance += (vertexData[v1][d]-vertexData[v2][d])*
+	(vertexData[v1][d]-vertexData[v2][d]);
+    distance = std::sqrt(distance);
+    double wallLength=wallData[i][wallLengthIndex];
+    double coeff = (wallData[i][wall1kIndex]+wallData[i][wall2kIndex])*parameter(0)*((1.0/wallLength)-(1.0/distance));
+    if( distance <= 0.0 || wallLength <=0.0 ) {
+      //std::cerr << i << " - " << wallLength << " " << distance << std::endl;
+      coeff = 0.0;
+    }
+    if( distance>wallLength )
+      coeff *=parameter(1);
+    
+    //Save force in wall variable if appropriate
+    if( numVariableIndexLevel()>1 )
+      wallData[i][variableIndex(1,0)] = coeff*distance;
     
     //Update both vertices for each dimension
     for(size_t d=0 ; d<dimension ; d++ ) {

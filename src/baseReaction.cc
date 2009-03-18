@@ -46,22 +46,24 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if(idValue == "MoveVertexRadially")
     return new MoveVertexRadially(paraValue, indValue);
   else if (idValue == "WallLengthGrowExperimental")
-	  return new WallLengthGrowExperimental(paraValue, indValue);
-	else if (idValue == "WaterVolumeFromTurgor")
-	  return new WaterVolumeFromTurgor(paraValue, indValue);
-	else if (idValue == "DilutionFromVertexDerivs")
-	  return new DilutionFromVertexDerivs(paraValue, indValue);
-	else if (idValue == "WallGrowthConstantStress" || 
-					 idValue == "WallGrowthConstantStressConcentrationHill") {
-		std::cerr << "BaseReaction::createReaction() WallGrowthConstantStress* has been "
-							<< "replaced by WallGrowthStress*." << std::endl;
-		exit(-1);
-	}
-
+    return new WallLengthGrowExperimental(paraValue, indValue);
+  else if (idValue == "WaterVolumeFromTurgor")
+    return new WaterVolumeFromTurgor(paraValue, indValue);
+  else if (idValue == "DilutionFromVertexDerivs")
+    return new DilutionFromVertexDerivs(paraValue, indValue);
+  else if (idValue == "WallGrowthConstantStress" || 
+	   idValue == "WallGrowthConstantStressConcentrationHill") {
+    std::cerr << "BaseReaction::createReaction() WallGrowthConstantStress* has been "
+	      << "replaced by WallGrowthStress*." << std::endl;
+    exit(-1);
+  }
+  
   //Mechanical interactions between vertices
   //mechanicalSpring.h,mechanicalSpring.cc
   else if(idValue=="VertexFromWallSpring")
     return new VertexFromWallSpring(paraValue,indValue);
+  else if(idValue=="VertexFromDoubleWallSpring")
+    return new VertexFromDoubleWallSpring(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringSpatial")
     return new VertexFromWallSpringSpatial(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringConcentrationHill")
