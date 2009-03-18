@@ -533,9 +533,8 @@ void BaseSolver::print(std::ostream &os)
 		os << Nc << std::endl;
 		size_t pinI=8,xI=9;
 		//size_t auxinI=4,mI=7;
-		std::vector<double> parameter(8);
-		parameter[0]=0.1;
-		parameter[3]=0.01;
+		std::vector<double> parameter(1);
+		parameter[0]=0.01;
 		for( size_t i=0 ; i<Nc ; ++i ) {
 			size_t Ncv = T_->cell(i).numVertex(); 
 			os << Ncv << " ";
@@ -563,13 +562,12 @@ void BaseSolver::print(std::ostream &os)
 					//sum += Pij[n] = (1.0-parameter[2]) + 
 					//parameter[2]*cellData_[ neighI ][xI];
 				}
-				else 
-					sum += Pij[n] = parameter[0];
 			}
+			sum += parameter[0];
 			//sum /= numWalls;//For adjusting for different num neigh
 			
 			if( sum >= 0.0 )
-				os << parameter[3]*cellData_[i][pinI] / sum << " ";
+				os << parameter[0]*cellData_[i][pinI] / sum << " ";
 			else
 				os << "0.0 ";
 			
@@ -581,11 +579,9 @@ void BaseSolver::print(std::ostream &os)
 			}
 			os << std::endl;
 		}
-    //////////////////////////////////////////////////////////////////////
-    //End Pij printing version3 
 	}
 	///
-	/// For printing pin1 also in membranes
+	/// For printing pin1 also in membranes using a wall property
 	///
 	else if (printFlag_==5) {
 		if( tCount==0 )
@@ -611,9 +607,8 @@ void BaseSolver::print(std::ostream &os)
 		os << Nc << std::endl;
 		size_t pinI=8,xI=1;
 		//size_t auxinI=4,mI=7;
-		std::vector<double> parameter(8);
-		parameter[0]=0.1;
-		parameter[3]=0.01;
+		std::vector<double> parameter(1);
+		parameter[0]=0.01;
 		for( size_t i=0 ; i<Nc ; ++i ) {
 			size_t Ncv = T_->cell(i).numVertex(); 
 			os << Ncv << " ";
@@ -627,16 +622,27 @@ void BaseSolver::print(std::ostream &os)
 			//Polarization coefficient normalization constant
 			double sum=0.0;
 			std::vector<double> Pij(numWalls);
+			double minPin=0.0;
 			for( size_t n=0 ; n<numWalls ; ++n ) {
 				size_t neighI = T_->cell(i).wall(n)->index();
 				sum += Pij[n] = wallData_[ neighI ][ xI ];
+				if (Pij[n]<minPin) {
+					minPin=Pij[n];
+				}
 				//sum += Pij[n] = (1.0-parameter[2]) + 
 				//parameter[2]*cellData_[ neighI ][xI];
 			}
-			if( sum >= 0.0 )
-				os << parameter[3]*cellData_[i][pinI] / sum << " ";
-			else
-				os << "0.0 ";
+			if (minPin<0.0) {
+				sum -= minPin*numWalls;
+				for( size_t n=0 ; n<numWalls ; ++n ) {
+					Pij[n] -= minPin;
+				}
+			}
+			sum += parameter[0];
+			//if( sum >= 0.0 )
+			//os << parameter[0]*cellData_[i][pinI] / sum << " ";
+			//else
+			os << "0.0 ";
 			
 			for( size_t n=0 ; n<numWalls ; ++n ) {
 				double pol=0.0;

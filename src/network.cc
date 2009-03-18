@@ -180,10 +180,6 @@ AuxinModelSimple1Wall(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Derivative contribution for the growth
-/*! Deriving the time derivative contribution for the growth for all
-  walls in the tissue.
-*/
 void AuxinModelSimple1Wall::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -197,6 +193,7 @@ derivs(Tissue &T,
 	size_t aI = variableIndex(0,0);
 	size_t pI = variableIndex(0,1);
 	size_t xI = variableIndex(0,2);
+	std::vector<double> pin;
   assert( aI<cellData[0].size() &&
 					pI<cellData[0].size() &&
 					xI<cellData[0].size() );
@@ -211,13 +208,22 @@ derivs(Tissue &T,
 		size_t numWalls=T.cell(i).numWall();
 		//Polarization coefficient normalization constant
 		double sum=0.0;
-		//pin[i].resize( numWalls+1 );
+		pin.resize( numWalls );
+		double minPin=0.0;
 		for( size_t n=0 ; n<numWalls ; ++n ) {
-			sum += wallData[ T.cell(i).wall(n)->index() ][ xI ];
+			sum += pin[n] = wallData[ T.cell(i).wall(n)->index() ][ xI ];
+			if (pin[n]<minPin) {
+				minPin = pin[n];
+			}
+			if (minPin<0.0) {
+				sum += numWalls*minPin;
+				for( size_t n=0 ; n<numWalls ; ++n ) {
+					pin[n] += minPin;
+				}
+			}
 		}
-		//sum /= numActualWalls;//For adjusting for different num neigh
 		sum += parameter(2);
-	
+		
 		for( size_t n=0 ; n<numWalls ; ++n ) {
 			if( T.cell(i).wall(n)->cell1() != T.background() &&
 					T.cell(i).wall(n)->cell2() != T.background() ) { 
@@ -228,7 +234,7 @@ derivs(Tissue &T,
 					neighIndex = T.cell(i).wall(n)->cell1()->index();				
 				double polRate=0.0;			
 				if( sum > 0.0 )
-					polRate = cellData[i][pI] * wallData[T.cell(i).wall(n)->index()][xI] / sum;
+					polRate = cellData[i][pI] * pin[n] / sum;
 				//pin[i][n+1] = polRate;			
 				cellDerivs[i][aI] -= (parameter(3)*polRate+parameter(4))*cellData[i][aI];
 				cellDerivs[neighIndex][aI] += (parameter(3)*polRate+parameter(4))*cellData[i][aI];
