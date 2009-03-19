@@ -1,36 +1,36 @@
-/**
- * Filename     : network.cc
- * Description  : Classes describing complete models
- * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
- * Created      : November 2006
- * Revision     : $Id:$
- */
-#include"network.h"
-#include"baseReaction.h"
+///
+/// Filename     : network.cc
+/// Description  : Classes describing complete models
+/// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+/// Created      : November 2006
+/// Revision     : $Id:$
+///
+#include "network.h"
+#include "baseReaction.h"
 
 AuxinModelSimple1::
 AuxinModelSimple1(std::vector<double> &paraValue, 
-			       std::vector< std::vector<size_t> > 
-			       &indValue ) {
+		  std::vector< std::vector<size_t> > 
+		  &indValue ) {
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
   if( paraValue.size()!=12 ) {
     std::cerr << "AuxinModelSimple1::"
-							<< "AuxinModelSimple1() "
-							<< "Twelve parameters used.\n\n";
-		std::cerr << "dA_i/dt = p0*M_i + p1 - p2*A_i +p5*Sum_{neigh} (A_n-A_i) +\n" 
-							<< "p4*Sum_{neigh} (P_ni*A_n-P_in*A_i)\n\n" 
-							<< "dP_i/dt = p6 - p7*P_i\n\n"
-							<< "dX_i/dt = p8*A_i - p9*X_i\n\n"
-							<< "dM_i/dt = p10*Theta_L1 - p11*M_i\n\n"
-							<< "P_in = P_i*X_n/(p_3+Sum_{k,neigh}X_k)\n";
+	      << "AuxinModelSimple1() "
+	      << "Twelve parameters used.\n\n";
+    std::cerr << "dA_i/dt = p0*M_i + p1 - p2*A_i +p5*Sum_{neigh} (A_n-A_i) +\n" 
+	      << "p4*Sum_{neigh} (P_ni*A_n-P_in*A_i)\n\n" 
+	      << "dP_i/dt = p6 - p7*P_i\n\n"
+	      << "dX_i/dt = p8*A_i - p9*X_i\n\n"
+	      << "dM_i/dt = p10*Theta_L1 - p11*M_i\n\n"
+	      << "P_in = P_i*X_n/(p_3+Sum_{k,neigh}X_k)\n";
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size() != 4 ) {
     std::cerr << "AuxinModelSimple1::"
-							<< "AuxinModelSimple1() "
-							<< "Four variable indices are used (auxin,pin,X,M).\n";
+	      << "AuxinModelSimple1() "
+	      << "Four variable indices are used (auxin,pin,X,M).\n";
     exit(0);
   }
   //Set the variable values
@@ -55,14 +55,10 @@ AuxinModelSimple1(std::vector<double> &paraValue,
   tmp[9] = "d_X";
   tmp[10] = "p_M";
   tmp[11] = "d_M";
-	
+  
   setParameterId( tmp );
 }
 
-//! Derivative contribution for the growth
-/*! Deriving the time derivative contribution for the growth for all
-  walls in the tissue.
-*/
 void AuxinModelSimple1::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -73,91 +69,215 @@ derivs(Tissue &T,
        std::vector< std::vector<double> > &vertexDerivs ) 
 {  
   size_t numCells = T.numCell();
-	size_t aI = variableIndex(0,0);
-	size_t pI = variableIndex(0,1);
-	size_t xI = variableIndex(0,2);
-	size_t mI = variableIndex(0,3);
+  size_t aI = variableIndex(0,0);
+  size_t pI = variableIndex(0,1);
+  size_t xI = variableIndex(0,2);
+  size_t mI = variableIndex(0,3);
   assert( aI<cellData[0].size() &&
-					pI<cellData[0].size() &&
-					xI<cellData[0].size() &&
-					mI<cellData[0].size() );
+	  pI<cellData[0].size() &&
+	  xI<cellData[0].size() &&
+	  mI<cellData[0].size() );
   
   for( size_t i=0 ; i<numCells ; ++i ) {
-		
-		//Production and degradation
+    
+    //Production and degradation
     cellDerivs[i][aI] += parameter(0)*cellData[i][mI] + parameter(1) - 
-			parameter(2)*cellData[i][aI];
-		
+      parameter(2)*cellData[i][aI];
+    
     cellDerivs[i][pI] += parameter(6) - parameter(7)*cellData[i][pI];
-		
+    
     cellDerivs[i][xI] += parameter(8)*cellData[i][aI] 
-			- parameter(9)*cellData[i][xI];
-		
+      - parameter(9)*cellData[i][xI];
+    
     cellDerivs[i][mI] -= parameter(11)*cellData[i][mI];
-		if( T.cell(i).isNeighbor(T.background()) )
-			cellDerivs[i][mI] += parameter(10);
-		
-		//Transport
-		size_t numWalls=T.cell(i).numWall();
-		//Polarization coefficient normalization constant
-		double sum=0.0;
-		size_t numActualWalls=0;
-		//pin[i].resize( numWalls+1 );
-		for( size_t n=0 ; n<numWalls ; ++n ) {
-			if( T.cell(i).wall(n)->cell1() != T.background() &&
-					T.cell(i).wall(n)->cell2() != T.background() ) { 
-				numActualWalls++;
-				if( T.cell(i).wall(n)->cell1()->index()==i )
-					sum += cellData[ T.cell(i).wall(n)->cell2()->index() ][ xI ];
-				else
-					sum += cellData[ T.cell(i).wall(n)->cell1()->index() ][ xI ];
-			}
-		}
-		//sum /= numActualWalls;//For adjusting for different num neigh
-		sum += parameter(3);
-		
-		for( size_t n=0 ; n<numWalls ; ++n ) {
-			//if( !T.cell(i).isNeighbor(T.background()) ) { 
-			if( T.cell(i).wall(n)->cell1() != T.background() &&
-					T.cell(i).wall(n)->cell2() != T.background() ) { 
-				size_t neighIndex; 
-				if( T.cell(i).wall(n)->cell1()->index()==i )
-					neighIndex = T.cell(i).wall(n)->cell2()->index();				
-				else
-					neighIndex = T.cell(i).wall(n)->cell1()->index();				
-				double polRate=0.0;
-				
-				if( sum != 0.0 )
-					polRate = cellData[i][pI] * cellData[neighIndex][xI] / sum;
-				//pin[i][n+1] = polRate;
-				cellDerivs[i][aI] -= (parameter(4)*polRate+parameter(5))*cellData[i][aI];
-				cellDerivs[neighIndex][aI] += (parameter(4)*polRate+parameter(5))*cellData[i][aI];
-			}
-		}
-	}
+    if( T.cell(i).isNeighbor(T.background()) )
+      cellDerivs[i][mI] += parameter(10);
+    
+    //Transport
+    size_t numWalls=T.cell(i).numWall();
+    //Polarization coefficient normalization constant
+    double sum=0.0;
+    size_t numActualWalls=0;
+    //pin[i].resize( numWalls+1 );
+    for( size_t n=0 ; n<numWalls ; ++n ) {
+      if( T.cell(i).wall(n)->cell1() != T.background() &&
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	numActualWalls++;
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  sum += cellData[ T.cell(i).wall(n)->cell2()->index() ][ xI ];
+	else
+	  sum += cellData[ T.cell(i).wall(n)->cell1()->index() ][ xI ];
+      }
+    }
+    //sum /= numActualWalls;//For adjusting for different num neigh
+    sum += parameter(3);
+    
+    for( size_t n=0 ; n<numWalls ; ++n ) {
+      //if( !T.cell(i).isNeighbor(T.background()) ) { 
+      if( T.cell(i).wall(n)->cell1() != T.background() &&
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	size_t neighIndex; 
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  neighIndex = T.cell(i).wall(n)->cell2()->index();				
+	else
+	  neighIndex = T.cell(i).wall(n)->cell1()->index();				
+	double polRate=0.0;
+	
+	if( sum != 0.0 )
+	  polRate = cellData[i][pI] * cellData[neighIndex][xI] / sum;
+	//pin[i][n+1] = polRate;
+	cellDerivs[i][aI] -= (parameter(4)*polRate+parameter(5))*cellData[i][aI];
+	cellDerivs[neighIndex][aI] += (parameter(4)*polRate+parameter(5))*cellData[i][aI];
+      }
+    }
+  }
+}
+
+AuxinModelSimpleStress::
+AuxinModelSimpleStress(std::vector<double> &paraValue, 
+		       std::vector< std::vector<size_t> > 
+		       &indValue ) 
+{  
+  //
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=10 ) {
+    std::cerr << "AuxinModelSimpleStress::"
+	      << "AuxinModelSimpleStress() "
+	      << "Ten parameters used.\n\n";
+    std::cerr << "dA_i/dt = p0 - p1*A_i +p2*Sum_{neigh} (A_n-A_i) +\n" 
+	      << "p3*Sum_{neigh} (P_ni*A_n-P_in*A_i)\n\n" 
+	      << "dP_i/dt = p4 - p5*P_i\n\n"
+	      << "P_in = P_i*X_in/(p6+Sum_k X_ik)\n\n"
+	      << "X_in = k_in*F/(k_in+k_ni)\n\n"
+	      << "k_in = p7 + p8/(p9+A_i)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 3 ) {
+    std::cerr << "AuxinModelSimpleStress::"
+	      << "AuxinModelSimpleStress() "
+	      << "Two cell variable indices are used in first level (auxin,pin),\n"
+	      << "and three wall indices are used in second level (F,k_1,k_2),\n";
+    exit(0);
+  }
+  //Set the variable values
+  //////////////////////////////////////////////////////////////////////
+  setId("AuxinModelSimpleStress");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //////////////////////////////////////////////////////////////////////
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "p_auxin";
+  tmp[1] = "d_auxin";
+  tmp[2] = "D_auxin";
+  tmp[3] = "T_auxin";
+  tmp[4] = "p_pin";
+  tmp[5] = "d_pin";
+  tmp[6] = "K_pin";
+  tmp[7] = "k0_k";
+  tmp[8] = "k1_k";
+  tmp[9] = "K_k";
+  
+  setParameterId( tmp );
+}
+
+void AuxinModelSimpleStress::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);
+  size_t pI = variableIndex(0,1);
+  size_t FI = variableIndex(1,0);
+  std::vector<size_t> kI(2);
+  kI[0] = variableIndex(1,1);
+  kI[1] = variableIndex(1,2);
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  FI<wallData[0].size() &&
+	  kI[0]<wallData[0].size() &&
+	  kI[1]<cellData[0].size() );
+  
+  for( size_t i=0 ; i<numCells ; ++i ) {
+    
+    //Production and degradation
+    cellDerivs[i][aI] += parameter(0) - parameter(1)*cellData[i][aI];
+    
+    cellDerivs[i][pI] += parameter(4) - parameter(5)*cellData[i][pI];
+    
+    //Transport
+    size_t numWalls=T.cell(i).numWall();
+    //Polarization coefficient normalization constant
+    double sum=0.0;
+    std::vector<double> pin(numWalls);
+    for( size_t n=0 ; n<numWalls ; ++n ) {
+      size_t kII=1;
+      size_t k = T.cell(i).wall(n)->index();
+      if( T.cell(i).wall(n)->cell1()->index() == i ) {
+	kII=0;
+      }
+      sum += pin[n] = wallData[k][FI]*wallData[k][kI[kII]]/(wallData[k][kI[0]]+wallData[k][kI[1]]);
+    }
+    //sum /= numWalls;//For adjusting for different num neigh
+    sum += parameter(6);
+    // Actual passive and active transport
+    for( size_t n=0 ; n<numWalls ; ++n ) {
+      if( T.cell(i).wall(n)->cell1() != T.background() &&
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	size_t neighIndex; 
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  neighIndex = T.cell(i).wall(n)->cell2()->index();				
+	else
+	  neighIndex = T.cell(i).wall(n)->cell1()->index();				
+	
+	double polRate=0.0;
+	if( sum != 0.0 )
+	  polRate = cellData[i][pI] * pin[n] / sum;
+	cellDerivs[i][aI] -= (parameter(3)*polRate+parameter(2))*cellData[i][aI];
+	cellDerivs[neighIndex][aI] += (parameter(3)*polRate+parameter(2))*cellData[i][aI];
+      }
+    }
+    // Calculate the new k values from the auxin concentration
+    for( size_t n=0 ; n<numWalls ; ++n ) {
+      size_t kII=1;
+      size_t k = T.cell(i).wall(n)->index();
+      if( T.cell(i).wall(n)->cell1()->index() == i ) {
+	kII=0;
+      }
+      wallData[k][kI[kII]] = parameter(7) + parameter(8)/(parameter(9)+cellData[i][aI]);
+    }    
+  }
 }
 
 AuxinModelSimple1Wall::
 AuxinModelSimple1Wall(std::vector<double> &paraValue, 
-											std::vector< std::vector<size_t> > 
-											&indValue ) {
+		      std::vector< std::vector<size_t> > 
+		      &indValue ) {
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
   if( paraValue.size()!=7 ) {
     std::cerr << "AuxinModelSimple1::"
-							<< "AuxinModelSimple1() "
-							<< "Twelve parameters used.\n\n";
-		std::cerr << "dA_i/dt = p0 - p1*A_i +p4*Sum_{neigh} (A_n-A_i) +\n" 
-							<< "p3*Sum_{neigh} (P_ni*A_n-P_in*A_i)\n\n" 
-							<< "dP_i/dt = p5 - p6*P_i\n\n"
-							<< "P_in = P_i*X_in/(p_2+Sum_{k,neigh}X_ik)\n";
+	      << "AuxinModelSimple1() "
+	      << "Twelve parameters used.\n\n";
+    std::cerr << "dA_i/dt = p0 - p1*A_i +p4*Sum_{neigh} (A_n-A_i) +\n" 
+	      << "p3*Sum_{neigh} (P_ni*A_n-P_in*A_i)\n\n" 
+	      << "dP_i/dt = p5 - p6*P_i\n\n"
+	      << "P_in = P_i*X_in/(p_2+Sum_{k,neigh}X_ik)\n";
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size() != 3 ) {
     std::cerr << "AuxinModelSimple1::"
-							<< "AuxinModelSimple1() "
-							<< "Three variable indices are used (auxin,pin,X in wall).\n";
+	      << "AuxinModelSimple1() "
+	      << "Three variable indices are used (auxin,pin,X in wall).\n";
     exit(0);
   }
   //Set the variable values

@@ -79,6 +79,47 @@ class AuxinModelSimple1Wall : public BaseReaction {
 							std::vector< std::vector<double> > &vertexDerivs );
 };
 
+///
+/// @brief A cell-based auxin transport model where the PIN polarization comes from wall stresses
+///
+/// An auxin transport model for cellular auxin and where PIN polarization is based on stresses
+/// in a double wall compartment, i.e. the wall compartment between a cell pair is divided into
+/// two compartments, and stress is measured in the wall compartment neighbor to the specific cell.
+/// Auxin concentration is affecting the spring constants in wall pieces neighboring the cell.
+///
+/// PIN and auxin are updated according to:
+///
+///	dA_i/dt = p0 - p1*A_i +p2*\Sum_{neigh} (A_n-A_i) + 
+///	p3*\Sum_{neigh} (P_ni*A_n-P_in*A_i) 
+///
+///	dP_i/dt = p4 - p5*P_i 
+///
+///	P_in = P_i*X_in/(p_6+\Sum_{k,neigh}X_ik)
+///
+///     k_in = p_7 + p_8/(p_9+A_i)
+///
+/// where X_in is the stress in the wall (X_in = k_in*F/(k_in+k_ni).
+/// The column indices for auxin and PIN in cells are at first level, 
+/// and F k_1 k_2 in wall are at the second level of indices.
+/// k_1 and k_2 are set via the cell auxin concentrations and 1,2 are the order of cell neighbors.
+
+class AuxinModelSimpleStress : public BaseReaction {
+  
+ public:
+  
+  AuxinModelSimpleStress(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > 
+			 &indValue );
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
+};
+
 //!A cell-based auxin transport model including AUX1 and PID
 /*!A complete pattern generating auxin model based on only cellular
   compartments. The four molecules are updated according to:

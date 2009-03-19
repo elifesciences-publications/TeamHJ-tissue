@@ -1,10 +1,10 @@
-/**
- * Filename     : baseReaction.cc
- * Description  : A base class describing variable updates
- * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
- * Created      : October 2003
- * Revision     : $Id: baseReaction.cc,v 1.25 2006/03/18 00:05:14 henrik Exp $
- */
+//
+// Filename     : baseReaction.cc
+// Description  : A base class describing variable updates
+// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+// Created      : October 2003
+// Revision     : $Id: baseReaction.cc,v 1.25 2006/03/18 00:05:14 henrik Exp $
+//
 #include <vector>
 
 #include "baseReaction.h"
@@ -141,6 +141,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	//network.h,network.cc
   else if(idValue=="AuxinModelSimple1")
     return new AuxinModelSimple1(paraValue,indValue); 
+  else if(idValue=="AuxinModelSimpleStress")
+    return new AuxinModelSimpleStress(paraValue,indValue); 
   else if(idValue=="AuxinModelSimple1Wall")
     return new AuxinModelSimple1Wall(paraValue,indValue); 
   else if(idValue=="AuxinModelSimple2")
