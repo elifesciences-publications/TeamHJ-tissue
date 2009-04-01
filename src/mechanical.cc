@@ -11,113 +11,10 @@
 #include "mechanical.h"
 #include "tissue.h"
 
-//!Constructor for the SpringAsymmetric class
-VertexFromCellPowerdiagram::
-VertexFromCellPowerdiagram(std::vector<double> &paraValue, 
-			   std::vector< std::vector<size_t> > 
-			   &indValue ) {
-  
-  //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
-  if( paraValue.size()!=1 ) {
-    std::cerr << "VertexFromCellPowerdiagram::"
-	      << "VertexFromCellPowerdiagram() "
-	      << "Uses one parameter K_force.\n";
-    exit(0);
-  }
-  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
-    std::cerr << "VertexFromCellPowerdiagram::"
-	      << "VertexFromCellPowerdiagram() "
-	      << "Cell radius index given.\n";
-    exit(0);
-  }
-  //Set the variable values
-  //////////////////////////////////////////////////////////////////////
-  setId("VertexFromCellPowerdiagram");
-  setParameter(paraValue);  
-  setVariableIndex(indValue);
-  
-  //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
-  std::vector<std::string> tmp( numParameter() );
-  tmp[0] = "K_force";
-  setParameterId( tmp );
-}
-
-//! Derivative contribution for asymmetric wall springs on vertices
-/*! 
-*/
-void VertexFromCellPowerdiagram::
-derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
-  
-  //Do the update for each vertex
-  //size_t numCells = T.numCell();
-  size_t numVertices = T.numVertex();
-  size_t cellRIndex = variableIndex(0,0);
-  size_t dimension = T.vertex(0).numPosition(); 
-  
-  for( size_t i=0 ; i<numVertices ; ++i ) {
-    //Only calculate if vertex connected to three cells
-    size_t numCellForVertex = T.vertex(i).numCell();
-    if(  numCellForVertex == 3 ) {
-      //Calculate position for all three cells
-      std::vector< std::vector<double> > cellPos(numCellForVertex);
-      std::vector<double> cellR(numCellForVertex);
-      for( size_t cellI=0 ; cellI<numCellForVertex ; ++cellI ) {
-	cellR[cellI] = cellData[ T.vertex(i).cell(cellI)->index() ][ cellRIndex ];
-	//cellR[cellI] = T.cell( T.vertex(i).cell(cellI)->index() ).variable(0);
-	cellPos[cellI] = T.cell( T.vertex(i).cell(cellI)->index() ).
-	  positionFromVertex(vertexData);
-      }
-      //std::cerr << "* " << cellPos[0][0] << " " << cellPos[0][1] << "  "
-      //	<< cellPos[1][0] << " " << cellPos[1][1] << "  "
-      //	<< cellPos[2][0] << " " << cellPos[2][1] << std::endl;
-
-      //Calculate optimal position from cell positions and raddii
-      //according to power diagram formulation
-      if( dimension != 2 ) {
-	std::cerr << "VertexFromCellPowerdiagram::derivs() Only defined "
-		  << "for two dimensions so far..." << std::endl;
-	exit(-1);
-      }
-      double Kji = cellPos[1][0]*cellPos[1][0]+cellPos[1][1]*cellPos[1][1]-
-	cellPos[0][0]*cellPos[0][0]-cellPos[0][1]*cellPos[0][1]-
-	(cellR[1]*cellR[1]-cellR[0]*cellR[0]);
-      double Kki = cellPos[2][0]*cellPos[2][0]+cellPos[2][1]*cellPos[2][1]-
-	cellPos[0][0]*cellPos[0][0]-cellPos[0][1]*cellPos[0][1]-
-	(cellR[2]*cellR[2]-cellR[0]*cellR[0]);
-      std::vector<double> powPos(dimension);
-      powPos[1] = 0.5*( Kji*(cellPos[2][0]-cellPos[0][0]) -
-			Kki*(cellPos[1][0]-cellPos[0][0]) ) /
-	( (cellPos[1][1]-cellPos[0][1])*(cellPos[2][0]-cellPos[0][0]) -
-	  (cellPos[2][1]-cellPos[0][1])*(cellPos[1][0]-cellPos[0][0]) );
-      powPos[0] = 0.5*Kji/(cellPos[1][0]-cellPos[0][0]) -
-	powPos[1]*(cellPos[1][1]-cellPos[0][1])/(cellPos[1][0]-cellPos[0][0]);
-      //std::cerr << i << " " << vertexData[i][0] << " " << vertexData[i][1] << "\t"
-      //	<< powPos[0] << " " << powPos[1] << "\t"
-      //	<< cellPos[0][0] << " " << cellPos[0][1] << "  "
-      //	<< cellPos[1][0] << " " << cellPos[1][1] << "  "
-      //	<< cellPos[2][0] << " " << cellPos[2][1] << "\t"
-      //	<< cellR[0] << " " << cellR[1] << " " << cellR[2] << std::endl;
-
-      //Update vertex for each dimension
-      for(size_t d=0 ; d<dimension ; d++ )
-	vertexDerivs[i][d] -= parameter(0)*(vertexData[i][d]-powPos[d]);
-    }
-  }
-}
-
-//!Constructor
 VertexFromCellPressure::
 VertexFromCellPressure(std::vector<double> &paraValue, 
-			   std::vector< std::vector<size_t> > 
-			   &indValue ) {
+		       std::vector< std::vector<size_t> > 
+		       &indValue ) {
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
@@ -161,12 +58,12 @@ derivs(Tissue &T,
   size_t dimension;
   dimension = T.vertex(0).numPosition(); 
 	
-	//Assumming vertices and walls are sorted
-	//////////////////////////////////////////////////////////////////////
-	assert( dimension==2 );
+  //Assumming vertices and walls are sorted
+  //////////////////////////////////////////////////////////////////////
+  assert( dimension==2 );
   //For each cell
   for( size_t cellI=0 ; cellI<numCells ; ++cellI ) {
-		
+    
     Cell &tmpCell = T.cell(cellI);
     
     //calculate volume (area)
@@ -175,15 +72,15 @@ derivs(Tissue &T,
       size_t v1I = tmpCell.vertex(k)->index();
       size_t v2I = tmpCell.vertex((k+1)%(tmpCell.numVertex()))->index();
       cellVolume += vertexData[v1I][0]*vertexData[v2I][1]-
-				vertexData[v1I][1]*vertexData[v2I][0];
+	vertexData[v1I][1]*vertexData[v2I][0];
     }
     cellVolume = 0.5*cellVolume;
     double factor=0.5*parameter(0);
     if( cellVolume<0.0 ) 
       factor = -factor;
     if (parameter(1)==1)
-			factor /= std::fabs(cellVolume);
-
+      factor /= std::fabs(cellVolume);
+    
     for( size_t k=0 ; k<tmpCell.numVertex() ; ++k ) {
       size_t v1I = tmpCell.vertex(k)->index();
       size_t v1PlusI = tmpCell.vertex((k+1)%(tmpCell.numVertex()))->index();
@@ -196,75 +93,6 @@ derivs(Tissue &T,
 				      vertexData[v1PlusI][0]);
     }
   }
-  
-	//Assuming vertices and walls not sorted (old version)
-	//////////////////////////////////////////////////////////////////////
-//   //For each cell
-//   for( size_t cellI=0 ; cellI<numCells ; ++cellI ) {
-    
-//     Cell &tmpCell = T.cell(cellI);
-//     //Calculate cell position from vertices
-//     std::vector<double> xCenter = tmpCell.positionFromVertex(vertexData);
-//     assert( xCenter.size()==dimension );
-    
-//     //Calculate derivative contributions to vertices from each wall
-//     for( size_t k=0 ; k<tmpCell.numWall() ; ++k ) {
-//       Wall &tmpWall = tmpCell.wallRef(k);
-//       size_t v1I = tmpWall.vertex1()->index();
-//       size_t v2I = tmpWall.vertex2()->index();
-//       std::vector<double> n(dimension),dx(dimension), x0(dimension);
-//       double b=0;
-//       for( size_t d=0 ; d<dimension ; ++d ) {
-// 				n[d] = vertexData[v2I][d]-vertexData[v1I][d];
-// 				b += n[d]*n[d];
-// 				x0[d] = 0.5*(vertexData[v1I][d] + vertexData[v2I][d]);
-// 				dx[d] = xCenter[d]-x0[d];
-//       }
-//       assert( b>0.0 );
-//       b = std::sqrt(b);
-//       for( size_t d=0 ; d<dimension ; ++d )
-// 				n[d] /= b;
-//       double bInv = 1.0/b;
-//       double h = dx[0]*dx[0] + dx[1]*dx[1]
-// 				-(n[0]*dx[0]+n[1]*dx[1])*(n[0]*dx[0]+n[1]*dx[1]);
-//       assert( h>0.0 );
-//       h = std::sqrt(h);
-//       double hInv = 1.0/h;
-//       double fac = parameter(0)*0.5;
-      
-//       vertexDerivs[v1I][0] += fac*( 0.5*b*hInv*
-// 																		( -dx[0] - 2.0*(n[0]*dx[0]+n[1]*dx[1])
-// 																			*(-n[1]*n[1]*bInv*dx[0]
-// 																				-0.5*n[0]
-// 																				+n[0]*n[1]*bInv*dx[1]) ) 
-// 																		- h*n[0] ); 
-//       vertexDerivs[v2I][0] += fac*( 0.5*b*hInv*
-// 																		( -dx[0] - 2.0*(n[0]*dx[0]+n[1]*dx[1])
-// 																			*(n[1]*n[1]*bInv*dx[0]
-// 																				-0.5*n[0]
-// 																				-n[0]*n[1]*bInv*dx[1]) )
-// 																		+ h*n[0] );
-//       vertexDerivs[v1I][1] += fac*( 0.5*b*hInv*
-// 																		( -dx[1] - 2.0*(n[0]*dx[0]+n[1]*dx[1])
-// 																			*(-n[0]*n[0]*bInv*dx[1]
-// 																				-0.5*n[1]
-// 																				+n[0]*n[1]*bInv*dx[0]) ) 
-// 																		- h*n[1] ); 
-//       vertexDerivs[v2I][1] += fac*( 0.5*b*hInv*
-// 																		( -dx[1] - 2.0*(n[0]*dx[0]+n[1]*dx[1])
-// 																			*(n[0]*n[0]*bInv*dx[1]
-// 																				-0.5*n[1]
-// 																				-n[0]*n[1]*bInv*dx[0]) )
-// 																		+ h*n[1] );
-      
-//       //vertexDerivs[v1I][0] += fac*( b*hInv*(bInv*(n[0]*dx[0]+n[1]*dx[1])*
-//       //				    (n[1]*n[1]*dx[0]+b*n[0]-n[0]*n[1]*dx[1]) + dx[0] ) - h*n[0] );
-//       //vertexDerivs[v1I][1] += fac*( b*hInv*(bInv*(n[1]*dx[1]+n[0]*dx[0])*
-//       //				    (-n[0]*n[0]*dx[1]+b*n[1]+n[1]*n[0]*dx[0]) + dx[1] ) - h*n[1] );
-//       //vertexDerivs[v2I][0] += fac*( n[0]*h + n[1]*hInv*(n[0]*dx[0]+n[1]*dx[1])*(n[0]*dx[1]-n[1]*dx[0]) );
-//       //vertexDerivs[v2I][1] += fac*( n[1]*h + n[0]*hInv*(n[1]*dx[1]+n[0]*dx[0])*(n[1]*dx[0]-n[0]*dx[1]) );      
-//     }
-//   }
 }
 
 //!Constructor
@@ -502,6 +330,104 @@ derivs(Tissue &T,
 				//vertexDerivs[v2I][0] += fac*( n[0]*h + n[1]*hInv*(n[0]*dx[0]+n[1]*dx[1])*(n[0]*dx[1]-n[1]*dx[0]) );
 				//vertexDerivs[v2I][1] += fac*( n[1]*h + n[0]*hInv*(n[1]*dx[1]+n[0]*dx[0])*(n[1]*dx[0]-n[0]*dx[1]) );      
 			}
+    }
+  }
+}
+
+VertexFromCellPowerdiagram::
+VertexFromCellPowerdiagram(std::vector<double> &paraValue, 
+			   std::vector< std::vector<size_t> > 
+			   &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //////////////////////////////////////////////////////////////////////
+  if( paraValue.size()!=1 ) {
+    std::cerr << "VertexFromCellPowerdiagram::"
+	      << "VertexFromCellPowerdiagram() "
+	      << "Uses one parameter K_force.\n";
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+    std::cerr << "VertexFromCellPowerdiagram::"
+	      << "VertexFromCellPowerdiagram() "
+	      << "Cell radius index given.\n";
+    exit(0);
+  }
+  //Set the variable values
+  //////////////////////////////////////////////////////////////////////
+  setId("VertexFromCellPowerdiagram");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //////////////////////////////////////////////////////////////////////
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "K_force";
+  setParameterId( tmp );
+}
+
+void VertexFromCellPowerdiagram::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) {
+  
+  //Do the update for each vertex
+  //size_t numCells = T.numCell();
+  size_t numVertices = T.numVertex();
+  size_t cellRIndex = variableIndex(0,0);
+  size_t dimension = T.vertex(0).numPosition(); 
+  
+  for( size_t i=0 ; i<numVertices ; ++i ) {
+    //Only calculate if vertex connected to three cells
+    size_t numCellForVertex = T.vertex(i).numCell();
+    if(  numCellForVertex == 3 ) {
+      //Calculate position for all three cells
+      std::vector< std::vector<double> > cellPos(numCellForVertex);
+      std::vector<double> cellR(numCellForVertex);
+      for( size_t cellI=0 ; cellI<numCellForVertex ; ++cellI ) {
+	cellR[cellI] = cellData[ T.vertex(i).cell(cellI)->index() ][ cellRIndex ];
+	//cellR[cellI] = T.cell( T.vertex(i).cell(cellI)->index() ).variable(0);
+	cellPos[cellI] = T.cell( T.vertex(i).cell(cellI)->index() ).
+	  positionFromVertex(vertexData);
+      }
+      //std::cerr << "* " << cellPos[0][0] << " " << cellPos[0][1] << "  "
+      //	<< cellPos[1][0] << " " << cellPos[1][1] << "  "
+      //	<< cellPos[2][0] << " " << cellPos[2][1] << std::endl;
+
+      //Calculate optimal position from cell positions and raddii
+      //according to power diagram formulation
+      if( dimension != 2 ) {
+	std::cerr << "VertexFromCellPowerdiagram::derivs() Only defined "
+		  << "for two dimensions so far..." << std::endl;
+	exit(-1);
+      }
+      double Kji = cellPos[1][0]*cellPos[1][0]+cellPos[1][1]*cellPos[1][1]-
+	cellPos[0][0]*cellPos[0][0]-cellPos[0][1]*cellPos[0][1]-
+	(cellR[1]*cellR[1]-cellR[0]*cellR[0]);
+      double Kki = cellPos[2][0]*cellPos[2][0]+cellPos[2][1]*cellPos[2][1]-
+	cellPos[0][0]*cellPos[0][0]-cellPos[0][1]*cellPos[0][1]-
+	(cellR[2]*cellR[2]-cellR[0]*cellR[0]);
+      std::vector<double> powPos(dimension);
+      powPos[1] = 0.5*( Kji*(cellPos[2][0]-cellPos[0][0]) -
+			Kki*(cellPos[1][0]-cellPos[0][0]) ) /
+	( (cellPos[1][1]-cellPos[0][1])*(cellPos[2][0]-cellPos[0][0]) -
+	  (cellPos[2][1]-cellPos[0][1])*(cellPos[1][0]-cellPos[0][0]) );
+      powPos[0] = 0.5*Kji/(cellPos[1][0]-cellPos[0][0]) -
+	powPos[1]*(cellPos[1][1]-cellPos[0][1])/(cellPos[1][0]-cellPos[0][0]);
+      //std::cerr << i << " " << vertexData[i][0] << " " << vertexData[i][1] << "\t"
+      //	<< powPos[0] << " " << powPos[1] << "\t"
+      //	<< cellPos[0][0] << " " << cellPos[0][1] << "  "
+      //	<< cellPos[1][0] << " " << cellPos[1][1] << "  "
+      //	<< cellPos[2][0] << " " << cellPos[2][1] << "\t"
+      //	<< cellR[0] << " " << cellR[1] << " " << cellR[2] << std::endl;
+
+      //Update vertex for each dimension
+      for(size_t d=0 ; d<dimension ; d++ )
+	vertexDerivs[i][d] -= parameter(0)*(vertexData[i][d]-powPos[d]);
     }
   }
 }

@@ -16,15 +16,18 @@
 
 class Tissue;
 
-//!A base class for describing diff equation updates for dynamical variables
-/*! The BaseReaction class is a base class used when defining
-  different types of "reaction" classes. Each reaction class uses a
-  vector of parameters and variable indeces to calculate a derivative
-  of model variables. The variable indeces are divided into multiple
-  layers to allow for different types of contributions for different
-  variables. The baseReaction class can be seen as a 'factory'
-  creating different reactions of different types.
-*/ 
+///
+/// @brief A factory class for classes describing differential equation
+/// updates for dynamical variables
+///
+/// The BaseReaction class is a base (factory) class used when defining
+/// different types of "reaction" classes. Each reaction class uses a vector
+/// of parameters and variable indices to calculate a derivative of model
+/// variables. The variable indices are divided into multiple layers to allow
+/// for different types of contributions for different variables. The
+/// BaseReaction class can be seen as a 'factory' creating reactions of
+/// different types.
+///
 class BaseReaction {
   
  private:
@@ -36,6 +39,22 @@ class BaseReaction {
   
  public:
   
+  ///
+  /// @brief Main factory creator, all creation should be mapped onto this one
+  ///
+  /// Given the idValue a reaction of the defined type is returned (using new
+  /// Class). It chooses from the user defined list of possible reactions, and
+  /// returns the correct one if defined. If the idValue given is not a defined
+  /// reaction it exits.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @param idValue identification of which reaction that should be created
+  ///
+  /// @return Returns a pointer to an instance of a reaction class defined by
+  /// the idValue string.
   static BaseReaction* createReaction(std::vector<double> &paraValue, 
 				      std::vector< std::vector<size_t> > 
 				      &indValue,

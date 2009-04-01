@@ -25,8 +25,8 @@ ParallellDirection(std::vector<double> &paraValue,
   }
   if( indValue.size() != 1 || indValue[0].size() != 1 ) {
     std::cerr << "ParallellDirection::"
-							<< "ParallellDirection() "
-							<< "One variable index is used (start of cell direction).\n";
+	      << "ParallellDirection() "
+	      << "One variable index is used (start of cell direction).\n";
     exit(0);
   }
   //Set the variable values

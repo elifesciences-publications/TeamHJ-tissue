@@ -41,14 +41,14 @@ void RK5Adaptive::simulate(size_t verbose)
     h = h1_;
   else {//either h or (endTime-startTime) <=0
     std::cerr << "RK5Adaptive::simulate() - "
-							<< "Wrong time borders or time step for simulation. "
-							<< "No simulation performed.\n";
+	      << "Wrong time borders or time step for simulation. "
+	      << "No simulation performed.\n";
     exit(-1);
   }
-	
-	//
-	// Check that sizes of permanent data is ok
-	//
+
+  //
+  // Check that sizes of permanent data is ok
+  //
   if( cellData_.size() && cellData_.size() != cellDerivs_.size() ) {
     cellDerivs_.resize( cellData_.size(),cellData_[0]);
   }
@@ -58,28 +58,30 @@ void RK5Adaptive::simulate(size_t verbose)
   if( vertexData_.size() && vertexData_.size() != vertexDerivs_.size() ) {
     vertexDerivs_.resize( vertexData_.size(),vertexData_[0]);
   }
+  
   // Initiate reactions and direction for those where it is applicable
   T_->initiateReactions(cellData_, wallData_, vertexData_);
-	if (cellData_.size()!=cellDerivs_.size())
-		cellDerivs_.resize(cellData_.size(),cellDerivs_[0]);
-	if (wallData_.size()!=wallDerivs_.size())
-		wallDerivs_.resize(wallData_.size(),wallDerivs_[0]);
-	if (vertexData_.size()!=vertexDerivs_.size())
-		vertexDerivs_.resize(vertexData_.size(),vertexDerivs_[0]);
+  if (cellData_.size()!=cellDerivs_.size())
+    cellDerivs_.resize(cellData_.size(),cellDerivs_[0]);
+  if (wallData_.size()!=wallDerivs_.size())
+    wallDerivs_.resize(wallData_.size(),wallDerivs_[0]);
+  if (vertexData_.size()!=vertexDerivs_.size())
+    vertexDerivs_.resize(vertexData_.size(),vertexDerivs_[0]);
+
   T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_,
-												vertexDerivs_);
+			vertexDerivs_);
 
   assert( cellData_.size() == T_->numCell() && 
-					cellData_.size()==cellDerivs_.size() );
+	  cellData_.size()==cellDerivs_.size() );
   assert( wallData_.size() == T_->numWall() && 
-					wallData_.size()==wallDerivs_.size() );
+	  wallData_.size()==wallDerivs_.size() );
   assert( vertexData_.size() == T_->numVertex() && 
-					vertexData_.size()==vertexDerivs_.size() );
-
+	  vertexData_.size()==vertexDerivs_.size() );
+  
 	//
   // Create all vectors that will be needed here and by rkqs and rkck!
   //
-	size_t Nc=T_->numCell(),Nw=T_->numWall(),Nv=T_->numVertex();
+  size_t Nc=T_->numCell(),Nw=T_->numWall(),Nv=T_->numVertex();
   //Used here
   std::vector< std::vector<double> > yScalC(Nc),yScalW(Nw),yScalV(Nv);
   //Used by rkqs
@@ -93,7 +95,6 @@ void RK5Adaptive::simulate(size_t verbose)
 		ak6C(Nc),ak6W(Nw),ak6V(Nv),
 		yTempRkckC(Nc),yTempRkckW(Nw),yTempRkckV(Nv);
   //Resize each vector
-	
 	size_t Ncvar=T_->cell(0).numVariable();
   for (size_t i=0; i<Nc; ++i) {
     yScalC[i].resize(cellData_[i].size());
@@ -205,14 +206,14 @@ void RK5Adaptive::simulate(size_t verbose)
 		//
     // Check for discrete and reaction updates
     //
-		T_->updateDirection(h,cellData_,wallData_,vertexData_,cellDerivs_,
-												wallDerivs_,vertexDerivs_);
-		T_->updateReactions(cellData_,wallData_,vertexData_,h);
+    T_->updateDirection(h,cellData_,wallData_,vertexData_,cellDerivs_,
+			wallDerivs_,vertexDerivs_);
+    T_->updateReactions(cellData_,wallData_,vertexData_,h);
     T_->checkCompartmentChange(cellData_,wallData_,vertexData_,
 															 cellDerivs_,wallDerivs_,vertexDerivs_ );
 		
-		// Check the tissue connectivity in each step
-		T_->checkConnectivity(1);
+    // Check the tissue connectivity in each step
+    T_->checkConnectivity(1);
 		
     // Rescale all temporary vectors as well
     if (cellData_.size() != yScalC.size()) {
@@ -249,10 +250,10 @@ void RK5Adaptive::simulate(size_t verbose)
     if (t_ >= endTime_) {
       //if (printFlag_) {
       if (1) {
-				// Update the derivatives
-				T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,
-									 vertexDerivs_);
-				print();
+	// Update the derivatives
+	T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,
+		   vertexDerivs_);
+	print();
       }
       std::cerr << "Simulation done.\n"; 
       return;

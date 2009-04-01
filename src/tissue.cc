@@ -1605,15 +1605,15 @@ initiateDirection(std::vector< std::vector<double> > &cellData,
 
 void::Tissue::
 updateDirection(double step,
-								std::vector< std::vector<double> > &cellData,
-								std::vector< std::vector<double> > &wallData,
-								std::vector< std::vector<double> > &vertexData,
-								std::vector< std::vector<double> > &cellDerivs,
-								std::vector< std::vector<double> > &wallDerivs,
-								std::vector< std::vector<double> > &vertexDerivs) 
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs) 
 {
-	direction()->update(*this,step,cellData,wallData,vertexData,cellDerivs,
-											wallDerivs,vertexDerivs);	
+  direction()->update(*this,step,cellData,wallData,vertexData,cellDerivs,
+		      wallDerivs,vertexDerivs);	
 }
 
 void::Tissue::

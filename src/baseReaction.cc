@@ -19,9 +19,6 @@
 
 BaseReaction::~BaseReaction(){}
 
-//!Factory creator, all creation should be mapped onto this one 
-/*! Given the idValue a reaction of the defined type is returned
-(using new Class).*/
 BaseReaction *
 BaseReaction::createReaction(std::vector<double> &paraValue,
 			       std::vector< std::vector<size_t> > &indValue, 

@@ -33,12 +33,12 @@ class Tissue {
   std::vector<Wall> wall_;
   std::vector<Vertex> vertex_;
   Cell background_;
-	Direction direction_;
+  Direction direction_;
   std::vector<BaseReaction*> reaction_;
   std::vector<BaseCompartmentChange*> compartmentChange_;
-	//std::vector< std::vector<double> > tmpCellData_;
-
-	std::vector<size_t> directionalWall_;
+  //std::vector< std::vector<double> > tmpCellData_;
+  
+  std::vector<size_t> directionalWall_;
 	
  public:
   

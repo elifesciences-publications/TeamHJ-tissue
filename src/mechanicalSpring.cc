@@ -134,8 +134,8 @@ derivs(Tissue &T,
        std::vector< std::vector<double> > &vertexData,
        std::vector< std::vector<double> > &cellDerivs,
        std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
-  
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{  
   //Do the update for each wall
   size_t numWalls = T.numWall();
   size_t wallLengthIndex = variableIndex(0,0);
@@ -163,8 +163,8 @@ derivs(Tissue &T,
       coeff *=parameter(1);
     
     //Save force in wall variable if appropriate
-    if( numVariableIndexLevel()>1 )
-      wallData[i][variableIndex(1,0)] = coeff*distance;
+    if( numVariableIndexLevel()>2 )
+      wallData[i][variableIndex(2,0)] = coeff*distance;
     
     //Update both vertices for each dimension
     for(size_t d=0 ; d<dimension ; d++ ) {
