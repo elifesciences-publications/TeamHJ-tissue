@@ -224,7 +224,8 @@ derivs(Tissue &T,
       if( T.cell(i).wall(n)->cell1()->index() == i ) {
 	kII=0;
       }
-      sum += pin[n] = std::pow(wallData[k][FI]*wallData[k][kI[kII]]/(wallData[k][kI[0]]+wallData[k][kI[1]]),3);
+      sum += pin[n] = wallData[k][FI]*wallData[k][kI[kII]]/(wallData[k][kI[0]]+wallData[k][kI[1]]);
+      //sum += pin[n] = std::pow(wallData[k][FI]*wallData[k][kI[kII]]/(wallData[k][kI[0]]+wallData[k][kI[1]]),3);
     }
     //sum /= numWalls;//For adjusting for different num neigh
     sum += parameter(6);
@@ -252,7 +253,8 @@ derivs(Tissue &T,
       if( T.cell(i).wall(n)->cell1()->index() == i ) {
 	kII=0;
       }
-      wallData[k][kI[kII]] = parameter(7) + parameter(8)/(parameter(9)+std::pow(cellData[i][aI],3));
+      wallData[k][kI[kII]] = parameter(7) + parameter(8)/(parameter(9)+cellData[i][aI]);
+      //wallData[k][kI[kII]] = parameter(7) + parameter(8)/(parameter(9)+std::pow(cellData[i][aI],3));
     }    
   }
 }
@@ -1360,54 +1362,54 @@ derivs(Tissue &T,
        std::vector< std::vector<double> > &wallDerivs,
        std::vector< std::vector<double> > &vertexDerivs ) 
 {  
-	size_t aI = variableIndex(0,0);
-	size_t PI = variableIndex(0,1);
-	size_t AI = variableIndex(0,2);
-	size_t xI = variableIndex(0,3);
-
-	for (size_t i=0; i<cellData.size(); ++i) {
-		size_t numActualWalls=0;
-		double sum = 1.0;
-		std::vector<double> Pin(T.cell(i).numWall());
-		for (size_t n = 0; n < T.cell(i).numWall(); ++n) {
-			if( T.cell(i).wall(n)->cell1() != T.background() &&
-					T.cell(i).wall(n)->cell2() != T.background() ) { 
-				numActualWalls++;
-				if( T.cell(i).wall(n)->cell1()->index()==i ) {
-					double tmp = std::pow(cellData[ T.cell(i).wall(n)->cell2()->index() ][ xI ],parameter(5));
-					tmp = parameter(2) + 
-						parameter(3)*tmp/(std::pow(parameter(4),parameter(5))+tmp);
-					sum += Pin[n] = tmp;
-				}
-				else {
-					double tmp = std::pow(cellData[ T.cell(i).wall(n)->cell1()->index() ][ xI ],parameter(5));
-					tmp = parameter(2) + 
-						parameter(3)*tmp/(std::pow(parameter(4),parameter(5))+tmp);
-					sum += Pin[n] = tmp;
-				}
-			}
-			else 
-				sum += Pin[n] = parameter(2);
-		}
-		
-		for (size_t n = 0; n < T.cell(i).numWall(); ++n) {
-			if( T.cell(i).wall(n)->cell1() != T.background() &&
-					T.cell(i).wall(n)->cell2() != T.background() ) { 
-				size_t j=T.cell(i).wall(n)->cell1()->index();
-				if( T.cell(i).wall(n)->cell1()->index()==i )
-					j = T.cell(i).wall(n)->cell2()->index();
-				
-				double passive = parameter(0) * cellData[i][aI];
-				
-				double Pij = cellData[i][PI] * Pin[n] / sum;		
-				
-				double active = Pij*parameter(1)*cellData[j][AI]*cellData[i][aI]/ 
-					((parameter(6) + cellData[i][aI])*(cellData[i][AI]+cellData[j][AI]));
-				
-				cellDerivs[i][aI] -= (passive + active);
-				cellDerivs[j][aI] += (passive + active);
-			}
-		}
+  size_t aI = variableIndex(0,0);
+  size_t PI = variableIndex(0,1);
+  size_t AI = variableIndex(0,2);
+  size_t xI = variableIndex(0,3);
+  
+  for (size_t i=0; i<cellData.size(); ++i) {
+    size_t numActualWalls=0;
+    double sum = 1.0;
+    std::vector<double> Pin(T.cell(i).numWall());
+    for (size_t n = 0; n < T.cell(i).numWall(); ++n) {
+      if( T.cell(i).wall(n)->cell1() != T.background() &&
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	numActualWalls++;
+	if( T.cell(i).wall(n)->cell1()->index()==i ) {
+	  double tmp = std::pow(cellData[ T.cell(i).wall(n)->cell2()->index() ][ xI ],parameter(5));
+	  tmp = parameter(2) + 
+	    parameter(3)*tmp/(std::pow(parameter(4),parameter(5))+tmp);
+	  sum += Pin[n] = tmp;
 	}
+	else {
+	  double tmp = std::pow(cellData[ T.cell(i).wall(n)->cell1()->index() ][ xI ],parameter(5));
+	  tmp = parameter(2) + 
+	    parameter(3)*tmp/(std::pow(parameter(4),parameter(5))+tmp);
+	  sum += Pin[n] = tmp;
+	}
+      }
+      else 
+	sum += Pin[n] = parameter(2);
+    }
+    
+    for (size_t n = 0; n < T.cell(i).numWall(); ++n) {
+      if( T.cell(i).wall(n)->cell1() != T.background() &&
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	size_t j=T.cell(i).wall(n)->cell1()->index();
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  j = T.cell(i).wall(n)->cell2()->index();
+	
+	double passive = parameter(0) * cellData[i][aI];
+	
+	double Pij = cellData[i][PI] * Pin[n] / sum;		
+	
+	double active = Pij*parameter(1)*cellData[j][AI]*cellData[i][aI]/ 
+	  ((parameter(6) + cellData[i][aI])*(cellData[i][AI]+cellData[j][AI]));
+	
+	cellDerivs[i][aI] -= (passive + active);
+	cellDerivs[j][aI] += (passive + active);
+      }
+    }
+  }
 }	
 
