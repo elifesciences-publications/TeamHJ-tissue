@@ -77,23 +77,23 @@ derivs(Tissue &T,
 
 VertexNoUpdateBoundary::
 VertexNoUpdateBoundary(std::vector<double> &paraValue, 
-											 std::vector< std::vector<size_t> > 
-											 &indValue ) {
+		       std::vector< std::vector<size_t> > 
+		       &indValue ) {
   
   //Do some checks on the parameters and variable indices
   //
   if (paraValue.size()) {
     std::cerr << "VertexNoUpdateBoundary::"
-							<< "VertexNoUpdateBoundary() "
-							<< "Uses no parameters."
-							<< std::endl;
+	      << "VertexNoUpdateBoundary() "
+	      << "Uses no parameters."
+	      << std::endl;
     exit(0);
   }
   if (indValue.size()!=0 && indValue.size()!=1) {
     std::cerr << "VertexNoUpdateBoundary::"
-							<< "VertexNoUpdateBoundary() "
-							<< "Either no variable indices is used (all directions fixed), " 
-							<< "or fixed directions are given in first level." << std::endl;
+	      << "VertexNoUpdateBoundary() "
+	      << "Either no variable indices is used (all directions fixed), " 
+	      << "or fixed directions are given in first level." << std::endl;
     exit(0);
   }
   //Set the variable values
@@ -120,33 +120,33 @@ derivs(Tissue &T,
   //Check the cancelation for every vertex
   size_t numVertices = T.numVertex();
   size_t dimension = vertexData[0].size();
-	if (numVariableIndexLevel())
-		for (size_t dI=0; dI<numVariableIndex(0); ++dI)
-			assert(variableIndex(0,dI)<dimension);
+  if (numVariableIndexLevel())
+    for (size_t dI=0; dI<numVariableIndex(0); ++dI)
+      assert(variableIndex(0,dI)<dimension);
 
   for (size_t i=0; i<numVertices; ++i)
     if (T.vertex(i).isBoundary(T.background())) {
-			if (numVariableIndexLevel()) {
-				for (size_t dI=0; dI<numVariableIndex(0); ++dI)
-					vertexDerivs[i][variableIndex(0,dI)] = 0.0;
-			}
-			else {
-				for (size_t d=0; d<dimension; ++d)
-					vertexDerivs[i][d] = 0.0;
-			}
-		}
+      if (numVariableIndexLevel()) {
+	for (size_t dI=0; dI<numVariableIndex(0); ++dI)
+	  vertexDerivs[i][variableIndex(0,dI)] = 0.0;
+      }
+      else {
+	for (size_t d=0; d<dimension; ++d)
+	  vertexDerivs[i][d] = 0.0;
+      }
+    }
 }
 
 VertexTranslateToMax::
 VertexTranslateToMax(std::vector<double> &paraValue, 
-			   std::vector< std::vector<size_t> > 
-			   &indValue ) {
+		     std::vector< std::vector<size_t> > 
+		     &indValue ) {
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
   if( paraValue.size()!=1 ) {
     std::cerr << "VertexTranslateToMax::VertexTranslateToMax() "
-							<< "Uses one parameter, maxPos " << std::endl;
+	      << "Uses one parameter, maxPos " << std::endl;
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size() != 1 ) {
@@ -170,21 +170,21 @@ VertexTranslateToMax(std::vector<double> &paraValue,
 
 void VertexTranslateToMax::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData)
+	 std::vector< std::vector<double> > &cellData,
+	 std::vector< std::vector<double> > &wallData,
+	 std::vector< std::vector<double> > &vertexData)
 {
   size_t numVertices = T.numVertex();
   size_t posIndex = variableIndex(0,0);
   assert( posIndex < vertexData[0].size() );
   
-	double max = vertexData[0][posIndex];
+  double max = vertexData[0][posIndex];
   for( size_t i=1 ; i<numVertices ; ++i )
     if (vertexData[i][posIndex]>max)
-			max = vertexData[i][posIndex];
-	double delta = max-parameter(0);
+      max = vertexData[i][posIndex];
+  double delta = max-parameter(0);
   for( size_t i=0 ; i<numVertices ; ++i )
-		vertexData[i][posIndex] -= delta;
+    vertexData[i][posIndex] -= delta;
 }
 
 void VertexTranslateToMax::
