@@ -141,12 +141,12 @@ derivs(Tissue &T,
   size_t wallLengthIndex = variableIndex(0,0);
   size_t wall1kIndex = variableIndex(1,0);
   size_t wall2kIndex = variableIndex(1,1);
-
   for( size_t i=0 ; i<numWalls ; ++i ) {
     size_t v1 = T.wall(i).vertex1()->index();
     size_t v2 = T.wall(i).vertex2()->index();
     size_t dimension = vertexData[v1].size();
     assert( vertexData[v2].size()==dimension );
+
     //Calculate shared factors
     double distance=0.0;
     for( size_t d=0 ; d<dimension ; d++ )
@@ -156,7 +156,7 @@ derivs(Tissue &T,
     double wallLength=wallData[i][wallLengthIndex];
     double coeff = (wallData[i][wall1kIndex]+wallData[i][wall2kIndex])*parameter(0)*((1.0/wallLength)-(1.0/distance));
     if( distance <= 0.0 || wallLength <=0.0 ) {
-      //std::cerr << i << " - " << wallLength << " " << distance << std::endl;
+      std::cerr << i << " - " << wallLength << " " << distance << std::endl;
       coeff = 0.0;
     }
     if( distance>wallLength )

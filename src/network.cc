@@ -225,7 +225,9 @@ derivs(Tissue &T,
 	kII=0;
       }
       sum += pin[n] = wallData[k][FI]*wallData[k][kI[kII]]/(wallData[k][kI[0]]+wallData[k][kI[1]]);
-      //sum += pin[n] = std::pow(wallData[k][FI]*wallData[k][kI[kII]]/(wallData[k][kI[0]]+wallData[k][kI[1]]),3);
+      //sum += pin[n] = std::pow(wallData[k][FI]*wallData[k][kI[kII]]/(wallData[k][kI[0]]+wallData[k][kI[1]]),2);
+      //pin[n] = pin[n]/(0.05+pin[n]);
+      //sum += pin[n];
     }
     //sum /= numWalls;//For adjusting for different num neigh
     sum += parameter(6);
@@ -253,8 +255,8 @@ derivs(Tissue &T,
       if( T.cell(i).wall(n)->cell1()->index() == i ) {
 	kII=0;
       }
-      wallData[k][kI[kII]] = parameter(7) + parameter(8)/(parameter(9)+cellData[i][aI]);
-      //wallData[k][kI[kII]] = parameter(7) + parameter(8)/(parameter(9)+std::pow(cellData[i][aI],3));
+      //wallData[k][kI[kII]] = parameter(7) + parameter(8)/(parameter(9)+cellData[i][aI]);
+      wallData[k][kI[kII]] = parameter(7) + parameter(8)/(parameter(9)+std::pow(cellData[i][aI],2.65));
     }    
   }
 }
