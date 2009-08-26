@@ -33,6 +33,8 @@ BaseDirectionUpdate::createDirectionUpdate(std::vector<double> &paraValue,
     return new GradientDirection(paraValue,indValue);
   else if (idValue == "WallStressDirection")
 	  return new WallStressDirection(paraValue, indValue);
+  else if (idValue == "DoubleWallStressDirection")
+	  return new DoubleWallStressDirection(paraValue, indValue);
   else if (idValue == "StretchDirection")
 	  return new StretchDirection(paraValue, indValue);
   else if (idValue == "PCAPlaneDirection")

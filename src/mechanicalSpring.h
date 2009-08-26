@@ -254,4 +254,30 @@ class VertexFromWallSpringMTConcentrationHill : public BaseReaction {
 	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
+///
+/// @brief Sets mechanical properties for wall segments from MT
+/// directions and (auxin) concentrations
+///
+/// Uses a square scalar product between wall and MT directions and a
+/// Hill formalism for auxin dependent wall mechanics. The walls are
+/// divided into two segments 'belonging to' respective neighboring
+/// cell.
+///
+class VertexFromDoubleWallSpringMTConcentrationHill : public BaseReaction {
+  
+ public:
+  
+  VertexFromDoubleWallSpringMTConcentrationHill(std::vector<double> &paraValue, 
+																								std::vector< std::vector<size_t> > 
+																								&indValue );
+  
+  void derivs(Tissue &T,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs );
+};
+
 #endif

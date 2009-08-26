@@ -141,23 +141,23 @@ AuxinModelSimpleStress(std::vector<double> &paraValue,
   //
   // Do some checks on the parameters and variable indeces
   //
-  if( paraValue.size()!=10 ) {
+  if( paraValue.size()!=7 && paraValue.size()!=10 ) {
     std::cerr << "AuxinModelSimpleStress::"
-	      << "AuxinModelSimpleStress() "
-	      << "Ten parameters used.\n\n";
+							<< "AuxinModelSimpleStress() "
+							<< "Seven plus three optional parameters used.\n\n";
     std::cerr << "dA_i/dt = p0 - p1*A_i +p2*Sum_{neigh} (A_n-A_i) +\n" 
-	      << "p3*Sum_{neigh} (P_ni*A_n-P_in*A_i)\n\n" 
-	      << "dP_i/dt = p4 - p5*P_i\n\n"
-	      << "P_in = P_i*X_in/(p6+Sum_k X_ik)\n\n"
-	      << "X_in = k_in*F/(k_in+k_ni)\n\n"
-	      << "k_in = p7 + p8/(p9+A_i)\n";
+							<< "p3*Sum_{neigh} (P_ni*A_n-P_in*A_i)\n\n" 
+							<< "dP_i/dt = p4 - p5*P_i\n\n"
+							<< "P_in = P_i*X_in/(p6+Sum_k X_ik)\n\n"
+							<< "X_in = k_in*F/(k_in+k_ni)\n\n"
+							<< "k_in = p7 + p8/(p9+A_i)  (optional if updated)\n";
     exit(0);
   }
   if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 3 ) {
     std::cerr << "AuxinModelSimpleStress::"
-	      << "AuxinModelSimpleStress() "
-	      << "Two cell variable indices are used in first level (auxin,pin),\n"
-	      << "and three wall indices are used in second level (F,k_1,k_2),\n";
+							<< "AuxinModelSimpleStress() "
+							<< "Two cell variable indices are used in first level (auxin,pin),\n"
+							<< "and three wall indices are used in second level (F,k_1,k_2),\n";
     exit(0);
   }
   //Set the variable values
@@ -177,9 +177,11 @@ AuxinModelSimpleStress(std::vector<double> &paraValue,
   tmp[4] = "p_pin";
   tmp[5] = "d_pin";
   tmp[6] = "K_pin";
-  tmp[7] = "k0_k";
-  tmp[8] = "k1_k";
-  tmp[9] = "K_k";
+	if( numParameter()==10 ) {
+		tmp[7] = "k0_k";
+		tmp[8] = "k1_k";
+		tmp[9] = "K_k";
+	}
   
   setParameterId( tmp );
 }
@@ -224,8 +226,9 @@ derivs(Tissue &T,
       if( T.cell(i).wall(n)->cell1()->index() == i ) {
 	kII=0;
       }
-      //sum += pin[n] = wallData[k][FI]*wallData[k][kI[kII]]/(wallData[k][kI[0]]+wallData[k][kI[1]]);
-      sum += pin[n] = std::pow(wallData[k][FI]*wallData[k][kI[kII]]/(wallData[k][kI[0]]+wallData[k][kI[1]]),3);
+			double Sn = wallData[k][FI]*wallData[k][kI[kII]]/(wallData[k][kI[0]]+wallData[k][kI[1]]);
+      //sum += pin[n] = ( Sn >= 0.0 ? Sn : 0.0 );
+      sum += pin[n] = ( Sn>=0.0 ? std::pow(Sn,3) : 0.0 );
     }
     //sum /= numWalls;//For adjusting for different num neigh
     sum += parameter(6);
@@ -242,21 +245,24 @@ derivs(Tissue &T,
 	double polRate=0.0;
 	if( sum != 0.0 )
 	  polRate = cellData[i][pI] * pin[n] / sum;
+
 	cellDerivs[i][aI] -= (parameter(3)*polRate+parameter(2))*cellData[i][aI];
 	cellDerivs[neighIndex][aI] += (parameter(3)*polRate+parameter(2))*cellData[i][aI];
       }
     }
     // Calculate the new k values from the auxin concentration
-    for( size_t n=0 ; n<numWalls ; ++n ) {
-      size_t kII=1;
-      size_t k = T.cell(i).wall(n)->index();
-      if( T.cell(i).wall(n)->cell1()->index() == i ) {
-	kII=0;
-      }
-      //wallData[k][kI[kII]] = parameter(7) + parameter(8)/(parameter(9)+cellData[i][aI]);
-      wallData[k][kI[kII]] = parameter(7) + parameter(8)/(parameter(9)+std::pow(cellData[i][aI],3));
-    }    
-  }
+		if( numParameter() == 10 ) {
+			for( size_t n=0 ; n<numWalls ; ++n ) {
+				size_t kII=1;
+				size_t k = T.cell(i).wall(n)->index();
+				if( T.cell(i).wall(n)->cell1()->index() == i ) {
+					kII=0;
+				}
+				//wallData[k][kI[kII]] = parameter(7) + parameter(8)/(parameter(9)+cellData[i][aI]);
+				wallData[k][kI[kII]] = parameter(7) + parameter(8)/(parameter(9)+std::pow(cellData[i][aI],3));
+			}    
+		}
+	}
 }
 
 AuxinModelSimple1Wall::

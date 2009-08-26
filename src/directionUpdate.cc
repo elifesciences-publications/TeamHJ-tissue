@@ -8,7 +8,6 @@
 #include"directionUpdate.h"
 #include"baseDirectionUpdate.h"
 
-//!Constructor
 StaticDirection::
 StaticDirection(std::vector<double> &paraValue, 
 								std::vector< std::vector<size_t> > 
@@ -199,7 +198,6 @@ update(Tissue &T, double h,
 	}
 }
 
-//!Constructor
 StrainDirection::
 StrainDirection(std::vector<double> &paraValue, 
 							std::vector< std::vector<size_t> > 
@@ -389,7 +387,6 @@ update(Tissue &T, double h,
 	}
 } 
 
-//!Constructor
 GradientDirection::
 GradientDirection(std::vector<double> &paraValue, 
 							std::vector< std::vector<size_t> > 
@@ -582,6 +579,181 @@ void WallStressDirection::update(Tissue &T, double h,
 				for (size_t j = 0; j < numVariableIndex(1); ++j) {
 					force += wallData[wall->index()][variableIndex(1, j)];
 				}
+				enumerator += force * s;
+				denominator += force * c;
+			}
+			
+			double angle = std::atan2(enumerator, denominator);
+			
+			double x = std::cos(0.5 * angle);
+			double y = std::sin(0.5 * angle);
+			
+			
+			if (parameter(0) == 1) {
+				//Use perpendicular direction
+				double tmp = -y;
+				y = x;
+				x = tmp;
+			}
+			std::vector<double> dir(dimension);
+			double norm=0.0;
+			for (size_t d=0; d<dimension; ++d) {
+				dir[d] = x * axes[0][d] + y * axes[1][d];
+				norm += dir[d]*dir[d];
+			}
+			norm = 1.0/std::sqrt(norm);
+			for (size_t d=0; d<dimension; ++d)
+				cellData[cell.index()][variableIndex(0, 0) + d] = dir[d] * norm;
+		}		
+	}
+}
+
+DoubleWallStressDirection::
+DoubleWallStressDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 1) {
+		std::cerr << "DoubleWallStressDirection::DoubleWallStressDirection() " 
+							<< "One parameter is used orientation_flag (0 for direction parallel with "
+							<< "force, 1 for direction perpendicular to force)" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	if (indValue.size() != 2 || indValue[0].size() != 1 || indValue[1].size() != 3 ) {
+		std::cerr << "DoubleWallStressDirection::DoubleWallStressDirection() \n"
+							<< "First level: Start of cell direction index is used.\n"
+							<< "Second level: Wall force index, and two wall segment k indices.\n";
+		exit(EXIT_FAILURE);
+	}
+
+	setId("DoubleWallStressDirection");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize(numParameter());
+	tmp[0] = "orientation_flag";
+	setParameterId(tmp);
+}
+
+void DoubleWallStressDirection::
+initiate(Tissue &T,
+				 std::vector< std::vector<double> > &cellData,
+				 std::vector< std::vector<double> > &wallData,
+				 std::vector< std::vector<double> > &vertexData,
+				 std::vector< std::vector<double> > &cellDerivs,
+				 std::vector< std::vector<double> > &wallDerivs,
+				 std::vector< std::vector<double> > &vertexDerivs)
+{
+	// No initialization
+}
+
+void DoubleWallStressDirection::
+update(Tissue &T, double h,
+			 std::vector< std::vector<double> > &cellData,
+			 std::vector< std::vector<double> > &wallData,
+			 std::vector< std::vector<double> > &vertexData,
+			 std::vector< std::vector<double> > &cellDerivs,
+			 std::vector< std::vector<double> > &wallDerivs,
+			 std::vector< std::vector<double> > &vertexDerivs)
+{
+	size_t dimension = vertexData[0].size();
+	if (dimension==2) { 
+		for (size_t n = 0; n < T.numCell(); ++n) {
+			Cell cell = T.cell(n);
+			
+			if (cellData[cell.index()][variableIndex(0, 0) + 2] == 0) {
+				continue;
+			}
+			double enumerator = 0.0;
+			double denominator = 0.0;
+			
+			for (size_t i = 0; i < cell.numWall(); ++i) {
+				Wall *wall = cell.wall(i);
+				
+				double wx = (vertexData[wall->vertex1()->index()][0] - 
+										 vertexData[wall->vertex2()->index()][0]); 
+				double wy = (vertexData[wall->vertex1()->index()][1] - 
+										 vertexData[wall->vertex2()->index()][1]); 
+				
+				// Dodgy error check. Might have to improve it.
+				if (wx < 0) {
+					wx *= -1.0;
+					wy *= -1.0;
+				}
+				double sigma = std::atan2(wy, wx);
+				
+				double c = std::cos(2.0 * sigma);
+				double s = std::sin(2.0 * sigma);
+				
+				double force = wallData[wall->index()][variableIndex(1, 0)];
+				//extract force belonging to current wall segment
+				size_t kI = variableIndex(1,1);
+				if (wall->cell1()->index() != cell.index()) 
+					kI = variableIndex(1,2);
+				force *= wallData[wall->index()][kI] /
+					(wallData[wall->index()][variableIndex(1,1)] + 
+					 wallData[wall->index()][variableIndex(1,2)]);
+				
+				enumerator += force * s;
+				denominator += force * c;
+			}
+			
+			double angle = std::atan2(enumerator, denominator);
+			
+			double x = std::cos(0.5 * angle);
+			double y = std::sin(0.5 * angle);
+			
+			if (parameter(0) == 0) {
+				cellData[cell.index()][variableIndex(0, 0) + 0] = x;
+				cellData[cell.index()][variableIndex(0, 0) + 1] = y;
+			} else {
+				cellData[cell.index()][variableIndex(0, 0) + 0] = - y;
+				cellData[cell.index()][variableIndex(0, 0) + 1] = x;
+			}
+		}
+	}
+	else if (dimension==3) {
+		for (size_t n = 0; n < T.numCell(); ++n) {
+			Cell cell = T.cell(n);
+			
+			if (cellData[cell.index()][variableIndex(0, 0) + dimension] == 0) {
+				continue;
+			}
+			
+			// This calculation should now be done in reaction CalculatePCAPlane
+			//cell.calculatePCAPlane(vertexData);
+			std::vector< std::vector<double> > axes = cell.getPCAPlane();
+			std::vector< std::pair<double, double> > vertices = cell.projectVerticesOnPCAPlane(vertexData);
+			
+			double enumerator = 0.0;
+			double denominator = 0.0;
+			
+			for (size_t i = 0; i < cell.numWall(); ++i) {
+				size_t ii = (i+1)%cell.numWall();
+				Wall *wall = cell.wall(i);
+				
+				double wx = vertices[i].first - vertices[ii].first;
+				double wy = vertices[i].second - vertices[ii].second;
+				
+				// Dodgy error check. Might have to improve it.
+				if (wx < 0) {
+					wx *= -1.0;
+					wy *= -1.0;
+				}
+				double sigma = std::atan2(wy, wx);
+				
+				double c = std::cos(2.0 * sigma);
+				double s = std::sin(2.0 * sigma);
+				
+				double force = wallData[wall->index()][variableIndex(1, 0)];
+				//extract force belonging to current wall segment
+				size_t kI = variableIndex(1,1);
+				if (wall->cell1()->index() != cell.index()) 
+					kI = variableIndex(1,2);
+				force *= wallData[wall->index()][kI] /
+					(wallData[wall->index()][variableIndex(1,1)] + 
+					 wallData[wall->index()][variableIndex(1,2)]);
+				
 				enumerator += force * s;
 				denominator += force * c;
 			}

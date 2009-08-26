@@ -8,13 +8,13 @@
 #include <fstream>
 
 //#include "baseSolver.h"
-#include "cell.h"
-#include "tissue.h"
-#include "myConfig.h"
-#include "mySignal.h"
-#include "myTimes.h"
-#include "vertex.h"
-#include "wall.h"
+#include "../cell.h"
+#include "../tissue.h"
+#include "../myConfig.h"
+#include "../mySignal.h"
+#include "../myTimes.h"
+#include "../vertex.h"
+#include "../wall.h"
 
 ///
 /// @brief Adds a variable to each cell.
@@ -165,7 +165,7 @@ int main(int argc,char *argv[]) {
 	std::string type("uniform");
 	
 	//p.resize(2);
-	//p[0]=0.0;
+	//p[0]=0.1;
 	//p[1]=0;
 	//type = new std::string("uniform");
 	//setWallVariable(T,p,type);
@@ -204,6 +204,26 @@ int main(int argc,char *argv[]) {
 // 	p[0] = 1.0;
 //  	addCellVariable(T,p,type);
 //  	addCellVariable(T,p,type);
+
+	// replace two and add three wall vars
+	p.resize(2);
+	p[0]=0.1;
+	p[1]=0;
+	setWallVariable(T,p,type);
+	p[1]=1;
+	setWallVariable(T,p,type);
+	p.resize(1);
+ 	p[0] = 0.1;
+	addWallVariable(T,p,type);
+	addWallVariable(T,p,type);
+	addWallVariable(T,p,type);
+
+	// Add four cell vars
+ 	//p[0] = 1.0;
+	//addCellVariable(T,p,type);
+	//addCellVariable(T,p,type);
+	//addCellVariable(T,p,type);
+	//addCellVariable(T,p,type);
 	
 	// For experimental template /////////////////////
 	//p.resize(3);
@@ -219,19 +239,19 @@ int main(int argc,char *argv[]) {
 	//translateVariableToBorder(T,p);
 	//////////////////////////////////////////////////
 
-// 	p.resize(1);
-// 	p[0]=1.0;
-// 	scaleSpaceToMaxArea(T,p);
+ 	p.resize(1);
+ 	p[0]=1.0;
+ 	scaleSpaceToMaxArea(T,p);
 
-// 	p[0]=0.1;
-// 	minimalWallLength(T,p);
+ 	p[0]=0.1;
+ 	minimalWallLength(T,p);
 	
-// 	p.resize(1);
-// 	p[0]=1.0;
-// 	wallLengthFromDistance(T,p);
+ 	p.resize(1);
+ 	p[0]=1.0;
+ 	wallLengthFromDistance(T,p);
 
-	//p[0]=10.0;
-	//maximalWallLength(T,p);
+	p[0]=10.0;
+	maximalWallLength(T,p);
 
 	//
   // Print init in specified format

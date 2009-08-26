@@ -14,7 +14,9 @@
 #include"baseDirectionUpdate.h"
 
 ///
-/// @brief The direction stays constant
+/// @brief No update of the direction is applied, but a direction is created
+///
+/// This can be used to create a direction but when it is not updated.
 ///
 class StaticDirection : public BaseDirectionUpdate {
   
@@ -156,6 +158,28 @@ class WallStressDirection : public BaseDirectionUpdate
 {
 public:
   WallStressDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue );
+  
+  void initiate(Tissue &T,
+								std::vector< std::vector<double> > &cellData,
+								std::vector< std::vector<double> > &wallData,
+								std::vector< std::vector<double> > &vertexData,
+								std::vector< std::vector<double> > &cellDerivs,
+								std::vector< std::vector<double> > &wallDerivs,
+								std::vector< std::vector<double> > &vertexDerivs);
+
+  void update(Tissue &T, double h,
+							std::vector< std::vector<double> > &cellData,
+							std::vector< std::vector<double> > &wallData,
+							std::vector< std::vector<double> > &vertexData,
+							std::vector< std::vector<double> > &cellDerivs,
+							std::vector< std::vector<double> > &wallDerivs,
+							std::vector< std::vector<double> > &vertexDerivs);
+};
+
+class DoubleWallStressDirection : public BaseDirectionUpdate
+{
+ public:
+  DoubleWallStressDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue );
   
   void initiate(Tissue &T,
 								std::vector< std::vector<double> > &cellData,
