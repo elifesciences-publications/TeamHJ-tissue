@@ -80,7 +80,7 @@ class Tissue {
 
   void readInit(const char *initFile,int verbose=0);
   void readInit(std::string initFile,int verbose=0);
-  void readInit(std::ifstream &IN,int verbose=0);
+  void readInit(std::istream &IN,int verbose=0);
   void readMerryInit(const char *initFile,int verbose=0);
 
   void readModel(const char *modelFile,int verbose=0);

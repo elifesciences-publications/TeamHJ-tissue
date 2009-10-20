@@ -258,7 +258,7 @@ int Tissue::addCompartmentChange( std::istream &IN ) {
 }
 
 //!Reads a tissue from an open file
-void Tissue::readInit(std::ifstream &IN,int verbose) {
+void Tissue::readInit(std::istream &IN,int verbose) {
   
   unsigned int numCellVal,numWallVal,numVertexVal;
   //std::string idVal;
