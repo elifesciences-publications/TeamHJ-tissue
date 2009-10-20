@@ -10,7 +10,7 @@
 #include "baseCompartmentChange.h"
 #include "compartmentDivision.h"
 #include "myRandom.h"
-#include "math.h"
+#include "myMath.h"
 
 DivisionVolumeViaLongestWall::
 DivisionVolumeViaLongestWall(std::vector<double> &paraValue, 

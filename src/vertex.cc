@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <vector>
 
-#include "math.h"
+#include "myMath.h"
 #include "vertex.h"
 #include "wall.h"
 

@@ -1,12 +1,12 @@
 /**
- * Filename     : math.h
+ * Filename     : myMath.h
  * Description  : A set of functions dealing with various mathematical operations.
  * Author(s)    : Patrik Sahlin (sahlin@thep.lu.se)
  * Created      : August 2008
  * Revision     : $Id$
  */
-#ifndef MATH_H
-#define MATH_H
+#ifndef MYMATH_H
+#define MYMATH_H
 
 #include <vector>
 
@@ -17,4 +17,4 @@
 
 size_t jacobiTransformation(std::vector< std::vector<double> > A, std::vector< std::vector<double > > &V, std::vector<double> &d);
 
-#endif /* MATH_H */
+#endif /* MYMATH_H */

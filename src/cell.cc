@@ -10,7 +10,7 @@
 #include "cell.h"
 #include "tissue.h"
 #include "vertex.h"
-#include "math.h"
+#include "myMath.h"
 
 //!The empty cel constructor
 Cell::Cell() {

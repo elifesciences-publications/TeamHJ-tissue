@@ -1,5 +1,5 @@
 /**
- * Filename     : math.cc
+ * Filename     : myMath.cc
  * Description  : A set of functions dealing with various mathematical operations.
  * Author(s)    : Patrik Sahlin (sahlin@thep.lu.se)
  * Created      : August 2008
@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "math.h"
+#include "myMath.h"
 
 size_t jacobiTransformation(std::vector< std::vector<double> > A, 
 			    std::vector< std::vector<double > > &V, std::vector<double> &d)
