@@ -1275,7 +1275,7 @@ DivisionVolumeRandomDirection(std::vector<double> &paraValue,
 	if ( paraValue.size() != 4) {
 		std::cerr << "DivisionVolumeRandomDirection::"
 		<< "DivisionVolumeRandomDirection() "
-		<< "Four parameters used V_threshold, LWall_frac, Lwall_threshold, and COM (0 = COM, 1 = Random).\n";
+		<< "Four parameters used V_threshold, LWall_frac, Lwall_threshold, and COM (1 = COM, 0 = Random).\n";
 		std::exit(EXIT_FAILURE);
 	}
   if( indValue.size() != 1 ) {
@@ -1299,6 +1299,7 @@ DivisionVolumeRandomDirection(std::vector<double> &paraValue,
   tmp[0] = "V_threshold";
   tmp[1] = "LWall_frac";
   tmp[2] = "LWall_threshold";
+  tmp[3] = "COM";
   setParameterId( tmp );
 }
 
@@ -1977,10 +1978,10 @@ update(Tissue *T,size_t i,
 DivisionShortestPath::DivisionShortestPath(std::vector<double> &paraValue, 
 								   std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 3) {
+	if ( paraValue.size() != 4) {
 		std::cerr << "DivisionShortestPath::DivisionShortestPath() "
-				<< "Three parameters are used V_threshold, Lwall_fraction and Lwall_threshold." << std::endl;
-		exit(EXIT_FAILURE);
+		<< "Four parameters are used V_threshold, Lwall_fraction, Lwall_threshold, and COM (1 = COM, 0 = Random).\n";
+		std::exit(EXIT_FAILURE);
 	}
 	
 	if (indValue.size() != 1) {
@@ -2000,6 +2001,7 @@ DivisionShortestPath::DivisionShortestPath(std::vector<double> &paraValue,
 	tmp[0] = "V_threshold";
 	tmp[1] = "Lwall_fraction";
 	tmp[2] = "Lwall_threshold";
+	tmp[3] = "COM";
 	setParameterId(tmp);
 }
 
@@ -2090,7 +2092,17 @@ std::vector<DivisionShortestPath::Candidate> DivisionShortestPath::getCandidates
 	assert(cell.numWall() > 1);
 	assert(vertexData[0].size() == 2); // Make sure dimension == 2
 
-	std::vector<double> o = cell.positionFromVertex(vertexData);
+	std::vector<double> o;
+
+	if (parameter(3) == 1)
+	{
+		o = cell.positionFromVertex(vertexData);
+	}
+	else
+	{
+		o = cell.randomPositionInCell(vertexData);
+	}
+
 	double ox = o[0];
 	double oy = o[1];
 
