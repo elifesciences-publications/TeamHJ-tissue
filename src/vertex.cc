@@ -138,7 +138,7 @@ void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertex
  	std::vector< std::vector<double> > V;
  	std::vector<double> d;
 
- 	jacobiTransformation(R , V, d);
+	myMath::jacobiTransformation(R , V, d);
        
  	double max = 0.0;
  	size_t max1 = d.size();

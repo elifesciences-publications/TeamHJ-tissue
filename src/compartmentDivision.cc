@@ -2854,7 +2854,7 @@ std::vector<double> DivisionMainAxis::getMainAxis(Cell &cell, std::vector< std::
 	std::vector< std::vector<double> > V;
 	std::vector<double> d;
 	
-	jacobiTransformation(R , V, d);
+	myMath::jacobiTransformation(R , V, d);
 	
 	size_t max = d.size();
 	

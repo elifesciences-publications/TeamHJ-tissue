@@ -90,6 +90,9 @@ class Cell {
   std::vector<double> 
 	positionFromVertex( std::vector< std::vector<double> > &vertexData );	
 
+	std::vector<double> randomPositionInCell(const std::vector< std::vector<double> > &vertexData);
+
+
 
   // These functions handles projection to a PCAPlane. Important: Make
   // sure you call calculatePCAPlane() before any of the other

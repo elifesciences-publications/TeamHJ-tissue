@@ -8,9 +8,11 @@
 
 #include <assert.h>
 #include "cell.h"
+#include <limits>
 #include "tissue.h"
 #include "vertex.h"
 #include "myMath.h"
+#include "myRandom.h"
 
 //!The empty cel constructor
 Cell::Cell() {
@@ -702,6 +704,100 @@ positionFromVertex(std::vector< std::vector<double> > &vertexData)
 	return pos;
 }
 
+std::vector<double> Cell::randomPositionInCell(const std::vector< std::vector<double> > &vertexData) 
+{
+	typedef std::vector<double> Vector;
+
+	const size_t dimensions = vertexData[0].size();
+
+	if (dimensions != 2)
+	{
+		std::cerr << "Cell::randomPositionInCell only supports two dimensions.\n";
+		std::exit(EXIT_FAILURE);
+	}
+
+	double xmin = std::numeric_limits<double>::max();
+	double xmax = std::numeric_limits<double>::min();
+	double ymin = std::numeric_limits<double>::max();
+	double ymax = std::numeric_limits<double>::min();
+
+	for (std::vector<Vector>::size_type index = 0; index < vertexData.size(); ++index)
+	{
+		const Vector &position = vertexData[index];
+
+		const double &x = position[0];
+
+		if (x < xmin)
+		{
+			xmin = x;
+		}
+		if (x > xmax)
+		{
+			xmax = x;
+		}
+
+		const double &y = position[1];
+
+		if (y < ymin)
+		{
+			ymin = y;
+		}
+		if (y > ymax)
+		{
+			ymax = y;
+		}
+	}
+
+	while (true)
+	{
+		double rx = xmin + (xmax - xmin) * myRandom::Rnd();
+		double ry = ymin + (ymax - ymin) * myRandom::Rnd();
+
+		const size_t numberOfVertices = numVertex();
+
+		signed int sign = 0;
+
+		bool success = true;
+
+		for (size_t vertexIndex = 0; vertexIndex < numberOfVertices; ++vertexIndex)
+		{
+			const double vx = vertexData[(vertexIndex + 1) % numberOfVertices][0] - vertexData[vertexIndex][0];
+			const double vy = vertexData[(vertexIndex + 1) % numberOfVertices][1] - vertexData[vertexIndex][1];
+			
+			const double dx = rx - vertexData[vertexIndex][0];
+			const double dy = ry - vertexData[vertexIndex][1];
+
+			const signed int s = myMath::sign(vx * dy - vy * dx);
+
+			if (!sign)
+			{
+				sign = s;
+			}
+			else
+			{
+				if (sign == s)
+				{
+					continue;
+				}
+				else
+				{
+					success = false;
+					break;
+				}
+			}
+		}
+
+		if (success)
+		{
+			std::vector<double> result(2);
+
+			result[0] = rx;
+			result[1] = ry;
+
+			return result;
+		}
+	}
+}
 
 void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 {
@@ -761,7 +857,7 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 	std::vector< std::vector<double> > V;
 	std::vector<double> d;
 
-	jacobiTransformation(R , V, d);
+	myMath::jacobiTransformation(R , V, d);
        
 	double max = 0.0;
 	size_t max1 = d.size();
