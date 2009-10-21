@@ -721,11 +721,11 @@ std::vector<double> Cell::randomPositionInCell(const std::vector< std::vector<do
 	double ymin = std::numeric_limits<double>::max();
 	double ymax = std::numeric_limits<double>::min();
 
-	for (std::vector<Vector>::size_type index = 0; index < vertexData.size(); ++index)
+	for (size_t vertexIndex = 0; vertexIndex < numVertex(); ++vertexIndex)
 	{
-		const Vector &position = vertexData[index];
+		const Vertex &v = *vertex(vertexIndex);
 
-		const double &x = position[0];
+		const double &x = vertexData[v.index()][0];
 
 		if (x < xmin)
 		{
@@ -736,7 +736,7 @@ std::vector<double> Cell::randomPositionInCell(const std::vector< std::vector<do
 			xmax = x;
 		}
 
-		const double &y = position[1];
+		const double &y = vertexData[v.index()][1];
 
 		if (y < ymin)
 		{
@@ -761,11 +761,14 @@ std::vector<double> Cell::randomPositionInCell(const std::vector< std::vector<do
 
 		for (size_t vertexIndex = 0; vertexIndex < numberOfVertices; ++vertexIndex)
 		{
-			const double vx = vertexData[(vertexIndex + 1) % numberOfVertices][0] - vertexData[vertexIndex][0];
-			const double vy = vertexData[(vertexIndex + 1) % numberOfVertices][1] - vertexData[vertexIndex][1];
-			
-			const double dx = rx - vertexData[vertexIndex][0];
-			const double dy = ry - vertexData[vertexIndex][1];
+			const Vertex &v1 = *vertex(vertexIndex);
+			const Vertex &v2 = *vertex((vertexIndex + 1) % numberOfVertices);
+
+			const double vx = vertexData[v2.index()][0] - vertexData[v1.index()][0];
+			const double vy = vertexData[v2.index()][1] - vertexData[v1.index()][1];
+				
+			const double dx = rx - vertexData[v1.index()][0];
+			const double dy = ry - vertexData[v1.index()][1];
 
 			const signed int s = myMath::sign(vx * dy - vy * dx);
 

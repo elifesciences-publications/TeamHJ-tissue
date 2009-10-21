@@ -1272,13 +1272,12 @@ DivisionVolumeRandomDirection(std::vector<double> &paraValue,
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
-  if( paraValue.size()!=3 ) {
-    std::cerr << "DivisionVolumeRandomDirection::"
-							<< "DivisionVolumeRandomDirection() "
-							<< "Two parameters used V_threshold, LWall_frac, and "
-							<< "Lwall_threshold" << std::endl;
-    exit(0);
-  }
+	if ( paraValue.size() != 4) {
+		std::cerr << "DivisionVolumeRandomDirection::"
+		<< "DivisionVolumeRandomDirection() "
+		<< "Four parameters used V_threshold, LWall_frac, Lwall_threshold, and COM (0 = COM, 1 = Random).\n";
+		std::exit(EXIT_FAILURE);
+	}
   if( indValue.size() != 1 ) {
     std::cerr << "DivisionVolumeRandomDirection::"
 							<< "DivisionVolumeRandomDirection() "
@@ -1338,7 +1337,16 @@ update(Tissue *T,size_t cellI,
   assert( divCell->numWall() > 2 );
   assert( dimension==2 );
   
-  std::vector<double> com = divCell->positionFromVertex(vertexData);
+  std::vector<double> com;
+
+  if (parameter(3) == 1)
+  {
+	  com = divCell->positionFromVertex(vertexData);
+  }
+  else
+  {
+	  com = divCell->randomPositionInCell(vertexData);
+  }
   
   std::vector<double> n(dimension);
   double phi=2*3.14*myRandom::Rnd();
