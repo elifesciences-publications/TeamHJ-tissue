@@ -42,7 +42,6 @@ class RemovalIndex : public BaseCompartmentChange {
 
 //!Removes a cell when position outside a radius from origo
 class RemovalOutsideRadius : public BaseCompartmentChange {
-  
  public:
   
   RemovalOutsideRadius(std::vector<double> &paraValue, 
@@ -164,6 +163,29 @@ public:
 		std::vector< std::vector<double> > &cellDerivs,
 		std::vector< std::vector<double> > &wallDerivs,
 		std::vector< std::vector<double> > &vertexDerivs);  
+};
+
+class RemovalWholeCellOutsideRadiusEpidermis : public BaseCompartmentChange
+{
+public:
+	RemovalWholeCellOutsideRadiusEpidermis(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
+  
+	int flag(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+
+	void update(Tissue* T, size_t i, std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+
+private:
+	bool checkIfCellIsOutside(Cell &cell, std::vector< std::vector<double> > &vertexData, const double radius) const;
 };
 
 #endif

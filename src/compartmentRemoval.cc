@@ -494,3 +494,120 @@ void RemovalOutsideRadiusEpidermisMk2::update(Tissue *T, size_t i,
 	//T->checkConnectivity(1);	
 }
 
+
+
+
+
+
+RemovalWholeCellOutsideRadiusEpidermis::RemovalWholeCellOutsideRadiusEpidermis(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue) 
+{
+	if (paraValue.size() != 2)
+	{
+		std::cerr << "RemovalWholeCellOutsideRadiusEpidermis::RemovalWholeCellOutsideRadiusEpidermis() "
+		<< "Two parameter used R_threshold and R_threshold2\n";
+		std::exit(EXIT_FAILURE);
+	}
+	if (indValue.size() != 0)
+	{
+		std::cerr << "RemovalWholeCellOutsideRadiusEpidermis::RemovalWholeCellOutsideRadiusEpidermis() "
+		<< "No variable index is used.\n";
+		std::exit(EXIT_FAILURE);
+	}
+
+	setId("RemovalWholeCellOutsideRadiusEpidermis");
+	setNumChange(-1);
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+  
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize(numParameter());
+	tmp[0] = "R_threshold";
+	tmp[1] = "R_threshold2";
+	setParameterId( tmp );
+}
+
+int RemovalWholeCellOutsideRadiusEpidermis::flag(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs)
+{
+	Cell &cell = T->cell(i);
+
+	if (checkIfCellIsOutside(cell, vertexData, parameter(0)))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void RemovalWholeCellOutsideRadiusEpidermis::update(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDeriv,
+	std::vector< std::vector<double> > &wallDeriv,
+	std::vector< std::vector<double> > &vertexDeriv)
+{
+	std::vector<size_t> cellsToRemove;
+
+	const size_t numberOfCells = T->numCell();
+
+	//Mark cells for removal (sorted with highest index first
+	for (size_t i = 0; i < numberOfCells; ++i)
+	{
+		size_t cellIndex = numberOfCells - 1 - i;
+		Cell &cell = T->cell(cellIndex);
+		
+//		if (cell.isNeighbor(T->background()))
+		{
+			if (checkIfCellIsOutside(cell, vertexData, parameter(1)))
+			{
+				cellsToRemove.push_back(cellIndex);
+			}
+		}
+	}
+
+	std::cerr << "Removing " << cellsToRemove.size() << " epidermal cells:\n";
+
+	for (size_t i = 0; i < cellsToRemove.size(); ++i)
+	{
+		std::cerr << cellsToRemove[i] << " ";
+	}
+	
+	std::cerr << "\n";
+	
+	for (size_t i = 0; i < cellsToRemove.size(); ++i)
+	{
+		T->removeCell(cellsToRemove[i], cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);
+	}
+}
+
+bool RemovalWholeCellOutsideRadiusEpidermis::checkIfCellIsOutside(Cell &cell, std::vector< std::vector<double> > &vertexData, const double radius) const
+{	
+	const size_t dimensions = vertexData[0].size();
+	const double radius2 = std::pow(radius, 2.0);
+
+	for (size_t i = 0; i < cell.numVertex(); ++i)
+	{
+		const Vertex &vertex = *cell.vertex(i);
+		const size_t vertexIndex = vertex.index();
+
+		double sum2 = 0.0;
+		
+		for (size_t dimension = 0; dimension < dimensions; ++dimension)
+		{
+			sum2 += std::pow(vertexData[vertexIndex][dimension], 2.0);
+		}
+
+		if (sum2 < radius2)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}

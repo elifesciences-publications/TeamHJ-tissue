@@ -66,6 +66,8 @@ createCompartmentChange(std::vector<double> &paraValue,
     return new RemovalOutsideMaxDistanceEpidermis(paraValue,indValue);
   else if(idValue=="RemovalOutsidePosition")
     return new RemovalOutsidePosition(paraValue,indValue);
+  else if (idValue == "RemovalWholeCellOutsideRadiusEpidermis")
+	  return new RemovalWholeCellOutsideRadiusEpidermis(paraValue, indValue);
 
   //Default, if nothing found
   else {
