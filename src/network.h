@@ -13,6 +13,24 @@
 #include"tissue.h"
 #include"baseReaction.h"
 
+//!A stress-based PIN1 and MT polarization model
+class AuxinModelStress : public BaseReaction {
+  
+ public:
+  
+  AuxinModelStress(std::vector<double> &paraValue, 
+		   std::vector< std::vector<size_t> > 
+		   &indValue );
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
+};
+
 //!A linear polarization cell-based auxin transport model
 /*!A complete pattern generating auxin model based on only cellular
   compartments. The four molecules are updated according to:

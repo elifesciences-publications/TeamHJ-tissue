@@ -210,13 +210,13 @@ derivs(Tissue &T,
 					FI<wallData[0].size() &&
 					kI[0]<wallData[0].size() &&
 					kI[1]<cellData[0].size() );
-	size_t dimension = T.vertex(0)->numPosition();
+	size_t dimension = T.vertex(0).numPosition();
 	std::vector<double> pos(dimension);
 
   for( size_t i=0 ; i<numCells ; ++i ) {
 		
     //Production and degradation
-		pos = T.cell(i)->positionFromVertex(vertexData);
+		pos = T.cell(i).positionFromVertex(vertexData);
 		double r=0;
 		for(size_t d=0; d<dimension; ++d)
 			r += pos[d]*pos[d];
