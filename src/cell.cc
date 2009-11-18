@@ -1107,3 +1107,54 @@ bool Cell::isConcave(std::vector< std::vector<double> > &vertexData, const doubl
 
 	return false;
 }
+
+bool Cell::isFolded(std::vector< std::vector<double> > &vertexData)
+{
+	for (size_t k = 0; k < numWall(); ++k)
+	{
+		const Wall *wall1 = wall(k);
+
+		const size_t a_index = wall1->vertex1()->index();
+		const size_t b_index = wall1->vertex2()->index();
+
+		const double vx = vertexData[b_index][0] - vertexData[a_index][0];
+		const double vy = vertexData[b_index][1] - vertexData[a_index][1];
+
+		for (size_t l = k + 2; l < numWall(); ++l)
+		{
+			if (k == 0 && l == numWall() - 1)
+			{
+				continue;
+			}
+
+			const Wall *wall2 = wall(l);
+
+			const size_t c_index = wall2->vertex1()->index();
+			const size_t d_index = wall2->vertex2()->index();
+
+			const double ux = vertexData[d_index][0] - vertexData[c_index][0];
+			const double uy = vertexData[d_index][1] - vertexData[c_index][1];
+
+			const double wx = vertexData[c_index][0] - vertexData[a_index][0];
+			const double wy = vertexData[c_index][1] - vertexData[a_index][1];
+
+			const double detA = vx * uy - ux * vy;
+
+			if (detA == 0.0)
+			{
+				continue;
+			}
+
+			const double p = (uy * wx - ux * wy) / detA;
+			const double q = (vy * wx - vx * wy) / detA;
+
+			if (p > 0.0 && p < 1.0 && q > 0.0 && q < 1.0)
+			{
+				return true;
+			}
+		}
+
+	}
+	
+	return false;
+}

@@ -701,3 +701,75 @@ void RemoveIsolatedCells::update(Tissue *T, size_t i, std::vector< std::vector<d
 }
 
 
+
+RemoveFoldedCells::RemoveFoldedCells(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue) 
+{
+	if (paraValue.size() != 1)
+	{
+		std::cerr << "RemoveFoldedCells::RemoveFoldedCells() uses one parameter.\n";
+		std::cerr << "1 = Only cells on boundary, 0 = All folded cells.\n";
+		std::exit(EXIT_FAILURE);
+	}
+	if (indValue.size() != 0)
+	{
+		std::cerr << "RemoveFoldedCells::RemoveFoldedCells() No variable index is used.\n";
+		std::exit(EXIT_FAILURE);
+	}
+	
+	setId("RemoveFoldedCells");
+	setNumChange(-1);
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize(numParameter());
+	tmp[0] = "boundary_flag";
+	setParameterId(tmp);
+}
+
+int RemoveFoldedCells::flag(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs)
+{
+	Cell &cell = T->cell(i);
+
+	if (parameter(0) && !cell.isNeighbor(T->background()))
+	{
+		return 0;
+	}
+
+	if (cell.isFolded(vertexData))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void RemoveFoldedCells::update(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDeriv,
+	std::vector< std::vector<double> > &wallDeriv,
+	std::vector< std::vector<double> > &vertexDeriv)
+{
+	Cell &cell = T->cell(i);
+
+	if (cell.isNeighbor(T->background()))
+	{
+		std::cerr << "Removing folded cell on boundary.\n";
+	}
+	else
+	{
+		std::cerr << "Removing folded cell not on boundary.\n";
+	}
+
+	T->removeCell(i, cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);	
+}
+
+

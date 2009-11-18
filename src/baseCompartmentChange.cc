@@ -72,6 +72,8 @@ createCompartmentChange(std::vector<double> &paraValue,
 	  return new RemovalConcaveCellsAtEpidermis(paraValue, indValue);
   else if (idValue == "RemoveIsolatedCells")
 	  return new RemoveIsolatedCells(paraValue, indValue);
+  else if (idValue == "RemoveFoldedCells")
+	  return new RemoveFoldedCells(paraValue, indValue);
 
   //Default, if nothing found
   else {
