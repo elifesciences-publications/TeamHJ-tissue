@@ -188,4 +188,44 @@ private:
 	bool checkIfCellIsOutside(Cell &cell, std::vector< std::vector<double> > &vertexData, const double radius) const;
 };
 
+class RemovalConcaveCellsAtEpidermis : public BaseCompartmentChange
+{
+public:
+	RemovalConcaveCellsAtEpidermis(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
+	
+	int flag(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+	
+	void update(Tissue* T, size_t i, std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+};
+
+class RemoveIsolatedCells : public BaseCompartmentChange
+{
+public:
+	RemoveIsolatedCells(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
+	
+	int flag(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+	
+	void update(Tissue* T, size_t i, std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+};
+
 #endif

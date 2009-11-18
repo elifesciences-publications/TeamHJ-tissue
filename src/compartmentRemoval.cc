@@ -552,39 +552,9 @@ void RemovalWholeCellOutsideRadiusEpidermis::update(Tissue *T, size_t i, std::ve
 	std::vector< std::vector<double> > &wallDeriv,
 	std::vector< std::vector<double> > &vertexDeriv)
 {
-	std::vector<size_t> cellsToRemove;
-
-	const size_t numberOfCells = T->numCell();
-
-	//Mark cells for removal (sorted with highest index first
-	for (size_t i = 0; i < numberOfCells; ++i)
-	{
-		size_t cellIndex = numberOfCells - 1 - i;
-		Cell &cell = T->cell(cellIndex);
-		
-//		if (cell.isNeighbor(T->background()))
-		{
-			if (checkIfCellIsOutside(cell, vertexData, parameter(1)))
-			{
-				cellsToRemove.push_back(cellIndex);
-			}
-		}
-	}
-
-	std::cerr << "Removing " << cellsToRemove.size() << " epidermal cells:\n";
-
-	for (size_t i = 0; i < cellsToRemove.size(); ++i)
-	{
-		std::cerr << cellsToRemove[i] << " ";
-	}
-	
-	std::cerr << "\n";
-	
-	for (size_t i = 0; i < cellsToRemove.size(); ++i)
-	{
-		T->removeCell(cellsToRemove[i], cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);
-	}
+	T->removeEpidermalCells(cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv, parameter(1), false);
 }
+
 
 bool RemovalWholeCellOutsideRadiusEpidermis::checkIfCellIsOutside(Cell &cell, std::vector< std::vector<double> > &vertexData, const double radius) const
 {	
@@ -611,3 +581,123 @@ bool RemovalWholeCellOutsideRadiusEpidermis::checkIfCellIsOutside(Cell &cell, st
 
 	return true;
 }
+
+
+
+RemovalConcaveCellsAtEpidermis::RemovalConcaveCellsAtEpidermis(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue) 
+{
+	if (paraValue.size() != 0)
+	{
+		std::cerr << "RemovalConcaveCellsAtEpidermis::RemovalConcaveCellsAtEpidermis() uses no parameters.\n";
+		std::exit(EXIT_FAILURE);
+	}
+	if (indValue.size() != 0)
+	{
+		std::cerr << "RemovalConcaveCellsAtEpidermis::RemovalConcaveCellsAtEpidermis() "
+		<< "No variable index is used.\n";
+		std::exit(EXIT_FAILURE);
+	}
+
+	setId("RemovalConcaveCellsAtEpidermis");
+	setNumChange(-1);
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+  
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize(numParameter());
+	setParameterId(tmp);
+}
+
+int RemovalConcaveCellsAtEpidermis::flag(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs)
+{
+	Cell &cell = T->cell(i);
+
+	for (size_t k = 0; k < cell.numWall(); ++k)
+	{
+		if (cell.cellNeighbor(k) == T->background() && cell.isConcave(vertexData))
+		{
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+void RemovalConcaveCellsAtEpidermis::update(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDeriv,
+	std::vector< std::vector<double> > &wallDeriv,
+	std::vector< std::vector<double> > &vertexDeriv)
+{
+	std::cerr << "Removing concave cell " << i << " at boundary.\n";
+	T->removeCell(i, cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);	
+}
+
+
+RemoveIsolatedCells::RemoveIsolatedCells(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue) 
+{
+	if (paraValue.size() != 0)
+	{
+		std::cerr << "RemoveIsolatedCells::RemoveIsolatedCells() uses no parameters.\n";
+		std::exit(EXIT_FAILURE);
+	}
+	if (indValue.size() != 0)
+	{
+		std::cerr << "RemoveIsolatedCells::RemoveIsolatedCells() "
+		<< "No variable index is used.\n";
+		std::exit(EXIT_FAILURE);
+	}
+
+	setId("RemoveIsolatedCells");
+	setNumChange(-1);
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+  
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize(numParameter());
+	setParameterId(tmp);
+}
+
+int RemoveIsolatedCells::flag(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs)
+{
+	if (T->numCell() == 1)
+	{
+		return 0;
+	}
+
+	Cell &cell = T->cell(i);
+
+	for (size_t k = 0; k < cell.numWall(); ++k)
+	{
+		if (cell.cellNeighbor(k) != T->background())
+		{
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+void RemoveIsolatedCells::update(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDeriv,
+	std::vector< std::vector<double> > &wallDeriv,
+	std::vector< std::vector<double> > &vertexDeriv)
+{
+	std::cerr << "Removing isolated cell " << i << " at boundary.\n";
+	T->removeCell(i, cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);	
+}
+
+

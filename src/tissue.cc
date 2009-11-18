@@ -1637,15 +1637,15 @@ checkCompartmentChange( std::vector< std::vector<double> > &cellData,
 												std::vector< std::vector<double> > &wallDeriv,
 												std::vector< std::vector<double> > &vertexDeriv ) {
   
-  for( size_t k=0 ; k<numCompartmentChange() ; ++k ) {
+  for( size_t l=0 ; l<numCompartmentChange() ; ++l ) {
     for( size_t i=0 ; i<numCell() ; ++i ) {
-      if( compartmentChange(k)->flag(this,i,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv) ) {
-				compartmentChange(k)->update(this,i,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv);
+      if( compartmentChange(l)->flag(this,i,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv) ) {
+				compartmentChange(l)->update(this,i,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv);
 				//If cell division, sort walls and vertices for cell plus 
         //divided cell plus their neighbors
 				//Get list of potential cells to be sorted
 				//Also add division rule for directions
-				if( compartmentChange(k)->numChange()==1 ) {
+				if( compartmentChange(l)->numChange()==1 ) {
 					std::set<size_t> sortCell;
 					sortCell.insert(i);
 					size_t ii=numCell()-1;
@@ -1669,13 +1669,54 @@ checkCompartmentChange( std::vector< std::vector<double> > &cellData,
 					//	 k!=sortCell.end() ; ++k )
 					//std::cerr << *k << " ";
 					//std::cerr << "to be sorted" << std::endl;
-					for( std::set<size_t>::iterator k=sortCell.begin() ; 
-							 k!=sortCell.end() ; ++k )
-						cell(*k).sortWallAndVertex(*this);
+
+					// If one of the daughter
+					// cells is on the edge and
+					// only has the other daughter
+					// cell as its neighbor the
+					// other daughter cell needs
+					// to be sorted
+					// first. Therefore we save
+					// all cells with only one
+					// neighbor in a second set of
+					// indexes and sort them in a
+					// second round.
+					std::set<size_t> oneNeighborCells;
+					
+					for (std::set<size_t>::iterator k = sortCell.begin(); k != sortCell.end(); ++k)
+					{
+						Cell &cellToSort = cell(*k);
+						
+						int counter = 0;
+						
+						for (size_t wallIndex = 0; wallIndex < cellToSort.numWall(); ++wallIndex)
+						{
+							if (cellToSort.cellNeighbor(wallIndex) != background())
+							{
+								++counter;
+							}
+						}
+						
+						if (counter == 1)
+						{
+							oneNeighborCells.insert(cellToSort.index());
+						}
+						else
+						{
+							cellToSort.sortWallAndVertex(*this);
+						}
+					}
+					
+					for (std::set<size_t>::iterator k = oneNeighborCells.begin(); k != oneNeighborCells.end(); ++k)
+					{
+						Cell &cellToSort = cell(*k);
+						
+						cellToSort.sortWallAndVertex(*this);
+					}
 				}	
-				else if( compartmentChange(k)->numChange()==-1 )
+				else if( compartmentChange(l)->numChange()==-1 )
 					--i;
-				else if( compartmentChange(k)->numChange()<-1 )
+				else if( compartmentChange(l)->numChange()<-1 )
 					i=numCell()+1;
 			}
 		}
@@ -1871,14 +1912,15 @@ removeEpidermalCells(std::vector< std::vector<double> > &cellData,
 										 std::vector< std::vector<double> > &cellDeriv,
 										 std::vector< std::vector<double> > &wallDeriv,
 										 std::vector< std::vector<double> > &vertexDeriv,
-										 double radialThreshold ) 
+	double radialThreshold,
+	const bool checkBackground) 
 {
 	size_t dimension=vertexData[0].size();
 	std::vector<size_t> cellR;
 	//Mark cells for removal (sorted with highest index first
 	for( size_t i=0 ; i<numCell() ; ++i ) {
 		size_t cellI=numCell()-1-i;
-		if( cell(cellI).isNeighbor( background() ) ) {
+		if (!checkBackground || cell(cellI).isNeighbor(background())) {
 			if( radialThreshold>0.0 ) {//check that cell is outside
 				std::vector<double> cellPos;
 				cellPos = cell(cellI).positionFromVertex(vertexData);

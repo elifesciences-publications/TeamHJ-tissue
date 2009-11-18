@@ -83,6 +83,8 @@ class Cell {
 	void sortWallAndVertexOld(Tissue &T);
 	void sortWallAndVertex(Tissue &T);
 
+	bool isConcave(std::vector< std::vector<double> > &vertexData, const double tolerance = 0.01);
+
   double calculateVolume( size_t signFlag=0 );
   double calculateVolume( std::vector< std::vector<double> > 
 													&vertexData, size_t signFlag=0 );

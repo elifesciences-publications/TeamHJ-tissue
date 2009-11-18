@@ -216,7 +216,10 @@ void RK5Adaptive::simulate(size_t verbose)
     T_->checkConnectivity(1);
 		
     // Rescale all temporary vectors as well
-    if (cellData_.size() != yScalC.size()) {
+    if (cellData_.size() != yScalC.size() ||
+	    wallData_.size() != yScalW.size() ||
+	    vertexData_.size() != yScalV.size())
+    {
       yScalC.resize(cellData_.size(), yScalC[0]);
       yScalW.resize(wallData_.size(), yScalW[0]);
       yScalV.resize(vertexData_.size(), yScalV[0]);

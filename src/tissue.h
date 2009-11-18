@@ -221,7 +221,8 @@ class Tissue {
 														std::vector< std::vector<double> > &cellDeriv,
 														std::vector< std::vector<double> > &wallDeriv,
 														std::vector< std::vector<double> > &vertexDeriv,
-														double radialThreshold=0.0);
+	  double radialThreshold = 0.0,
+	  const bool checkBackground = true);
 
 	///
 	/// @brief Calls removeCell() for all cells that are at boundary and outside (all vertices) a radial threshold

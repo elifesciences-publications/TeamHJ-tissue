@@ -68,6 +68,10 @@ createCompartmentChange(std::vector<double> &paraValue,
     return new RemovalOutsidePosition(paraValue,indValue);
   else if (idValue == "RemovalWholeCellOutsideRadiusEpidermis")
 	  return new RemovalWholeCellOutsideRadiusEpidermis(paraValue, indValue);
+  else if (idValue == "RemovalConcaveCellsAtEpidermis")
+	  return new RemovalConcaveCellsAtEpidermis(paraValue, indValue);
+  else if (idValue == "RemoveIsolatedCells")
+	  return new RemoveIsolatedCells(paraValue, indValue);
 
   //Default, if nothing found
   else {

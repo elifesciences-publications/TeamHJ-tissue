@@ -1059,3 +1059,51 @@ vectorSignFromSort(std::vector<double> &n,
 	}
 	return sign;
 }
+
+
+bool Cell::isConcave(std::vector< std::vector<double> > &vertexData, const double tolerance)
+{
+	signed int s = 0;
+
+	for (size_t k = 0; k < numVertex(); ++k)
+	{
+		Vertex *vertex1 = vertex((k + 0) % numVertex());
+		Vertex *vertex2 = vertex((k + 1) % numVertex());
+		Vertex *vertex3 = vertex((k + 2) % numVertex());
+
+		const size_t vertexIndex1 = vertex1->index();
+		const size_t vertexIndex2 = vertex2->index();
+		const size_t vertexIndex3 = vertex3->index();
+
+		const double ux = vertexData[vertexIndex2][0] - vertexData[vertexIndex1][0];
+		const double uy = vertexData[vertexIndex2][1] - vertexData[vertexIndex1][1];
+
+		const double vx = vertexData[vertexIndex3][0] - vertexData[vertexIndex2][0];
+		const double vy = vertexData[vertexIndex3][1] - vertexData[vertexIndex2][1];
+
+		const double u = std::sqrt(ux * ux + uy * uy);
+		const double v = std::sqrt(vx * vx + vy * vy);
+
+		const double uv = ux *vx + uy * vy;
+
+		const double costheta = uv / (u * v);
+
+		if (std::abs(costheta - 1.0) < tolerance)
+		{
+			continue;
+		}
+
+		const double tmp = myMath::sign(ux * vy - uy * vx);
+
+		if (s == 0)
+		{
+			s = tmp;
+		}
+		else if (s != tmp)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
