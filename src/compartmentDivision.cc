@@ -2031,7 +2031,7 @@ void DivisionShortestPath::update(Tissue* T, size_t i,
 						    std::vector< std::vector<double> > &wallDerivs,
 						    std::vector< std::vector<double> > &vertexDerivs)
 {
-	Cell cell = T->cell(i);
+	Cell &cell = T->cell(i);
 	
 	if (vertexData[0].size() != 2)
 	{
