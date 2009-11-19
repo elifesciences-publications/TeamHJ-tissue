@@ -671,16 +671,42 @@ int RemoveIsolatedCells::flag(Tissue *T, size_t i, std::vector< std::vector<doub
 	std::vector< std::vector<double> > &wallDerivs,
 	std::vector< std::vector<double> > &vertexDerivs)
 {
-	if (T->numCell() == 1)
+	if (T->numCell() < 3)
 	{
 		return 0;
 	}
 
 	Cell &cell = T->cell(i);
 
+	int neighborCounter = 0;
+
 	for (size_t k = 0; k < cell.numWall(); ++k)
 	{
-		if (cell.cellNeighbor(k) != T->background())
+		Cell *neighbor = cell.cellNeighbor(k);
+
+		if (neighbor == T->background())
+		{
+			continue;
+		}
+		
+		++neighborCounter;
+
+		for (size_t l = 0; l < neighbor->numWall(); ++l)
+		{
+			Cell *nextNeighbor = neighbor->cellNeighbor(l);
+			
+			if (nextNeighbor == T->background())
+			{
+				continue;
+			}
+
+			if (nextNeighbor != &cell)
+			{
+				return 0;
+			}
+		}
+
+		if (neighborCounter > 1)
 		{
 			return 0;
 		}
