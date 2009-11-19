@@ -24,7 +24,6 @@ class DivisionVolumeViaLongestWall : public BaseCompartmentChange {
   DivisionVolumeViaLongestWall(std::vector<double> &paraValue, 
 															 std::vector< std::vector<size_t> > 
 															 &indValue );
-  
   int flag(Tissue *T,size_t i,
 					 std::vector< std::vector<double> > &cellData,
 					 std::vector< std::vector<double> > &wallData,
