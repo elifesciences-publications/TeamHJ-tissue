@@ -704,7 +704,7 @@ positionFromVertex(std::vector< std::vector<double> > &vertexData)
 	return pos;
 }
 
-std::vector<double> Cell::randomPositionInCell(const std::vector< std::vector<double> > &vertexData) 
+std::vector<double> Cell::randomPositionInCell(const std::vector< std::vector<double> > &vertexData, const int numberOfTries) 
 {
 	typedef std::vector<double> Vector;
 
@@ -748,7 +748,7 @@ std::vector<double> Cell::randomPositionInCell(const std::vector< std::vector<do
 		}
 	}
 
-	while (true)
+	for (int tryCounter = 0; tryCounter < numberOfTries; ++tryCounter)
 	{
 		double rx = xmin + (xmax - xmin) * myRandom::Rnd();
 		double ry = ymin + (ymax - ymin) * myRandom::Rnd();
@@ -800,6 +800,8 @@ std::vector<double> Cell::randomPositionInCell(const std::vector< std::vector<do
 			return result;
 		}
 	}
+
+	throw FailedToFindRandomPositionInCellException();
 }
 
 void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)

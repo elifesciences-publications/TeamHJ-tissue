@@ -93,7 +93,12 @@ class Cell {
   std::vector<double> 
 	positionFromVertex( std::vector< std::vector<double> > &vertexData );	
 
-	std::vector<double> randomPositionInCell(const std::vector< std::vector<double> > &vertexData);
+	class FailedToFindRandomPositionInCellException
+	{
+		
+	};
+
+	std::vector<double> randomPositionInCell(const std::vector< std::vector<double> > &vertexData, const int numberOfTries = 10000);
 
 
 

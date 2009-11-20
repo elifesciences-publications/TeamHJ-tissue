@@ -1346,7 +1346,14 @@ update(Tissue *T,size_t cellI,
   }
   else
   {
-	  com = divCell->randomPositionInCell(vertexData);
+	  try
+	  {
+		  com = divCell->randomPositionInCell(vertexData);
+	  }
+	  catch (Cell::FailedToFindRandomPositionInCellException)
+	  {
+		  return;
+	  }
   }
   
   std::vector<double> n(dimension);
@@ -2100,7 +2107,14 @@ std::vector<DivisionShortestPath::Candidate> DivisionShortestPath::getCandidates
 	}
 	else
 	{
-		o = cell.randomPositionInCell(vertexData);
+		try
+		{
+			o = cell.randomPositionInCell(vertexData);
+		}
+		catch (Cell::FailedToFindRandomPositionInCellException)
+		{
+			return std::vector<Candidate>();
+		}
 	}
 
 	double ox = o[0];
@@ -2738,7 +2752,14 @@ update(Tissue *T,size_t cellI,
   }
   else
   {
-	  com = divCell->randomPositionInCell(vertexData);
+	  try
+	  {
+		  com = divCell->randomPositionInCell(vertexData);
+	  }
+	  catch (Cell::FailedToFindRandomPositionInCellException)
+	  {
+		  return;
+	  }
   }
   
   std::vector<double> n(dimension);
@@ -3038,7 +3059,14 @@ std::vector<DivisionShortestPathGiantCells::Candidate> DivisionShortestPathGiant
 	}
 	else
 	{
-		o = cell.randomPositionInCell(vertexData);
+		try
+		{
+			o = cell.randomPositionInCell(vertexData);
+		}
+		catch (Cell::FailedToFindRandomPositionInCellException)
+		{
+			return std::vector<Candidate>();
+		}
 	}
 
 	double ox = o[0];
