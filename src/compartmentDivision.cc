@@ -1409,65 +1409,66 @@ update(Tissue *T,size_t cellI,
   }
   assert( wI[1] != divCell->numWall() && wI[0] != wI[1] );
   if( flag != 2 ) {
-    std::cerr << "divideVolumeVisStrain::update Warning"
-	      << " not two walls possible as connection "
-	      << "for cell " 
-	      << cellI << std::endl; 
-    for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
-      std::cerr << "0 " 
-		<< vertexData[divCell->wall(k)->vertex1()->index()][0]
-		<< " " 
-		<< vertexData[divCell->wall(k)->vertex1()->index()][1]
-		<< "\n0 " 
-		<< vertexData[divCell->wall(k)->vertex2()->index()][0]
-		<< " " 
-		<< vertexData[divCell->wall(k)->vertex2()->index()][1]
-		<< "\n\n\n";
-    }
-    for( size_t kk=0 ; kk<w3Tmp.size() ; ++kk ) {
-      size_t k = w3Tmp[kk];
-      std::cerr << "1 " 
-		<< vertexData[divCell->wall(k)->vertex1()->index()][0]
-		<< " " 
-		<< vertexData[divCell->wall(k)->vertex1()->index()][1]
-		<< "\n1 " 
-		<< vertexData[divCell->wall(k)->vertex2()->index()][0]
-		<< " " 
-		<< vertexData[divCell->wall(k)->vertex2()->index()][1]
-		<< "\n\n\n";
-    }
-    std::cerr << "2 " 
-	      << vertexData[divCell->wall(wI[0])->vertex1()->index()][0]
-	      << " " 
-	      << vertexData[divCell->wall(wI[0])->vertex1()->index()][1]
-	      << "\n2 " 
-	      << vertexData[divCell->wall(wI[0])->vertex2()->index()][0]
-	      << " " 
-	      << vertexData[divCell->wall(wI[0])->vertex2()->index()][1]
-	      << "\n\n\n";
-    std::cerr << "3 " 
-	      << vertexData[divCell->wall(wI[1])->vertex1()->index()][0]
-	      << " " 
-	      << vertexData[divCell->wall(wI[1])->vertex1()->index()][1]
-	      << "\n3 " 
-	      << vertexData[divCell->wall(wI[1])->vertex2()->index()][0]
-	      << " " 
-	      << vertexData[divCell->wall(wI[1])->vertex2()->index()][1]
-	      << "\n\n\n";
-    std::cerr << "4 " 
-	      << 0.5*(vertexData[divCell->wall(wI[0])->vertex1()->index()][0]+
-		      vertexData[divCell->wall(wI[0])->vertex2()->index()][0])
-	      << " " 
-	      << 0.5*(vertexData[divCell->wall(wI[0])->vertex1()->index()][1]+
-		      vertexData[divCell->wall(wI[0])->vertex2()->index()][1])
-	      << "\n4 "
-	      << 0.5*(vertexData[divCell->wall(wI[1])->vertex1()->index()][0]+
-		      vertexData[divCell->wall(wI[1])->vertex2()->index()][0])
-	      << " " 
-	      << 0.5*(vertexData[divCell->wall(wI[1])->vertex1()->index()][1]+
-		      vertexData[divCell->wall(wI[1])->vertex2()->index()][1])
-	      << "\n\n\n";
-    exit(-1);
+	  return;
+    // std::cerr << "divideVolumeVisStrain::update Warning"
+    // 	      << " not two walls possible as connection "
+    // 	      << "for cell " 
+    // 	      << cellI << std::endl; 
+    // for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
+    //   std::cerr << "0 " 
+    // 		<< vertexData[divCell->wall(k)->vertex1()->index()][0]
+    // 		<< " " 
+    // 		<< vertexData[divCell->wall(k)->vertex1()->index()][1]
+    // 		<< "\n0 " 
+    // 		<< vertexData[divCell->wall(k)->vertex2()->index()][0]
+    // 		<< " " 
+    // 		<< vertexData[divCell->wall(k)->vertex2()->index()][1]
+    // 		<< "\n\n\n";
+    // }
+    // for( size_t kk=0 ; kk<w3Tmp.size() ; ++kk ) {
+    //   size_t k = w3Tmp[kk];
+    //   std::cerr << "1 " 
+    // 		<< vertexData[divCell->wall(k)->vertex1()->index()][0]
+    // 		<< " " 
+    // 		<< vertexData[divCell->wall(k)->vertex1()->index()][1]
+    // 		<< "\n1 " 
+    // 		<< vertexData[divCell->wall(k)->vertex2()->index()][0]
+    // 		<< " " 
+    // 		<< vertexData[divCell->wall(k)->vertex2()->index()][1]
+    // 		<< "\n\n\n";
+    // }
+    // std::cerr << "2 " 
+    // 	      << vertexData[divCell->wall(wI[0])->vertex1()->index()][0]
+    // 	      << " " 
+    // 	      << vertexData[divCell->wall(wI[0])->vertex1()->index()][1]
+    // 	      << "\n2 " 
+    // 	      << vertexData[divCell->wall(wI[0])->vertex2()->index()][0]
+    // 	      << " " 
+    // 	      << vertexData[divCell->wall(wI[0])->vertex2()->index()][1]
+    // 	      << "\n\n\n";
+    // std::cerr << "3 " 
+    // 	      << vertexData[divCell->wall(wI[1])->vertex1()->index()][0]
+    // 	      << " " 
+    // 	      << vertexData[divCell->wall(wI[1])->vertex1()->index()][1]
+    // 	      << "\n3 " 
+    // 	      << vertexData[divCell->wall(wI[1])->vertex2()->index()][0]
+    // 	      << " " 
+    // 	      << vertexData[divCell->wall(wI[1])->vertex2()->index()][1]
+    // 	      << "\n\n\n";
+    // std::cerr << "4 " 
+    // 	      << 0.5*(vertexData[divCell->wall(wI[0])->vertex1()->index()][0]+
+    // 		      vertexData[divCell->wall(wI[0])->vertex2()->index()][0])
+    // 	      << " " 
+    // 	      << 0.5*(vertexData[divCell->wall(wI[0])->vertex1()->index()][1]+
+    // 		      vertexData[divCell->wall(wI[0])->vertex2()->index()][1])
+    // 	      << "\n4 "
+    // 	      << 0.5*(vertexData[divCell->wall(wI[1])->vertex1()->index()][0]+
+    // 		      vertexData[divCell->wall(wI[1])->vertex2()->index()][0])
+    // 	      << " " 
+    // 	      << 0.5*(vertexData[divCell->wall(wI[1])->vertex1()->index()][1]+
+    // 		      vertexData[divCell->wall(wI[1])->vertex2()->index()][1])
+    // 	      << "\n\n\n";
+    // exit(-1);
   }	
   //Addition of new vertices at walls at position 's' 
   std::vector<double> v1Pos(dimension),v2Pos(dimension);
@@ -2815,65 +2816,66 @@ update(Tissue *T,size_t cellI,
   }
   assert( wI[1] != divCell->numWall() && wI[0] != wI[1] );
   if( flag != 2 ) {
-    std::cerr << "divideVolumeVisStrain::update Warning"
-	      << " not two walls possible as connection "
-	      << "for cell " 
-	      << cellI << std::endl; 
-    for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
-      std::cerr << "0 " 
-		<< vertexData[divCell->wall(k)->vertex1()->index()][0]
-		<< " " 
-		<< vertexData[divCell->wall(k)->vertex1()->index()][1]
-		<< "\n0 " 
-		<< vertexData[divCell->wall(k)->vertex2()->index()][0]
-		<< " " 
-		<< vertexData[divCell->wall(k)->vertex2()->index()][1]
-		<< "\n\n\n";
-    }
-    for( size_t kk=0 ; kk<w3Tmp.size() ; ++kk ) {
-      size_t k = w3Tmp[kk];
-      std::cerr << "1 " 
-		<< vertexData[divCell->wall(k)->vertex1()->index()][0]
-		<< " " 
-		<< vertexData[divCell->wall(k)->vertex1()->index()][1]
-		<< "\n1 " 
-		<< vertexData[divCell->wall(k)->vertex2()->index()][0]
-		<< " " 
-		<< vertexData[divCell->wall(k)->vertex2()->index()][1]
-		<< "\n\n\n";
-    }
-    std::cerr << "2 " 
-	      << vertexData[divCell->wall(wI[0])->vertex1()->index()][0]
-	      << " " 
-	      << vertexData[divCell->wall(wI[0])->vertex1()->index()][1]
-	      << "\n2 " 
-	      << vertexData[divCell->wall(wI[0])->vertex2()->index()][0]
-	      << " " 
-	      << vertexData[divCell->wall(wI[0])->vertex2()->index()][1]
-	      << "\n\n\n";
-    std::cerr << "3 " 
-	      << vertexData[divCell->wall(wI[1])->vertex1()->index()][0]
-	      << " " 
-	      << vertexData[divCell->wall(wI[1])->vertex1()->index()][1]
-	      << "\n3 " 
-	      << vertexData[divCell->wall(wI[1])->vertex2()->index()][0]
-	      << " " 
-	      << vertexData[divCell->wall(wI[1])->vertex2()->index()][1]
-	      << "\n\n\n";
-    std::cerr << "4 " 
-	      << 0.5*(vertexData[divCell->wall(wI[0])->vertex1()->index()][0]+
-		      vertexData[divCell->wall(wI[0])->vertex2()->index()][0])
-	      << " " 
-	      << 0.5*(vertexData[divCell->wall(wI[0])->vertex1()->index()][1]+
-		      vertexData[divCell->wall(wI[0])->vertex2()->index()][1])
-	      << "\n4 "
-	      << 0.5*(vertexData[divCell->wall(wI[1])->vertex1()->index()][0]+
-		      vertexData[divCell->wall(wI[1])->vertex2()->index()][0])
-	      << " " 
-	      << 0.5*(vertexData[divCell->wall(wI[1])->vertex1()->index()][1]+
-		      vertexData[divCell->wall(wI[1])->vertex2()->index()][1])
-	      << "\n\n\n";
-    exit(-1);
+	  return;
+    // std::cerr << "divideVolumeVisStrain::update Warning"
+    // 	      << " not two walls possible as connection "
+    // 	      << "for cell " 
+    // 	      << cellI << std::endl; 
+    // for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
+    //   std::cerr << "0 " 
+    // 		<< vertexData[divCell->wall(k)->vertex1()->index()][0]
+    // 		<< " " 
+    // 		<< vertexData[divCell->wall(k)->vertex1()->index()][1]
+    // 		<< "\n0 " 
+    // 		<< vertexData[divCell->wall(k)->vertex2()->index()][0]
+    // 		<< " " 
+    // 		<< vertexData[divCell->wall(k)->vertex2()->index()][1]
+    // 		<< "\n\n\n";
+    // }
+    // for( size_t kk=0 ; kk<w3Tmp.size() ; ++kk ) {
+    //   size_t k = w3Tmp[kk];
+    //   std::cerr << "1 " 
+    // 		<< vertexData[divCell->wall(k)->vertex1()->index()][0]
+    // 		<< " " 
+    // 		<< vertexData[divCell->wall(k)->vertex1()->index()][1]
+    // 		<< "\n1 " 
+    // 		<< vertexData[divCell->wall(k)->vertex2()->index()][0]
+    // 		<< " " 
+    // 		<< vertexData[divCell->wall(k)->vertex2()->index()][1]
+    // 		<< "\n\n\n";
+    // }
+    // std::cerr << "2 " 
+    // 	      << vertexData[divCell->wall(wI[0])->vertex1()->index()][0]
+    // 	      << " " 
+    // 	      << vertexData[divCell->wall(wI[0])->vertex1()->index()][1]
+    // 	      << "\n2 " 
+    // 	      << vertexData[divCell->wall(wI[0])->vertex2()->index()][0]
+    // 	      << " " 
+    // 	      << vertexData[divCell->wall(wI[0])->vertex2()->index()][1]
+    // 	      << "\n\n\n";
+    // std::cerr << "3 " 
+    // 	      << vertexData[divCell->wall(wI[1])->vertex1()->index()][0]
+    // 	      << " " 
+    // 	      << vertexData[divCell->wall(wI[1])->vertex1()->index()][1]
+    // 	      << "\n3 " 
+    // 	      << vertexData[divCell->wall(wI[1])->vertex2()->index()][0]
+    // 	      << " " 
+    // 	      << vertexData[divCell->wall(wI[1])->vertex2()->index()][1]
+    // 	      << "\n\n\n";
+    // std::cerr << "4 " 
+    // 	      << 0.5*(vertexData[divCell->wall(wI[0])->vertex1()->index()][0]+
+    // 		      vertexData[divCell->wall(wI[0])->vertex2()->index()][0])
+    // 	      << " " 
+    // 	      << 0.5*(vertexData[divCell->wall(wI[0])->vertex1()->index()][1]+
+    // 		      vertexData[divCell->wall(wI[0])->vertex2()->index()][1])
+    // 	      << "\n4 "
+    // 	      << 0.5*(vertexData[divCell->wall(wI[1])->vertex1()->index()][0]+
+    // 		      vertexData[divCell->wall(wI[1])->vertex2()->index()][0])
+    // 	      << " " 
+    // 	      << 0.5*(vertexData[divCell->wall(wI[1])->vertex1()->index()][1]+
+    // 		      vertexData[divCell->wall(wI[1])->vertex2()->index()][1])
+    // 	      << "\n\n\n";
+    // exit(-1);
   }	
   //Addition of new vertices at walls at position 's' 
   std::vector<double> v1Pos(dimension),v2Pos(dimension);
