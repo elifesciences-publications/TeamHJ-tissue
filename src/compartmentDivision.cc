@@ -1992,10 +1992,10 @@ DivisionShortestPath::DivisionShortestPath(std::vector<double> &paraValue,
 		std::exit(EXIT_FAILURE);
 	}
 	
-	if (indValue.size() != 1) {
+	if (indValue.size() > 2 || (indValue.size() == 2 && indValue[1].size() != 1)) {
 		std::cerr << "DivisionShortestPath::DivisionShortestPath() "
-				<< "First level: Variable indices for volume dependent cell "
-				<< "variables are used.\n";
+		<< "First level: Variable indices for volume dependent cell variables are used.\n"
+		<< "Second level (optional): Cell time index.\n";
 		exit(EXIT_FAILURE);
 	}
 	
@@ -2075,10 +2075,21 @@ void DivisionShortestPath::update(Tissue* T, size_t i,
 	std::vector<double> q(2);
 	q[0] = winner.qx;
 	q[1] = winner.qy;
+
+	if (numVariableIndexLevel() == 2)
+	{
+		const size_t timeIndex = variableIndex(1, 0);
+		
+		const double age = cellData[cell.index()][timeIndex];
+
+		std::cerr << "Cell age at division is " << age << "\n";
+
+		cellData[cell.index()][timeIndex] = 0.0;
+	}
 	
 	T->divideCell(&cell, winner.wall1, winner.wall2, p, q, cellData, wallData, vertexData,
 		cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), parameter(2));
-	
+
 	assert (numWallTmp + 3 == T->numWall());
 	
 	//Change length of new wall between the divided daugther cells
