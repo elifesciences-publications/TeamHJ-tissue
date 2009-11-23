@@ -9,6 +9,7 @@
 
 #include "baseReaction.h"
 #include "adhocReaction.h"
+#include "cellTime.h"
 #include "directionReaction.h"
 #include "growth.h"
 #include "mechanical.h"
@@ -184,6 +185,10 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new StrainTest(paraValue,indValue); 
   else if(idValue=="CalculateVertexStressDirection")
 	  return new CalculateVertexStressDirection(paraValue,indValue); 
+
+  /* cellTime.h */
+  else if (idValue=="cellTimeDerivative")
+	  return new CellTimeDerivative(paraValue, indValue);
 	
   //Default, if nothing found
   else {
