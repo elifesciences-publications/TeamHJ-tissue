@@ -187,7 +187,7 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new CalculateVertexStressDirection(paraValue,indValue); 
 
   /* cellTime.h */
-  else if (idValue=="cellTimeDerivative")
+  else if (idValue=="CellTimeDerivative")
 	  return new CellTimeDerivative(paraValue, indValue);
 	
   //Default, if nothing found
