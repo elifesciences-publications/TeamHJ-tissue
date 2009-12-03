@@ -1113,12 +1113,12 @@ DivisionVolumeViaDirection(std::vector<double> &paraValue,
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
-  if( paraValue.size()!=4 ) {
-    std::cerr << "DivisionVolumeViaDirection::"
-							<< "DivisionVolumeViaDirection() "
-							<< "Four parameters used V_threshold, LWall_frac, "
-							<< "Lwall_threshold and Parallell_flag" << std::endl;
-    exit(0);
+  if (paraValue.size() != 5) {
+	  std::cerr << "DivisionVolumeViaDirection::"
+	  << "DivisionVolumeViaDirection() "
+	  << "Four parameters used V_threshold, LWall_frac, "
+	  << "Lwall_threshold, Parallell_flag, and COM (1 = COM, 0 = Random)." << std::endl;
+	  std::exit(EXIT_FAILURE);
   }
   if( indValue.size() != 2 || indValue[0].size() != 1 ) {
     std::cerr << "DivisionVolumeViaDirection::"
@@ -1142,7 +1142,8 @@ DivisionVolumeViaDirection(std::vector<double> &paraValue,
   tmp[0] = "V_threshold";
   tmp[1] = "LWall_frac";
   tmp[2] = "LWall_threshold";
-	tmp[3] = "Parallell_flag";
+  tmp[3] = "Parallell_flag";
+  tmp[4] = "COM_flag";
   setParameterId( tmp );
 }
 
@@ -1183,9 +1184,23 @@ update(Tissue *T,size_t cellI,
   assert( divCell->numWall() > 2 );
 	assert( dimension==2 || dimension==3);
 	
-	// Get center of mass of the dividing cell
 	std::vector<double> com(dimension);
-	com = divCell->positionFromVertex(vertexData);
+	
+	if (parameter(4) == 1)
+	{
+		com = divCell->positionFromVertex(vertexData);
+	}
+	else
+	{
+		try
+		{
+			com = divCell->randomPositionInCell(vertexData);
+		}
+		catch (Cell::FailedToFindRandomPositionInCellException)
+		{
+			return;
+		}
+	}
 	
 	// Get direction from cell variable (or random if not present
 	std::vector<double> n(dimension);
@@ -1242,9 +1257,10 @@ update(Tissue *T,size_t cellI,
   std::vector<double> v1Pos(dimension),v2Pos(dimension);
 	
 	if (findTwoDivisionWalls(vertexData,divCell,wI,com,n,v1Pos,v2Pos)) {
-		std::cerr << "DivisionVolumeViaDirection::update "
-							<< "failed to find two walls for division!" << std::endl;
-		exit(-1);
+		return;
+		// std::cerr << "DivisionVolumeViaDirection::update "
+		// << "failed to find two walls for division!" << std::endl;
+		// exit(-1);
 	}
 	
 	// Do the division (add one cell, three walls, and two vertices)
