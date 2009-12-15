@@ -62,36 +62,26 @@ derivs(Tissue &T,
   //////////////////////////////////////////////////////////////////////
   assert( dimension==2 );
   //For each cell
-  for( size_t cellI=0 ; cellI<numCells ; ++cellI ) {
-    
-    Cell &tmpCell = T.cell(cellI);
-    
-    //calculate volume (area)
-    double cellVolume=0.0;
-    for( size_t k=0 ; k<tmpCell.numVertex() ; ++k ) {
-      size_t v1I = tmpCell.vertex(k)->index();
-      size_t v2I = tmpCell.vertex((k+1)%(tmpCell.numVertex()))->index();
-      cellVolume += vertexData[v1I][0]*vertexData[v2I][1]-
-	vertexData[v1I][1]*vertexData[v2I][0];
-    }
-    cellVolume = 0.5*cellVolume;
-    double factor=0.5*parameter(0);
-    if( cellVolume<0.0 ) 
-      factor = -factor;
-    if (parameter(1)==1)
-      factor /= std::fabs(cellVolume);
-    
-    for( size_t k=0 ; k<tmpCell.numVertex() ; ++k ) {
-      size_t v1I = tmpCell.vertex(k)->index();
-      size_t v1PlusI = tmpCell.vertex((k+1)%(tmpCell.numVertex()))->index();
-      size_t v1MinusK = k>0 ? k-1 : tmpCell.numVertex()-1;
-      size_t v1MinusI = tmpCell.vertex(v1MinusK)->index();
-      
-      vertexDerivs[v1I][0] += factor*(vertexData[v1PlusI][1]-
-				      vertexData[v1MinusI][1]);
-      vertexDerivs[v1I][1] += factor*(vertexData[v1MinusI][0]-
-				      vertexData[v1PlusI][0]);
-    }
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {
+	  Cell &tmpCell = T.cell(cellI);
+
+	  double factor = 0.5 * parameter(0);
+
+	  if (parameter(1) == 1)
+	  {
+		  double cellVolume = tmpCell.calculateVolume(vertexData);
+		  factor /= std::fabs(cellVolume);
+	  }
+
+	  for (size_t k = 0; k < tmpCell.numVertex(); ++k) {
+		  size_t v1I = tmpCell.vertex(k)->index();
+		  size_t v1PlusI = tmpCell.vertex((k + 1) % (tmpCell.numVertex()))->index();
+		  size_t v1MinusK = k > 0 ? k - 1 : tmpCell.numVertex() - 1;
+		  size_t v1MinusI = tmpCell.vertex(v1MinusK)->index();
+		  
+		  vertexDerivs[v1I][0] += factor * (vertexData[v1PlusI][1] - vertexData[v1MinusI][1]);
+		  vertexDerivs[v1I][1] += factor * (vertexData[v1MinusI][0]- vertexData[v1PlusI][0]);
+	  }
   }
 }
 
