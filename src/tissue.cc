@@ -1636,13 +1636,23 @@ checkCompartmentChange( std::vector< std::vector<double> > &cellData,
 												std::vector< std::vector<double> > &cellDeriv,
 												std::vector< std::vector<double> > &wallDeriv,
 												std::vector< std::vector<double> > &vertexDeriv ) {
+
+	unsigned int uglyHackCounter = 0;
   
-  for( size_t l=0 ; l<numCompartmentChange() ; ++l ) {
-    for( size_t i=0 ; i<numCell() ; ++i ) {
-      if( compartmentChange(l)->flag(this,i,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv) ) {
+	for( size_t l=0 ; l<numCompartmentChange() ; ++l ) {
+		for( size_t i=0 ; i<numCell() ; ++i ) {
+			++uglyHackCounter;
+
+			if (uglyHackCounter > 1000000) {
+				// Time to bail out.
+				std::cerr << "Ugly hack counter lager than a million!\n";
+				std::exit(EXIT_FAILURE);
+			}
+
+			if( compartmentChange(l)->flag(this,i,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv) ) {
 				compartmentChange(l)->update(this,i,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv);
 				//If cell division, sort walls and vertices for cell plus 
-        //divided cell plus their neighbors
+				//divided cell plus their neighbors
 				//Get list of potential cells to be sorted
 				//Also add division rule for directions
 				if( compartmentChange(l)->numChange()==1 ) {
