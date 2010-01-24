@@ -179,3 +179,53 @@ void UpdateMTDirection::update(Tissue &T,
 			cellData[i][outIndex+d] *= norm;
 	}
 }
+
+
+RotatingDirection::RotatingDirection(std::vector<double> &paraValue,
+	std::vector< std::vector<size_t> > &indValue)
+{
+	if (paraValue.size() != 1) {
+		std::cerr << "RotatingDirection::RotatingDirection() " 
+		<< "Uses one parameter: k_rate" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	if (indValue.size() != 1 || indValue[0].size() != 1) {
+		std::cerr << "RotatingDirection::RotatingDirection() \n"
+		<< "First level gives cell MT index.\n";
+		std::exit(EXIT_FAILURE);
+	}
+	
+	setId("RotatingDirection");
+	setParameter(paraValue);
+	setVariableIndex(indValue);
+	
+	std::vector<std::string> tmp(numParameter());
+	tmp[0] = "k_rate";
+	
+	setParameterId(tmp);
+}
+
+void RotatingDirection::derivs(Tissue &T,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs)
+{
+	const size_t xIndex = variableIndex(0, 0) + 0;
+	const size_t yIndex = variableIndex(0, 0) + 1;
+
+	const double k = parameter(0);
+	
+	for (size_t cellIndex = 0; cellIndex < T.numCell(); ++cellIndex)
+	{
+		const double x = cellData[cellIndex][xIndex];
+		const double y = cellData[cellIndex][yIndex];
+
+		cellDerivs[cellIndex][xIndex] -= k * y;
+		cellDerivs[cellIndex][yIndex] += k* x;
+	}
+}
+

@@ -165,6 +165,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new ContinousMTDirection(paraValue, indValue);
   else if (idValue == "UpdateMTDirection")
 	  return new UpdateMTDirection(paraValue, indValue);
+  else if (idValue == "RotatingDirection")
+	  return new RotatingDirection(paraValue, indValue);
 	
 	//adhocReaction.h,adhocReaction.cc
   else if(idValue=="VertexNoUpdateFromPosition")
