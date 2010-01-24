@@ -53,4 +53,18 @@ class PerpendicularDirection : public BaseDirectionDivision {
 							std::vector< std::vector<double> > &vertexDerivs );
 };
 
+class RandomDirection : public BaseDirectionDivision
+{
+public:
+	RandomDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
+  
+	void update(Tissue &T, size_t cellI,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
+};
+
 #endif

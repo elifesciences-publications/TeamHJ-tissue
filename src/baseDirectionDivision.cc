@@ -25,6 +25,8 @@ BaseDirectionDivision::createDirectionDivision(std::vector<double> &paraValue,
     return new ParallellDirection(paraValue,indValue);
   else if(idValue=="PerpendicularDirection")
     return new PerpendicularDirection(paraValue,indValue);
+  else if (idValue == "RandomDirection")
+	  return new RandomDirection(paraValue, indValue);
   //Default, if nothing found
   else {
     std::cerr << "\nBaseDirectionDivision::createDirectionDivision() WARNING: DirectionDivisiontype " 

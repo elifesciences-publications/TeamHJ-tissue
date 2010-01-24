@@ -7,6 +7,7 @@
 //
 #include"directionDivision.h"
 #include"baseDirectionDivision.h"
+#include "myRandom.h"
 
 //!Constructor
 ParallellDirection::
@@ -259,6 +260,62 @@ update(Tissue &T,size_t cellI,
 							<< std::endl;
 		exit(-1);
 	}
+}
+
+RandomDirection::RandomDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue) 
+{  
+	//
+	// Do some checks on the parameters and variable indeces
+	//
+	if (paraValue.size() != 0) {
+		std::cerr << "RandomDirection::RandomDirection() No parameters used.\n";
+		std::exit(EXIT_FAILURE);
+	}
+
+	if (indValue.size() != 1 || indValue[0].size() != 1) {
+		std::cerr << "RandomDirection::RandomDirection() "
+		<< "One variable index is used (start of cell direction).\n";
+		std::exit(EXIT_FAILURE);
+	}
+
+	//Set the variable values
+	//////////////////////////////////////////////////////////////////////
+	setId("RandomDirection");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	//Set the parameter identities
+	//////////////////////////////////////////////////////////////////////
+	std::vector<std::string> tmp(numParameter());
+	tmp.resize( numParameter() );
+	setParameterId(tmp);
+}
+
+void RandomDirection::update(Tissue &T, size_t cellIndex,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs)
+{
+	size_t dimension = vertexData[0].size();
+
+	if (dimension != 2) {
+		std::cerr << "RandomDirection only support two dimensions.\n";
+		std::exit(EXIT_FAILURE);
+	}
+
+	const size_t xIndex = variableIndex(0, 0) + 0;
+	const size_t yIndex = variableIndex(0, 0) + 1;
+
+	const double angle = 2.0 * M_PI * myRandom::Rnd();
+
+	const double x = std::cos(angle);
+	const double y = std::sin(angle);
+
+	cellData[cellIndex][xIndex] = x;
+	cellData[cellIndex][yIndex] = y;
 }
 
 
