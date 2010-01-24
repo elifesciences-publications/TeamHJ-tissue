@@ -1936,16 +1936,20 @@ removeEpidermalCells(std::vector< std::vector<double> > &cellData,
 				cellR.push_back( cellI );
 		}
 	}
-	std::cerr << "Removing " << cellR.size() << " epidermal cells:" 
-						<< std::endl;
-	for( size_t i=0 ; i<cellR.size() ; ++i )
-		std::cerr << cellR[i] << " ";
-	std::cerr << std::endl;
+
+	if (cellR.size() > 0) {
+		std::cerr << "Removing " << cellR.size() << " epidermal cells:\n" ;
+		
+		for (size_t i = 0; i < cellR.size(); ++i) {
+			std::cerr << cellR[i] << " ";
+		}
+		
+		std::cerr << "\n";
+	}
 	
-	//Remove cells
-	for( size_t i=0 ; i<cellR.size() ; ++i ) {
-		removeCell(cellR[i],cellData,wallData,vertexData,cellDeriv,wallDeriv,
-							 vertexDeriv);
+	// Remove cells
+	for (size_t i = 0; i < cellR.size(); ++i) {
+		removeCell(cellR[i], cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);
 		//checkConnectivity(1);
 	}
 }
@@ -1996,14 +2000,17 @@ void Tissue::removeEpidermalCellsMk2(std::vector< std::vector<double> > &cellDat
 		}
 	}
 
-	std::cerr << "Removing " << cellR.size() << " epidermal cells:" << std::endl;
-	for (size_t i = 0; i < cellR.size(); ++i) {
-		std::cerr << cellR[i] << " ";
+	if (cellR.size() > 0) {
+		std::cerr << "Removing " << cellR.size() << " epidermal cells:\n" ;
+		
+		for (size_t i = 0; i < cellR.size(); ++i) {
+			std::cerr << cellR[i] << " ";
+		}
+		
+		std::cerr << "\n";
 	}
-
-	std::cerr << std::endl;
 	
-	//Remove cells
+	// Remove cells
 	for (size_t i = 0; i < cellR.size(); ++i) {
 		removeCell(cellR[i], cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);
 		//checkConnectivity(1);
@@ -2035,16 +2042,20 @@ removeEpidermalCellsAtDistance(std::vector< std::vector<double> > &cellData,
 				cellR.push_back( cellI );
 		}
 	}
-	std::cerr << "Removing " << cellR.size() << " epidermal cells:" 
-						<< std::endl;
-	for( size_t i=0 ; i<cellR.size() ; ++i )
-		std::cerr << cellR[i] << " ";
-	std::cerr << std::endl;
+
+	if (cellR.size() > 0) {
+		std::cerr << "Removing " << cellR.size() << " epidermal cells:\n" ;
+		
+		for (size_t i = 0; i < cellR.size(); ++i) {
+			std::cerr << cellR[i] << " ";
+		}
+		
+		std::cerr << "\n";
+	}
 	
-	//Remove cells
-	for( size_t i=0 ; i<cellR.size() ; ++i ) {
-		removeCell(cellR[i],cellData,wallData,vertexData,cellDeriv,wallDeriv,
-							 vertexDeriv);
+	// Remove cells
+	for (size_t i = 0; i < cellR.size(); ++i) {
+		removeCell(cellR[i], cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);
 		//checkConnectivity(1);
 	}
 }
