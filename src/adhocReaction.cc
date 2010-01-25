@@ -218,90 +218,76 @@ update(Tissue &T,
 		vertexData[i][posIndex] -= delta;
 }
 
-CenterCOM::
-CenterCOM(std::vector<double> &paraValue, 
-			   std::vector< std::vector<size_t> > 
-			   &indValue ) {
-  
-  //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
-  if( paraValue.size()!=0 ) {
-    std::cerr << "CenterCOM::CenterCOM() "
-							<< "Uses no parameters. " << std::endl;
-    exit(0);
-  }
-  if( indValue.size() != 0 ) {
-    std::cerr << "CenterCOM::"
-							<< "CenterCOM() "
-							<< "No variable indices used." << std::endl;
-    exit(0);
-  }
-  //Set the variable values
-  //////////////////////////////////////////////////////////////////////
-  setId("CenterCOM");
-  setParameter(paraValue);  
-  setVariableIndex(indValue);
-  
-  //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
-  std::vector<std::string> tmp( numParameter() );
-  setParameterId( tmp );
+CenterCOM::CenterCOM(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue) {
+	//Do some checks on the parameters and variable indeces
+	//////////////////////////////////////////////////////////////////////
+	if (paraValue.size() != 0) {
+		std::cerr << "CenterCOM::CenterCOM() Uses no parameters.\n";
+		std::exit(EXIT_FAILURE);
+	}
+
+	if (indValue.size() != 0) {
+		std::cerr << "CenterCOM::CenterCOM() No variable indices used.\n";
+		std::exit(EXIT_FAILURE);
+	}
+
+	//Set the variable values
+	//////////////////////////////////////////////////////////////////////
+	setId("CenterCOM");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	//Set the parameter identities
+	//////////////////////////////////////////////////////////////////////
+	std::vector<std::string> tmp(numParameter());
+	setParameterId(tmp);
 }
 
-void CenterCOM::
-initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData)
+void CenterCOM::initiate(Tissue &T,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData)
+{
+	update(T, cellData, wallData, vertexData, 0.0);
+}
+
+void CenterCOM::derivs(Tissue &T,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	std::vector< std::vector<double> > &cellDerivs,
+	std::vector< std::vector<double> > &wallDerivs,
+	std::vector< std::vector<double> > &vertexDerivs) 
+{
+
+}
+
+void CenterCOM::update(Tissue &T,
+	std::vector< std::vector<double> > &cellData,
+	std::vector< std::vector<double> > &wallData,
+	std::vector< std::vector<double> > &vertexData,
+	double h)
 {
 	size_t dimension = vertexData[0].size();
-  size_t numVertices = T.numVertex();
-  
-	std::vector<double> com(dimension);
-  for (size_t i=0; i<numVertices; ++i )
-		for (size_t d=0; d<dimension; ++d )
+	size_t numVertices = T.numVertex();
+	
+	std::vector<double> com(dimension, 0.0);
+
+	for (size_t i = 0; i < numVertices; ++i) {
+		for (size_t d = 0; d < dimension; ++d) {
 			com[d] += vertexData[i][d];
+		}
+	}
 	
-	for (size_t d=0; d<dimension; ++d )
+	for (size_t d = 0; d < dimension; ++d) {
 		com[d] /= numVertices;
+	}
 	
-	for (size_t i=0; i<numVertices; ++i )
-		for (size_t d=0; d<dimension; ++d )
+	for (size_t i = 0; i < numVertices; ++i) {
+		for (size_t d = 0; d < dimension; ++d) {
 			vertexData[i][d] -= com[d];
-}
-
-void CenterCOM::
-derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
-{
-}
-
-void CenterCOM::
-update(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-			 double h)
-{
-	size_t dimension = vertexData[0].size();
-  size_t numVertices = T.numVertex();
-  
-	std::vector<double> com(dimension);
-  for (size_t i=0; i<numVertices; ++i )
-		for (size_t d=0; d<dimension; ++d )
-			com[d] += vertexData[i][d];
-
-	for (size_t d=0; d<dimension; ++d )
-		com[d] /= numVertices;
-	
-	for (size_t i=0; i<numVertices; ++i )
-		for (size_t d=0; d<dimension; ++d )
-			vertexData[i][d] -= com[d];
+		}
+	}
 }
 
 CalculatePCAPlane::

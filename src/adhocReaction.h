@@ -91,32 +91,30 @@ public:
 ///
 /// The translation is done at each update (i.e. after each ODE integration step)
 ///  
-class CenterCOM : public BaseReaction {
-  
+class CenterCOM : public BaseReaction
+{
 public:
   
-  CenterCOM(std::vector<double> &paraValue, 
-						std::vector< std::vector<size_t> > 
-						&indValue );
-  
+  CenterCOM(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
+	
 	void initiate(Tissue &T,
-								std::vector< std::vector<double> > &cellData,
-								std::vector< std::vector<double> > &wallData,
-								std::vector< std::vector<double> > &vertexData);
-
-  void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData);
+	
+	void derivs(Tissue &T,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs);
 	
 	void update(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							double h);
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		double h);
 };
 
 ///
