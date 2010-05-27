@@ -1,10 +1,10 @@
-/**
- * Filename     : cell.cc
- * Description  : A class describing a two-dimensional cell
- * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
- * Created      : April 2006
- * Revision     : $Id:$
- */
+//
+// Filename     : cell.cc
+// Description  : A class describing a two-dimensional cell
+// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+// Created      : April 2006
+// Revision     : $Id:$
+//
 
 #include <assert.h>
 #include "cell.h"

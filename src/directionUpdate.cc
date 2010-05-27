@@ -448,16 +448,16 @@ WallStressDirection::
 WallStressDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
 {
 	if (paraValue.size() != 1) {
-		std::cerr << "WallStressDirection::WallStressDirection() " 
-							<< "One parameter is used orientation_flag (0 for direction parallel with "
-							<< "force, 1 for direction perpendicular to force)" << std::endl;
-		exit(EXIT_FAILURE);
+	  std::cerr << "WallStressDirection::WallStressDirection() " 
+		    << "One parameter is used orientation_flag (0 for direction parallel with "
+		    << "force, 1 for direction perpendicular to force)" << std::endl;
+	  exit(EXIT_FAILURE);
 	}
 
 	if (indValue.size() != 2 || indValue[0].size() != 1) {
-		std::cerr << "WallStressDirection::WallStressDirection() \n"
-							<< "First level: Start of cell direction index are used.\n"
-							<< "Second level: Wall force indices\n";
+	  std::cerr << "WallStressDirection::WallStressDirection() \n"
+		    << "First level: Start of cell direction index are used.\n"
+		    << "Second level: Wall force indices\n";
 		exit(EXIT_FAILURE);
 	}
 

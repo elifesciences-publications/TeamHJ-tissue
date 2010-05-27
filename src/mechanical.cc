@@ -133,7 +133,7 @@ derivs(Tissue &T,
   //Do the update for each vertex via each wall in each cell
   size_t numCells = T.numCell();
   size_t dimension = T.vertex(0).numPosition(); 
-	
+  
   //For each cell
   for( size_t cellI=0 ; cellI<numCells ; ++cellI ) {
     
@@ -142,7 +142,7 @@ derivs(Tissue &T,
     std::vector<double> xCenter = tmpCell.positionFromVertex(vertexData);
     assert( xCenter.size()==dimension );
     double cellVolume = tmpCell.calculateVolume(vertexData);
-		
+    
     //Calculate derivative contributions to vertices from each wall
     for( size_t k=0 ; k<tmpCell.numWall() ; ++k ) {
       Wall &tmpWall = tmpCell.wallRef(k);
@@ -151,47 +151,47 @@ derivs(Tissue &T,
       std::vector<double> n(dimension),dx(dimension), x0(dimension);
       double b=0;
       for( size_t d=0 ; d<dimension ; ++d ) {
-				n[d] = vertexData[v2I][d]-vertexData[v1I][d];
-				b += n[d]*n[d];
-				x0[d] = 0.5*(vertexData[v1I][d] + vertexData[v2I][d]);
-				dx[d] = xCenter[d]-x0[d];
+	n[d] = vertexData[v2I][d]-vertexData[v1I][d];
+	b += n[d]*n[d];
+	x0[d] = 0.5*(vertexData[v1I][d] + vertexData[v2I][d]);
+	dx[d] = xCenter[d]-x0[d];
       }
       assert( b>0.0 );
       b = std::sqrt(b);
       for( size_t d=0 ; d<dimension ; ++d )
-				n[d] /= b;
+	n[d] /= b;
       double bInv = 1.0/b;
       double h = dx[0]*dx[0] + dx[1]*dx[1]
-				-(n[0]*dx[0]+n[1]*dx[1])*(n[0]*dx[0]+n[1]*dx[1]);
+	-(n[0]*dx[0]+n[1]*dx[1])*(n[0]*dx[0]+n[1]*dx[1]);
       assert( h>0.0 );
       h = std::sqrt(h);
       double hInv = 1.0/h;
       double fac = parameter(0)*0.5/cellVolume;
       
       vertexDerivs[v1I][0] += fac*( 0.5*b*hInv*
-																		( -dx[0] - 2.0*(n[0]*dx[0]+n[1]*dx[1])
-																			*(-n[1]*n[1]*bInv*dx[0]
-																				-0.5*n[0]
-																				+n[0]*n[1]*bInv*dx[1]) ) 
-																		- h*n[0] ); 
+				    ( -dx[0] - 2.0*(n[0]*dx[0]+n[1]*dx[1])
+				      *(-n[1]*n[1]*bInv*dx[0]
+					-0.5*n[0]
+					+n[0]*n[1]*bInv*dx[1]) ) 
+				    - h*n[0] ); 
       vertexDerivs[v2I][0] += fac*( 0.5*b*hInv*
-																		( -dx[0] - 2.0*(n[0]*dx[0]+n[1]*dx[1])
-																			*(n[1]*n[1]*bInv*dx[0]
-																				-0.5*n[0]
-																				-n[0]*n[1]*bInv*dx[1]) )
-																		+ h*n[0] );
+				    ( -dx[0] - 2.0*(n[0]*dx[0]+n[1]*dx[1])
+				      *(n[1]*n[1]*bInv*dx[0]
+					-0.5*n[0]
+					-n[0]*n[1]*bInv*dx[1]) )
+				    + h*n[0] );
       vertexDerivs[v1I][1] += fac*( 0.5*b*hInv*
-																		( -dx[1] - 2.0*(n[0]*dx[0]+n[1]*dx[1])
-																			*(-n[0]*n[0]*bInv*dx[1]
-																				-0.5*n[1]
-																				+n[0]*n[1]*bInv*dx[0]) ) 
-																		- h*n[1] ); 
+				    ( -dx[1] - 2.0*(n[0]*dx[0]+n[1]*dx[1])
+				      *(-n[0]*n[0]*bInv*dx[1]
+					-0.5*n[1]
+					+n[0]*n[1]*bInv*dx[0]) ) 
+				    - h*n[1] ); 
       vertexDerivs[v2I][1] += fac*( 0.5*b*hInv*
-																		( -dx[1] - 2.0*(n[0]*dx[0]+n[1]*dx[1])
-																			*(n[0]*n[0]*bInv*dx[1]
-																				-0.5*n[1]
-																				-n[0]*n[1]*bInv*dx[0]) )
-																		+ h*n[1] );      
+				    ( -dx[1] - 2.0*(n[0]*dx[0]+n[1]*dx[1])
+				      *(n[0]*n[0]*bInv*dx[1]
+					-0.5*n[1]
+					-n[0]*n[1]*bInv*dx[0]) )
+				    + h*n[1] );      
     }
   }
 }
