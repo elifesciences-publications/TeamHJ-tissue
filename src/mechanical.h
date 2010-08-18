@@ -52,15 +52,15 @@ class VertexFromCellPressureVolumeNormalized : public BaseReaction {
  public:
   
   VertexFromCellPressureVolumeNormalized(std::vector<double> &paraValue, 
-																				 std::vector< std::vector<size_t> > &indValue );
+					 std::vector< std::vector<size_t> > &indValue );
   
   void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
 //!Updates vertices from a cell pressure potential
@@ -69,15 +69,15 @@ class VertexFromCellPressureThresholdFromMaxPos : public BaseReaction {
  public:
   
   VertexFromCellPressureThresholdFromMaxPos(std::vector<double> &paraValue, 
-																						std::vector< std::vector<size_t> > &indValue );
+					    std::vector< std::vector<size_t> > &indValue );
   
   void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
 //!Updates vertices from a cell 'pressure' potential for internal cells
@@ -121,8 +121,8 @@ class VertexForceOrigoFromIndex : public BaseReaction {
  public:
   
   VertexForceOrigoFromIndex(std::vector<double> &paraValue, 
-			  std::vector< std::vector<size_t> > 
-			  &indValue );
+			    std::vector< std::vector<size_t> > 
+			    &indValue );
   
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
@@ -157,16 +157,16 @@ class CylinderForce : public BaseReaction {
  public:
   
   CylinderForce(std::vector<double> &paraValue, 
-								std::vector< std::vector<size_t> > 
-								&indValue );
+		std::vector< std::vector<size_t> > 
+		&indValue );
   
   void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
 //!Applies a force towards or from a SphereCylinder surface
@@ -229,8 +229,8 @@ class EpidermalVertexForce : public BaseReaction {
  public:
   
   EpidermalVertexForce(std::vector<double> &paraValue, 
-		    std::vector< std::vector<size_t> > 
-		    &indValue );
+		       std::vector< std::vector<size_t> > 
+		       &indValue );
   
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
@@ -244,176 +244,176 @@ class EpidermalVertexForce : public BaseReaction {
 class VertexFromPressureExperimental : public BaseReaction
 {  
  public:
-	VertexFromPressureExperimental(std::vector<double> &paraValue, 
-							 std::vector< std::vector<size_t> > &indValue);
-	
-	void derivs(Tissue &T,
-			  std::vector< std::vector<double> > &cellData,
-			  std::vector< std::vector<double> > &wallData,
-			  std::vector< std::vector<double> > &vertexData,
-			  std::vector< std::vector<double> > &cellDerivs,
-			  std::vector< std::vector<double> > &wallDerivs,
-			  std::vector< std::vector<double> > &vertexDerivs);
-	double polygonArea(std::vector< std::pair<double, double> > vertices);
+  VertexFromPressureExperimental(std::vector<double> &paraValue, 
+				 std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
+  double polygonArea(std::vector< std::pair<double, double> > vertices);
 };
 
 class CellVolumeExperimental : public BaseReaction
 {
  public:
-	CellVolumeExperimental(std::vector<double> &paraValue,
-					   std::vector< std::vector<size_t> > &indValue);
-	
-	void derivs(Tissue &T,
-			  std::vector< std::vector<double> > &cellData,
-			  std::vector< std::vector<double> > &wallData,
-			  std::vector< std::vector<double> > &vertexData,
-			  std::vector< std::vector<double> > &cellDerivs,
-			  std::vector< std::vector<double> > &wallDerivs,
-			  std::vector< std::vector<double> > &vertexDerivs);
+  CellVolumeExperimental(std::vector<double> &paraValue,
+			 std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
 };
 
 class EpidermalRadialForce : public BaseReaction
 {
  public:
-	EpidermalRadialForce(std::vector<double> &paraValue,
-					 std::vector< std::vector<size_t> > &indValue);
-	
-	void derivs(Tissue &T,
-			  std::vector< std::vector<double> > &cellData,
-			  std::vector< std::vector<double> > &wallData,
-			  std::vector< std::vector<double> > &vertexData,
-			  std::vector< std::vector<double> > &cellDerivs,
-			  std::vector< std::vector<double> > &wallDerivs,
-			  std::vector< std::vector<double> > &vertexDerivs);
+  EpidermalRadialForce(std::vector<double> &paraValue,
+		       std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
 };
 
 class PerpendicularWallPressure : public BaseReaction
 {
  public:
-	PerpendicularWallPressure(std::vector<double> &paraValue,
-						 std::vector< std::vector<size_t> > &indValue);
-	
-	void derivs(Tissue &T,
-			  std::vector< std::vector<double> > &cellData,
-			  std::vector< std::vector<double> > &wallData,
-			  std::vector< std::vector<double> > &vertexData,
-			  std::vector< std::vector<double> > &cellDerivs,
-			  std::vector< std::vector<double> > &wallDerivs,
-			  std::vector< std::vector<double> > &vertexDerivs);
+  PerpendicularWallPressure(std::vector<double> &paraValue,
+			    std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
 };
 
 class VertexFromCellPlane : public BaseReaction
 {
-public:
-	VertexFromCellPlane(std::vector<double> &paraValue,
-											std::vector< std::vector<size_t> > &indValue);
+ public:
+  VertexFromCellPlane(std::vector<double> &paraValue,
+		      std::vector< std::vector<size_t> > &indValue);
 	
-	void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs);
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
 };
 
 class VertexFromCellPlaneSpatial : public BaseReaction
 {
-private:
-	
-	double Kpow_;
-
-public:
-	VertexFromCellPlaneSpatial(std::vector<double> &paraValue,
-														 std::vector< std::vector<size_t> > &indValue);
-	
-	void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs);
+ private:
+  
+  double Kpow_;
+  
+ public:
+  VertexFromCellPlaneSpatial(std::vector<double> &paraValue,
+			     std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
 };
 
 class VertexFromCellPlaneNormalized : public BaseReaction
 {
-public:
-	VertexFromCellPlaneNormalized(std::vector<double> &paraValue,
-																std::vector< std::vector<size_t> > &indValue);
-	
-	void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs);
+ public:
+  VertexFromCellPlaneNormalized(std::vector<double> &paraValue,
+				std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
 };
 
 class VertexFromCellPlaneNormalizedSpatial : public BaseReaction
 {
-private:
-
-	double Kpow_;
-
-public:
-	VertexFromCellPlaneNormalizedSpatial(std::vector<double> &paraValue,
-																			 std::vector< std::vector<size_t> > &indValue);
-	
-	void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs);
+ private:
+  
+  double Kpow_;
+  
+ public:
+  VertexFromCellPlaneNormalizedSpatial(std::vector<double> &paraValue,
+				       std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
 };
 
 class VertexFromCellPlaneSphereCylinder : public BaseReaction
 {
  public:
-	VertexFromCellPlaneSphereCylinder(std::vector<double> &paraValue,
-																		std::vector< std::vector<size_t> > &indValue);
-	
-	void derivs(Tissue &T,
-		    std::vector< std::vector<double> > &cellData,
-		    std::vector< std::vector<double> > &wallData,
-		    std::vector< std::vector<double> > &vertexData,
-		    std::vector< std::vector<double> > &cellDerivs,
-		    std::vector< std::vector<double> > &wallDerivs,
-		    std::vector< std::vector<double> > &vertexDerivs);
+  VertexFromCellPlaneSphereCylinder(std::vector<double> &paraValue,
+				    std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
 };
 
 class VertexFromCellPlaneSphereCylinderConcentrationHill : public BaseReaction
 {
  public:
-	VertexFromCellPlaneSphereCylinderConcentrationHill(std::vector<double> &paraValue,
-																										 std::vector< std::vector<size_t> > &indValue);
-	
-	void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs);
+  VertexFromCellPlaneSphereCylinderConcentrationHill(std::vector<double> &paraValue,
+						     std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
 };
 
 // Do not use this reaction. Restricted area (unless you are a developer).
 class DebugReaction : public BaseReaction
 {
-public:
-	DebugReaction(std::vector<double> &paraValue,
-								std::vector< std::vector<size_t> > &indValue);
-	
-	void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs);
+ public:
+  DebugReaction(std::vector<double> &paraValue,
+		std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
 };
 
 #endif

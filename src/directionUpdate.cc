@@ -10,25 +10,25 @@
 
 StaticDirection::
 StaticDirection(std::vector<double> &paraValue, 
-								std::vector< std::vector<size_t> > 
-								&indValue ) 
+		std::vector< std::vector<size_t> > 
+		&indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
   if( paraValue.size()!=0 ) {
     std::cerr << "StaticDirection::"
-							<< "StaticDirection() "
-							<< "No parameters used.\n";
+	      << "StaticDirection() "
+	      << "No parameters used.\n";
     exit(0);
   }
   if( indValue.size() != 0 ) {
     std::cerr << "StaticDirection::"
-							<< "StaticDirection() "
-							<< "No variable index is used." << std::endl;
+	      << "StaticDirection() "
+	      << "No variable index is used." << std::endl;
     exit(0);
   }
-
+  
   // Set the variable values
-	setId("StaticDirection");
+  setId("StaticDirection");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
@@ -41,48 +41,48 @@ StaticDirection(std::vector<double> &paraValue,
 
 void StaticDirection::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData,
-				 std::vector< std::vector<double> > &cellDerivs,
-				 std::vector< std::vector<double> > &wallDerivs,
-				 std::vector< std::vector<double> > &vertexDerivs ) {
-	
+	 std::vector< std::vector<double> > &cellData,
+	 std::vector< std::vector<double> > &wallData,
+	 std::vector< std::vector<double> > &vertexData,
+	 std::vector< std::vector<double> > &cellDerivs,
+	 std::vector< std::vector<double> > &wallDerivs,
+	 std::vector< std::vector<double> > &vertexDerivs ) {
+  
 }
 
 void StaticDirection::
 update(Tissue &T, double h,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs ) {
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) {
   
 }
 
 //!Constructor
 WallDirection::
 WallDirection(std::vector<double> &paraValue, 
-							std::vector< std::vector<size_t> > 
-							&indValue ) 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
   if( paraValue.size()!=0 ) {
     std::cerr << "WallDirection::"
-							<< "WallDirection() "
-							<< "No parameters used.\n";
+	      << "WallDirection() "
+	      << "No parameters used.\n";
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size() != 1 ) {
     std::cerr << "WallDirection::"
-							<< "WallDirection() "
-							<< "One variable index is used (start of cell direction).\n";
+	      << "WallDirection() "
+	      << "One variable index is used (start of cell direction).\n";
     exit(0);
   }
-
+  
   // Set the variable values
-	setId("WallDirection");
+  setId("WallDirection");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
@@ -95,128 +95,128 @@ WallDirection(std::vector<double> &paraValue,
 
 void WallDirection::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData,
-				 std::vector< std::vector<double> > &cellDerivs,
-				 std::vector< std::vector<double> > &wallDerivs,
-				 std::vector< std::vector<double> > &vertexDerivs ) {
-
-	// Find walls with direction closest to given direction
-	size_t dimension = T.numDimension();
-	T.setNumDirectionalWall(T.numCell());
-	std::vector<double> tmpN(dimension);
-	
-	for (size_t i=0; i<T.numCell(); ++i) {
-		if ( T.cell(i).variable(variableIndex(0,0)+dimension) > 0.0 ) {
-			double normW = 0.0;
-			for (size_t dim=0; dim<dimension; ++dim) {
-				tmpN[dim] = T.cell(i).wall(0)->vertex1()->position(dim) -
-					T.cell(i).wall(0)->vertex2()->position(dim);
-				normW += tmpN[dim]*tmpN[dim];
-			}
-			normW = std::sqrt( normW );
-			if (normW<=0.0) {
-				std::cerr << "VertexFromWallSpringMT::initiate Normalization=0!"
-									<< std::endl;
-				exit(-1);
-			}
-			normW = 1.0/normW;
-			double prod=0.0;
-			for (size_t dim=0; dim<dimension; ++dim) {
-				tmpN[dim] *= normW;
-				prod += tmpN[dim]*T.cell(i).variable(dim+variableIndex(0,0));
-			}
-			size_t maxK=0;
-			double maxProd = std::fabs(prod);
-			
-			for (size_t k=1; k<T.cell(i).numWall(); ++k) {
-				normW = 0.0;
-				for (size_t dim=0; dim<dimension; ++dim) {
-					tmpN[dim] = T.cell(i).wall(k)->vertex1()->position(dim) -
-						T.cell(i).wall(k)->vertex2()->position(dim);
-					normW += tmpN[dim]*tmpN[dim];
-				}
-				normW = std::sqrt( normW );
-				if (normW<=0.0) {
-					std::cerr << "VertexFromWallSpringMT::initiate Normalization=0!"
-										<< std::endl;
-					exit(-1);
-				}
-				normW = 1.0/normW;
-				prod=0.0;
-				for (size_t dim=0; dim<dimension; ++dim) {
-					tmpN[dim] *= normW;
-					prod += tmpN[dim]*T.cell(i).variable(dim+variableIndex(0,0));
-				}
-				prod = std::fabs(prod);
-				if( prod>maxProd ) {
-					maxProd=prod;
-					maxK=k;
-				}
-			}
-			T.setDirectionalWall(i,maxK);
-			assert( T.cell(i).numWall()>T.directionalWall(i) );
-		}
-		else
-			T.setDirectionalWall(i,static_cast<size_t>(-1));
-	}	  
+	 std::vector< std::vector<double> > &cellData,
+	 std::vector< std::vector<double> > &wallData,
+	 std::vector< std::vector<double> > &vertexData,
+	 std::vector< std::vector<double> > &cellDerivs,
+	 std::vector< std::vector<double> > &wallDerivs,
+	 std::vector< std::vector<double> > &vertexDerivs ) {
+  
+  // Find walls with direction closest to given direction
+  size_t dimension = T.numDimension();
+  T.setNumDirectionalWall(T.numCell());
+  std::vector<double> tmpN(dimension);
+  
+  for (size_t i=0; i<T.numCell(); ++i) {
+    if ( T.cell(i).variable(variableIndex(0,0)+dimension) > 0.0 ) {
+      double normW = 0.0;
+      for (size_t dim=0; dim<dimension; ++dim) {
+	tmpN[dim] = T.cell(i).wall(0)->vertex1()->position(dim) -
+	  T.cell(i).wall(0)->vertex2()->position(dim);
+	normW += tmpN[dim]*tmpN[dim];
+      }
+      normW = std::sqrt( normW );
+      if (normW<=0.0) {
+	std::cerr << "VertexFromWallSpringMT::initiate Normalization=0!"
+		  << std::endl;
+	exit(-1);
+      }
+      normW = 1.0/normW;
+      double prod=0.0;
+      for (size_t dim=0; dim<dimension; ++dim) {
+	tmpN[dim] *= normW;
+	prod += tmpN[dim]*T.cell(i).variable(dim+variableIndex(0,0));
+      }
+      size_t maxK=0;
+      double maxProd = std::fabs(prod);
+      
+      for (size_t k=1; k<T.cell(i).numWall(); ++k) {
+	normW = 0.0;
+	for (size_t dim=0; dim<dimension; ++dim) {
+	  tmpN[dim] = T.cell(i).wall(k)->vertex1()->position(dim) -
+	    T.cell(i).wall(k)->vertex2()->position(dim);
+	  normW += tmpN[dim]*tmpN[dim];
+	}
+	normW = std::sqrt( normW );
+	if (normW<=0.0) {
+	  std::cerr << "VertexFromWallSpringMT::initiate Normalization=0!"
+		    << std::endl;
+	  exit(-1);
+	}
+	normW = 1.0/normW;
+	prod=0.0;
+	for (size_t dim=0; dim<dimension; ++dim) {
+	  tmpN[dim] *= normW;
+	  prod += tmpN[dim]*T.cell(i).variable(dim+variableIndex(0,0));
+	}
+	prod = std::fabs(prod);
+	if( prod>maxProd ) {
+	  maxProd=prod;
+	  maxK=k;
+	}
+      }
+      T.setDirectionalWall(i,maxK);
+      assert( T.cell(i).numWall()>T.directionalWall(i) );
+    }
+    else
+      T.setDirectionalWall(i,static_cast<size_t>(-1));
+  }	  
 }
 
 void WallDirection::
 update(Tissue &T, double h,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs ) {
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) {
   
-	size_t dimension=vertexData[0].size(); 
-	for (size_t i=0; i<T.numDirectionalWall(); ++i) {
-		if (T.directionalWall(i)<T.cell(i).numWall()) {
-			std::vector<double> tmpN(dimension);
-			size_t v1I = T.cell(i).wall(T.directionalWall(i))->vertex1()->index();
-			size_t v2I = T.cell(i).wall(T.directionalWall(i))->vertex2()->index();
-			double normW=0.0;
-			for (size_t dim=0; dim<dimension; ++dim) {
-				tmpN[dim] = vertexData[v2I][dim] - vertexData[v1I][dim];
-				normW += tmpN[dim]*tmpN[dim];
-			}
-			normW = std::sqrt(normW);
-			if( normW<=0.0 ) {
-				std::cerr << "WallDirection::update() Wrong norm factor"
-									<< std::endl;
-				exit(-1);
-			}
-			normW = 1.0/normW;
-			for (size_t dim=0; dim<dimension; ++dim) {
-				tmpN[dim] *= normW;
-				cellData[i][dim+variableIndex(0,0)] = tmpN[dim];
-			}
-		}
-	}
+  size_t dimension=vertexData[0].size(); 
+  for (size_t i=0; i<T.numDirectionalWall(); ++i) {
+    if (T.directionalWall(i)<T.cell(i).numWall()) {
+      std::vector<double> tmpN(dimension);
+      size_t v1I = T.cell(i).wall(T.directionalWall(i))->vertex1()->index();
+      size_t v2I = T.cell(i).wall(T.directionalWall(i))->vertex2()->index();
+      double normW=0.0;
+      for (size_t dim=0; dim<dimension; ++dim) {
+	tmpN[dim] = vertexData[v2I][dim] - vertexData[v1I][dim];
+	normW += tmpN[dim]*tmpN[dim];
+      }
+      normW = std::sqrt(normW);
+      if( normW<=0.0 ) {
+	std::cerr << "WallDirection::update() Wrong norm factor"
+		  << std::endl;
+	exit(-1);
+      }
+      normW = 1.0/normW;
+      for (size_t dim=0; dim<dimension; ++dim) {
+	tmpN[dim] *= normW;
+	cellData[i][dim+variableIndex(0,0)] = tmpN[dim];
+      }
+    }
+  }
 }
 
 StrainDirection::
 StrainDirection(std::vector<double> &paraValue, 
-							std::vector< std::vector<size_t> > 
-							&indValue ) 
+		std::vector< std::vector<size_t> > 
+		&indValue ) 
 {  
-	//
+  //
   // Do some checks on the parameters and variable indeces
   //
   if( paraValue.size()!=1 ) {
     std::cerr << "StrainDirection::"
-							<< "StrainDirection() "
-							<< "One parameter used flag_perpendicular."
-							<< std::endl;
+	      << "StrainDirection() "
+	      << "One parameter used flag_perpendicular."
+	      << std::endl;
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size() != 1 ) {
     std::cerr << "StrainDirection::"
-							<< "StrainDirection() "
-							<< "One variable index is used (start of cell direction).\n";
+	      << "StrainDirection() "
+	      << "One variable index is used (start of cell direction).\n";
     exit(0);
   }
   //Set the variable values
@@ -235,161 +235,161 @@ StrainDirection(std::vector<double> &paraValue,
 
 void StrainDirection::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData,
-				 std::vector< std::vector<double> > &cellDerivs,
-				 std::vector< std::vector<double> > &wallDerivs,
-				 std::vector< std::vector<double> > &vertexDerivs ) {
+	 std::vector< std::vector<double> > &cellData,
+	 std::vector< std::vector<double> > &wallData,
+	 std::vector< std::vector<double> > &vertexData,
+	 std::vector< std::vector<double> > &cellDerivs,
+	 std::vector< std::vector<double> > &wallDerivs,
+	 std::vector< std::vector<double> > &vertexDerivs ) {
   
 }
 
 void StrainDirection::
 update(Tissue &T, double h,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs ) 
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) 
 {
   size_t dimension = vertexData[0].size();
-	assert( dimension==2 );
-	
-	//
-	//Calculate strain directions and print walls and strain vectors
-	//by using x,x+dt*dx/dt as two points
-	//
-	T.derivs(cellData,wallData,vertexData,
-					 cellDerivs,wallDerivs,vertexDerivs);
-	
-	//
-	// Update all cells
-	//
-	for (size_t cellI=0; cellI<T.numCell(); ++cellI) {
-		//Create temporary x,y,dx positions
-		size_t numV = T.cell(cellI).numVertex(); 
-		std::vector< std::vector<double> > x(numV),y(numV),dx(numV),
-			xM(numV),yM(numV),dxM(numV);
-	
-		double dt=1.0;
-// 		std::vector<double> xMean(dimension),yMean(dimension),
-// 			dxMean(dimension);
-		std::vector<double> xMean(dimension),yMean(dimension);
-	
-		for( size_t i=0 ; i<numV ; ++i ) {
-			size_t vI = T.cell(cellI).vertex(i)->index();
-			x[i] = vertexData[vI];
-			dx[i] = vertexDerivs[vI];
-			std::vector<double> tmp(dimension);
-			tmp[0] = x[i][0]+dt*dx[i][0];
-			tmp[1] = x[i][1]+dt*dx[i][1];
-			y[i] = tmp;
-			xMean[0] += x[i][0];
-			xMean[1] += x[i][1];
-			yMean[0] += y[i][0];
-			yMean[1] += y[i][1];
-// 			dxMean[0] += dx[i][0];			
-// 			dxMean[1] += dx[i][1];			
-		}
-		xMean[0] /=numV;
-		xMean[1] /=numV;
-		yMean[0] /=numV;
-		yMean[1] /=numV;
-// 		dxMean[0] /=numV;
-// 		dxMean[1] /=numV;
-		for( size_t i=0 ; i<numV ; ++i ) {
-			xM[i].resize(dimension);
-			xM[i][0] =x[i][0]-xMean[0];
-			xM[i][1] =x[i][1]-xMean[1];
-			yM[i].resize(dimension);
-			yM[i][0] =y[i][0]-yMean[0];
-			yM[i][1] =y[i][1]-yMean[1];
-			dxM[i].resize(dimension);
-// 			dxM[i][0] =dx[i][0]-dxMean[0];
-// 			dxM[i][1] =dx[i][1]-dxMean[1];
-			dxM[i][0] =dx[i][0];
-			dxM[i][1] =dx[i][1];
-
-		}
-		
-		//Calculate A = (x^t x)^{-1} (x^t y)
-		std::vector<std::vector<double> > xTx(dimension),xTy(dimension),
-			xTxM(dimension),A(dimension);
-		for( size_t i=0 ; i<dimension ; ++i ) {
-			xTx[i].resize(dimension);
-			xTy[i].resize(dimension);
-			xTxM[i].resize(dimension);
-			A[i].resize(dimension);
-		}
-		
-		for( size_t i=0 ; i<dimension ; ++i ) {
-			for( size_t j=0 ; j<dimension ; ++j ) {
-				for( size_t v=0 ; v<numV ; ++v ) {
-					xTx[i][j] += xM[v][i]*xM[v][j];
-					xTy[i][j] += xM[v][i]*yM[v][j];
-				}
-			}
-		}
-		double detM = xTx[0][0]*xTx[1][1]-xTx[0][1]*xTx[1][0];
-		detM = 1.0/detM;
-		xTxM[0][0] = detM*xTx[1][1];
-		xTxM[1][1] = detM*xTx[0][0];
-// 		xTxM[0][1] = -detM*xTx[1][0];
-// 		xTxM[1][0] = -detM*xTx[0][1];
-		xTxM[0][1] = -detM*xTx[0][1];
-		xTxM[1][0] = -detM*xTx[1][0];
-	
-		//Calculate A
-		A[0][0] = xTxM[0][0]*xTy[0][0] + xTxM[0][1]*xTy[1][0];
-		A[0][1] = xTxM[0][0]*xTy[0][1] + xTxM[0][1]*xTy[1][1];
-		A[1][0] = xTxM[1][0]*xTy[0][0] + xTxM[1][1]*xTy[1][0];
-		A[1][1] = xTxM[1][0]*xTy[0][1] + xTxM[1][1]*xTy[1][1];
-
-		//Apply SVD to A
-		//
-		
-		//Make sure determinant is non-zero
-		double detA = A[0][0]*A[1][1] - A[0][1]*A[1][0];
-		if( detA==0 ) {
-			std::cerr << "StrainDirection::update() Determinant zero\n";
-			exit(-1);
-		}
-		//double tau = std::atan2( A[0][0]-A[1][1],A[0][1]+A[1][0] );
-		//double omega = std::atan2( A[0][0]+A[1][1],A[0][1]-A[1][0] );
-		double tau = std::atan2( A[0][1]+A[1][0],A[0][0]-A[1][1] );
-		double omega = std::atan2( A[0][1]-A[1][0],A[0][0]+A[1][1] );
-		double theta = 0.5*(tau-omega);
-		//double phi = 0.5*(tau+omega);
-		
-		//Create direction for update
-		std::vector<double> n(dimension);
-		double v = theta;
-		if( parameter(0)==1.0 )		
-			v = v - 0.5 * M_PI;
-
-// 		double a = A[0][0];
-// 		double b = A[0][1];
-// 		double c = A[1][0];
-// 		double d = A[1][1];
-
-// 		double t = std::sqrt((a + d) * (a + d) + (b - c) * (b - c));
-// 		double w = std::sqrt((a - d) * (a - d) + (b + c) * (b + c));
-
-// 		double p = 0.5 * (t + w);
-// 		double q = 0.5 * (t - w);
-
-// 		assert(std::abs(p) >= std::abs(q));
-		n[0]=std::cos(v);
-		n[1]=std::sin(v);
-		for (size_t dim=0; dim<dimension; ++dim) 
-			cellData[cellI][variableIndex(0,0)+dim] = n[dim];
+  assert( dimension==2 );
+  
+  //
+  //Calculate strain directions and print walls and strain vectors
+  //by using x,x+dt*dx/dt as two points
+  //
+  T.derivs(cellData,wallData,vertexData,
+	   cellDerivs,wallDerivs,vertexDerivs);
+  
+  //
+  // Update all cells
+  //
+  for (size_t cellI=0; cellI<T.numCell(); ++cellI) {
+    //Create temporary x,y,dx positions
+    size_t numV = T.cell(cellI).numVertex(); 
+    std::vector< std::vector<double> > x(numV),y(numV),dx(numV),
+      xM(numV),yM(numV),dxM(numV);
+    
+    double dt=1.0;
+    // 		std::vector<double> xMean(dimension),yMean(dimension),
+    // 			dxMean(dimension);
+    std::vector<double> xMean(dimension),yMean(dimension);
+    
+    for( size_t i=0 ; i<numV ; ++i ) {
+      size_t vI = T.cell(cellI).vertex(i)->index();
+      x[i] = vertexData[vI];
+      dx[i] = vertexDerivs[vI];
+      std::vector<double> tmp(dimension);
+      tmp[0] = x[i][0]+dt*dx[i][0];
+      tmp[1] = x[i][1]+dt*dx[i][1];
+      y[i] = tmp;
+      xMean[0] += x[i][0];
+      xMean[1] += x[i][1];
+      yMean[0] += y[i][0];
+      yMean[1] += y[i][1];
+      // 			dxMean[0] += dx[i][0];			
+      // 			dxMean[1] += dx[i][1];			
+    }
+    xMean[0] /=numV;
+    xMean[1] /=numV;
+    yMean[0] /=numV;
+    yMean[1] /=numV;
+    // 		dxMean[0] /=numV;
+    // 		dxMean[1] /=numV;
+    for( size_t i=0 ; i<numV ; ++i ) {
+      xM[i].resize(dimension);
+      xM[i][0] =x[i][0]-xMean[0];
+      xM[i][1] =x[i][1]-xMean[1];
+      yM[i].resize(dimension);
+      yM[i][0] =y[i][0]-yMean[0];
+      yM[i][1] =y[i][1]-yMean[1];
+      dxM[i].resize(dimension);
+      // 			dxM[i][0] =dx[i][0]-dxMean[0];
+      // 			dxM[i][1] =dx[i][1]-dxMean[1];
+      dxM[i][0] =dx[i][0];
+      dxM[i][1] =dx[i][1];
+      
+    }
+    
+    //Calculate A = (x^t x)^{-1} (x^t y)
+    std::vector<std::vector<double> > xTx(dimension),xTy(dimension),
+      xTxM(dimension),A(dimension);
+    for( size_t i=0 ; i<dimension ; ++i ) {
+      xTx[i].resize(dimension);
+      xTy[i].resize(dimension);
+      xTxM[i].resize(dimension);
+      A[i].resize(dimension);
+    }
+    
+    for( size_t i=0 ; i<dimension ; ++i ) {
+      for( size_t j=0 ; j<dimension ; ++j ) {
+	for( size_t v=0 ; v<numV ; ++v ) {
+	  xTx[i][j] += xM[v][i]*xM[v][j];
+	  xTy[i][j] += xM[v][i]*yM[v][j];
 	}
+      }
+    }
+    double detM = xTx[0][0]*xTx[1][1]-xTx[0][1]*xTx[1][0];
+    detM = 1.0/detM;
+    xTxM[0][0] = detM*xTx[1][1];
+    xTxM[1][1] = detM*xTx[0][0];
+    // 		xTxM[0][1] = -detM*xTx[1][0];
+    // 		xTxM[1][0] = -detM*xTx[0][1];
+    xTxM[0][1] = -detM*xTx[0][1];
+    xTxM[1][0] = -detM*xTx[1][0];
+    
+    //Calculate A
+    A[0][0] = xTxM[0][0]*xTy[0][0] + xTxM[0][1]*xTy[1][0];
+    A[0][1] = xTxM[0][0]*xTy[0][1] + xTxM[0][1]*xTy[1][1];
+    A[1][0] = xTxM[1][0]*xTy[0][0] + xTxM[1][1]*xTy[1][0];
+    A[1][1] = xTxM[1][0]*xTy[0][1] + xTxM[1][1]*xTy[1][1];
+    
+    //Apply SVD to A
+    //
+    
+    //Make sure determinant is non-zero
+    double detA = A[0][0]*A[1][1] - A[0][1]*A[1][0];
+    if( detA==0 ) {
+      std::cerr << "StrainDirection::update() Determinant zero\n";
+      exit(-1);
+    }
+    //double tau = std::atan2( A[0][0]-A[1][1],A[0][1]+A[1][0] );
+    //double omega = std::atan2( A[0][0]+A[1][1],A[0][1]-A[1][0] );
+    double tau = std::atan2( A[0][1]+A[1][0],A[0][0]-A[1][1] );
+    double omega = std::atan2( A[0][1]-A[1][0],A[0][0]+A[1][1] );
+    double theta = 0.5*(tau-omega);
+    //double phi = 0.5*(tau+omega);
+    
+    //Create direction for update
+    std::vector<double> n(dimension);
+    double v = theta;
+    if( parameter(0)==1.0 )		
+      v = v - 0.5 * M_PI;
+    
+    // 		double a = A[0][0];
+    // 		double b = A[0][1];
+    // 		double c = A[1][0];
+    // 		double d = A[1][1];
+    
+    // 		double t = std::sqrt((a + d) * (a + d) + (b - c) * (b - c));
+    // 		double w = std::sqrt((a - d) * (a - d) + (b + c) * (b + c));
+    
+    // 		double p = 0.5 * (t + w);
+    // 		double q = 0.5 * (t - w);
+    
+    // 		assert(std::abs(p) >= std::abs(q));
+    n[0]=std::cos(v);
+    n[1]=std::sin(v);
+    for (size_t dim=0; dim<dimension; ++dim) 
+      cellData[cellI][variableIndex(0,0)+dim] = n[dim];
+  }
 } 
 
 GradientDirection::
 GradientDirection(std::vector<double> &paraValue, 
-							std::vector< std::vector<size_t> > 
+		  std::vector< std::vector<size_t> > 
 							&indValue ) 
 {  
 	//

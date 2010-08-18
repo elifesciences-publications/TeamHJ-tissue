@@ -642,34 +642,33 @@ derivs(Tissue &T,
   }
 }
 
-//!Constructor
 MoveVertexRadially::
 MoveVertexRadially(std::vector<double> &paraValue, 
-			       std::vector< std::vector<size_t> > 
-			       &indValue ) {
+		   std::vector< std::vector<size_t> > 
+		   &indValue ) {
   
-  //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  // Do some checks on the parameters and variable indeces
+  //
   if( paraValue.size()!=2 || ( paraValue[1]!=0 && paraValue[1]!=1) ) {
     std::cerr << "MoveVertexRadially::"
-							<< "MoveVertexRadially() "
-							<< "Uses two parameters k_growth and r_pow (0,1)\n";
+	      << "MoveVertexRadially() "
+	      << "Uses two parameters k_growth and r_pow (0,1)\n";
     exit(0);
   }  
   if( indValue.size() != 0 ) {
     std::cerr << "MoveVertexRadially::"
-							<< "MoveVertexRadially() "
-							<< "No variable index is used.\n";
+	      << "MoveVertexRadially() "
+	      << "No variable index is used.\n";
     exit(0);
   }
-  //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  // Set the variable values
+  //
   setId("MoveVertexRadially");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
-  //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  // Set the parameter identities
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "k_growth";
@@ -677,10 +676,6 @@ MoveVertexRadially(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Derivative contribution for the growth
-/*! Deriving the time derivative contribution for the growth for all
-  walls in the tissue.
-*/
 void MoveVertexRadially::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -692,23 +687,105 @@ derivs(Tissue &T,
   
   size_t numVertices = T.numVertex();
   size_t dimension=vertexData[0].size();
-
+  
   for( size_t i=0 ; i<numVertices ; ++i ) {
-		double fac=parameter(0);
-		if( parameter(1)==0.0 ) {
-			double r=0.0;
-			for( size_t d=0 ; d<dimension ; ++d )
-				r += vertexData[i][d]*vertexData[i][d];
-			if( r>0.0 )
-				r = std::sqrt(r);
-			if( r>0.0 )
-				fac /= r;
-			else
-				fac=0.0;
-		}
-		for( size_t d=0 ; d<dimension ; ++d )
-			vertexDerivs[i][d] += fac*vertexData[i][d];
-	}
+    double fac=parameter(0);
+    if( parameter(1)==0.0 ) {
+      double r=0.0;
+      for( size_t d=0 ; d<dimension ; ++d )
+	r += vertexData[i][d]*vertexData[i][d];
+      if( r>0.0 )
+	r = std::sqrt(r);
+      if( r>0.0 )
+	fac /= r;
+      else
+	fac=0.0;
+    }
+    for( size_t d=0 ; d<dimension ; ++d )
+      vertexDerivs[i][d] += fac*vertexData[i][d];
+  }
+}
+
+MoveVertexSphereCylinder::
+MoveVertexSphereCylinder(std::vector<double> &paraValue, 
+		   std::vector< std::vector<size_t> > 
+		   &indValue ) {
+  
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=2 || ( paraValue[1]!=0 && paraValue[1]!=1) ) {
+    std::cerr << "MoveVertexSphereCylinder::"
+	      << "MoveVertexSphereCylinder() "
+	      << "Uses two parameters k_growth and r_pow (0,1)\n";
+    exit(0);
+  }  
+  if( indValue.size() != 0 ) {
+    std::cerr << "MoveVertexSphereCylinder::"
+	      << "MoveVertexSphereCylinder() "
+	      << "No variable index is used.\n";
+    exit(0);
+  }
+  // Set the variable values
+  //
+  setId("MoveVertexSphereCylinder");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "k_growth";
+  tmp[0] = "r_pow";
+  setParameterId( tmp );
+}
+
+void MoveVertexSphereCylinder::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs ) {
+  
+  size_t numVertices = T.numVertex();
+  if (vertexData[0].size()!=3) {
+    std::cerr << "MoveVertexSphereCylinder:: Only works for 3 dimensions." << std::endl;
+    exit(-1);
+  }
+  size_t xI=0;
+  size_t yI=1;
+  size_t zI=2;
+ 
+  for( size_t i=0 ; i<numVertices ; ++i ) {
+    if (vertexData[i][zI]<0.0) { // on cylinder
+      if( parameter(1)==0.0 ) {
+	vertexDerivs[i][zI] -= parameter(0);
+      }
+      else {
+	double r = std::sqrt(vertexData[i][xI]*vertexData[i][xI]+
+			     vertexData[i][yI]*vertexData[i][yI]);
+	vertexDerivs[i][zI] -= parameter(0)*(3.14159265*0.5*r-vertexData[i][zI]);
+      }
+    }
+    else { // on half sphere
+      double r = std::sqrt(vertexData[i][xI]*vertexData[i][xI]+
+			   vertexData[i][yI]*vertexData[i][yI]+
+			   vertexData[i][zI]*vertexData[i][zI]);
+      double rPrime = std::sqrt(vertexData[i][xI]*vertexData[i][xI]+
+				vertexData[i][yI]*vertexData[i][yI]);
+      double theta = std::asin(rPrime/r);
+
+      double fac=parameter(0)*theta;
+      if (parameter(0)==1) {
+	fac *= r;
+      }
+      vertexDerivs[i][xI] += fac*vertexData[i][xI]*vertexData[i][zI]/rPrime;
+      vertexDerivs[i][yI] += fac*vertexData[i][yI]*vertexData[i][zI]/rPrime;
+      vertexDerivs[i][zI] -= fac*rPrime;
+    }
+  }
 }
 
 WallLengthGrowExperimental::WallLengthGrowExperimental(std::vector<double> &paraValue,
