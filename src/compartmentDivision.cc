@@ -284,28 +284,28 @@ update(Tissue *T,size_t i,
 
 DivisionVolumeViaLongestWall3D::
 DivisionVolumeViaLongestWall3D(std::vector<double> &paraValue, 
-															 std::vector< std::vector<size_t> > 
-															 &indValue ) {
+			       std::vector< std::vector<size_t> > 
+			       &indValue ) {
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
   if( paraValue.size()!=3 ) {
     std::cerr << "DivisionVolumeViaLongestWall3D::"
-							<< "DivisionVolumeViaLongestWall3D() "
-							<< "Two parameters used V_threshold, LWall_frac LWall_threshold\n";
+	      << "DivisionVolumeViaLongestWall3D() "
+	      << "Two parameters used V_threshold, LWall_frac LWall_threshold\n";
     exit(0);
   }
   if( indValue.size() != 1 ) {
     std::cerr << "DivisionVolumeViaLongestWall3D::"
-							<< "DivisionVolumeViaLongestWall3D() "
-							<< "Variable indices for volume dependent cell "
-							<< "variables is used." << std::endl;
+	      << "DivisionVolumeViaLongestWall3D() "
+	      << "Variable indices for volume dependent cell "
+	      << "variables is used." << std::endl;
     exit(0);
   }
   //Set the variable values
   //////////////////////////////////////////////////////////////////////
   setId("DivisionVolumeViaLongestWall3D");
-	setNumChange(1);
+  setNumChange(1);
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
@@ -314,8 +314,8 @@ DivisionVolumeViaLongestWall3D(std::vector<double> &paraValue,
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "V_threshold";
-	tmp[1] = "LWall_frac";
-	tmp[2] = "LWall_threshold";
+  tmp[1] = "LWall_frac";
+  tmp[2] = "LWall_threshold";
   setParameterId( tmp );
 }
 
@@ -330,10 +330,10 @@ flag(Tissue *T,size_t i,
      std::vector< std::vector<double> > &cellDerivs,
      std::vector< std::vector<double> > &wallDerivs,
      std::vector< std::vector<double> > &vertexDerivs ) {
-	
+  
   if( T->cell(i).calculateVolume(vertexData) > parameter(0) ) {
     std::cerr << "Cell " << i << " marked for division with volume " 
-							<< T->cell(i).volume() << std::endl;
+	      << T->cell(i).volume() << std::endl;
     return 1;
   } 
   return 0;

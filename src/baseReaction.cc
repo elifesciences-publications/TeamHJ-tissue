@@ -129,6 +129,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new VertexFromCellPlane(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneSpatial")
 	  return new VertexFromCellPlaneSpatial(paraValue, indValue);
+  else if (idValue == "VertexFromCellPlaneConcentrationHill")
+	  return new VertexFromCellPlaneConcentrationHill(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneNormalized")
 	  return new VertexFromCellPlaneNormalized(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneNormalizedSpatial")

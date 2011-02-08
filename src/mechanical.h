@@ -336,6 +336,44 @@ class VertexFromCellPlaneSpatial : public BaseReaction
 	      std::vector< std::vector<double> > &vertexDerivs);
 };
 
+///
+/// @brief Same as VertexFromCellPlane but with the strength dependent
+/// on a molecular concentration
+///
+/// This class is the same 'pressure' from inside update as
+/// VertexFromCellPlane with the difference that the strength of the
+/// resulting force depends on the cellular concentration of a
+/// molecule described with a Hill formalism.
+///
+/// The force is described by:
+///
+/// \f[ 
+/// F = \frac{A_{cell}}{N_{vertex}}(p_{0} + 
+/// p_{1} \frac{C^{p_{3}}}{p_{2}^{p_{3}}+C^{p_{3}}}
+/// \f]
+///
+/// where the area factor \f$A_{cell}\f$ is present if \f$p_{4}=1\f$,
+/// and C is the molecular concentration.
+///
+class VertexFromCellPlaneConcentrationHill : public BaseReaction
+{
+ private:
+  
+  double Kpow_;
+  
+ public:
+  VertexFromCellPlaneConcentrationHill(std::vector<double> &paraValue,
+				       std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
+};
+
 class VertexFromCellPlaneNormalized : public BaseReaction
 {
  public:

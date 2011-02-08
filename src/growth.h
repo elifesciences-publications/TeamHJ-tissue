@@ -203,7 +203,7 @@ class WallGrowthStressSpatialSingle : public BaseReaction {
 /// updated only if the length is shorter than the distance between the
 ///  vertices of the wall and then according to
 ///
-///  dL/dt = (p_0+p_1*f(c,K,n)) * (d_v-L) if (d_v-L) > p_1
+///  dL/dt = (p_0+p_1*f(c,p_2,p_3)) * (d_v-L) if (d_v-L) > p_4
 ///
 /// p_0 is the constant growth rate. 
 /// p_1 is the maximal added growth rate (V_max in the Hill function)

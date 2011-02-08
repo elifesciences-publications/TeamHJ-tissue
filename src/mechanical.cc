@@ -1493,612 +1493,800 @@ void PerpendicularWallPressure::derivs(Tissue &T,
 
 VertexFromCellPlane::
 VertexFromCellPlane(std::vector<double> &paraValue,
-										std::vector< std::vector<size_t> > &indValue)
+		    std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 2) {
-		std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
-							<< "Uses two parameters: k_force and areaFlag" << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	if (paraValue[1]!=0.0 && paraValue[1]!=1.0) {
-		std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
-							<< "areaFlag must be zero (no area included) or one (area included)." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	if (indValue.size() != 0) {
-		std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
-							<< std::endl
-							<< "No variable index used." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	setId("VertexFromCellPlane");
-	setParameter(paraValue);
-	setVariableIndex(indValue);
-	
-	std::vector<std::string> tmp(numParameter());
-	tmp[0] = "k_force";
-	tmp[1] = "areaFlag";
-	
-	setParameterId(tmp);
+  if (paraValue.size() != 2) {
+    std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
+	      << "Uses two parameters: k_force and areaFlag" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (paraValue[1]!=0.0 && paraValue[1]!=1.0) {
+    std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
+	      << "areaFlag must be zero (no area included) or one (area included)." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (indValue.size() != 0) {
+    std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
+	      << std::endl
+	      << "No variable index used." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("VertexFromCellPlane");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "k_force";
+  tmp[1] = "areaFlag";
+  
+  setParameterId(tmp);
 }
 
 void VertexFromCellPlane::
 derivs(Tissue &T,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs)
 {
-	size_t dimension = vertexData[0].size();
-	if (dimension!=3) {
-		std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
-							<< "Only implemented for three dimensions." << std::endl;
-		exit(EXIT_FAILURE);
+  size_t dimension = vertexData[0].size();
+  if (dimension!=3) {
+    std::cerr << "VertexFromCellPlane::VertexFromCellPlane() " 
+	      << "Only implemented for three dimensions." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  unsigned int numFlipNormal=0;
+  for (size_t n = 0; n < T.numCell(); ++n) {
+    Cell cell = T.cell(n);
+    unsigned int flipFlag=0;
+    std::vector<double> normal = cell.getNormalToPCAPlane();
+    double norm=0.0;
+    for (size_t d=0; d<dimension; ++d)
+      norm += normal[d]*normal[d];
+    if (norm != 1.0) {
+      norm = std::sqrt(norm);
+      assert(norm>0.0);
+      double normFac = 1.0/norm; 
+      for (size_t d=0; d<dimension; ++d)
+	normal[d] *= normFac;
+    }
+    
+    std::vector<int> scalarProdSign(cell.numVertex());
+    std::vector<double> scalarProdVal(cell.numVertex());
+    double scalarProdSum=0.0;
+    for (size_t k=0; k<cell.numVertex(); ++k) {
+      size_t k2=(k+1)%cell.numVertex();
+      size_t k3=(k+2)%cell.numVertex();
+      //Make sure ((v2-v1)x(v3-v2))n has same sign for all cells
+      assert(cell.numVertex()>2);
+      std::vector<double> nw1(dimension),nw2(dimension);
+      for (size_t d=0; d<dimension; ++d) {
+	nw1[d] = vertexData[cell.vertex(k2)->index()][d]-vertexData[cell.vertex(k)->index()][d];
+	nw2[d] = vertexData[cell.vertex(k3)->index()][d]-vertexData[cell.vertex(k2)->index()][d];
+      }
+      //cross product
+      double scalarProd=0.0;
+      for (size_t d1=0; d1<dimension; ++d1) {
+	size_t d2=(d1+1)%dimension;
+	size_t d3=(d1+2)%dimension;
+	scalarProd += (nw1[d1]*nw2[d2]-nw1[d2]*nw2[d1])*normal[d3];
+      }
+      scalarProdVal[k] = scalarProd;
+      scalarProdSum += scalarProd;
+      if (scalarProd>0.0)
+	scalarProdSign[k]=1;
+      else
+	scalarProdSign[k]=-1;
+    }
+    //  		for (size_t k=1; k<cell.numVertex(); ++k)
+    //  			if (scalarProdSign[k]!=scalarProdSign[0]) {
+    //  				std::cerr << "Cell " << n << " has diverging signs on scalar product." << std::endl;
+    //  				break;
+    //  			}
+    int scalarProdSignSum=0;
+    for (size_t k=0; k<scalarProdSign.size(); ++k)
+      scalarProdSignSum += scalarProdSign[k];
+    
+    if (scalarProdSignSum<0) {
+      numFlipNormal++;
+      flipFlag=1;
+      for (size_t d=0; d<dimension; ++d)
+	normal[d] = -normal[d];
+    }
+    else if (scalarProdSignSum==0) {
+      std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
+		<< std::endl;
+      if (std::fabs(scalarProdSum)>0.01) {
+	if (scalarProdSum<0.0) {
+	  numFlipNormal++;
+	  flipFlag=1;
+	  for (size_t d=0; d<dimension; ++d)
+	    normal[d] = -normal[d];
 	}
-	unsigned int numFlipNormal=0;
-	for (size_t n = 0; n < T.numCell(); ++n) {
-		Cell cell = T.cell(n);
-		unsigned int flipFlag=0;
-		std::vector<double> normal = cell.getNormalToPCAPlane();
-		double norm=0.0;
-		for (size_t d=0; d<dimension; ++d)
-			norm += normal[d]*normal[d];
-		if (norm != 1.0) {
-			norm = std::sqrt(norm);
-			assert(norm>0.0);
-			double normFac = 1.0/norm; 
-			for (size_t d=0; d<dimension; ++d)
-				normal[d] *= normFac;
-		}
-		
-		std::vector<int> scalarProdSign(cell.numVertex());
-		std::vector<double> scalarProdVal(cell.numVertex());
-		double scalarProdSum=0.0;
-		for (size_t k=0; k<cell.numVertex(); ++k) {
-			size_t k2=(k+1)%cell.numVertex();
-			size_t k3=(k+2)%cell.numVertex();
-			//Make sure ((v2-v1)x(v3-v2))n has same sign for all cells
-			assert(cell.numVertex()>2);
-			std::vector<double> nw1(dimension),nw2(dimension);
-			for (size_t d=0; d<dimension; ++d) {
-				nw1[d] = vertexData[cell.vertex(k2)->index()][d]-vertexData[cell.vertex(k)->index()][d];
-				nw2[d] = vertexData[cell.vertex(k3)->index()][d]-vertexData[cell.vertex(k2)->index()][d];
-			}
-			//cross product
-			double scalarProd=0.0;
-			for (size_t d1=0; d1<dimension; ++d1) {
-				size_t d2=(d1+1)%dimension;
-				size_t d3=(d1+2)%dimension;
-				scalarProd += (nw1[d1]*nw2[d2]-nw1[d2]*nw2[d1])*normal[d3];
-			}
-			scalarProdVal[k] = scalarProd;
-			scalarProdSum += scalarProd;
-			if (scalarProd>0.0)
-				scalarProdSign[k]=1;
-			else
-				scalarProdSign[k]=-1;
-		}
-//  		for (size_t k=1; k<cell.numVertex(); ++k)
-//  			if (scalarProdSign[k]!=scalarProdSign[0]) {
-//  				std::cerr << "Cell " << n << " has diverging signs on scalar product." << std::endl;
-//  				break;
-//  			}
-		int scalarProdSignSum=0;
-		for (size_t k=0; k<scalarProdSign.size(); ++k)
-			scalarProdSignSum += scalarProdSign[k];
-		
-		if (scalarProdSignSum<0) {
-			numFlipNormal++;
-			flipFlag=1;
-			for (size_t d=0; d<dimension; ++d)
-				normal[d] = -normal[d];
-		}
-		else if (scalarProdSignSum==0) {
-			std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
-								<< std::endl;
-			if (std::fabs(scalarProdSum)>0.01) {
-				if (scalarProdSum<0.0) {
-					numFlipNormal++;
-					flipFlag=1;
-					for (size_t d=0; d<dimension; ++d)
-						normal[d] = -normal[d];
-				}
-			}
-			else {
-				std::vector<double> center = cell.positionFromVertex(vertexData);
-				// Print all walls
-				for (size_t k=0; k<cell.numWall(); ++k) {
-					std::cerr << "0 "; 
-					for (size_t d=0; d<dimension; ++d)
-						std::cerr << vertexData[cell.wall(k)->vertex1()->index()][d] << " ";
-					std::cerr << std::endl << "0 "; 
-					for (size_t d=0; d<dimension; ++d)
-						std::cerr << vertexData[cell.wall(k)->vertex2()->index()][d] << " ";
-					std::cerr << std::endl << std::endl;
-				}		 
-				std::cerr << "1 "; 
-				for (size_t d=0; d<dimension; ++d)
-					std::cerr << vertexData[cell.wall(0)->vertex1()->index()][d] << " ";
-				std::cerr << std::endl << std::endl;
-				std::cerr << "2 "; 
-				for (size_t d=0; d<dimension; ++d)
-					std::cerr << center[d] << " ";
-				std::cerr << std::endl << "2 ";
-				for (size_t d=0; d<dimension; ++d)
-					std::cerr << center[d]+normal[d] << " ";
-				std::cerr << std::endl << std::endl;
-				std::cerr << "3 "; 
-				for (size_t d=0; d<dimension; ++d)
-					std::cerr << normal[d] << " ";
-				std::cerr << std::endl << std::endl;
-				std::cerr << "4 "; 
-				for (size_t i=0; i<scalarProdVal.size(); ++i)
-					std::cerr << scalarProdVal[i] << " ";
-				std::cerr << std::endl << std::endl;
-				std::cerr << "5 "; 
-				for (size_t i=0; i<scalarProdSign.size(); ++i)
-					std::cerr << scalarProdSign[i] << " ";
-				std::cerr << std::endl << std::endl;
-				
-				exit(-1);
-			}
-		}
-		// Get the cell size
-		double A=1.0;
-		if (parameter(1)==1.0)
-			A = cell.calculateVolume(vertexData)/cell.numVertex();
-
-		double coeff = parameter(0) * A;
-		//update the vertex derivatives
-		for (size_t k=0; k<cell.numVertex(); ++k) {
-			double vCoeff=coeff;
-			if (cell.vertex(k)->isBoundary(T.background()))
-				vCoeff *= 1.5;
-			for (size_t d=0; d<dimension; ++d) {
-				vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
-			}
-		}	
-		// For saving normals in direction used for test plotting
-		//for (size_t d=0; d<dimension; ++d)
-		//cellData[cell.index()][d] = normal[d];
-	}
-	//std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
-	//				<< std::endl;
+      }
+      else {
+	std::vector<double> center = cell.positionFromVertex(vertexData);
+	// Print all walls
+	for (size_t k=0; k<cell.numWall(); ++k) {
+	  std::cerr << "0 "; 
+	  for (size_t d=0; d<dimension; ++d)
+	    std::cerr << vertexData[cell.wall(k)->vertex1()->index()][d] << " ";
+	  std::cerr << std::endl << "0 "; 
+	  for (size_t d=0; d<dimension; ++d)
+	    std::cerr << vertexData[cell.wall(k)->vertex2()->index()][d] << " ";
+	  std::cerr << std::endl << std::endl;
+	}		 
+	std::cerr << "1 "; 
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << vertexData[cell.wall(0)->vertex1()->index()][d] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "2 "; 
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << center[d] << " ";
+	std::cerr << std::endl << "2 ";
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << center[d]+normal[d] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "3 "; 
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << normal[d] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "4 "; 
+	for (size_t i=0; i<scalarProdVal.size(); ++i)
+	  std::cerr << scalarProdVal[i] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "5 "; 
+	for (size_t i=0; i<scalarProdSign.size(); ++i)
+	  std::cerr << scalarProdSign[i] << " ";
+	std::cerr << std::endl << std::endl;
+	
+	exit(-1);
+      }
+    }
+    // Get the cell size
+    double A=1.0;
+    if (parameter(1)==1.0)
+      A = cell.calculateVolume(vertexData)/cell.numVertex();
+    
+    double coeff = parameter(0) * A;
+    //update the vertex derivatives
+    for (size_t k=0; k<cell.numVertex(); ++k) {
+      double vCoeff=coeff;
+      if (cell.vertex(k)->isBoundary(T.background()))
+	vCoeff *= 1.5;
+      for (size_t d=0; d<dimension; ++d) {
+	vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
+      }
+    }	
+    // For saving normals in direction used for test plotting
+    //for (size_t d=0; d<dimension; ++d)
+    //cellData[cell.index()][d] = normal[d];
+  }
+  //std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
+  //				<< std::endl;
 }
 
 VertexFromCellPlaneSpatial::
 VertexFromCellPlaneSpatial(std::vector<double> &paraValue,
-										std::vector< std::vector<size_t> > &indValue)
+			   std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 5) {
-		std::cerr << "VertexFromCellPlaneSpatial::VertexFromCellPlaneSpatial() " 
-							<< "Uses five parameters: k_min, k_max, K_spatial, n_spatial and areaFlag." 
-							<< std::endl;
-		exit(EXIT_FAILURE);
-	}
-	if (paraValue[4]!=0.0 && paraValue[4]!=1.0) {
-		std::cerr << "VertexFromCellPlaneSpatial::VertexFromCellPlaneSpatial() " 
-							<< "areaFlag must be zero (no area included) or one (area included)." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	if (indValue.size() != 1 || indValue[0].size() != 1) {
-		std::cerr << "VertexFromCellPlaneSpatial::VertexFromCellPlaneSpatial() " 
-							<< std::endl
-							<< "Variable index for spatial max index is used." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	setId("VertexFromCellPlaneSpatial");
-	setParameter(paraValue);
-	setVariableIndex(indValue);
-	
-	std::vector<std::string> tmp(numParameter());
-	tmp[0] = "k_min";
-	tmp[1] = "k_max";
-	tmp[2] = "K_spatial";
-	tmp[3] = "n_spatial";
-	tmp[4] = "areaFlag";
-	
-	setParameterId(tmp);
-	Kpow_= std::pow(paraValue[2],paraValue[3]);
-
+  if (paraValue.size() != 5) {
+    std::cerr << "VertexFromCellPlaneSpatial::VertexFromCellPlaneSpatial() " 
+	      << "Uses five parameters: k_min, k_max, K_spatial, n_spatial and areaFlag." 
+	      << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (paraValue[4]!=0.0 && paraValue[4]!=1.0) {
+    std::cerr << "VertexFromCellPlaneSpatial::VertexFromCellPlaneSpatial() " 
+	      << "areaFlag must be zero (no area included) or one (area included)." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (indValue.size() != 1 || indValue[0].size() != 1) {
+    std::cerr << "VertexFromCellPlaneSpatial::VertexFromCellPlaneSpatial() " 
+	      << std::endl
+	      << "Variable index for spatial max index is used." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("VertexFromCellPlaneSpatial");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "k_min";
+  tmp[1] = "k_max";
+  tmp[2] = "K_spatial";
+  tmp[3] = "n_spatial";
+  tmp[4] = "areaFlag";
+  
+  setParameterId(tmp);
+  Kpow_= std::pow(paraValue[2],paraValue[3]);
+  
 }
 
 void VertexFromCellPlaneSpatial::
 derivs(Tissue &T,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs)
 {
-	size_t dimension = vertexData[0].size();
-	if (dimension!=3) {
-		std::cerr << "VertexFromCellPlaneSpatial::VertexFromCellPlaneSpatial() " 
-							<< "Only implemented for three dimensions." << std::endl;
-		exit(EXIT_FAILURE);
+  size_t dimension = vertexData[0].size();
+  if (dimension!=3) {
+    std::cerr << "VertexFromCellPlaneSpatial::VertexFromCellPlaneSpatial() " 
+	      << "Only implemented for three dimensions." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  size_t sI=variableIndex(0,0);
+  assert (sI<vertexData[0].size());
+  double max = vertexData[0][sI];
+  size_t maxI=0;
+  size_t numVertices = vertexData.size();
+  for (size_t i=1; i<numVertices; ++i)
+    if (vertexData[i][sI]>max) {
+      max=vertexData[i][sI];
+      maxI=i;
+    }
+  std::vector<double> maxPos(dimension);
+  for (size_t d=0; d<dimension; ++d)
+    maxPos[d] = vertexData[maxI][d];
+  
+  unsigned int numFlipNormal=0;
+  for (size_t n = 0; n < T.numCell(); ++n) {
+    Cell cell = T.cell(n);
+    unsigned int flipFlag=0;
+    std::vector<double> normal = cell.getNormalToPCAPlane();
+    double norm=0.0;
+    for (size_t d=0; d<dimension; ++d)
+      norm += normal[d]*normal[d];
+    if (norm != 1.0) {
+      norm = std::sqrt(norm);
+      assert(norm>0.0);
+      double normFac = 1.0/norm; 
+      for (size_t d=0; d<dimension; ++d)
+	normal[d] *= normFac;
+    }
+    
+    std::vector<int> scalarProdSign(cell.numVertex());
+    std::vector<double> scalarProdVal(cell.numVertex());
+    double scalarProdSum=0.0;
+    for (size_t k=0; k<cell.numVertex(); ++k) {
+      size_t k2=(k+1)%cell.numVertex();
+      size_t k3=(k+2)%cell.numVertex();
+      //Make sure ((v2-v1)x(v3-v2))n has same sign for all cells
+      assert(cell.numVertex()>2);
+      std::vector<double> nw1(dimension),nw2(dimension);
+      for (size_t d=0; d<dimension; ++d) {
+	nw1[d] = vertexData[cell.vertex(k2)->index()][d]-vertexData[cell.vertex(k)->index()][d];
+	nw2[d] = vertexData[cell.vertex(k3)->index()][d]-vertexData[cell.vertex(k2)->index()][d];
+      }
+      //cross product
+      double scalarProd=0.0;
+      for (size_t d1=0; d1<dimension; ++d1) {
+	size_t d2=(d1+1)%dimension;
+	size_t d3=(d1+2)%dimension;
+	scalarProd += (nw1[d1]*nw2[d2]-nw1[d2]*nw2[d1])*normal[d3];
+      }
+      scalarProdVal[k] = scalarProd;
+      scalarProdSum += scalarProd;
+      if (scalarProd>0.0)
+	scalarProdSign[k]=1;
+      else
+	scalarProdSign[k]=-1;
+    }
+    //  		for (size_t k=1; k<cell.numVertex(); ++k)
+    //  			if (scalarProdSign[k]!=scalarProdSign[0]) {
+    //  				std::cerr << "Cell " << n << " has diverging signs on scalar product." << std::endl;
+    //  				break;
+    //  			}
+    int scalarProdSignSum=0;
+    for (size_t k=0; k<scalarProdSign.size(); ++k)
+      scalarProdSignSum += scalarProdSign[k];
+    
+    if (scalarProdSignSum<0) {
+      numFlipNormal++;
+      flipFlag=1;
+      for (size_t d=0; d<dimension; ++d)
+	normal[d] = -normal[d];
+    }
+    else if (scalarProdSignSum==0) {
+      std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
+		<< std::endl;
+      if (std::fabs(scalarProdSum)>0.01) {
+	if (scalarProdSum<0.0) {
+	  numFlipNormal++;
+	  flipFlag=1;
+	  for (size_t d=0; d<dimension; ++d)
+	    normal[d] = -normal[d];
 	}
-	size_t sI=variableIndex(0,0);
-	assert (sI<vertexData[0].size());
-	double max = vertexData[0][sI];
-	size_t maxI=0;
-	size_t numVertices = vertexData.size();
-	for (size_t i=1; i<numVertices; ++i)
-		if (vertexData[i][sI]>max) {
-			max=vertexData[i][sI];
-			maxI=i;
-		}
-	std::vector<double> maxPos(dimension);
+      }
+      else {
+	std::vector<double> center = cell.positionFromVertex(vertexData);
+	// Print all walls
+	for (size_t k=0; k<cell.numWall(); ++k) {
+	  std::cerr << "0 "; 
+	  for (size_t d=0; d<dimension; ++d)
+	    std::cerr << vertexData[cell.wall(k)->vertex1()->index()][d] << " ";
+	  std::cerr << std::endl << "0 "; 
+	  for (size_t d=0; d<dimension; ++d)
+	    std::cerr << vertexData[cell.wall(k)->vertex2()->index()][d] << " ";
+	  std::cerr << std::endl << std::endl;
+	}		 
+	std::cerr << "1 "; 
 	for (size_t d=0; d<dimension; ++d)
-		maxPos[d] = vertexData[maxI][d];
+	  std::cerr << vertexData[cell.wall(0)->vertex1()->index()][d] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "2 "; 
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << center[d] << " ";
+	std::cerr << std::endl << "2 ";
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << center[d]+normal[d] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "3 "; 
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << normal[d] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "4 "; 
+	for (size_t i=0; i<scalarProdVal.size(); ++i)
+	  std::cerr << scalarProdVal[i] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "5 "; 
+	for (size_t i=0; i<scalarProdSign.size(); ++i)
+	  std::cerr << scalarProdSign[i] << " ";
+	std::cerr << std::endl << std::endl;
 	
-	unsigned int numFlipNormal=0;
-	for (size_t n = 0; n < T.numCell(); ++n) {
-		Cell cell = T.cell(n);
-		unsigned int flipFlag=0;
-		std::vector<double> normal = cell.getNormalToPCAPlane();
-		double norm=0.0;
-		for (size_t d=0; d<dimension; ++d)
-			norm += normal[d]*normal[d];
-		if (norm != 1.0) {
-			norm = std::sqrt(norm);
-			assert(norm>0.0);
-			double normFac = 1.0/norm; 
-			for (size_t d=0; d<dimension; ++d)
-				normal[d] *= normFac;
-		}
-		
-		std::vector<int> scalarProdSign(cell.numVertex());
-		std::vector<double> scalarProdVal(cell.numVertex());
-		double scalarProdSum=0.0;
-		for (size_t k=0; k<cell.numVertex(); ++k) {
-			size_t k2=(k+1)%cell.numVertex();
-			size_t k3=(k+2)%cell.numVertex();
-			//Make sure ((v2-v1)x(v3-v2))n has same sign for all cells
-			assert(cell.numVertex()>2);
-			std::vector<double> nw1(dimension),nw2(dimension);
-			for (size_t d=0; d<dimension; ++d) {
-				nw1[d] = vertexData[cell.vertex(k2)->index()][d]-vertexData[cell.vertex(k)->index()][d];
-				nw2[d] = vertexData[cell.vertex(k3)->index()][d]-vertexData[cell.vertex(k2)->index()][d];
-			}
-			//cross product
-			double scalarProd=0.0;
-			for (size_t d1=0; d1<dimension; ++d1) {
-				size_t d2=(d1+1)%dimension;
-				size_t d3=(d1+2)%dimension;
-				scalarProd += (nw1[d1]*nw2[d2]-nw1[d2]*nw2[d1])*normal[d3];
-			}
-			scalarProdVal[k] = scalarProd;
-			scalarProdSum += scalarProd;
-			if (scalarProd>0.0)
-				scalarProdSign[k]=1;
-			else
-				scalarProdSign[k]=-1;
-		}
-//  		for (size_t k=1; k<cell.numVertex(); ++k)
-//  			if (scalarProdSign[k]!=scalarProdSign[0]) {
-//  				std::cerr << "Cell " << n << " has diverging signs on scalar product." << std::endl;
-//  				break;
-//  			}
-		int scalarProdSignSum=0;
-		for (size_t k=0; k<scalarProdSign.size(); ++k)
-			scalarProdSignSum += scalarProdSign[k];
-		
-		if (scalarProdSignSum<0) {
-			numFlipNormal++;
-			flipFlag=1;
-			for (size_t d=0; d<dimension; ++d)
-				normal[d] = -normal[d];
-		}
-		else if (scalarProdSignSum==0) {
-			std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
-								<< std::endl;
-			if (std::fabs(scalarProdSum)>0.01) {
-				if (scalarProdSum<0.0) {
-					numFlipNormal++;
-					flipFlag=1;
-					for (size_t d=0; d<dimension; ++d)
-						normal[d] = -normal[d];
-				}
-			}
-			else {
-				std::vector<double> center = cell.positionFromVertex(vertexData);
-				// Print all walls
-				for (size_t k=0; k<cell.numWall(); ++k) {
-					std::cerr << "0 "; 
-					for (size_t d=0; d<dimension; ++d)
-						std::cerr << vertexData[cell.wall(k)->vertex1()->index()][d] << " ";
-					std::cerr << std::endl << "0 "; 
-					for (size_t d=0; d<dimension; ++d)
-						std::cerr << vertexData[cell.wall(k)->vertex2()->index()][d] << " ";
-					std::cerr << std::endl << std::endl;
-				}		 
-				std::cerr << "1 "; 
-				for (size_t d=0; d<dimension; ++d)
-					std::cerr << vertexData[cell.wall(0)->vertex1()->index()][d] << " ";
-				std::cerr << std::endl << std::endl;
-				std::cerr << "2 "; 
-				for (size_t d=0; d<dimension; ++d)
-					std::cerr << center[d] << " ";
-				std::cerr << std::endl << "2 ";
-				for (size_t d=0; d<dimension; ++d)
-					std::cerr << center[d]+normal[d] << " ";
-				std::cerr << std::endl << std::endl;
-				std::cerr << "3 "; 
-				for (size_t d=0; d<dimension; ++d)
-					std::cerr << normal[d] << " ";
-				std::cerr << std::endl << std::endl;
-				std::cerr << "4 "; 
-				for (size_t i=0; i<scalarProdVal.size(); ++i)
-					std::cerr << scalarProdVal[i] << " ";
-				std::cerr << std::endl << std::endl;
-				std::cerr << "5 "; 
-				for (size_t i=0; i<scalarProdSign.size(); ++i)
-					std::cerr << scalarProdSign[i] << " ";
-				std::cerr << std::endl << std::endl;
-				
-				exit(-1);
-			}
-		}
-		// Get the cell size
-		double A=1.0;
-		if (parameter(4)==1.0)
-			A = cell.calculateVolume(vertexData)/cell.numVertex();
-		// Calculate the spatial factor
+	exit(EXIT_FAILURE);
+      }
+    }
+    // Get the cell size
+    double A=1.0;
+    if (parameter(4)==1.0)
+      A = cell.calculateVolume(vertexData)/cell.numVertex();
+    // Calculate the spatial factor
+    
+    double maxDistance=0.0;
+    std::vector<double> cellPos = cell.positionFromVertex(vertexData);
+    for (size_t d=0; d<dimension; ++d)
+      maxDistance += (maxPos[d]-cellPos[d])*(maxPos[d]-cellPos[d]);
+    maxDistance = std::sqrt(maxDistance);
+    double sFactor = std::pow(maxDistance,parameter(3));
+    sFactor = parameter(1)*Kpow_/(Kpow_+sFactor);
+    
+    double coeff = (parameter(0)+sFactor) * A;
+    
+    
+    //update the vertex derivatives
+    for (size_t k=0; k<cell.numVertex(); ++k) {
+      double vCoeff=coeff;
+      if (cell.vertex(k)->isBoundary(T.background()))
+	vCoeff *= 1.5;
+      for (size_t d=0; d<dimension; ++d) {
+	vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
+      }
+    }	
+  }
+  //std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
+  //				<< std::endl;
+}
 
-		double maxDistance=0.0;
-		std::vector<double> cellPos = cell.positionFromVertex(vertexData);
-		for (size_t d=0; d<dimension; ++d)
-			maxDistance += (maxPos[d]-cellPos[d])*(maxPos[d]-cellPos[d]);
-		maxDistance = std::sqrt(maxDistance);
-		double sFactor = std::pow(maxDistance,parameter(3));
-		sFactor = parameter(1)*Kpow_/(Kpow_+sFactor);
+VertexFromCellPlaneConcentrationHill::
+VertexFromCellPlaneConcentrationHill(std::vector<double> &paraValue,
+				     std::vector< std::vector<size_t> > &indValue)
+{
+  if (paraValue.size() != 5) {
+    std::cerr << "VertexFromCellPlaneConcentrationHill::"
+	      << "VertexFromCellPlaneConcentrationHill() " 
+	      << "Uses five parameters: k_min, k_max, K_H, n_H and areaFlag." 
+	      << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (paraValue[4]!=0.0 && paraValue[4]!=1.0) {
+    std::cerr << "VertexFromCellPlaneConcentrationHill::"
+	      << "VertexFromCellPlaneConcentrationHill() " 
+	      << "areaFlag must be zero (no area included) or one (area included)." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (indValue.size() != 1 || indValue[0].size() != 1) {
+    std::cerr << "VertexFromCellPlaneSpatial::VertexFromCellPlaneSpatial() " 
+	      << std::endl
+	      << "Variable index for concentration needed." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("VertexFromCellPlaneConcentrationHill");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "k_min";
+  tmp[1] = "k_max";
+  tmp[2] = "K_H";
+  tmp[3] = "n_H";
+  tmp[4] = "areaFlag";
+  
+  setParameterId(tmp);
+  Kpow_= std::pow(paraValue[2],paraValue[3]);
+}
 
-		double coeff = (parameter(0)+sFactor) * A;
-		
-		
-		//update the vertex derivatives
-		for (size_t k=0; k<cell.numVertex(); ++k) {
-			double vCoeff=coeff;
-			if (cell.vertex(k)->isBoundary(T.background()))
-				vCoeff *= 1.5;
-			for (size_t d=0; d<dimension; ++d) {
-				vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
-			}
-		}	
+void VertexFromCellPlaneConcentrationHill::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs)
+{
+  size_t dimension = vertexData[0].size();
+  if (dimension!=3) {
+    std::cerr << "VertexFromCellPlaneConcentrationHill::"
+	      << "VertexFromCellPlaneConcentrationHill() " 
+	      << "Only implemented for three dimensions." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  size_t cI=variableIndex(0,0);
+  assert (cI<cellData[0].size());
+
+  unsigned int numFlipNormal=0;
+  for (size_t n = 0; n < T.numCell(); ++n) {
+    Cell cell = T.cell(n);
+    unsigned int flipFlag=0;
+    std::vector<double> normal = cell.getNormalToPCAPlane();
+    double norm=0.0;
+    for (size_t d=0; d<dimension; ++d)
+      norm += normal[d]*normal[d];
+    if (norm != 1.0) {
+      norm = std::sqrt(norm);
+      assert(norm>0.0);
+      double normFac = 1.0/norm; 
+      for (size_t d=0; d<dimension; ++d)
+	normal[d] *= normFac;
+    }
+    
+    std::vector<int> scalarProdSign(cell.numVertex());
+    std::vector<double> scalarProdVal(cell.numVertex());
+    double scalarProdSum=0.0;
+    for (size_t k=0; k<cell.numVertex(); ++k) {
+      size_t k2=(k+1)%cell.numVertex();
+      size_t k3=(k+2)%cell.numVertex();
+      //Make sure ((v2-v1)x(v3-v2))n has same sign for all cells
+      assert(cell.numVertex()>2);
+      std::vector<double> nw1(dimension),nw2(dimension);
+      for (size_t d=0; d<dimension; ++d) {
+	nw1[d] = vertexData[cell.vertex(k2)->index()][d]-vertexData[cell.vertex(k)->index()][d];
+	nw2[d] = vertexData[cell.vertex(k3)->index()][d]-vertexData[cell.vertex(k2)->index()][d];
+      }
+      //cross product
+      double scalarProd=0.0;
+      for (size_t d1=0; d1<dimension; ++d1) {
+	size_t d2=(d1+1)%dimension;
+	size_t d3=(d1+2)%dimension;
+	scalarProd += (nw1[d1]*nw2[d2]-nw1[d2]*nw2[d1])*normal[d3];
+      }
+      scalarProdVal[k] = scalarProd;
+      scalarProdSum += scalarProd;
+      if (scalarProd>0.0)
+	scalarProdSign[k]=1;
+      else
+	scalarProdSign[k]=-1;
+    }
+    // for (size_t k=1; k<cell.numVertex(); ++k)
+    //   if (scalarProdSign[k]!=scalarProdSign[0]) {
+    //     std::cerr << "Cell " << n << " has diverging signs on scalar product." << std::endl;
+    //     break;
+    //   }
+    int scalarProdSignSum=0;
+    for (size_t k=0; k<scalarProdSign.size(); ++k)
+      scalarProdSignSum += scalarProdSign[k];
+    
+    if (scalarProdSignSum<0) {
+      numFlipNormal++;
+      flipFlag=1;
+      for (size_t d=0; d<dimension; ++d)
+	normal[d] = -normal[d];
+    }
+    else if (scalarProdSignSum==0) {
+      std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
+		<< std::endl;
+      if (std::fabs(scalarProdSum)>0.01) {
+	if (scalarProdSum<0.0) {
+	  numFlipNormal++;
+	  flipFlag=1;
+	  for (size_t d=0; d<dimension; ++d)
+	    normal[d] = -normal[d];
 	}
-	//std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
-	//				<< std::endl;
+      }
+      else {
+	std::vector<double> center = cell.positionFromVertex(vertexData);
+	// Print all walls
+	for (size_t k=0; k<cell.numWall(); ++k) {
+	  std::cerr << "0 "; 
+	  for (size_t d=0; d<dimension; ++d)
+	    std::cerr << vertexData[cell.wall(k)->vertex1()->index()][d] << " ";
+	  std::cerr << std::endl << "0 "; 
+	  for (size_t d=0; d<dimension; ++d)
+	    std::cerr << vertexData[cell.wall(k)->vertex2()->index()][d] << " ";
+	  std::cerr << std::endl << std::endl;
+	}		 
+	std::cerr << "1 "; 
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << vertexData[cell.wall(0)->vertex1()->index()][d] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "2 "; 
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << center[d] << " ";
+	std::cerr << std::endl << "2 ";
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << center[d]+normal[d] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "3 "; 
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << normal[d] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "4 "; 
+	for (size_t i=0; i<scalarProdVal.size(); ++i)
+	  std::cerr << scalarProdVal[i] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "5 "; 
+	for (size_t i=0; i<scalarProdSign.size(); ++i)
+	  std::cerr << scalarProdSign[i] << " ";
+	std::cerr << std::endl << std::endl;
+	exit(EXIT_FAILURE);
+      }
+    }
+    // Get the cell size
+    double A=1.0;
+    if (parameter(4)==1.0)
+      A = cell.calculateVolume(vertexData)/cell.numVertex();
+    // Calculate the concentration dependent factor    
+    double cFactor = std::pow(cellData[n][cI],parameter(3));
+    cFactor = parameter(1)*cFactor/(Kpow_+cFactor);    
+    double coeff = (parameter(0)+cFactor) * A;
+    
+    //update the vertex derivatives
+    for (size_t k=0; k<cell.numVertex(); ++k) {
+      double vCoeff=coeff;
+      if (cell.vertex(k)->isBoundary(T.background()))
+	vCoeff *= 1.5;
+      for (size_t d=0; d<dimension; ++d) {
+	vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
+      }
+    }	
+  }
+  //std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
+  //				<< std::endl;
 }
 
 VertexFromCellPlaneNormalized::
 VertexFromCellPlaneNormalized(std::vector<double> &paraValue,
-															std::vector< std::vector<size_t> > &indValue)
+			      std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 2) {
-		std::cerr << "VertexFromCellPlaneNormalized::VertexFromCellPlaneNormalized() " 
-							<< "Uses two parameters: k_force and areaFlag" << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	if (paraValue[1]!=0.0 && paraValue[1]!=1.0) {
-		std::cerr << "VertexFromCellPlaneNormalized::VertexFromCellPlaneNormalized() " 
-							<< "areaFlag (p1) needs to be zero or one (1=area factor included)." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	if (indValue.size() != 0) {
-		std::cerr << "VertexFromCellPlaneNormalized::VertexFromCellPlaneNormalized() " 
-							<< std::endl
-							<< "No variable index used." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	setId("VertexFromCellPlaneNormalized");
-	setParameter(paraValue);
-	setVariableIndex(indValue);
-	
-	std::vector<std::string> tmp(numParameter());
-	tmp[0] = "k_force";
-	tmp[1] = "areaFlag";
-	
-	setParameterId(tmp);
+  if (paraValue.size() != 2) {
+    std::cerr << "VertexFromCellPlaneNormalized::VertexFromCellPlaneNormalized() " 
+	      << "Uses two parameters: k_force and areaFlag" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (paraValue[1]!=0.0 && paraValue[1]!=1.0) {
+    std::cerr << "VertexFromCellPlaneNormalized::VertexFromCellPlaneNormalized() " 
+	      << "areaFlag (p1) needs to be zero or one (1=area factor included)." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  if (indValue.size() != 0) {
+    std::cerr << "VertexFromCellPlaneNormalized::VertexFromCellPlaneNormalized() " 
+	      << std::endl
+	      << "No variable index used." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("VertexFromCellPlaneNormalized");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "k_force";
+  tmp[1] = "areaFlag";
+  
+  setParameterId(tmp);
 }
 
 void VertexFromCellPlaneNormalized::
 derivs(Tissue &T,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs)
 {
-	size_t dimension = vertexData[0].size();
-	if (dimension!=3) {
-		std::cerr << "VertexFromCellPlaneNormalized::VertexFromCellPlaneNormalized() " 
-							<< "Only implemented for three dimensions." << std::endl;
-		exit(EXIT_FAILURE);
+  size_t dimension = vertexData[0].size();
+  if (dimension!=3) {
+    std::cerr << "VertexFromCellPlaneNormalized::VertexFromCellPlaneNormalized() " 
+	      << "Only implemented for three dimensions." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  std::vector<double> tmpD(dimension);
+  std::vector< std::vector<double> > vertexDerivsTmp(vertexDerivs.size(),tmpD);
+  unsigned int numFlipNormal=0;
+  for (size_t n = 0; n < T.numCell(); ++n) {
+    Cell cell = T.cell(n);
+    // This calculation should now be done in reaction CalculatePCAPlane
+    //cell.calculatePCAPlane(vertexData);
+    unsigned int flipFlag=0;
+    
+    std::vector<double> normal = cell.getNormalToPCAPlane();
+    double norm=0.0;
+    for (size_t d=0; d<dimension; ++d)
+      norm += normal[d]*normal[d];
+    if (norm != 1.0) {
+      norm = std::sqrt(norm);
+      assert(norm>0.0);
+      double normFac = 1.0/norm; 
+      for (size_t d=0; d<dimension; ++d)
+	normal[d] *= normFac;
+    }
+    
+    std::vector<int> scalarProdSign(cell.numVertex());
+    std::vector<double> scalarProdVal(cell.numVertex());
+    double scalarProdSum=0.0;
+    for (size_t k=0; k<cell.numVertex(); ++k) {
+      size_t k2=(k+1)%cell.numVertex();
+      size_t k3=(k+2)%cell.numVertex();
+      //Make sure ((v2-v1)x(v3-v2))n has same sign for all cells
+      assert(cell.numVertex()>2);
+      std::vector<double> nw1(dimension),nw2(dimension);
+      for (size_t d=0; d<dimension; ++d) {
+	nw1[d] = vertexData[cell.vertex(k2)->index()][d]-vertexData[cell.vertex(k)->index()][d];
+	nw2[d] = vertexData[cell.vertex(k3)->index()][d]-vertexData[cell.vertex(k2)->index()][d];
+      }
+      //cross product
+      double scalarProd=0.0;
+      for (size_t d1=0; d1<dimension; ++d1) {
+	size_t d2=(d1+1)%dimension;
+	size_t d3=(d1+2)%dimension;
+	scalarProd += (nw1[d1]*nw2[d2]-nw1[d2]*nw2[d1])*normal[d3];
+      }
+      scalarProdVal[k] = scalarProd;
+      scalarProdSum += scalarProd;
+      if (scalarProd>0.0)
+	scalarProdSign[k]=1;
+      else
+	scalarProdSign[k]=-1;
+    }
+    // for (size_t k=1; k<cell.numVertex(); ++k)
+    //   if (scalarProdSign[k]!=scalarProdSign[0]) {
+    //     std::cerr << "Cell " << n << " has diverging signs on scalar product." << std::endl;
+    //     break;
+    //   }
+    int scalarProdSignSum=0;
+    for (size_t k=0; k<scalarProdSign.size(); ++k)
+      scalarProdSignSum += scalarProdSign[k];
+    
+    if (scalarProdSignSum<0) {
+      numFlipNormal++;
+      flipFlag=1;
+      for (size_t d=0; d<dimension; ++d)
+	normal[d] = -normal[d];
+    }
+    else if (scalarProdSignSum==0) {
+      //std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
+      //				<< std::endl;
+      if (std::fabs(scalarProdSum)>0.01) {
+	if (scalarProdSum<0.0) {
+	  numFlipNormal++;
+	  flipFlag=1;
+	  for (size_t d=0; d<dimension; ++d)
+	    normal[d] = -normal[d];
 	}
-	std::vector<double> tmpD(dimension);
-	std::vector< std::vector<double> > vertexDerivsTmp(vertexDerivs.size(),tmpD);
-	unsigned int numFlipNormal=0;
-	for (size_t n = 0; n < T.numCell(); ++n) {
-		Cell cell = T.cell(n);
-		// This calculation should now be done in reaction CalculatePCAPlane
-		//cell.calculatePCAPlane(vertexData);
-		unsigned int flipFlag=0;
-		
-		std::vector<double> normal = cell.getNormalToPCAPlane();
-		double norm=0.0;
-		for (size_t d=0; d<dimension; ++d)
-			norm += normal[d]*normal[d];
-		if (norm != 1.0) {
-			norm = std::sqrt(norm);
-			assert(norm>0.0);
-			double normFac = 1.0/norm; 
-			for (size_t d=0; d<dimension; ++d)
-				normal[d] *= normFac;
-		}
-		
-		std::vector<int> scalarProdSign(cell.numVertex());
-		std::vector<double> scalarProdVal(cell.numVertex());
-		double scalarProdSum=0.0;
-		for (size_t k=0; k<cell.numVertex(); ++k) {
-			size_t k2=(k+1)%cell.numVertex();
-			size_t k3=(k+2)%cell.numVertex();
-			//Make sure ((v2-v1)x(v3-v2))n has same sign for all cells
-			assert(cell.numVertex()>2);
-			std::vector<double> nw1(dimension),nw2(dimension);
-			for (size_t d=0; d<dimension; ++d) {
-				nw1[d] = vertexData[cell.vertex(k2)->index()][d]-vertexData[cell.vertex(k)->index()][d];
-				nw2[d] = vertexData[cell.vertex(k3)->index()][d]-vertexData[cell.vertex(k2)->index()][d];
-			}
-			//cross product
-			double scalarProd=0.0;
-			for (size_t d1=0; d1<dimension; ++d1) {
-				size_t d2=(d1+1)%dimension;
-				size_t d3=(d1+2)%dimension;
-				scalarProd += (nw1[d1]*nw2[d2]-nw1[d2]*nw2[d1])*normal[d3];
-			}
-			scalarProdVal[k] = scalarProd;
-			scalarProdSum += scalarProd;
-			if (scalarProd>0.0)
-				scalarProdSign[k]=1;
-			else
-				scalarProdSign[k]=-1;
-		}
-//  		for (size_t k=1; k<cell.numVertex(); ++k)
-//  			if (scalarProdSign[k]!=scalarProdSign[0]) {
-//  				std::cerr << "Cell " << n << " has diverging signs on scalar product." << std::endl;
-//  				break;
-//  			}
-		int scalarProdSignSum=0;
-		for (size_t k=0; k<scalarProdSign.size(); ++k)
-			scalarProdSignSum += scalarProdSign[k];
-		
-		if (scalarProdSignSum<0) {
-			numFlipNormal++;
-			flipFlag=1;
-			for (size_t d=0; d<dimension; ++d)
-				normal[d] = -normal[d];
-		}
-		else if (scalarProdSignSum==0) {
-			//std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
-			//				<< std::endl;
-			if (std::fabs(scalarProdSum)>0.01) {
-				if (scalarProdSum<0.0) {
-					numFlipNormal++;
-					flipFlag=1;
-					for (size_t d=0; d<dimension; ++d)
-						normal[d] = -normal[d];
-				}
-			}
-			else {
-				std::vector<double> center = cell.positionFromVertex(vertexData);
-				// Print all walls
-				for (size_t k=0; k<cell.numWall(); ++k) {
-					std::cerr << "0 "; 
-					for (size_t d=0; d<dimension; ++d)
-						std::cerr << vertexData[cell.wall(k)->vertex1()->index()][d] << " ";
-					std::cerr << std::endl << "0 "; 
-					for (size_t d=0; d<dimension; ++d)
-						std::cerr << vertexData[cell.wall(k)->vertex2()->index()][d] << " ";
-					std::cerr << std::endl << std::endl;
-				}		 
-				std::cerr << "1 "; 
-				for (size_t d=0; d<dimension; ++d)
-					std::cerr << vertexData[cell.wall(0)->vertex1()->index()][d] << " ";
-				std::cerr << std::endl << std::endl;
-				std::cerr << "2 "; 
-				for (size_t d=0; d<dimension; ++d)
-					std::cerr << center[d] << " ";
-				std::cerr << std::endl << "2 ";
-				for (size_t d=0; d<dimension; ++d)
-					std::cerr << center[d]+normal[d] << " ";
-				std::cerr << std::endl << std::endl;
-				std::cerr << "3 "; 
-				for (size_t d=0; d<dimension; ++d)
-					std::cerr << normal[d] << " ";
-				std::cerr << std::endl << std::endl;
-				std::cerr << "4 "; 
-				for (size_t i=0; i<scalarProdVal.size(); ++i)
-					std::cerr << scalarProdVal[i] << " ";
-				std::cerr << std::endl << std::endl;
-				std::cerr << "5 "; 
-				for (size_t i=0; i<scalarProdSign.size(); ++i)
-					std::cerr << scalarProdSign[i] << " ";
-				std::cerr << std::endl << std::endl;
-				
-				exit(-1);
-			}
-		}
-		// Get the cell size
-		double A=1.0;
-		if (parameter(1)!=0.0)
-			A = cell.calculateVolume(vertexData)/cell.numVertex();
-		
-		//update the vertex derivatives
-		for (size_t d=0; d<dimension; ++d) {
-			//escellData[n][d]=normal[d];
-			for (size_t k=0; k<cell.numVertex(); ++k)
-				vertexDerivsTmp[cell.vertex(k)->index()][d] += A * normal[d];
-		}
-	}	
-	// Normalize and update all vertices
-	size_t nVertex = vertexDerivs.size();
-	for (size_t i=0; i<nVertex; ++i) {
-		double norm=0.0;
-		for (size_t d=0; d<dimension; ++d)
-			norm += vertexDerivsTmp[i][d]*vertexDerivsTmp[i][d];
-		double normFac = 1.0/std::sqrt(norm);
-		for (size_t d=0; d<dimension; ++d) {
-			vertexDerivsTmp[i][d] *= normFac;
-			vertexDerivs[i][d] += parameter(0) * vertexDerivsTmp[i][d];
-		}
-	}
-	//std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
-	//				<< std::endl;
+      }
+      else {
+	std::vector<double> center = cell.positionFromVertex(vertexData);
+	// Print all walls
+	for (size_t k=0; k<cell.numWall(); ++k) {
+	  std::cerr << "0 "; 
+	  for (size_t d=0; d<dimension; ++d)
+	    std::cerr << vertexData[cell.wall(k)->vertex1()->index()][d] << " ";
+	  std::cerr << std::endl << "0 "; 
+	  for (size_t d=0; d<dimension; ++d)
+	    std::cerr << vertexData[cell.wall(k)->vertex2()->index()][d] << " ";
+	  std::cerr << std::endl << std::endl;
+	}		 
+	std::cerr << "1 "; 
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << vertexData[cell.wall(0)->vertex1()->index()][d] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "2 "; 
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << center[d] << " ";
+	std::cerr << std::endl << "2 ";
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << center[d]+normal[d] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "3 "; 
+	for (size_t d=0; d<dimension; ++d)
+	  std::cerr << normal[d] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "4 "; 
+	for (size_t i=0; i<scalarProdVal.size(); ++i)
+	  std::cerr << scalarProdVal[i] << " ";
+	std::cerr << std::endl << std::endl;
+	std::cerr << "5 "; 
+	for (size_t i=0; i<scalarProdSign.size(); ++i)
+	  std::cerr << scalarProdSign[i] << " ";
+	std::cerr << std::endl << std::endl;
+	
+	exit(-1);
+      }
+    }
+    // Get the cell size
+    double A=1.0;
+    if (parameter(1)!=0.0)
+      A = cell.calculateVolume(vertexData)/cell.numVertex();
+    
+    //update the vertex derivatives
+    for (size_t d=0; d<dimension; ++d) {
+      //escellData[n][d]=normal[d];
+      for (size_t k=0; k<cell.numVertex(); ++k)
+	vertexDerivsTmp[cell.vertex(k)->index()][d] += A * normal[d];
+    }
+  }	
+  // Normalize and update all vertices
+  size_t nVertex = vertexDerivs.size();
+  for (size_t i=0; i<nVertex; ++i) {
+    double norm=0.0;
+    for (size_t d=0; d<dimension; ++d)
+      norm += vertexDerivsTmp[i][d]*vertexDerivsTmp[i][d];
+    double normFac = 1.0/std::sqrt(norm);
+    for (size_t d=0; d<dimension; ++d) {
+      vertexDerivsTmp[i][d] *= normFac;
+      vertexDerivs[i][d] += parameter(0) * vertexDerivsTmp[i][d];
+    }
+  }
+  //std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
+  //				<< std::endl;
 }
 
 VertexFromCellPlaneNormalizedSpatial::
 VertexFromCellPlaneNormalizedSpatial(std::vector<double> &paraValue,
-																		 std::vector< std::vector<size_t> > &indValue)
+				     std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 5) {
-		std::cerr << "VertexFromCellPlaneNormalizedSpatial::VertexFromCellPlaneNormalizedSpatial() " 
-							<< "Uses four parameters: F_min F_max K_spatial n_spatial areaFlag" << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	if (paraValue[4]!=0.0 && paraValue[4]!=1.0) {
-		std::cerr << "VertexFromCellPlaneNormalizedSpatial::VertexFromCellPlaneNormalizedSpatial() " 
-							<< "areaFlag needs to be zero or one (1=area factor included)." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	if (indValue.size() != 1 || indValue[0].size() != 1) {
-		std::cerr << "VertexFromCellPlaneNormalizedSpatial::VertexFromCellPlaneNormalizedSpatial() " 
-							<< std::endl
-							<< "Variable index for spatial coordinate used." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	setId("VertexFromCellPlaneNormalizedSpatial");
-	setParameter(paraValue);
-	setVariableIndex(indValue);
-	
-	std::vector<std::string> tmp(numParameter());
-	tmp[0] = "F_min";
-	tmp[1] = "F_max";
-	tmp[2] = "K_spatial";
-	tmp[3] = "n_spatial";
-	tmp[4] = "areaFlag";
-	
-	setParameterId(tmp);
-	Kpow_= std::pow(paraValue[2],paraValue[3]);
+  if (paraValue.size() != 5) {
+    std::cerr << "VertexFromCellPlaneNormalizedSpatial::VertexFromCellPlaneNormalizedSpatial() " 
+	      << "Uses four parameters: F_min F_max K_spatial n_spatial areaFlag" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (paraValue[4]!=0.0 && paraValue[4]!=1.0) {
+    std::cerr << "VertexFromCellPlaneNormalizedSpatial::VertexFromCellPlaneNormalizedSpatial() " 
+	      << "areaFlag needs to be zero or one (1=area factor included)." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  if (indValue.size() != 1 || indValue[0].size() != 1) {
+    std::cerr << "VertexFromCellPlaneNormalizedSpatial::VertexFromCellPlaneNormalizedSpatial() " 
+	      << std::endl
+	      << "Variable index for spatial coordinate used." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("VertexFromCellPlaneNormalizedSpatial");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "F_min";
+  tmp[1] = "F_max";
+  tmp[2] = "K_spatial";
+  tmp[3] = "n_spatial";
+  tmp[4] = "areaFlag";
+  
+  setParameterId(tmp);
+  Kpow_= std::pow(paraValue[2],paraValue[3]);
 }
 
 void VertexFromCellPlaneNormalizedSpatial::
@@ -2377,105 +2565,105 @@ derivs(Tissue &T,
 
 VertexFromCellPlaneSphereCylinderConcentrationHill::
 VertexFromCellPlaneSphereCylinderConcentrationHill(std::vector<double> &paraValue,
-																									 std::vector< std::vector<size_t> > &indValue)
+						   std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 5) {
-		std::cerr << "VertexFromCellPlaneSphereCylinderConcentrationHill::"
-							<< "VertexFromCellPlaneSphereCylinderConcentrationHill() " 
-							<< "Uses five parameters: k_forceConst, k_forceHill, K_Hill, n_Hill areaFlag" 
-							<< std::endl;
-		exit(EXIT_FAILURE);
-	}
-	if (paraValue[4]!=0.0 && paraValue[4]!=1.0) {
-		std::cerr << "VertexFromCellPlaneSphereCylinderConcentrationHill::"
-							<< "VertexFromCellPlaneSphereCylinderConcentrationHill() " 
-							<< "areaFlag (p4) needs to be zero or one (1=area factor included)." 
-							<< std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	if (indValue.size() != 1 || indValue[0].size() != 1) {
-		std::cerr << "VertexFromCellPlaneSphereCylinderConcentrationHill::"
-							<< "VertexFromCellPlaneSphereCylinderConcentrationHill() " 
-							<< std::endl
-							<< "One variable index for concentration index is used." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	setId("VertexFromCellPlaneSphereCylinderConcentrationHill");
-	setParameter(paraValue);
-	setVariableIndex(indValue);
-	
-	std::vector<std::string> tmp(numParameter());
-	tmp[0] = "k_forceConst";
-	tmp[1] = "k_forceHill";
-	tmp[2] = "K_Hill";
-	tmp[3] = "n_Hill";
-	tmp[4] = "areaFlag";
-	
-	setParameterId(tmp);
+  if (paraValue.size() != 5) {
+    std::cerr << "VertexFromCellPlaneSphereCylinderConcentrationHill::"
+	      << "VertexFromCellPlaneSphereCylinderConcentrationHill() " 
+	      << "Uses five parameters: k_forceConst, k_forceHill, K_Hill, n_Hill areaFlag" 
+	      << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (paraValue[4]!=0.0 && paraValue[4]!=1.0) {
+    std::cerr << "VertexFromCellPlaneSphereCylinderConcentrationHill::"
+	      << "VertexFromCellPlaneSphereCylinderConcentrationHill() " 
+	      << "areaFlag (p4) needs to be zero or one (1=area factor included)." 
+	      << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  if (indValue.size() != 1 || indValue[0].size() != 1) {
+    std::cerr << "VertexFromCellPlaneSphereCylinderConcentrationHill::"
+	      << "VertexFromCellPlaneSphereCylinderConcentrationHill() " 
+	      << std::endl
+	      << "One variable index for concentration index is used." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("VertexFromCellPlaneSphereCylinderConcentrationHill");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "k_forceConst";
+  tmp[1] = "k_forceHill";
+  tmp[2] = "K_Hill";
+  tmp[3] = "n_Hill";
+  tmp[4] = "areaFlag";
+  
+  setParameterId(tmp);
 }
 
 void VertexFromCellPlaneSphereCylinderConcentrationHill::
 derivs(Tissue &T,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs)
 {
-	size_t dimension = vertexData[0].size();
-	if (dimension!=3) {
-		std::cerr << "VertexFromCellPlaneSphereCylinderConcentrationHill::"
-							<< "VertexFromCellPlaneSphereCylinderConcentrationHill() " 
-							<< "Only implemented for three dimensions." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	double Kpow = std::pow(parameter(2),parameter(3));
-	for (size_t n = 0; n < T.numCell(); ++n) {
-		Cell cell = T.cell(n);
-		// This calculation should now be done in reaction CalculatePCAPlane
-		//cell.calculatePCAPlane(vertexData);
-		double concpow = std::pow(cellData[cell.index()][variableIndex(0,0)],parameter(3));
-		std::vector<double> normal = cell.getNormalToPCAPlane();
-		double norm=0.0;
-		for (size_t d=0; d<dimension; ++d)
-			norm += normal[d]*normal[d];
-		if (norm != 1.0) {
-			norm = std::sqrt(norm);
-			assert(norm>0.0);
-			for (size_t d=0; d<dimension; ++d)
-				normal[d] /= norm;
-		}
-		std::vector<double> cellPos = cell.positionFromVertex(vertexData);
-		
-		std::vector<double> scNorm(dimension);
-		for (size_t d=0; d<dimension; ++d)
-			scNorm[d] = cellPos[d];
-		if( cellPos[2]<0.0 )
-			scNorm[2]=0.0;
-		double scalarProd=0.0;
-		for (size_t d=0; d<dimension; ++d)
-			scalarProd += scNorm[d]*normal[d];
-		if (scalarProd<0.0) {
-			for (size_t d=0; d<dimension; ++d)
-				normal[d] = -normal[d];
-		}
-		double coeff = parameter(0) + parameter(1)*concpow/(concpow+Kpow);
-		double A=1.0;
-		if (parameter(4)!=0.0) {
-			A = cell.calculateVolume(vertexData)/cell.numVertex();
-			coeff *= A;
-		}
-		for (size_t k=0; k<cell.numVertex(); ++k) {
-			double vCoeff=coeff;
-			if (cell.vertex(k)->isBoundary(T.background()))
-				vCoeff *= 1.5;
-			for (size_t d=0; d<dimension; ++d)
-				vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
-		}
-	}
+  size_t dimension = vertexData[0].size();
+  if (dimension!=3) {
+    std::cerr << "VertexFromCellPlaneSphereCylinderConcentrationHill::"
+	      << "VertexFromCellPlaneSphereCylinderConcentrationHill() " 
+	      << "Only implemented for three dimensions." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  double Kpow = std::pow(parameter(2),parameter(3));
+  for (size_t n = 0; n < T.numCell(); ++n) {
+    Cell cell = T.cell(n);
+    // This calculation should now be done in reaction CalculatePCAPlane
+    //cell.calculatePCAPlane(vertexData);
+    double concpow = std::pow(cellData[cell.index()][variableIndex(0,0)],parameter(3));
+    std::vector<double> normal = cell.getNormalToPCAPlane();
+    double norm=0.0;
+    for (size_t d=0; d<dimension; ++d)
+      norm += normal[d]*normal[d];
+    if (norm != 1.0) {
+      norm = std::sqrt(norm);
+      assert(norm>0.0);
+      for (size_t d=0; d<dimension; ++d)
+	normal[d] /= norm;
+    }
+    std::vector<double> cellPos = cell.positionFromVertex(vertexData);
+    
+    std::vector<double> scNorm(dimension);
+    for (size_t d=0; d<dimension; ++d)
+      scNorm[d] = cellPos[d];
+    if( cellPos[2]<0.0 )
+      scNorm[2]=0.0;
+    double scalarProd=0.0;
+    for (size_t d=0; d<dimension; ++d)
+      scalarProd += scNorm[d]*normal[d];
+    if (scalarProd<0.0) {
+      for (size_t d=0; d<dimension; ++d)
+	normal[d] = -normal[d];
+    }
+    double coeff = parameter(0) + parameter(1)*concpow/(concpow+Kpow);
+    double A=1.0;
+    if (parameter(4)!=0.0) {
+      A = cell.calculateVolume(vertexData)/cell.numVertex();
+      coeff *= A;
+    }
+    for (size_t k=0; k<cell.numVertex(); ++k) {
+      double vCoeff=coeff;
+      if (cell.vertex(k)->isBoundary(T.background()))
+	vCoeff *= 1.5;
+      for (size_t d=0; d<dimension; ++d)
+	vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
+    }
+  }
 }
 
 DebugReaction::DebugReaction(std::vector<double> &paraValue,

@@ -101,177 +101,179 @@ int translateVariableToBorder(Tissue &T,std::vector<double> &p);
 int main(int argc,char *argv[]) {
 	
   //Command line handling
-	myConfig::registerOption("init_output_format", 1);
-	//myConfig::registerOption("rk2", 0);
-	myConfig::registerOption("help", 0);
-	myConfig::registerOption("merry_init", 0);
-	myConfig::registerOption("verbose", 1);
-	
-	int verboseFlag=1;
-	std::string verboseString;
-	verboseString = myConfig::getValue("verbose", 0);
-	if( !verboseString.empty() ) {
-		verboseFlag = atoi( verboseString.c_str() );
-		if( verboseFlag != 0 || verboseFlag !=1 ) {
-			verboseFlag=0;
-			std::cerr << "Flag given to -verbose not recognized (0, 1 allowed)."
-								<< " Setting it to zero (silent)." << std::endl;
-		}
-	}
-	
-	// Get current time (at start of program)
-  myTimes::getTime();
-	std::string configFile(getenv("HOME"));
-	configFile.append("/.tissue");
-	myConfig::initConfig(argc, argv, configFile);
-	
-	if (myConfig::getBooleanValue("help")) {
-		std::cerr << std::endl 
-							<< "Usage: " << argv[0] << " initFile " << std::endl
-							<< std::endl;
-		std::cerr << "Possible additional flags are:" << std::endl;
-		std::cerr << "-merry_init - Init file format is set to the "
-							<< "output generated from merryproj." << std::endl;
-		std::cerr << "-init_output_format format - Sets format for output of"
-							<< " final state in specified init file format." << std::endl
-							<< "Available formats are tissue (default), and fem." << std::endl;
-		
-		std::cerr << "-verbose flag - Set flag for verbose (flag=1) or "
-							<< "silent (0) output mode to stderr." << std::endl; 
-		std::cerr << "-help - Shows this message." << std::endl;
-    exit(EXIT_FAILURE);
-	} else if (myConfig::argc() != 2 ) {
-		std::cerr << "Type '" << argv[0] << " -help' for usage." << std::endl;
-		exit(EXIT_FAILURE);
+  myConfig::registerOption("init_output_format", 1);
+  //myConfig::registerOption("rk2", 0);
+  myConfig::registerOption("help", 0);
+  myConfig::registerOption("merry_init", 0);
+  myConfig::registerOption("verbose", 1);
+  
+  int verboseFlag=1;
+  std::string verboseString;
+  verboseString = myConfig::getValue("verbose", 0);
+  if( !verboseString.empty() ) {
+    verboseFlag = atoi( verboseString.c_str() );
+    if( verboseFlag != 0 || verboseFlag !=1 ) {
+      verboseFlag=0;
+      std::cerr << "Flag given to -verbose not recognized (0, 1 allowed)."
+		<< " Setting it to zero (silent)." << std::endl;
+    }
   }
-	
+  
+  // Get current time (at start of program)
+  myTimes::getTime();
+  std::string configFile(getenv("HOME"));
+  configFile.append("/.tissue");
+  myConfig::initConfig(argc, argv, configFile);
+  
+  if (myConfig::getBooleanValue("help")) {
+    std::cerr << std::endl 
+	      << "Usage: " << argv[0] << " initFile " << std::endl
+	      << std::endl;
+    std::cerr << "Possible additional flags are:" << std::endl;
+    std::cerr << "-merry_init - Init file format is set to the "
+	      << "output generated from merryproj." << std::endl;
+    std::cerr << "-init_output_format format - Sets format for output of"
+	      << " final state in specified init file format." << std::endl
+	      << "Available formats are tissue (default), and fem." << std::endl;
+    
+    std::cerr << "-verbose flag - Set flag for verbose (flag=1) or "
+	      << "silent (0) output mode to stderr." << std::endl; 
+    std::cerr << "-help - Shows this message." << std::endl;
+    exit(EXIT_FAILURE);
+  } else if (myConfig::argc() != 2 ) {
+    std::cerr << "Type '" << argv[0] << " -help' for usage." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
   // Create the tissue and read init and model files
   std::string initFile = myConfig::argv(1);
-	
+  
   Tissue T;
-	if (verboseFlag)
-		std::cerr << "Reading init file " << initFile << std::endl;	
-	if (!myConfig::getBooleanValue("merry_init")) 
-		T.readInit(initFile.c_str(),verboseFlag);
-	else {
-		std::cerr << "Using merryproj init file format" << std::endl;
-		T.readMerryInit(initFile.c_str(),verboseFlag);
-	}
-	
-	//
-	// Do the manipulations
-	//
-	std::vector<double> p;
-	std::string type("uniform");
-	
-	//p.resize(2);
-	//p[0]=0.1;
-	//p[1]=0;
-	//type = new std::string("uniform");
-	//setWallVariable(T,p,type);
+  if (verboseFlag)
+    std::cerr << "Reading init file " << initFile << std::endl;	
+  if (!myConfig::getBooleanValue("merry_init")) 
+    T.readInit(initFile.c_str(),verboseFlag);
+  else {
+    std::cerr << "Using merryproj init file format" << std::endl;
+    T.readMerryInit(initFile.c_str(),verboseFlag);
+  }
+  
+  //
+  // Do the manipulations
+  //
+  std::vector<double> p;
+  std::string type("uniform");
+  
+  //p.resize(2);
+  //p[0]=0.1;
+  //p[1]=0;
+  //type = new std::string("uniform");
+  //setWallVariable(T,p,type);
+  
+  // For synthetic templates ///////////////////////
+  // 	p.resize(0);
+  // 	removeTwoVertices(T,p);
+  //////////////////////////////////////////////////
+  
+  //  p.resize(1);
+  // 	// Wall variables 0 0
+  // 	p[0]=0.0;
+  // 	addWallVariable(T,p,type);
+  // 	addWallVariable(T,p,type);
+  // 	// Direction 1 (already in .original files)
+  //  	//p[0] = 1.0;
+  //  	//addCellVariable(T,p,type);
+  // 	//p[0] = 0.0;
+  // 	//addCellVariable(T,p,type);
+  //  	//addCellVariable(T,p,type);
+  //  	//p[0] = 1.0;
+  //  	//addCellVariable(T,p,type);
+  // 	// Direction 2
+  // 	p[0] = 1.0;
+  //  	addCellVariable(T,p,type);
+  // 	p[0] = 0.0;
+  // 	addCellVariable(T,p,type);
+  //  	addCellVariable(T,p,type);
+  //  	p[0] = 1.0;
+  //  	addCellVariable(T,p,type);
+  // 	// Additional variables 1 1 0 1 1
+  //  	addCellVariable(T,p,type);
+  //  	addCellVariable(T,p,type);
+  // 	p[0] = 0.0;
+  //  	addCellVariable(T,p,type);
+  // 	p[0] = 1.0;
+  //  	addCellVariable(T,p,type);
+  //  	addCellVariable(T,p,type);
 
-	// For synthetic templates ///////////////////////
-// 	p.resize(0);
-// 	removeTwoVertices(T,p);
-	//////////////////////////////////////////////////
+  // replace two and add three wall vars
+  p.resize(2);
+  p[0]=0.1;
+  p[1]=0;
+  setWallVariable(T,p,type);
+  p[1]=1;
+  setWallVariable(T,p,type);
+  p.resize(1);
+  p[0] = 0.1;
+  addWallVariable(T,p,type);
+  addWallVariable(T,p,type);
+  addWallVariable(T,p,type);
+  
+  // Add four cell vars
+  //p[0] = 1.0;
+  //addCellVariable(T,p,type);
+  //addCellVariable(T,p,type);
+  //addCellVariable(T,p,type);
+  //addCellVariable(T,p,type);
+  
+  // For experimental template /////////////////////
+  //p.resize(3);
+  //p[0] = 2;// vertex
+  //p[1] = 2;// z
+  //p[2] = 0.0;// flip around 0
+  //flipVariable(T,p);
+  p.resize(4);
+  p[0] = 2;// vertex
+  p[1] = 2;// z
+  p[2] = 0.0;// move to 0
+  p[3] = 1;// move min
+  translateVariableToBorder(T,p);
+  //////////////////////////////////////////////////
+  
+  // For experimental and synthetic templates /////
+  //p.resize(1);
+  //p[0]=1.0;
+  //scaleSpaceToMaxArea(T,p);
+  
+  //p[0]=0.1;
+  //minimalWallLength(T,p);
+  
+  //p.resize(1);
+  //p[0]=1.0;
+  //wallLengthFromDistance(T,p);
+  
+  //p[0]=10.0;
+  //maximalWallLength(T,p);
+  //////////////////////////////////////////////////
 
-//  p.resize(1);
-// 	// Wall variables 0 0
-// 	p[0]=0.0;
-// 	addWallVariable(T,p,type);
-// 	addWallVariable(T,p,type);
-// 	// Direction 1 (already in .original files)
-//  	//p[0] = 1.0;
-//  	//addCellVariable(T,p,type);
-// 	//p[0] = 0.0;
-// 	//addCellVariable(T,p,type);
-//  	//addCellVariable(T,p,type);
-//  	//p[0] = 1.0;
-//  	//addCellVariable(T,p,type);
-// 	// Direction 2
-// 	p[0] = 1.0;
-//  	addCellVariable(T,p,type);
-// 	p[0] = 0.0;
-// 	addCellVariable(T,p,type);
-//  	addCellVariable(T,p,type);
-//  	p[0] = 1.0;
-//  	addCellVariable(T,p,type);
-// 	// Additional variables 1 1 0 1 1
-//  	addCellVariable(T,p,type);
-//  	addCellVariable(T,p,type);
-// 	p[0] = 0.0;
-//  	addCellVariable(T,p,type);
-// 	p[0] = 1.0;
-//  	addCellVariable(T,p,type);
-//  	addCellVariable(T,p,type);
-
-	// replace two and add three wall vars
-	p.resize(2);
-	p[0]=0.1;
-	p[1]=0;
-	setWallVariable(T,p,type);
-	p[1]=1;
-	setWallVariable(T,p,type);
-	p.resize(1);
- 	p[0] = 0.1;
-	addWallVariable(T,p,type);
-	addWallVariable(T,p,type);
-	addWallVariable(T,p,type);
-
-	// Add four cell vars
- 	//p[0] = 1.0;
-	//addCellVariable(T,p,type);
-	//addCellVariable(T,p,type);
-	//addCellVariable(T,p,type);
-	//addCellVariable(T,p,type);
-	
-	// For experimental template /////////////////////
-	//p.resize(3);
-	//p[0] = 2;// vertex
-	//p[1] = 2;// z
-	//p[2] = 0.0;// flip around 0
-	//flipVariable(T,p);
-	//p.resize(4);
-	//p[0] = 2;// vertex
-	//p[1] = 2;// z
-	//p[2] = 0.0;// move to 0
-	//p[3] = 1;// move min
-	//translateVariableToBorder(T,p);
-	//////////////////////////////////////////////////
-
- 	p.resize(1);
- 	p[0]=1.0;
- 	scaleSpaceToMaxArea(T,p);
-
- 	p[0]=0.1;
- 	minimalWallLength(T,p);
-	
- 	p.resize(1);
- 	p[0]=1.0;
- 	wallLengthFromDistance(T,p);
-
-	p[0]=10.0;
-	maximalWallLength(T,p);
-
-	//
+  //
   // Print init in specified format
-	//
-	std::string initFormat;
-	initFormat = myConfig::getValue("init_output_format",0);
-	if (initFormat.empty() || initFormat.compare("tissue")==0) {
-		std::cerr << "Printing init to standard out using tissue format." << std::endl;
-		T.printInit(std::cout);
-	}
-	else if (initFormat.compare("fem")==0) {
-		std::cerr << "Printing init to standard out using fem format." << std::endl;
-		std::cerr << "NOT YET!" << std::endl;
-		//T.printInitFem(std::cout);
-	}
-	else {
-		std::cerr << "Warning: main() - Format " << initFormat << " not recognized. "
-							<< "No init file written." << std::endl;
-	}
-	std::cerr << "Init manipulation done." << std::endl;
+  //
+  std::string initFormat;
+  initFormat = myConfig::getValue("init_output_format",0);
+  if (initFormat.empty() || initFormat.compare("tissue")==0) {
+    std::cerr << "Printing init to standard out using tissue format." << std::endl;
+    T.printInit(std::cout);
+  }
+  else if (initFormat.compare("fem")==0) {
+    std::cerr << "Printing init to standard out using fem format." << std::endl;
+    std::cerr << "NOT YET!" << std::endl;
+    //T.printInitFem(std::cout);
+  }
+  else {
+    std::cerr << "Warning: main() - Format " << initFormat << " not recognized. "
+	      << "No init file written." << std::endl;
+  }
+  std::cerr << "Init manipulation done." << std::endl;
 }
 
 int addCellVariable(Tissue &T,std::vector<double> &p,std::string &type)
@@ -515,64 +517,64 @@ int flipVariable(Tissue &T,std::vector<double> &p)
 
 int translateVariableToBorder(Tissue &T,std::vector<double> &p)
 {
-	assert( p.size()==4 );
+  assert( p.size()==4 );
 
-	size_t flag = size_t(p[0]);
-	size_t index = size_t(p[1]);
-	double border = p[2];
-	size_t maxMinFlag = size_t(p[3]);
+  size_t flag = size_t(p[0]);
+  size_t index = size_t(p[1]);
+  double border = p[2];
+  size_t maxMinFlag = size_t(p[3]);
 
-	if (flag==0) {//cell variable
-		std::cerr << "translateVariableToBorder() not implemented for cells yet." << std::endl;
-		exit(-1);
-	}
-	else if (flag==1) {//wall variable
-		std::cerr << "translateVariableToBorder() not implemented for walls yet." << std::endl;
-		exit(-1);
-	}
-	else if (flag==2) {//vertex variable (position)
-	  assert(T.vertex(0).numPosition()>index);
-	  size_t numV = T.numVertex();
-	  
-	  if (maxMinFlag==0) {//translate such that max is at given border
-	    double max = T.vertex(0).position(index);
-	    for (size_t i=1; i<numV; ++i) {
-	      if (T.vertex(i).position(index)>max)
-		max=T.vertex(i).position(index);
-	    }
-	    double delta = max-border;
-	    for (size_t i=0; i<numV; ++i) {
-	      T.vertex(i).setPosition(index,T.vertex(i).position(index) - delta);
-	    }
-	  }
-	  else if (maxMinFlag==1) {//translate such that min is at given border
-	    double min = T.vertex(0).position(index);
-	    for (size_t i=1; i<numV; ++i) {
-	      if (T.vertex(i).position(index)<min)
-		min=T.vertex(i).position(index);
-	    }
-	    double delta = min-border;
-	    for (size_t i=0; i<numV; ++i) {
-	      T.vertex(i).setPosition(index,T.vertex(i).position(index) - delta);
-	    }
-	  }
-	  else {
-	    std::cerr << "translateVariableToBorder() wrong minmaxflag given as p[3]." << std::endl;
-	    exit(-1);
-	  }
-	  std::cerr << "translateVariableToBorder() Vertex positions in dimension " << index 
-		    << " translated such that ";
-	  if (maxMinFlag==0)
-	    std::cerr << "max";
-	  else
-	    std::cerr << "min";
-	  std::cerr << " translated to " << border << "." << std::endl;
-	  return 0;
-	}
-	else {
-	  std::cerr << "translateVariableToBorder() wrong flag given as p[0]." << std::endl;
-	  exit(-1);
-	}
+  if (flag==0) {//cell variable
+    std::cerr << "translateVariableToBorder() not implemented for cells yet." << std::endl;
+    exit(-1);
+  }
+  else if (flag==1) {//wall variable
+    std::cerr << "translateVariableToBorder() not implemented for walls yet." << std::endl;
+    exit(-1);
+  }
+  else if (flag==2) {//vertex variable (position)
+    assert(T.vertex(0).numPosition()>index);
+    size_t numV = T.numVertex();
+    
+    if (maxMinFlag==0) {//translate such that max is at given border
+      double max = T.vertex(0).position(index);
+      for (size_t i=1; i<numV; ++i) {
+	if (T.vertex(i).position(index)>max)
+	  max=T.vertex(i).position(index);
+      }
+      double delta = max-border;
+      for (size_t i=0; i<numV; ++i) {
+	T.vertex(i).setPosition(index,T.vertex(i).position(index) - delta);
+      }
+    }
+    else if (maxMinFlag==1) {//translate such that min is at given border
+      double min = T.vertex(0).position(index);
+      for (size_t i=1; i<numV; ++i) {
+	if (T.vertex(i).position(index)<min)
+	  min=T.vertex(i).position(index);
+      }
+      double delta = min-border;
+      for (size_t i=0; i<numV; ++i) {
+	T.vertex(i).setPosition(index,T.vertex(i).position(index) - delta);
+      }
+    }
+    else {
+      std::cerr << "translateVariableToBorder() wrong minmaxflag given as p[3]." << std::endl;
+      exit(-1);
+    }
+    std::cerr << "translateVariableToBorder() Vertex positions in dimension " << index 
+	      << " translated such that ";
+    if (maxMinFlag==0)
+      std::cerr << "max";
+    else
+      std::cerr << "min";
+    std::cerr << " translated to " << border << "." << std::endl;
+    return 0;
+  }
+  else {
+    std::cerr << "translateVariableToBorder() wrong flag given as p[0]." << std::endl;
+    exit(-1);
+  }
 }
 
 		
