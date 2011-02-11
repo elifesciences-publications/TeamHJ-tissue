@@ -1,10 +1,10 @@
-///
-/// Filename     : vertex.cc
-/// Description  : A class describing a vertex
-/// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
-/// Created      : April 2006
-/// Revision     : $Id:$
-///
+//
+// Filename     : vertex.cc
+// Description  : A class describing a vertex
+// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+// Created      : April 2006
+// Revision     : $Id$
+//
 #include <cmath>
 #include <cstdlib>
 #include <vector>
@@ -55,20 +55,20 @@ int Vertex::removeWall( Wall* val )
 
 int Vertex::isBoundary(Cell *background) const
 {
-	for (size_t wI=0; wI<numWall(); ++wI)
-		if (wall_[wI]->hasCell(background))
-			return 1;
-	return 0;
+  for (size_t wI=0; wI<numWall(); ++wI)
+    if (wall_[wI]->hasCell(background))
+      return 1;
+  return 0;
 }
 
 void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &wallData, std::vector<size_t> wallForceIndexes)
+				      std::vector< std::vector<double> > &wallData, 
+				      std::vector<size_t> wallForceIndexes)
 {
   size_t dimensions = vertexData[0].size();
   size_t numberOfWalls = wall_.size();
   
-  // Copy wall force data to temporary container and calculate mean values.
-  
+  // Copy wall force data to temporary container and calculate mean values.  
   std::vector< std::vector<double> > walls(2 * numberOfWalls);
   for (size_t i = 0; i < walls.size(); ++i) {
     walls[i].resize(dimensions);
@@ -87,102 +87,102 @@ void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertex
     double A = 0.0;
     
     for (size_t j = 0; j < dimensions; ++j) {
-	    if (v1 == this) {
-	      n[j] = vertexData[v2->index()][j] - vertexData[v1->index()][j];
-	    } else {
-	      n[j] = vertexData[v1->index()][j] - vertexData[v2->index()][j];
-	    }
-	    A += n[j] * n[j];
-	  }
-	  
-	  A = std::sqrt(A);
-	  
-	  for (size_t j = 0; j < dimensions; ++j) {
-	    n[j] /= A;
-	  }
-	  
-	  for (size_t j = 0; j < dimensions; ++j) {
-	    walls[2 * i + 0][j] = force * n[j];
-	    walls[2 * i + 1][j] = -force * n[j];
-	  }
-	}
-	
-	//
-	// Mean is always equal to zero so no need to subtract it.
-	//
-
- 	// Calculate the correlation matrix.
-	
- 	std::vector< std::vector<double> > R(dimensions);
-
-	for (size_t i = 0; i < dimensions; ++i) {
-	  R[i].resize(dimensions);
-	  for (size_t j = 0; j < dimensions; ++j) {
-	    R[i][j] = 0.0;
-		}
-	}
-	
- 	for (size_t k = 0; k < dimensions; ++k) {
- 		for (size_t l = 0; l < dimensions; ++l) {
- 			for (size_t i = 0; i < numberOfWalls; ++i) {
- 				R[k][l] += walls[i][k] * walls[i][l];
- 			}
- 			R[k][l] /= numberOfWalls;
- 		}
- 	}
-
- 	// Find the eigenvectors with the two greatests corresponding eigenvalues.
-
- 	std::vector< std::vector<double> > candidates;
-
- 	std::vector< std::vector<double> > V;
- 	std::vector<double> d;
-
-	myMath::jacobiTransformation(R , V, d);
-       
- 	double max = 0.0;
- 	size_t max1 = d.size();
-
- 	max = 0.0;
- 	for (size_t i = 0; i < d.size(); ++i) {
- 		if (std::abs(d[i]) >= max) {
- 			max1 = i;
- 			max = std::abs(d[i]);
- 		}
- 	}
-
- 	if (max1 == d.size()) {
-	  std::cerr << "Vertex::calculateStressDirection(): Unexpected behaviour." << std::endl;
-	  exit(EXIT_FAILURE);
- 	}
-
-  	// Find orthonormal basis.
- 
-	std::vector< std::vector<double> > E_(1);
-	E_[0].resize(dimensions);
-
- 	for (size_t i = 0; i < dimensions; ++i) {
-  		//		E_[0][i] = V[max1][i];
- 		E_[0][i] = V[i][max1];
- 	}
-	
- 	for (size_t i = 0; i < E_.size(); ++i) {
- 		double sum = 0.0;
- 		for (size_t j = 0; j < dimensions; ++j) {
- 			sum += E_[i][j] * E_[i][j];
- 		}
- 		for (size_t j = 0; j < dimensions; ++j) {
- 			E_[i][j] /= std::sqrt(sum);
- 		}
- 	}	
-
-	stressDirection_.resize(dimensions);
-	for (size_t i = 0; i < dimensions; ++i) {
-		stressDirection_[i] = d[max1] * E_[0][i];
-	}
+      if (v1 == this) {
+	n[j] = vertexData[v2->index()][j] - vertexData[v1->index()][j];
+      } else {
+	n[j] = vertexData[v1->index()][j] - vertexData[v2->index()][j];
+      }
+      A += n[j] * n[j];
+    }
+    
+    A = std::sqrt(A);
+    
+    for (size_t j = 0; j < dimensions; ++j) {
+      n[j] /= A;
+    }
+    
+    for (size_t j = 0; j < dimensions; ++j) {
+      walls[2 * i + 0][j] = force * n[j];
+      walls[2 * i + 1][j] = -force * n[j];
+    }
+  }
+  
+  //
+  // Mean is always equal to zero so no need to subtract it.
+  //
+  
+  // Calculate the correlation matrix.
+  
+  std::vector< std::vector<double> > R(dimensions);
+  
+  for (size_t i = 0; i < dimensions; ++i) {
+    R[i].resize(dimensions);
+    for (size_t j = 0; j < dimensions; ++j) {
+      R[i][j] = 0.0;
+    }
+  }
+  
+  for (size_t k = 0; k < dimensions; ++k) {
+    for (size_t l = 0; l < dimensions; ++l) {
+      for (size_t i = 0; i < numberOfWalls; ++i) {
+	R[k][l] += walls[i][k] * walls[i][l];
+      }
+      R[k][l] /= numberOfWalls;
+    }
+  }
+  
+  // Find the eigenvectors with the two greatests corresponding eigenvalues.
+  
+  std::vector< std::vector<double> > candidates;
+  
+  std::vector< std::vector<double> > V;
+  std::vector<double> d;
+  
+  myMath::jacobiTransformation(R , V, d);
+  
+  double max = 0.0;
+  size_t max1 = d.size();
+  
+  max = 0.0;
+  for (size_t i = 0; i < d.size(); ++i) {
+    if (std::abs(d[i]) >= max) {
+      max1 = i;
+      max = std::abs(d[i]);
+    }
+  }
+  
+  if (max1 == d.size()) {
+    std::cerr << "Vertex::calculateStressDirection(): Unexpected behaviour." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  // Find orthonormal basis.
+  
+  std::vector< std::vector<double> > E_(1);
+  E_[0].resize(dimensions);
+  
+  for (size_t i = 0; i < dimensions; ++i) {
+    //		E_[0][i] = V[max1][i];
+    E_[0][i] = V[i][max1];
+  }
+  
+  for (size_t i = 0; i < E_.size(); ++i) {
+    double sum = 0.0;
+    for (size_t j = 0; j < dimensions; ++j) {
+      sum += E_[i][j] * E_[i][j];
+    }
+    for (size_t j = 0; j < dimensions; ++j) {
+      E_[i][j] /= std::sqrt(sum);
+    }
+  }	
+  
+  stressDirection_.resize(dimensions);
+  for (size_t i = 0; i < dimensions; ++i) {
+    stressDirection_[i] = d[max1] * E_[0][i];
+  }
 }
 
 std::vector<double> Vertex::getStressDirection(void) const
 {
-	return stressDirection_;
+  return stressDirection_;
 }

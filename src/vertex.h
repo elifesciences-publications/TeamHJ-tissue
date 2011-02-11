@@ -1,10 +1,10 @@
-/**
- * Filename     : vertex.h
- * Description  : A class describing a vertex
- * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
- * Created      : April 2006
- * Revision     : $Id:$
- */
+//
+// Filename     : vertex.h
+// Description  : A class describing a vertex
+// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+// Created      : April 2006
+// Revision     : $Id$
+//
 #ifndef VERTEX_H
 #define VERTEX_H
 
@@ -17,8 +17,9 @@
 class Cell;
 class Wall;
 
-//!Describes the properties of a vertex including updatable position
-/*!*/ 
+///
+/// @brief Defines the properties of a (1D) vertex element, including updatable spatial position
+///
 class Vertex {
   
  private:
@@ -31,8 +32,7 @@ class Vertex {
   
   std::vector<double> position_;
   
-	/** The stress direction. */
-	std::vector<double> stressDirection_;
+  std::vector<double> stressDirection_;
   
  public:
   
@@ -41,73 +41,111 @@ class Vertex {
   
   ~Vertex();
   
-  //!Returns the cell index
+  ///
+  /// @brief Returns the vertex index
+  ///
+  /// The index may be used when checking connectivity. In normal situations, the indices
+  /// are automatically generated when creating a Tissue.
+  ///
   inline size_t index() const;
-  //!The cell id
+  ///
+  /// @brief The vertex id
+  ///
+  /// The id/name is optional and is not used in any update functions.
+  ///
   inline std::string id() const;
-
-  //!Number of cells connected to the vertex
+  ///
+  /// @brief Number of cells connected to the vertex
+  ///
   inline size_t numCell() const;
-  //!Number of walls connected to the vertex
+  ///
+  /// @ brief Number of walls connected to the vertex
+  ///
   inline size_t numWall() const;
-  //!Number of dimensions for the position vector
+  ///
+  /// @brief Number of dimensions for the position vector
+  ///
+  /// For most usage, the number of dimensions should be 2 or 3. Tissue uses this to
+  /// find out its dimension.
+  ///
+  /// @see Tissue::dimension()
+  ///
   inline size_t numPosition() const;
-
-//!Returns a reference to the cell vector
+  ///
+  /// @brief Returns a reference to the cell vector
+  ///
+  /// A vertex is connected to a number of Cells (at least one) stored in a vector. 
+  /// There are no formal restrictions on the size of this vector.
+  ///
+  /// @see Cell
+  ///
   inline const std::vector<Cell*> & cell() const;
-//!Returns the cell pointer from position k
+  ///
+  /// @brief Returns the cell pointer from position k in the Cell vector for the vertex.
+  ///
+  /// @see cell()
+  ///
   inline Cell* cell( size_t k );
-//!Returns a reference to the wall vector
+  ///
+  /// @brief Returns a reference to the wall vector
+  ///
+  /// A vertex is connected to a number of Walls (at least two) stored in a vector. 
+  /// There are no formal restrictions on the size of this vector.
+  /// 
+  /// @see Wall
+  ///
   inline const std::vector<Wall*> & wall() const;
-//!Returns the wall pointer from position k
+  ///
+  /// @brief Returns the wall pointer from position k in the Wall vector for the Vertex.
+  ///
   inline Wall* wall( size_t k ) const;
   
-//!The position vector
+  //!The position vector
   inline const std::vector<double> & position() const;
-//!The position in dimension d
+  //!The position in dimension d
   inline double position(size_t d);
-
-//!Sets the index variable
+  
+  //!Sets the index variable
   inline void setIndex( size_t value );
-//!Sets a cell pointer
+  //!Sets a cell pointer
   inline void setCell( size_t index,Cell* val );
-//!Sets pointers to cells
+  //!Sets pointers to cells
   inline void setCell( std::vector<Cell*> &val );
-//!Adds a cell to the vertex
+  //!Adds a cell to the vertex
   inline void addCell( Cell* val );
-//!Removes a cell from the vertex
+  //!Removes a cell from the vertex
   int removeCell( Cell* val );
-//!Sets a wall pointer
+  //!Sets a wall pointer
   inline void setWall( size_t index,Wall* val );
-//!Sets pointers to walls
+  //!Sets pointers to walls
   inline void setWall( std::vector<Wall*> &val );
-//!Adds a wall to the vertex
+  //!Adds a wall to the vertex
   inline void addWall( Wall* val );
-//!Removes a wall from the vertex
+  //!Removes a wall from the vertex
   int removeWall( Wall* val );
-//!Sets the position from a vector
+  //!Sets the position from a vector
   inline void setPosition(std::vector<double> &pos);
-	///
-	/// @brief Sets a vertex position in dimension d.
-	///
-	inline void setPosition(size_t d, double pos);
-	///
-	/// @brief Check if the vertex is at the boundary of the tissue.
-	///
-	/// A boundary vertex is defined from whether any of the connected walls is
-	/// connected to the background.
-	///
-	/// @para Cell* background is a pointer to the tissue background.
-	///
-	/// @return 1 if boundary and 0 otherwise.
-	int isBoundary(Cell *background) const;
-
-	/** Calculate stress direction for the vertex. */
-	void calculateStressDirection(std::vector< std::vector<double> > &vertexData, 
-		std::vector< std::vector<double> > &wallData, std::vector<size_t> wallForceIndexes);
-
-	/** Get stress direction for the vertex. */ 
-	std::vector<double> getStressDirection(void) const;
+  ///
+  /// @brief Sets a vertex position in dimension d.
+  ///
+  inline void setPosition(size_t d, double pos);
+  ///
+  /// @brief Check if the vertex is at the boundary of the tissue.
+  ///
+  /// A boundary vertex is defined from whether any of the connected walls is
+  /// connected to the background.
+  ///
+  /// @para Cell* background is a pointer to the tissue background.
+  ///
+  /// @return 1 if boundary and 0 otherwise.
+  int isBoundary(Cell *background) const;
+  
+  /** Calculate stress direction for the vertex. */
+  void calculateStressDirection(std::vector< std::vector<double> > &vertexData, 
+				std::vector< std::vector<double> > &wallData, std::vector<size_t> wallForceIndexes);
+  
+  /** Get stress direction for the vertex. */ 
+  std::vector<double> getStressDirection(void) const;
 };
 
 inline size_t Vertex::index() const { return index_; }
