@@ -545,63 +545,61 @@ double Cell::calculateVolume( size_t signFlag )
 	}
 }
 
-//!Calculates the volume from vertex positions
-double Cell::calculateVolume( std::vector< std::vector<double> > 
-															&vertexData, size_t signFlag ) {
-	
+double Cell::calculateVolume( std::vector< std::vector<double> > 				                                  &vertexData, size_t signFlag ) 
+{	
   assert( numVertex() );
   size_t dimension = vertex(0)->numPosition();
   
-	if( dimension == 2 ) {
-		//Assuming vertices are sorted
-		double tmpVolume=0.0;
-		for( size_t k=0 ; k<numVertex() ; ++k ) {
-			size_t v1I = vertex(k)->index();
-			size_t v2I = vertex((k+1)%(numVertex()))->index();
-			tmpVolume += vertexData[v1I][0]*vertexData[v2I][1]-
-				vertexData[v1I][1]*vertexData[v2I][0];
-		}
-		tmpVolume *= 0.5;
-		volume_ = std::fabs(tmpVolume);
-		if( signFlag ) 
-			return tmpVolume;
-		else
-			return volume_;
-	}
-	else if (dimension==3) {
-		//Caveat:Old version to be changed to projected version of 2D variant
-		//Calculate cell position from vertices
-		std::vector<double> xCenter = positionFromVertex(vertexData);
-		assert( xCenter.size()==dimension );
-		
-		//Calculate volume from vertex positions for each wall
-		volume_=0.0;
-		for( size_t k=0 ; k<numWall() ; ++k ) {
-			Wall *tmpWall = wall(k);
-			size_t v1I = tmpWall->vertex1()->index();
-			size_t v2I = tmpWall->vertex2()->index();
-			std::vector<double> r1(dimension),r2(dimension);
-			for( size_t d=0 ; d<dimension ; ++d ) {
-				r1[d] = vertexData[v1I][d]-xCenter[d];
-				r2[d] = vertexData[v2I][d]-xCenter[d];
-			}
-			double triArea=0.0;
-			for( size_t d=0 ; d<dimension ; ++d ) {
-				size_t d1 = (d+1)%dimension;
-				size_t d2 = (d+2)%dimension;
-				double r1crossr2 = r1[d1]*r2[d2]-r1[d2]*r2[d1];
-				triArea += r1crossr2*r1crossr2;
-			}
-			triArea = std::sqrt(triArea);
-			volume_ += 0.5*triArea;
-		}
-		return volume_;
-	}
-	else {
-		std::cerr << "Cell::calculateVolume(vertexData) Only applicable for two or three"
-							<< " dimensions." << std::endl;
-		exit(-1);
-	}
+  if( dimension == 2 ) {
+    //Assuming vertices are sorted
+    double tmpVolume=0.0;
+    for( size_t k=0 ; k<numVertex() ; ++k ) {
+      size_t v1I = vertex(k)->index();
+      size_t v2I = vertex((k+1)%(numVertex()))->index();
+      tmpVolume += vertexData[v1I][0]*vertexData[v2I][1]-
+	vertexData[v1I][1]*vertexData[v2I][0];
+    }
+    tmpVolume *= 0.5;
+    volume_ = std::fabs(tmpVolume);
+    if( signFlag ) 
+      return tmpVolume;
+    else
+      return volume_;
+  }
+  else if (dimension==3) {
+    //Caveat:Old version to be changed to projected version of 2D variant
+    //Calculate cell position from vertices
+    std::vector<double> xCenter = positionFromVertex(vertexData);
+    assert( xCenter.size()==dimension );
+    
+    //Calculate volume from vertex positions for each wall
+    volume_=0.0;
+    for( size_t k=0 ; k<numWall() ; ++k ) {
+      Wall *tmpWall = wall(k);
+      size_t v1I = tmpWall->vertex1()->index();
+      size_t v2I = tmpWall->vertex2()->index();
+      std::vector<double> r1(dimension),r2(dimension);
+      for( size_t d=0 ; d<dimension ; ++d ) {
+	r1[d] = vertexData[v1I][d]-xCenter[d];
+	r2[d] = vertexData[v2I][d]-xCenter[d];
+      }
+      double triArea=0.0;
+      for( size_t d=0 ; d<dimension ; ++d ) {
+	size_t d1 = (d+1)%dimension;
+	size_t d2 = (d+2)%dimension;
+	double r1crossr2 = r1[d1]*r2[d2]-r1[d2]*r2[d1];
+	triArea += r1crossr2*r1crossr2;
+      }
+      triArea = std::sqrt(triArea);
+      volume_ += 0.5*triArea;
+    }
+    return volume_;
+  }
+  else {
+    std::cerr << "Cell::calculateVolume(vertexData) Only applicable for two or three"
+	      << " dimensions." << std::endl;
+    exit(-1);
+  }
 }
 
 std::vector<double> Cell::positionFromVertex() 
