@@ -3,7 +3,7 @@
  * Description  : A class describing a two-dimensional tissue of cells
  * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
  * Created      : April 2006
- * Revision     : $Id:$
+ * Revision     : $Id$
  */
 #ifndef TISSUE_H
 #define TISSUE_H
@@ -21,8 +21,16 @@
 #include "vertex.h"
 #include "wall.h"
 
-//!Describes the properties of a two-dimensional cell tissue
-/*!*/ 
+///
+/// @brief Defines the properties of a two-dimensional cell tissue model
+///
+/// The Tissue handles the update and information of the cells, walls,
+/// vertices and species (molecules). It is
+/// the 'top' class for the defined model. It includes reactions
+/// updating more than one species simultaneously.
+/// Note: currently the tissue is restricted to hold up to 10000 cells, 
+/// walls and vertices, such that performance increases as memory is reserved.
+///
 class Tissue {
   
  private:
@@ -45,27 +53,55 @@ class Tissue {
 	///
 	/// @brief Empty constructor
 	///
+	/// The empty constructor reserves memory for the cells, walls
+	/// and vertices, and sets the background 'cell'.
+	///
   Tissue();
 	///
 	/// @brief Copy constructor
 	///
-  Tissue( const Tissue & tissueCopy );
+	/// Is not yet properly defined and should not be used. It does the
+	/// same thing as the empty constructor.
+  ///
+	Tissue( const Tissue & tissueCopy );
 	///
 	/// @brief Constructor from vectors of cells, walls and vertices
+	///
+	/// Reserves memory, creates a background 'cell' and copy the vectors of 
+	/// cells, walls, and vertices into the tissue.
 	///
   Tissue( const std::vector<Cell> &cellVal,
 					const std::vector<Wall> &wallVal,
 					const std::vector<Vertex> &vertexVal );
 	///
-	/// @brief Constructor from reading init file
+	/// @brief Constructor from reading an init file
+	///
+	/// Reserves memory, creates a background 'cell', and then calls the 
+	/// readInit() which reads the cell,
+	/// wall and vertex information and store it in the tissue.
+	///
+	/// @see Tissue::readInit(const char*,int)
 	///
   Tissue( const char *initFile, int verbose=0 );
 	///
-	/// @brief Constructor from reading init file
+	/// @brief Constructor from reading an init file
+	///
+	/// Reserves memory, creates a background 'cell', and then calls the 
+	/// readInit() which reads the cell,
+	/// wall and vertex information and store it in the tissue.
+	///
+	/// @see Tissue::readInit(std::string,int)
 	///
   Tissue( std::string initFile, int verbose=0 );
 	///
-	/// @brief Constructor from cell-, wall- and vertex-data extracted from output data file
+	/// @brief Constructor from data extracted from an output data file
+	///
+	/// Reserves memory, creates a background 'cell', and then use the data
+	/// stored in the vectors to create cells, walls and vertices for the 
+	/// tissue, including connection (neighborhood) information.
+	/// Also checks that the connectivity is proper.
+	///
+	/// @see Tissue::checkConnectivity()
 	///
 	Tissue( std::vector< std::vector<double> > &cellData,
 					std::vector< std::vector<double> > &wallData,
@@ -74,104 +110,449 @@ class Tissue {
 					std::vector< std::vector<size_t> > &wallVertex,
 					int verbose=0);
 	///
-	/// @brief Destructor
+	/// @brief Destructor (currently empty)
 	///
   ~Tissue();
-
+	///
+	/// @brief Opens the file initFile and then calls readInit(std::istream&,int)
+	///
+	/// @see Tissue::readInit(std::istream&,int)
+	///
   void readInit(const char *initFile,int verbose=0);
+	///
+	/// @brief Opens the file initFile and then calls readInit(std::istream&,int)
+	///
+	/// @see Tissue::readInit(std::istream&,int)
+	///
   void readInit(std::string initFile,int verbose=0);
+	///
+	/// @brief Reads an initial tissue configuration from an open file
+	///
+	/// This function implements the reading of an init file. It first reads
+	/// some size information, then the connectivity for each wall. Then follows
+	/// the vertex positions, wall length and variables, and cell variables.
+	/// An init file has the format:
+	///
+	/// @verbatim
+	/// N_cell N_wall N_vertex
+	/// 
+	/// w_i c_i1 c_i2 v_i1 v_i2
+	/// ...
+	///
+	/// N_vertex dimension
+	/// x_i y_i (z_i)
+	/// ...
+	///
+	/// N_wall N_length N_wallvar
+	/// l_i v_i1 [v_i2] ...
+	/// ...
+	///
+	/// N_cell N_cellvar
+	/// v_i1 [v_i2] ...
+	/// ...
+	///
+	/// @endverbatim
+	///
+	/// N_cell, N_wall, N_vertex - number of cells, walls, vertices.
+	///
+	/// w_i - wall index (0,1,...), c_i1,c_i2 - the two cells connected to wall i 
+	/// (the real indices starts with 0,1,... and if connected to the background
+	/// the index is -1),
+	/// v_i1, v_i2 - the two vertices connected to wall i (indices 0,1,...).
+	///
+	/// N_vertex dimension - number of vertices (again) and dimension. The
+	/// dimension has to be two or three.
+	/// 
+	/// x_i, y_i, (z_i) - the positions for all vertices (z is given if 
+	/// dimension=3).
+	///
+	/// N_wall, N_length, N_wallvar - Number of walls (again), Number of
+	/// (resting) lengths for each wall (in the current implementation
+	/// it has to be 1), number of variables for each wall.
+	///
+	/// l_i, v_i1, [v_in] - for each wall a length and a variable vector is read.
+	///
+	/// N_cell, N_cellvar - Number of cells (again), number of variables for
+	/// each cell.
+	///
+	/// v_i1, [v_in] - for each cell a variable vector is to be provided.
+	///
+	/// Comments can be included in the file by starting a row with # (not yet). 
+	/// The connectivity/neighborhood is checked after the tissue is read.
+	/// Caveat:
+	/// No check on the validity of the initial variable values provided is
+	/// is done.
+	/// 
+	/// @see Tissue::checkConnectivity(int)
+	///
   void readInit(std::istream &IN,int verbose=0);
+	///
+	/// @brief Reads an initial tissue configuration in merryproj format
+	///
+	/// Reads an initial tissue configuration from the file initFile. It 
+	/// assumes that the format is the format provided by the merryproj software.
+	/// See the function implementation for the format.
+	///
   void readMerryInit(const char *initFile,int verbose=0);
-
+	///
+	/// @brief Opens the file modelFile and then calls readModel(std::ifstream&,int)
+	///
+	/// @see Tissue::readModel(std::ifstream&,int)
+	///
   void readModel(const char *modelFile,int verbose=0);
+	///
+	/// @brief Opens the file modelFile and then calls readModel(std::ifstream&,int)
+	///
+	/// @see Tissue::readModel(std::ifstream&,int)
+	///
   void readModel(std::string modelFile,int verbose=0);
+	///
+	/// @brief Reads a tissue model from an open file
+	///
+	/// This is the readModel function implementing the actual
+	/// reading. First it reads a number of size parameters. Then it 
+	/// reads all reactions (rules for updating variables), followed by
+	/// all compartmentChanges (rules for adding/dividing and removing cells).
+	/// Finally it reads directions (rules for time update and division update
+	/// for directional vectors defined for cells). It uses addReaction(),
+	/// addCompartmentChange(), and Direction::readDirection() respectively
+	/// to read the information for each entity.
+	///
+	/// Here follows a detailed discussion on the format of the model file,
+	/// divided into reasonable sub-parts. First, the number of entities are read:
+	///
+	/// @verbatim
+	/// N_reaction N_compChange N_direction
+	/// @endverbatim
+	///
+	/// N_reaction - number of reactions to be read. N_compChange - number
+	/// of compartment changes to be read. N_direction - number of directions 
+	/// in the model file (can be 0 or 1 in the current implementation). 
+	///
+	/// Then N_reaction reactions are read in the format:
+	///
+	/// @verbatim
+	/// reaction1 N_p^{r1} N_{il}^{r1} N_{i1}^{r1} ...
+	/// p_1^{r1} p_2^{r1} ...
+	/// i_{11}^{r1} i_{12}^{r1} ...
+	/// i_{21}^{r1} i_{22}^{r1} ...
+	/// ...
+	/// @endverbatim
+	///
+	/// Possible reactions can be found among the classes inheriting
+	/// the class BaseReaction.
+	///
+	/// Then N_compChange compartment changes are read in the format:
+	///
+	/// @verbatim
+	/// compartmentChange1 N_p^{r1} N_{il}^{r1} N_{i1}^{r1} ...
+	/// p_1^{r1} p_2^{r1} ...
+	/// i_{11}^{r1} i_{12}^{r1} ...
+	/// i_{21}^{r1} i_{22}^{r1} ...
+	/// ...
+	/// @endverbatim
+	///
+	/// Possible compartment changes can be found among the classes inheriting
+	/// the class BaseCompartmentChange.
+	///
+	/// Finally, if N_direction=1 rules for defining a cell direction is read:
+	///
+	/// @verbatim
+	///  ...
+	/// ...
+	/// @endverbatim
+	///
+	/// Available (time) update rules and division rules for directions can be 
+	/// found in classes inheriting BaseDirectionUpdate and 
+	/// BaseDirectionDivision.
+	///
+	/// Comments can be included in the file by starting a row with # (not 
+	/// yet). Caveat:
+	/// No complete check on the validity of the provided values are given.
+	/// 
+	/// @see addReaction(std::ifstream&)
+	/// @see addCompartmentChange(std::ifstream&)
+	/// @see Direction::readReaction(std::ifstream&)
+	/// @see BaseReaction
+	/// @see BaseCompartmentChange
+	/// @see Direction
+	/// @see BaseDirectionUpdate
+	/// @see BaseDirectionDivision
+	///
   void readModel(std::ifstream &IN,int verbose=0);
-  
+  ///
+	/// @brief Creates a tissue from a vector of sphere data
+	///
+	/// Caveat: not fully tested.
+	///
   void createTissueFromSpheres(std::vector< std::vector<double> > &y,
 			       double rFac=1.0, int verbose=0);
+  ///
+	/// @brief Creates a tissue from Voronoi data
+	///
+	/// Caveat: not fully tested.
+	///
   void createTissueFromVoronoi(std::vector< std::vector<double> > &vertexPos,
 			       std::vector< std::vector<size_t> > &cellVertex,
 			       int verbose=0);
-  
-  
+  ///
+	/// @brief The tissue name
+	///
   inline std::string id() const;
   //inline double volume() const;
   //inline size_t mitosisFlag() const;
-  
+	///
+	/// @brief Returns the number of cells in the tissue
+	///
   inline size_t numCell() const;
+	///
+	/// @brief Returns the number of walls in the tissue
+	///
   inline size_t numWall() const;
+	///
+	/// @brief Returns the number of vertices in the tissue
+	///
   inline size_t numVertex() const;
+	///
+	/// @brief Returns the number of reactions in the tissue model
+	///
   inline size_t numReaction() const;
+	///
+	/// @brief Returns the number of compartmentChanges in the tissue model
+	///
   inline size_t numCompartmentChange() const;
+	///
+	/// @brief Returns the number of directionalWalls in the tissue model
+	///
 	inline size_t numDirectionalWall() const;
-
+	///
+	/// @brief Returns the directionalWall with index i
+	///
 	inline size_t directionalWall(size_t i) const;
+	///
+	/// @brief Returns a (const) reference to the tissue cell vector
+	///
   inline const std::vector<Cell> & cell() const;
+	///
+	/// @brief Returns a (const) reference to cell i of the tissue
+	///
   inline const Cell & cell(size_t i) const;
+	///
+	/// @brief Returns a reference to cell i of the tissue
+	///
   inline Cell & cell(size_t i);
+	///
+	/// @brief Returns a pointer to cell i of the tissue
+	///
 	inline Cell * cellP(size_t i);
+	///
+	/// @brief Adds a cell at the end of the tissue cell vector
+	///
   inline void addCell( Cell val );
+	///
+	/// @brief Removes cell i from the tissue and updates the connections
+	///
   inline void removeCell( size_t index );
+	///
+	/// @brief Returns a pointer to the background 'cell'
+	///
   inline Cell* background();
+	///
+	/// @brief Returns a pointer to the tissue direction
+	///
 	inline Direction* direction();
+	///
+	/// @brief Returns a reference to the tissue wall vector
+	///
   inline const std::vector<Wall> & wall() const;
+	///
+	/// @brief Returns a (const) reference to wall i of the tissue
+	///
   inline const Wall & wall(size_t i) const;
+	///
+	/// @brief Returns a reference to wall i of the tissue
+	///
   inline Wall & wall(size_t i);
+	///
+	/// @brief Returns a pointer to wall i of the tissue
+	///
   inline Wall * wallP(size_t i);
+	///
+	/// @brief Adds a wall at the end of the tissue wall vector
+	///
   inline void addWall( Wall val );
+	///
+	/// @brief Removes wall i from the tissue and updates connectivity
+	///
   inline void removeWall( size_t index );
+	///
+	/// @brief Returns a reference to the tissue vertex vector
+	///
   inline const std::vector<Vertex> & vertex() const;
+	///
+	/// @brief Returns a (const) reference to vertex i of the tissue
+	///
   inline const Vertex & vertex(size_t i) const;
+	///
+	/// @brief Returns a reference to vertex i of the tissue
+	///
   inline Vertex & vertex(size_t i);
+	///
+	/// @brief Returns a pointer to vertex i of the tissue
+	///
   inline Vertex * vertexP(size_t i);
+	///
+	/// @brief returns the number of spatial dimensions of the tissue.
+	///
+	/// This function gets the number of spatial dimensions for the
+	/// first vertex in the tissue (which is the same for all vertices). 
+	/// The number of spatial dimensions for the tissue has to be 2 or 3.
+	///
 	inline size_t numDimension();
+	///
+	/// @brief Adds a vertex to the tissue at the end of the vector.
+	/// 
   inline void addVertex( Vertex val );
+	///
+	/// @brief Removes vertex index from the tissue and updates connectivity
+	///
   inline void removeVertex( size_t index );
 	///
 	/// @brief Removes a two-vertex and updates connecting walls and cells.
 	///
 	/// A two-vertex has only two connected walls (cells). This function removes
 	/// such a vertex, and merge the two connecting walls into one, and removes
-	/// the connections to the vertex from connecting cells.
+	/// the connections to the vertex from connecting cells. This is a way to
+	/// remove ill-defined vertices from an init file, or after division.
 	///
   void removeTwoVertex( size_t index );
+	///
+	/// @brief Returns a pointer to reaction i in the tissue model
+	///
   inline BaseReaction* reaction(size_t i) const;
+	///
+	/// @brief Returns a pointer to compartmentChange i in the tissue model
+	///
   inline BaseCompartmentChange* compartmentChange(size_t i) const;
-  
+	///
+	/// @brief Sets the name of the tissue.
+	///
   inline void setId(std::string value);
+	///
+	/// @brief Resizes the cell vector in the tissue.
+	///
   inline void setNumCell(size_t val);
+	///
+	/// @brief Resizes the wall vector in the tissue.
+	///
   inline void setNumWall(size_t val);
+	///
+	/// @brief Resizes the vertex vector in the tissue.
+	///
   inline void setNumVertex(size_t val);
+	///
+	/// @brief Resizes the directionalWall vector in the tissue.
+	///
   inline void setNumDirectionalWall(size_t val);
 
   //inline const std::vector< std::vector<double> > & tmpCellData() const;
   //inline void setTmpCellData(std::vector< std::vector<double> > &val);
-  
+	///
+	/// @brief Sets all wall length variables from the two vertices positions
+	///
+	/// Sets all wall (resting) lengths to the distance between the two
+	/// vertices connected to the respective wall.
+	///
   inline void setWallLengthFromVertexPosition();
+	///
+	/// @brief Sets directionalWall i of th etissue to the value val
+	///
 	inline void setDirectionalWall(size_t i,size_t val);
+	///
+	/// @brief Adds a reaction to the list of reactions from an open file 
+	///
+	/// Adds a reaction by creating a new reaction via BaseReaction::createReaction
+	/// and adds it to the tissue list of reactions.Used when a model is read 
+	/// from a file.
+	///
+	/// @see BaseReaction::createReaction(std::ifstream&)
+	/// @see Tissue::readModel(std::ifstream&,int)
+	/// @see BaseReaction
+	///
   int addReaction( std::istream &IN );
+	///
+	/// @brief Adds a compartmentChange to the list of from an open file 
+	///
+	/// Adds a compartmentChange to the tissue by creating a new 
+	/// compartmentChange via BaseCompartmentChange::createCompartmentChange.
+	/// A compartmentChange defines a rule for dividing cells or remove 
+	/// cells (any rule that change the number of cells). Used when a 
+	/// model is read from a file.
+	///
+	/// @see BaseCompartmentChange::createReaction(std::ifstream&)
+	/// @see Tissue::readModel(std::ifstream&,int)
+	/// @see BaseCompartmentChange
+	///
   int addCompartmentChange( std::istream &IN );
-  
-  //Functions related to model simulations
+	///
+	/// @brief Calculates the derivatives given the state provided 
+	///
+	/// This is the main derivatives function used when numerically 
+	/// integrating the system. It calls the derivs functions for all 
+	/// reactions defined in the tissue model. The current (variable) 
+	/// state is given in the
+	/// cellData, wallData and vertexData matrices and the derivatives 
+	/// are stored in the *Derivs matrices.
+	///
+	/// @see BaseReaction::derivs()
+	///
   void derivs( std::vector< std::vector<double> > &cellData,
 							 std::vector< std::vector<double> > &wallData,
 							 std::vector< std::vector<double> > &vertexData,
 							 std::vector< std::vector<double> > &cellDeriv,
 							 std::vector< std::vector<double> > &wallDeriv,
 							 std::vector< std::vector<double> > &vertexDeriv );
+	///
+	/// @brief Initiates the variables via reactions
+	///
+	/// This function is called before numerical integration of the
+	/// tissue. It loops over reactions and initiate the state variables
+	/// where such rules have been defined in the reactions.
+	///
+	/// @see BaseReaction::initiate()
+	///
 	void initiateReactions(std::vector< std::vector<double> > &cellData,
 												 std::vector< std::vector<double> > &wallData,
 												 std::vector< std::vector<double> > &vertexData);
+	///
+	/// @brief Takes care of 'discrete' updates during simulations
+	///
+	/// Some reactions has discrete updates to be applied in between
+	/// steps of the ODE solvers. This functions loop through all reactions
+	/// and apply such updates.
+	/// 
+	/// @see BaseReaction::update()
+	///
 	void updateReactions(std::vector< std::vector<double> > &cellData,
 											 std::vector< std::vector<double> > &wallData,
 											 std::vector< std::vector<double> > &vertexData,
 											 double step);
+	///
+	/// @brief Initiates direction variables before simulation
+	///
+	/// @see Direction::initiate()
+	///
 	void initiateDirection(std::vector< std::vector<double> > &cellData,
 												 std::vector< std::vector<double> > &wallData,
 												 std::vector< std::vector<double> > &vertexData,
 												 std::vector< std::vector<double> > &cellDerivs,
 												 std::vector< std::vector<double> > &wallDerivs,
 												 std::vector< std::vector<double> > &vertexDerivs );
+	///
+	/// @brief Updates the directions during simulations according to defined rules.
+	///
+	/// @see Direction::update()
+	///
 	void updateDirection(double step,							
 											 std::vector< std::vector<double> > &cellData,
 											 std::vector< std::vector<double> > &wallData,
@@ -179,6 +560,11 @@ class Tissue {
 											 std::vector< std::vector<double> > &cellDerivs,
 											 std::vector< std::vector<double> > &wallDerivs,
 											 std::vector< std::vector<double> > &vertexDerivs );
+	///
+	/// @brief Updates cell directions at cell divisions
+	///
+	/// @see Direction::divide()
+	///
 	void updateDirectionDivision(size_t cellI,
 															 std::vector< std::vector<double> > &cellData,
 															 std::vector< std::vector<double> > &wallData,
@@ -186,6 +572,11 @@ class Tissue {
 															 std::vector< std::vector<double> > &cellDerivs,
 															 std::vector< std::vector<double> > &wallDerivs,
 															 std::vector< std::vector<double> > &vertexDerivs);
+	///
+	/// @brief Checks for and updates the tissue according to CompartmentChange rules 
+	///
+	/// @see BaseCompartmentChange
+	///
   void checkCompartmentChange(std::vector< std::vector<double> > &cellData,
 															std::vector< std::vector<double> > &wallData,
 															std::vector< std::vector<double> > &vertexData,
@@ -203,7 +594,7 @@ class Tissue {
 									std::vector< std::vector<double> > &wallDeriv,
 									std::vector< std::vector<double> > &vertexDeriv );			
 	///
-	/// @brief Calls removeCell() for all indices given in the vector
+	/// @brief Calls removeCell(index,...) for all indices given in the vector
 	///
   void removeCells(std::vector<size_t> &cellIndex,
 									 std::vector< std::vector<double> > &cellData,
@@ -213,7 +604,7 @@ class Tissue {
 									 std::vector< std::vector<double> > &wallDeriv,
 									 std::vector< std::vector<double> > &vertexDeriv );			
 	///
-	/// @brief Calls removeCell() for all cells that are at boundary and outside a radial threshold
+	/// @brief Calls removeCell(index,...) for all cells that are at boundary and outside a radial threshold
 	///
   void removeEpidermalCells(std::vector< std::vector<double> > &cellData,
  														std::vector< std::vector<double> > &wallData,
@@ -221,11 +612,11 @@ class Tissue {
 														std::vector< std::vector<double> > &cellDeriv,
 														std::vector< std::vector<double> > &wallDeriv,
 														std::vector< std::vector<double> > &vertexDeriv,
-	  double radialThreshold = 0.0,
-	  const bool checkBackground = true);
+														double radialThreshold = 0.0,
+														const bool checkBackground = true);
 
 	///
-	/// @brief Calls removeCell() for all cells that are at boundary and outside (all vertices) a radial threshold
+	/// @brief Calls removeCell(index,...) for all cells that are at boundary and outside (all vertices) a radial threshold
 	///
 	void removeEpidermalCellsMk2(std::vector< std::vector<double> > &cellData,
 		std::vector< std::vector<double> > &wallData,
@@ -236,7 +627,7 @@ class Tissue {
 		double radialThreshold = 0.0);
 
 	///
-	/// @brief Calls removeCell() for all cells that are at the boundary and away from the max
+	/// @brief Calls removeCell(index,...) for all cells that are at the boundary and away from the max
 	///
   void removeEpidermalCellsAtDistance(std::vector< std::vector<double> > &cellData,
 																			std::vector< std::vector<double> > &wallData,
@@ -247,7 +638,7 @@ class Tissue {
 																			double radialThreshold,double max,
 																			size_t direction);
 	///
-  /// @brief Updates topology and variables for cell division
+  /// @brief Updates topology and variables at a cell division
 	///
   void divideCell( Cell *divCell, size_t w1, size_t w2, 
 									 std::vector<double> &v1Pos,
@@ -271,10 +662,12 @@ class Tissue {
 	///
   /// @brief Checks all connectivities as well as cell sort for inconsistencies
 	///
-  void checkConnectivity(size_t verbose=0);
-  
+  void checkConnectivity(size_t verbose=0);  
   ///
 	/// @brief Finds maxima in a variable column for the cells 
+	///
+	/// Finds maxima in cells for a specific variable via a local search, and stores
+	/// infomration on which cells 'belong' to the different maxima in flag.
 	///
   unsigned int findPeaksGradientAscent( std::vector< std::vector<double> > &cellData, 
 																				size_t col, std::vector<size_t> &cellMax,
@@ -297,52 +690,37 @@ class Tissue {
 													std::ostream &os=std::cout);  
 };
 
-//!The tissue id
 inline std::string Tissue::id() const { return id_; }
 
-//!Number of cells for the tissue
 inline size_t Tissue::numCell() const { return cell_.size(); }
 
-//!Number of walls for the tissue
 inline size_t Tissue::numWall() const { return wall_.size(); }
 
-//!Number of vertices for the tissue
 inline size_t Tissue::numVertex() const { return vertex_.size(); }
 
-//!Number of reactions in the tissue model
 inline size_t Tissue::numReaction() const { return reaction_.size(); }
 
-//!Number of compartment changes defined in the tissue model
 inline size_t Tissue::numCompartmentChange() const 
 { return compartmentChange_.size(); }
 
-//!Number of directional walls
 inline size_t Tissue::numDirectionalWall() const 
 { 
 	return directionalWall_.size(); 
 }
 
-//!Returns the directional wall for cell i
 inline size_t Tissue::directionalWall(size_t i) const 
 { 
 	return directionalWall_[i];
 }
 
-//!Returns a reference to the cell vector
 inline const std::vector<Cell> & Tissue::cell() const { return cell_; }
 
-//!Returns a const reference to cell i 
 inline const Cell & Tissue::cell(size_t i) const { return cell_[i]; }
 
-//!Returns a reference to cell i 
 inline Cell & Tissue::cell(size_t i) { return cell_[i]; }
 
-///
-/// @brief Return a pointer to cell i
-//
 inline Cell* Tissue::cellP(size_t i) {return &cell_[i];}
 
-//!Adds a cell to the vector
 inline void Tissue::addCell( Cell val ) { cell_.push_back(val);}
 
 inline void Tissue::removeCell( size_t index ) {
@@ -367,30 +745,20 @@ inline void Tissue::removeCell( size_t index ) {
 	cell_.pop_back();
 }
 
-//!Returns a pointer to the background
 inline Cell* Tissue::background() { return &background_;}
 
-//!Returns a pointer to the direction
 inline Direction* Tissue::direction() { return &direction_;}
 
-//!Returns a reference to the wall vector
 inline const std::vector<Wall> & Tissue::wall() const { return wall_; }
 
-//!Returns a const reference to wall i 
 inline const Wall & Tissue::wall(size_t i) const { return wall_[i]; }
 
-//!Returns a reference to wall i 
 inline Wall & Tissue::wall(size_t i) { return wall_[i]; }
 
-///
-/// @brief Returns a pointer to wall i 
-///
 inline Wall * Tissue::wallP(size_t i) { return &wall_[i]; }
 
-//!Adds a wall to the vector
 inline void Tissue::addWall( Wall val ) { wall_.push_back(val);}
 
-//!Removes wall at index and moves last wall into that position 
 inline void Tissue::removeWall( size_t index ) {
 	assert(index<numWall());
 	Wall *wp = &wall_[numWall()-1];
@@ -416,17 +784,12 @@ inline void Tissue::removeWall( size_t index ) {
 	wall_.pop_back();
 }
 
-//!Returns a reference to the vertex vector
 inline const std::vector<Vertex> & Tissue::vertex() const { return vertex_; }
 
-//!Returns a const reference to vertex i 
 inline const Vertex & Tissue::vertex(size_t i) const { return vertex_[i]; }
 
-//!Returns a reference to vertex i 
 inline Vertex & Tissue::vertex(size_t i) { return vertex_[i]; }
 
-///
-/// @brief Returns a pointer to vertex i 
 inline Vertex * Tissue::vertexP(size_t i) { return &vertex_[i]; }
 
 inline size_t Tissue::numDimension() 
@@ -434,10 +797,8 @@ inline size_t Tissue::numDimension()
 	return vertex(0).numPosition();
 }
 
-//!Adds a vertex to the vector
 inline void Tissue::addVertex( Vertex val ) { vertex_.push_back(val);}
 
-//!Removes vertex at index and moves last vertex into that position 
 inline void Tissue::removeVertex( size_t index ) {
 	assert(index<numVertex());
 	Vertex *vp = &vertex_[numVertex()-1];
@@ -471,45 +832,37 @@ inline void Tissue::removeVertex( size_t index ) {
 	vertex_.pop_back();
 }
 
-//!Returns a pointer to reaction i
 inline BaseReaction* Tissue::reaction(size_t i) const { 
   assert( i<reaction_.size() );
   return reaction_[i];
 }
 
-//!Returns a pointer to compartmentChange i
 inline BaseCompartmentChange* Tissue::compartmentChange(size_t i) const { 
   assert( i<compartmentChange_.size() );
   return compartmentChange_[i];
 }
 
-//!Sets the id string
 inline void Tissue::setId(std::string value) {
   id_ = value;
 }
 
-//!Resizes the cell_ vector
 inline void Tissue::setNumCell(size_t val) {
   cell_.resize(val);
 }
 
-//!Resizes the wall_ vector
 inline void Tissue::setNumWall(size_t val) {
   wall_.resize(val);
 }
 
-//!Resizes the vertex_ vector
 inline void Tissue::setNumVertex(size_t val) {
   vertex_.resize(val);
 }
 
-//!Resizes the directionalWall_ vector
 inline void Tissue::setNumDirectionalWall(size_t val) 
 {
   directionalWall_.resize(val);
 }
 
-//!Sets a directional wall for cell i
 inline void Tissue::setDirectionalWall(size_t i,size_t val) 
 {
   directionalWall_[i]=val;
@@ -526,6 +879,4 @@ inline void Tissue::setDirectionalWall(size_t i,size_t val)
 //{
 //	tmpCellData_ = val;
 //}
-
-
 #endif

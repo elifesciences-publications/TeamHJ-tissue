@@ -14,13 +14,11 @@
 #include "myMath.h"
 #include "myRandom.h"
 
-//!The empty cel constructor
 Cell::Cell() {
   
   mitosisFlag_=0;
 }
 
-//!The copy constructor
 Cell::Cell( const Cell & cellCopy ) {
 
   index_ = cellCopy.index();
@@ -495,7 +493,6 @@ void Cell::sortWallAndVertex(Tissue &T) {
 	//					<< wall(i)->vertex2()->index() << std::endl; 
 }
 
-//!Calculates the volume from vertex positions
 double Cell::calculateVolume( size_t signFlag ) 
 {	
   assert( numVertex() );	
@@ -607,7 +604,6 @@ double Cell::calculateVolume( std::vector< std::vector<double> >
 	}
 }
 
-//!Calculates the cell position from average vertex position
 std::vector<double> Cell::positionFromVertex() 
 {
 	assert( numVertex() );

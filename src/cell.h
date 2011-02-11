@@ -23,8 +23,14 @@
 class Vertex;
 class Tissue;
 
-//!Describes the properties of a two-dimensional cell
-/*!*/ 
+///
+/// @brief Describes the properties of a two-dimensional cell within a tissue
+///
+/// A cell includes all information for the faces (2D cells) of the tissues,
+/// including its connectivity to walls and vertices. It can store a number
+/// of variables representing e.g. molecular concentrations, and have functions
+/// for calculating properties such as volume (area).
+///
 class Cell {
   
  private:
@@ -44,9 +50,25 @@ class Cell {
   
  public:
   
+	///
+	/// @brief The empty cell constructor.
+	///
+	/// sets only the mitosisFlag to 0.
+	///
   Cell();
+	///
+	/// @brief Copy constructor
+	///
+	/// Copies all relevant variables from the provided cell.
+	///
   Cell( const Cell & cellCopy );
+	///
+	/// @brief Constructor setting index and id/name for the cell.
+	///
   Cell(size_t indexVal,std::string idVal);
+	///
+	/// @brief Destructor (empty in the current implementation).
+	///
   ~Cell();
   
   inline size_t index() const;
@@ -85,12 +107,39 @@ class Cell {
 
 	bool isConcave(std::vector< std::vector<double> > &vertexData, const double tolerance = 0.01);
 	bool isFolded(std::vector< std::vector<double> > &vertexData);
-
+	///
+	/// @brief Calculates the cell volume(area) from the vertex positions.
+	///
+	/// Uses a cross-product rule of the wall directions to calculate the cell
+	/// area. Works only if the cell vertices are sorted/cyclic. The vertex
+	/// positions used are taken from the vertices directly.
+	/// 
   double calculateVolume( size_t signFlag=0 );
+	///
+	/// @brief Calculates the cell volume(area) from the vertex positions.
+	///
+	/// Uses a cross-product rule of the wall directions to calculate the cell
+	/// area. Works only if the cell vertices are sorted/cyclic. The vertex
+	/// positions used are taken from the provided matrix.
+	/// 
   double calculateVolume( std::vector< std::vector<double> > 
 													&vertexData, size_t signFlag=0 );
+	///
+	/// @brief Calculates the cell center-of-mass position.
+	///
+	/// Uses a cross-product rule to define the center of mass of the cell. Works
+	/// only if the cell vertices are sorted/cyclic. The vertex
+	/// positions used are taken from the vertices directly.
+	///
   std::vector<double> positionFromVertex();
   std::vector<double> 
+	///
+	/// @brief Calculates the cell center-of-mass position.
+	///
+	/// Uses a cross-product rule to define the center of mass of the cell. Works
+	/// only if the cell vertices are sorted/cyclic. The vertex
+	/// positions used are taken from the provided matrix.
+	///
 	positionFromVertex( std::vector< std::vector<double> > &vertexData );	
 
 	class FailedToFindRandomPositionInCellException
@@ -105,9 +154,47 @@ class Cell {
   // These functions handles projection to a PCAPlane. Important: Make
   // sure you call calculatePCAPlane() before any of the other
   // functions.
+	///
+	/// @brief Calculates the PCA plane (two principal directions) from cell vertex positions
+	///
+	/// This functions creates a PCA plane from the cell vertex positions, hence
+	/// creating a 2D representation of the cell used for 3D simulations. The function
+	/// stores the two 'largest' principal directions in the cell E_ variable.
+	/// The PCA plane is used to apply some 2D rules in 3D simulations. The usage
+	/// of the PCA plane assumes that the vertices of a cell are close to a plane,
+	/// although the calculations do not require it (but otherwise estimates of)
+	/// e.g. cell volume(area) would have errors).
+ 	/// 
   void calculatePCAPlane(std::vector< std::vector<double> > &vertexData);
+	///
+	/// @brief Returns the (two) vectors spanning the PCA plane defined by the cell vertex positions
+	///
+	/// Returns E that stores the PCA plane (two first principal directions) 
+	/// calculated from the cell vertex poitions (in 3D). It relies upon that
+	/// calculatePCAPlane has been called since last movement of the vertices.
+	///
+	/// @see calculatePCAPlane()
+	///
   std::vector< std::vector<double> > getPCAPlane(void) const;
+	///
+	/// @brief Returns the vertex positions on the PCA plane defined by the cell vertex positions
+	///
+	/// Returns the vertex positions (2D) as projected onto the PCA plane 
+	/// calculated from the cell vertex poitions (in 3D). It relies upon that
+	/// calculatePCAPlane has been called since last movement of the vertices.
+	///
+	/// @see calculatePCAPlane()
+	///
   std::vector< std::pair<double, double> > projectVerticesOnPCAPlane(std::vector< std::vector<double> > &vertexData);
+	///
+	/// @brief Returns the normal to the PCA plane defined by the cell vertex positions
+	///
+	/// Returns the normal vector of the PCA plane 
+	/// calculated from the cell vertex poitions (in 3D). It relies upon that
+	/// calculatePCAPlane has been called since last movement of the vertices.
+	///
+	/// @see calculatePCAPlane()
+	///
   std::vector<double> getNormalToPCAPlane(void);
 	int vectorSignFromSort(std::vector<double> &n,
 												 std::vector< std::vector<double> > &vertexData);

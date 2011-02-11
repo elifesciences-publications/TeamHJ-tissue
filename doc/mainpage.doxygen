@@ -1,0 +1,75 @@
+// This file is used to generate an introductory text in the doxygen
+// genereated documentation
+
+/*! @mainpage
+
+\section Introduction
+
+The Tissue Simulator is a C++ software for simulating biological systems. It
+mainly focuses on systems with multiple cells/walls/vertices, and includes
+biochemical as well as mechanical rules for updating the system. It is
+assuming a deterministic system and uses an \e Ordinary \e Differential \e
+Equation approach.
+
+Some of the features of the software are:
+
+<ul>
+
+<li> It includes several numerical solvers for the ODEs.
+
+<li> It includes a library of common biochemical and mechanical rules.  
+
+<li> It is developed such that it should be easy for a programmer to define
+new reaction- division- etc. rules.
+
+<li> It has been used to simulate growing plant tissue.
+
+</ul>
+
+The software is mainly developed at the Computational Biology & Biological
+Physics group at Lund University. Contact: henrik@thep.lu.se.
+
+\section Binaries
+
+The main binary is the \e simulator which is used to simulate a vertex-based tissue
+model.
+
+\subsection Simulator
+
+The \e simulator uses three input files:
+
+<ul> 
+
+<li> model file: this file defines the model. Information of its format can be
+found in the documentation of Tissue::readModel().
+
+<li> init file: this file holds the initial variable values. Information of
+its structure can be found at the documentation for Tissue::readInit().
+
+<li> solver parameter file: With this file parameters for the solver is
+provided. Information of its structure can be found in
+BaseSolver::getSolver().
+
+</ul>
+
+These three files are required to be included among the command line
+arguments and in correct order. In addition different flags to the
+simulator can be set on the command line. Information on these
+additional flags can by running tissue with the flag -help.
+
+A common command line execution of the \e simulator binary is then:
+
+@verbatim
+$ORGANISM/bin/simulator example.model example.init example.rk5 > example.data
+@endverbatim
+
+which generates the system output in the file example.data.
+
+\section Compilation
+
+The code can be compiled by using \e make. A \e Makefile file can be
+found found in the $TISSUE/src directory. The code is
+ANSI-compatible and has been tested to compile on Linux, Mac OSX and
+Windows (using Cygwin) platforms.
+
+*/

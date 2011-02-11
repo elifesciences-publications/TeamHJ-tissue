@@ -237,27 +237,23 @@ Tissue::Tissue( std::vector< std::vector<double> > &cellData,
 Tissue::~Tissue() {
 }
 
-//!Sets all wall length variables from the two vertices positions
 void Tissue::setWallLengthFromVertexPosition() {
   for( size_t i=0 ; i<numWall() ; ++i )
     wall(i).setLengthFromVertexPosition();
 }
 
-//!Adds a reaction to the list from an open file
 int Tissue::addReaction( std::istream &IN ) {
   if( !IN ) return -1;
   reaction_.push_back( BaseReaction::createReaction(IN) );
   return 0;
 }
 
-//!Adds a compartmentChange to the list from an open file
 int Tissue::addCompartmentChange( std::istream &IN ) {
   if( !IN ) return -1;
   compartmentChange_.push_back( BaseCompartmentChange::createCompartmentChange(IN) );
   return 0;
 }
 
-//!Reads a tissue from an open file
 void Tissue::readInit(std::istream &IN,int verbose) {
   
   unsigned int numCellVal,numWallVal,numVertexVal;
@@ -727,7 +723,6 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 	checkConnectivity(verbose);
 }
 
-//!Reads a model from an open file
 void Tissue::readModel(std::ifstream &IN,int verbose) {
   
   unsigned int numReactionVal,numCompartmentChangeVal,numDirection;
@@ -789,14 +784,12 @@ void Tissue::readModel(std::ifstream &IN,int verbose) {
 		std::cerr << "Done\n\n";
 }
 
-//!Reads a model from a file
 void Tissue::readModel(const char *fileName, int verbose) 
 {
   std::string tmp(fileName);
   readModel(tmp,verbose);
 }
 
-//!Reads a model from file 
 void Tissue::readModel(std::string fileName, int verbose) 
 {  
   const char* fName = fileName.c_str();
