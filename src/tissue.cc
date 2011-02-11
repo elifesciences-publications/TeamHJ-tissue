@@ -1,11 +1,10 @@
-/**
- * Filename     : tissue.cc
- * Description  : A class describing a two-dimensional cell tissue
- * Author(s)    : Henrik Jonsson (henrik at thep.lu.se)
- * Created      : April 2006
- * Revision     : $Id:$
- */
-
+//
+// Filename     : tissue.cc
+// Description  : A class describing a two-dimensional cell tissue
+// Author(s)    : Henrik Jonsson (henrik at thep.lu.se)
+// Created      : April 2006
+// Revision     : $Id:$
+//
 #include <algorithm>
 #include <assert.h>
 #include <cmath>
@@ -282,7 +281,7 @@ void Tissue::readInit(std::istream &IN,int verbose) {
     vertex(i).setIndex(i);
   
   //Read connective topology
-  //////////////////////////////////////////////////////////////////////
+  //
   if( verbose )
     std::cerr << "Tissue::readInit(IN) - reading connectivity topology" << std::endl;
   int wI,c1I,c2I,v1I,v2I;
@@ -357,7 +356,7 @@ void Tissue::readInit(std::istream &IN,int verbose) {
     }
   }
   //Read vertex positions
-  //////////////////////////////////////////////////////////////////////
+  //
   if( verbose )
     std::cerr << "Tissue::readInit(IN) - reading vertex positions" 
 							<< std::endl;
@@ -374,7 +373,7 @@ void Tissue::readInit(std::istream &IN,int verbose) {
   }
 	
   //Read wall data
-  //////////////////////////////////////////////////////////////////////
+  //
   if( verbose )
     std::cerr << "Tissue::readInit(IN) - reading wall data" << std::endl;
 	
@@ -398,7 +397,7 @@ void Tissue::readInit(std::istream &IN,int verbose) {
   }
 
   //Read cell variables
-  //////////////////////////////////////////////////////////////////////
+  //
   if( verbose )
     std::cerr << "Tissue::readInit(IN) - reading cell variables" << std::endl;
   size_t numCellTmp,numCellVar;
@@ -735,7 +734,7 @@ void Tissue::readModel(std::ifstream &IN,int verbose) {
 	assert(numDirection==0 || numDirection==1);
 
   //Read Reactions
-  //////////////////////////////////////////////////////////////////////
+  //
   //Remove any present reactions before adding
   if( numReaction() ) 
     reaction_.resize(0);
@@ -751,7 +750,7 @@ void Tissue::readModel(std::ifstream &IN,int verbose) {
 			std::cerr << reaction(numReaction()-1)->id() << std::endl;
 	}
   //Read compartmentChanges
-  //////////////////////////////////////////////////////////////////////
+  //
   //Remove any present compartmentChanges before adding
   if( numCompartmentChange() ) 
     compartmentChange_.resize(0);
@@ -831,7 +830,7 @@ createTissueFromSpheres(std::vector< std::vector<double> > &y,
     exit(0);
   }
   //Get cell-cell neighbors which also defines the walls
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector< std::pair<size_t,size_t> > wallCell;
   std::vector< std::vector<size_t> > cellWall(N);
   for(size_t i=0 ; i<N ; ++i ) {
@@ -857,7 +856,7 @@ createTissueFromSpheres(std::vector< std::vector<double> > &y,
   }
   
   //Get verteces by checking cell neighbor relationships
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector< std::pair<size_t,size_t> > 
     wallVertex(numWall,std::pair<size_t,size_t> (static_cast<size_t>(-1),
 																								 static_cast<size_t>(-1)));
@@ -1079,7 +1078,7 @@ createTissueFromSpheres(std::vector< std::vector<double> > &y,
     }
   }
   //Add walls between two twoVertices in a cell (only if there are two)
-  //////////////////////////////////////////////////////////////////////
+  //
   for( size_t cellI=0 ; cellI<cellVertex.size() ; ++cellI ) {
     std::vector<size_t> twoVertexList;
     size_t numTwoVertex=0;
@@ -1117,7 +1116,7 @@ createTissueFromSpheres(std::vector< std::vector<double> > &y,
 						<< std::endl << std::endl;
   
   //Fill the tissue with cells, walls and verteces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( verbose )
     std::cerr << "Tissue::createTissueFromSpheres() "
 							<< "Creating the tissue." 
@@ -1166,7 +1165,7 @@ createTissueFromSpheres(std::vector< std::vector<double> > &y,
     vertex(i).setPosition(pos);
   }
   //Set the wall lengths from the vertices positions
-  //////////////////////////////////////////////////////////////////////
+  //
   if( verbose )
     std::cerr << "Tissue::createTissueFromSpheres() "
 							<< "Setting wall lengths from vertex positions." 
@@ -1223,8 +1222,8 @@ void Tissue::createTissueFromVoronoi(std::vector< std::vector<double> > &vertexP
 	size_t boundaryIndex = static_cast<size_t>(-1);
 	std::set<size_t> boundaryNeighVertex;
 	//Convert cellVertexTmp to cellVertex by adding additional vertices
-  //at boundary and lower each index by one
-	//////////////////////////////////////////////////////////////////////
+	//at boundary and lower each index by one
+	//
 	for( size_t i=0 ; i<cellVertexTmp.size() ; ++i ) {
 		for( size_t k=0 ; k<cellVertexTmp[i].size() ; ++k ) {
 			size_t vI1=static_cast<size_t>(cellVertexTmp[i][k]-1);
@@ -1244,7 +1243,7 @@ void Tissue::createTissueFromVoronoi(std::vector< std::vector<double> > &vertexP
 	}
 	std::cerr << "cellVertexTmp converted\n";
 	//Add new vertices at the boundary
-	//////////////////////////////////////////////////////////////////////
+	//
 	size_t numOldVertex=vertexPos.size();
 	size_t numNewVertex=boundaryNeighVertex.size();
 	vertexPos.resize(vertexPos.size()+numNewVertex,vertexPos[0]);
@@ -1272,7 +1271,7 @@ void Tissue::createTissueFromVoronoi(std::vector< std::vector<double> > &vertexP
 	}
 	std::cerr << "New vertices added\n";
 	//Create walls
-	//////////////////////////////////////////////////////////////////////
+	//
 	std::vector< std::vector<size_t> > vertexWall( vertexCell.size() );
 	std::vector< std::pair<size_t,size_t> > wallCell,wallVertex;
 	for( size_t i=0 ; i<cellVertex.size() ; ++i ) {
@@ -2147,7 +2146,7 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 	}
 
 	//Create the new data structure and set indices in the tissue vectors
-	//////////////////////////////////////////////////////////////////////
+	//
 	//Add the new cell
 	addCell( cell(i) );
 	cell(Nc).setIndex(Nc);
@@ -2228,7 +2227,7 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
   
 	// Create connection matrix by first selecting vertices and walls for
 	// the new and old cells
-	//////////////////////////////////////////////////////////////////////
+	//
   std::vector<size_t> oldVIndex,newVIndex,oldWIndex,newWIndex,
 		usedWIndex( cell(i).numWall() );
 	
@@ -2495,12 +2494,12 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 								<< vertexData[v2w3Itmp][0] << " "
 								<< vertexData[v2w3Itmp][1] << " 4\n\n\n";
     }
-		exit(-1);
+    exit(-1);
   }
-  
-  //Set cells and walls for the vertices
-	//////////////////////////////////////////////////////////////////////
-  for( size_t v=0 ; v<newVIndex.size() ; ++v ) {
+	
+	//Set cells and walls for the vertices
+	//
+	for( size_t v=0 ; v<newVIndex.size() ; ++v ) {
     std::vector<Cell*> tmpCell;
     std::vector<Wall*> tmpWall;
     if( newVIndex[v]==Nv ) {
@@ -2858,7 +2857,7 @@ void Tissue::checkConnectivity(size_t verbose)
     }
   }
   //Make sure all wallVertex(Cell) are real vertices(cells) via index
-  //////////////////////////////////////////////////////////////////////
+  //
   for( size_t k=0 ; k<numWall() ; ++k ) {
     if( verbose ) {
       if( ( wall(k).cell1()->index()>=numCell() &&
@@ -2915,7 +2914,7 @@ void Tissue::checkConnectivity(size_t verbose)
   }
   
   //Make sure all vertexCell(Wall) are real cells(walls) via index
-  //////////////////////////////////////////////////////////////////////
+  //
   for( size_t k=0 ; k<numVertex() ; ++k ) {
     for( size_t l=0 ; l<vertex(k).numCell() ; ++l ) { 
       if( verbose ) {
@@ -2988,7 +2987,7 @@ void Tissue::checkConnectivity(size_t verbose)
       assert( numVarTmp==cell(i).numVariable() );
   }
   // Do checks on connectivity from cells
-  //////////////////////////////////////////////////////////////////////
+  //
   for (size_t i=0; i<numC; ++i) {
     
     if( verbose ) {
@@ -3398,7 +3397,7 @@ printVertexAndCell(std::vector< std::vector<double> > &cellData,
   //Print the cells, first connected vertecis and then variables
   size_t Nc = cellData.size();
 	//For normal printing
-	//////////////////////////////////////////////////////////////////////
+	//
 	int numPrintVar=cell(0).numVariable()+3;
 	os << Nc << " " << numPrintVar << std::endl;
   for( size_t i=0 ; i<Nc ; ++i ) {
@@ -3412,11 +3411,11 @@ printVertexAndCell(std::vector< std::vector<double> > &cellData,
 		os << i << " " << cell(i).calculateVolume(vertexData) << " " 
 			 << cell(i).numWall() << std::endl;
   }
-  /////////////////////////////////////////////////////////////////////
+  //
 	//End, normal printing
 	
 	//For membrane-PIN printing (version1)
-	//////////////////////////////////////////////////////////////////////
+	//
 // 	os << Nc << std::endl;
 // 	size_t aI=0,pI=1;
 //   for( size_t i=0 ; i<Nc ; ++i ) {
@@ -3454,7 +3453,7 @@ printVertexAndCell(std::vector< std::vector<double> > &cellData,
 //   }	
 
 //   //For membrane PIN1 printing (version3)
-//   //////////////////////////////////////////////////////////////////////
+//   //
 //  	os << Nc << std::endl;
 // 	size_t auxinI=1,pinI=2,auxI=3,pidI=4,xI=5;
 //  	std::vector<double> parameter(8);
@@ -3474,7 +3473,7 @@ printVertexAndCell(std::vector< std::vector<double> > &cellData,
 // 			os << cell(i).vertex(k)->index() << " ";
 		
 // 		//Transport
-// 		//////////////////////////////////////////////////////////////////////
+// 		//
 // 		size_t numWalls=cell(i).numWall();
 // 		//PID factor
 // 		double tmpPow = std::pow(cellData[i][pidI],parameter[7]);
@@ -3518,11 +3517,11 @@ printVertexAndCell(std::vector< std::vector<double> > &cellData,
 // 		}
 // 		std::cout << std::endl;
 // 	}
-//////////////////////////////////////////////////////////////////////
+//
 //End Pij printing version3
 	
 // 	//Transport
-// 	//////////////////////////////////////////////////////////////////////
+// 	//
 // 	size_t numWalls=T.cell(i).numWall();
 // 	//PID factor
 // 	double tmpPow = std::pow(cellData[i][pidI],parameter(7));
@@ -3572,7 +3571,7 @@ printVertexAndCell(std::vector< std::vector<double> > &cellData,
 //       }
 //     }
 
-//////////////////////////////////////////////////////////////////////
+//
 //End Pij printing version2
 
 
