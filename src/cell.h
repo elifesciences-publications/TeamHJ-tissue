@@ -267,7 +267,7 @@ class Cell {
   /// only if the cell vertices are sorted/cyclic. The vertex
   /// positions used are taken from the provided matrix.
   ///
-  positionFromVertex( std::vector< std::vector<double> > &vertexData );	
+  std::vector<double> positionFromVertex( std::vector< std::vector<double> > &vertexData );	
   
   class FailedToFindRandomPositionInCellException
   {  

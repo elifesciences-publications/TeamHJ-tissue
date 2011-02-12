@@ -140,12 +140,24 @@ class Vertex {
   /// @return 1 if boundary and 0 otherwise.
   int isBoundary(Cell *background) const;
   
-  /** Calculate stress direction for the vertex. */
+  ///
+  /// @brief Calculate stress direction for the vertex from stresses in the connected walls.
+  ///
+  /// A stress direction is calculated for the vertex by combining stresses in the walls
+  /// connected to the vertex. The calculation is based on Dumains and Kwiatkowska,
+  /// Plan Journal (2002) !HJ: have to be checked if this ref is correct!
+  ///
   void calculateStressDirection(std::vector< std::vector<double> > &vertexData, 
-				std::vector< std::vector<double> > &wallData, std::vector<size_t> wallForceIndexes);
-  
-  /** Get stress direction for the vertex. */ 
-  std::vector<double> getStressDirection(void) const;
+				std::vector< std::vector<double> > &wallData, 
+				std::vector<size_t> &wallForceIndexes);  
+  ///
+  /// @brief Returns a stress direction vector (stored) for the vertex.
+  ///
+  /// Note: the value in the stored vector may be obselete if the tissue has been updated 
+  /// since the last calculation.
+  ///
+  /// @see calculateStressDirection(std::vector< std::vector<double> >&,std::vector< std::vector<double> >&, std::vector<size_t>&); 
+  std::vector<double> stressDirection(void) const;
 };
 
 inline size_t Vertex::index() const { return index_; }

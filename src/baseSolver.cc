@@ -486,7 +486,7 @@ void BaseSolver::print(std::ostream &os)
 
 // 		  std::cout << t_ << " ";
 
-		  std::vector<double> stressDirection = vertex->getStressDirection();
+		  std::vector<double> stressDirection = vertex->stressDirection();
 
 		  double A = 0.0;
 		  

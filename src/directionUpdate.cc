@@ -1300,7 +1300,7 @@ void VertexStressDirection::update(Tissue &T, double h,
 		for (size_t i = 0; i < cell.numVertex(); ++i) {
 			Vertex *vertex = cell.vertex(i);
 			
-			std::vector<double> stressDirection = vertex->getStressDirection();
+			std::vector<double> stressDirection = vertex->stressDirection();
 
 			double x = 0.0;
 			double y = 0.0;

@@ -24,7 +24,7 @@ Vertex::Vertex( const Vertex & vertexCopy )
   position_ = vertexCopy.position();
   cell_ = vertexCopy.cell();
   wall_ = vertexCopy.wall();
-  stressDirection_ = vertexCopy.getStressDirection();
+  stressDirection_ = vertexCopy.stressDirection();
 }
   
 Vertex::~Vertex() 
@@ -63,7 +63,7 @@ int Vertex::isBoundary(Cell *background) const
 
 void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertexData,
 				      std::vector< std::vector<double> > &wallData, 
-				      std::vector<size_t> wallForceIndexes)
+				      std::vector<size_t> &wallForceIndexes)
 {
   size_t dimensions = vertexData[0].size();
   size_t numberOfWalls = wall_.size();
@@ -182,7 +182,7 @@ void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertex
   }
 }
 
-std::vector<double> Vertex::getStressDirection(void) const
+std::vector<double> Vertex::stressDirection(void) const
 {
   return stressDirection_;
 }
