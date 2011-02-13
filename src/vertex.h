@@ -69,6 +69,7 @@ class Vertex {
   /// find out its dimension.
   ///
   /// @see Tissue::dimension()
+  /// @see position()
   ///
   inline size_t numPosition() const;
   ///
@@ -99,31 +100,90 @@ class Vertex {
   /// @brief Returns the wall pointer from position k in the Wall vector for the Vertex.
   ///
   inline Wall* wall( size_t k ) const;
-  
-  //!The position vector
+  ///  
+  /// @brief Returns the position vector
+  ///
+  /// The position vector is the main variables of the Vertex, and is avector of dimension 2 or 3.
+  ///
   inline const std::vector<double> & position() const;
-  //!The position in dimension d
+  ///
+  /// @brief The position in dimension d
+  ///
+  /// @see position()
+  ///
   inline double position(size_t d);
   
-  //!Sets the index variable
+  ///
+  /// @brief Sets the index variable
+  ///
+  /// @see index()
+  ///
   inline void setIndex( size_t value );
-  //!Sets a cell pointer
+  ///
+  /// @brief Sets a cell pointer
+  ///
+  /// @see cell()
+  ///
   inline void setCell( size_t index,Cell* val );
-  //!Sets pointers to cells
+  ///
+  /// @brief Sets pointers to cells
+  ///
+  /// Sets a new Cell vector for the Vertex (and removes any old information).
+  ///
+  /// @see cell()
+  ///
   inline void setCell( std::vector<Cell*> &val );
-  //!Adds a cell to the vertex
+  ///
+  /// @brief Adds a Cell to the end of the vector for the Vertex.
+  ///
+  /// @see cell()
+  ///
   inline void addCell( Cell* val );
-  //!Removes a cell from the vertex
+  ///
+  /// @brief Removes a Cell from the vector for the Vertex.
+  ///
+  /// It looks for the provided Cell and removes it from the cell vector if it is present.
+  /// If the cell is removed, it returns 1, otherwise 0. Note that it does not update the 
+  /// connection from the Cell to the Vertex.
+  ///
+  /// @see cell()
+  ///
   int removeCell( Cell* val );
-  //!Sets a wall pointer
+  ///
+  /// @brief Sets a wall pointer at position index of the wall vector for the Vertex.
+  ///
+  /// @see wall()
+  ///
   inline void setWall( size_t index,Wall* val );
-  //!Sets pointers to walls
+  ///
+  /// @brief Sets pointers to walls
+  ///
+  /// Sets a new wall vector for the vertex, and remove any previous walls.
+  ///
+  /// @see wall()
+  ///
   inline void setWall( std::vector<Wall*> &val );
-  //!Adds a wall to the vertex
+  ///
+  /// @brief Adds a Wall to the vector for the Vertex.
+  ///
+  /// @see wall()
+  ///
   inline void addWall( Wall* val );
-  //!Removes a wall from the vertex
+  ///
+  /// @brief Removes a Wall from the vector for the Vertex
+  ///
+  /// Removes the Wall provided if it is in the vector for the Vertex. It returns 1 if the wall
+  /// is removed, and 0 otherwise. Note that it does not update the connection from the Wall to
+  /// the vertex.
+  ///
+  /// @see wall()
+  ///
   int removeWall( Wall* val );
-  //!Sets the position from a vector
+  ///
+  /// @brief Sets the position from a vector
+  ///
+  /// @see position()
+  ///
   inline void setPosition(std::vector<double> &pos);
   ///
   /// @brief Sets a vertex position in dimension d.
