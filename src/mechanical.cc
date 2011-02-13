@@ -57,35 +57,34 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t dimension;
   dimension = T.vertex(0).numPosition(); 
-	
+  
   //Assumming vertices and walls are sorted
   //////////////////////////////////////////////////////////////////////
   assert( dimension==2 );
   //For each cell
   for (size_t cellI = 0; cellI < numCells; ++cellI) {
-	  Cell &tmpCell = T.cell(cellI);
-
-	  double factor = 0.5 * parameter(0);
-
-	  if (parameter(1) == 1)
-	  {
-		  double cellVolume = tmpCell.calculateVolume(vertexData);
-		  factor /= std::fabs(cellVolume);
-	  }
-
-	  for (size_t k = 0; k < tmpCell.numVertex(); ++k) {
-		  size_t v1I = tmpCell.vertex(k)->index();
-		  size_t v1PlusI = tmpCell.vertex((k + 1) % (tmpCell.numVertex()))->index();
-		  size_t v1MinusK = k > 0 ? k - 1 : tmpCell.numVertex() - 1;
-		  size_t v1MinusI = tmpCell.vertex(v1MinusK)->index();
-		  
-		  vertexDerivs[v1I][0] += factor * (vertexData[v1PlusI][1] - vertexData[v1MinusI][1]);
-		  vertexDerivs[v1I][1] += factor * (vertexData[v1MinusI][0]- vertexData[v1PlusI][0]);
-	  }
+    Cell &tmpCell = T.cell(cellI);
+    
+    double factor = 0.5 * parameter(0);
+    
+    if (parameter(1) == 1)
+      {
+	double cellVolume = tmpCell.calculateVolume(vertexData);
+	factor /= std::fabs(cellVolume);
+      }
+    
+    for (size_t k = 0; k < tmpCell.numVertex(); ++k) {
+      size_t v1I = tmpCell.vertex(k)->index();
+      size_t v1PlusI = tmpCell.vertex((k + 1) % (tmpCell.numVertex()))->index();
+      size_t v1MinusK = k > 0 ? k - 1 : tmpCell.numVertex() - 1;
+      size_t v1MinusI = tmpCell.vertex(v1MinusK)->index();
+      
+      vertexDerivs[v1I][0] += factor * (vertexData[v1PlusI][1] - vertexData[v1MinusI][1]);
+      vertexDerivs[v1I][1] += factor * (vertexData[v1MinusI][0]- vertexData[v1PlusI][0]);
+    }
   }
 }
 
-//!Constructor
 VertexFromCellPressureVolumeNormalized::
 VertexFromCellPressureVolumeNormalized(std::vector<double> &paraValue, 
 			   std::vector< std::vector<size_t> > 
@@ -118,9 +117,6 @@ VertexFromCellPressureVolumeNormalized(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Derivative contribution for asymmetric wall springs on vertices
-/*! 
- */
 void VertexFromCellPressureVolumeNormalized::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -196,7 +192,6 @@ derivs(Tissue &T,
   }
 }
 
-//!Constructor
 VertexFromCellPressureThresholdFromMaxPos::
 VertexFromCellPressureThresholdFromMaxPos(std::vector<double> &paraValue, 
 			   std::vector< std::vector<size_t> > 
@@ -230,9 +225,6 @@ VertexFromCellPressureThresholdFromMaxPos(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Derivative contribution for asymmetric wall springs on vertices
-/*! 
-*/
 void VertexFromCellPressureThresholdFromMaxPos::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -422,7 +414,6 @@ derivs(Tissue &T,
   }
 }
 
-//!Constructor
 VertexFromCellInternalPressure::
 VertexFromCellInternalPressure(std::vector<double> &paraValue, 
 			   std::vector< std::vector<size_t> > 
@@ -455,9 +446,6 @@ VertexFromCellInternalPressure(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Derivative contribution for asymmetric wall springs on vertices
-/*! 
-*/
 void VertexFromCellInternalPressure::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -540,7 +528,6 @@ derivs(Tissue &T,
   }
 }
 
-//!Constructor
 VertexForceOrigoFromIndex::
 VertexForceOrigoFromIndex(std::vector<double> &paraValue, 
 			  std::vector< std::vector<size_t> > 
@@ -582,9 +569,6 @@ VertexForceOrigoFromIndex(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//!Derivative contribution for force towards or from origo
-/*! 
- */
 void VertexForceOrigoFromIndex::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -604,7 +588,6 @@ derivs(Tissue &T,
   }
 }
 
-//!Constructor
 CellForceOrigoFromIndex::
 CellForceOrigoFromIndex(std::vector<double> &paraValue, 
 			  std::vector< std::vector<size_t> > 
@@ -646,9 +629,6 @@ CellForceOrigoFromIndex(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//!Derivative contribution for force towards or from origo
-/*! 
- */
 void CellForceOrigoFromIndex::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -671,32 +651,31 @@ derivs(Tissue &T,
   }
 }
 
-//!Constructor
 CylinderForce::
 CylinderForce(std::vector<double> &paraValue, 
-							std::vector< std::vector<size_t> > 
-							&indValue ) {
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
   
   //Do some checks on the parameters and variable indeces
   //////////////////////////////////////////////////////////////////////
   if( paraValue.size()!=2 ) {
     std::cerr << "CylinderForce::"
-							<< "CylinderForce() "
-							<< "Uses two parameters K_force direction(-1 -> inwards)" 
-							<< std::endl;
+	      << "CylinderForce() "
+	      << "Uses two parameters K_force direction(-1 -> inwards)" 
+	      << std::endl;
     exit(0);
   }
   if( paraValue[1] != 1.0 && paraValue[1] != -1.0 ) {
     std::cerr << "CylinderForce::"
-							<< "CylinderForce() "
-							<< "direction (second parameter) needs to be 1 (outward) "
-							<< "or -1 (inwards)." << std::endl;
+	      << "CylinderForce() "
+	      << "direction (second parameter) needs to be 1 (outward) "
+	      << "or -1 (inwards)." << std::endl;
     exit(0);
   }
   if( indValue.size() != 0 ) {
     std::cerr << "CylinderForce::"
-							<< "CylinderForce() "
-							<< "No indices used." << std::endl;
+	      << "CylinderForce() "
+	      << "No indices used." << std::endl;
     exit(0);
   }
   //Set the variable values
@@ -713,9 +692,6 @@ CylinderForce(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//!Derivative contribution for force towards or from origo
-/*! 
- */
 void CylinderForce::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -742,7 +718,6 @@ derivs(Tissue &T,
 	}
 }
 
-//!Constructor
 SphereCylinderForce::
 SphereCylinderForce(std::vector<double> &paraValue, 
 			  std::vector< std::vector<size_t> > 
@@ -784,9 +759,6 @@ SphereCylinderForce(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//!Derivative contribution for force towards or from origo
-/*! 
- */
 void SphereCylinderForce::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -826,7 +798,6 @@ derivs(Tissue &T,
   }
 }
 
-//!Constructor
 SphereCylinderForceFromRadius::
 SphereCylinderForceFromRadius(std::vector<double> &paraValue, 
 			      std::vector< std::vector<size_t> > 
@@ -868,9 +839,6 @@ SphereCylinderForceFromRadius(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//!Derivative contribution for force towards or from origo
-/*! 
- */
 void SphereCylinderForceFromRadius::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -924,7 +892,6 @@ derivs(Tissue &T,
   }
 }
 
-//!Constructor
 InfiniteWallForce::
 InfiniteWallForce(std::vector<double> &paraValue, 
 		  std::vector< std::vector<size_t> > 
@@ -968,10 +935,6 @@ InfiniteWallForce(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//!Derivative contribution for force towards or from origo
-/*! A spring force in a perpendicular direction is applied. Note, the
-  wall can only be defined along coordinate axes.
-*/
 void InfiniteWallForce::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -999,7 +962,6 @@ derivs(Tissue &T,
   }
 }
 
-//!Constructor
 EpidermalVertexForce::
 EpidermalVertexForce(std::vector<double> &paraValue, 
 		  std::vector< std::vector<size_t> > 
@@ -1042,10 +1004,6 @@ EpidermalVertexForce(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//!Derivative contribution for force towards or from origo
-/*! A spring force in a perpendicular direction is applied. Note, the
-  wall can only be defined along coordinate axes.
-*/
 void EpidermalVertexForce::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,

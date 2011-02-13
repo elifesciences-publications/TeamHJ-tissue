@@ -206,6 +206,9 @@ class SphereCylinderForceFromRadius : public BaseReaction {
 };
 
 //!Applies a force perpendicular to a defined wall of infinite size
+/*! A spring force in a perpendicular direction is applied. Note, the
+  wall can only be defined along coordinate axes.
+*/
 class InfiniteWallForce : public BaseReaction {
   
  public:
@@ -224,6 +227,9 @@ class InfiniteWallForce : public BaseReaction {
 };
 
 //!Applies a force on epidermal vertices
+/*! A spring force in a perpendicular direction is applied. Note, the
+  wall can only be defined along coordinate axes.
+*/
 class EpidermalVertexForce : public BaseReaction {
   
  public:

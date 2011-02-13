@@ -79,18 +79,18 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if(idValue=="VertexFromEpidermalCellWallSpring")
     return new VertexFromEpidermalCellWallSpring(paraValue,indValue);
   else if (idValue == "VertexFromWallSpringExperimental")
-	  return new VertexFromWallSpringExperimental(paraValue, indValue);
+    return new VertexFromWallSpringExperimental(paraValue, indValue);
   else if(idValue=="VertexFromWallSpringMTConcentrationHill")
     return new VertexFromWallSpringMTConcentrationHill(paraValue,indValue);
   else if(idValue=="VertexFromDoubleWallSpringMTConcentrationHill")
     return new VertexFromDoubleWallSpringMTConcentrationHill(paraValue,indValue);
-	else if (idValue=="VertexFromWallSpringAsymmetric" ||
-					 idValue=="VertexFromEpidermalWallSpringAsymmetric" ||
-					 idValue=="VertexFromEpidermalCellWallSpringAsymmetric") {
-		std::cerr << "BaseReaction::BaseReaction() All *SpringAsymmetric have been renamed "
-							<< "*Spring." << std::endl;
-		exit(-1);
-	}
+  else if (idValue=="VertexFromWallSpringAsymmetric" ||
+	   idValue=="VertexFromEpidermalWallSpringAsymmetric" ||
+	   idValue=="VertexFromEpidermalCellWallSpringAsymmetric") {
+    std::cerr << "BaseReaction::BaseReaction() All *SpringAsymmetric have been renamed "
+	      << "*Spring." << std::endl;
+    exit(-1);
+  }
   //Mechanical interactions between vertices
   //mechanical.h,mechanical.cc
   else if(idValue=="VertexFromCellPowerdiagram")
@@ -142,7 +142,7 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if (idValue == "DebugReaction")
 	  return new DebugReaction(paraValue, indValue);
 	
-	//network.h,network.cc
+  //network.h,network.cc
   else if(idValue=="AuxinModelSimple1")
     return new AuxinModelSimple1(paraValue,indValue); 
   else if(idValue=="AuxinModelStress")
@@ -166,15 +166,15 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if(idValue=="AuxinTransportCellCellNoGeometry")
     return new AuxinTransportCellCellNoGeometry(paraValue,indValue); 
 
-	//directionReaction.h, directionUpdate.cc
+  //directionReaction.h, directionUpdate.cc
   else if (idValue == "ContinousMTDirection")
-	  return new ContinousMTDirection(paraValue, indValue);
+    return new ContinousMTDirection(paraValue, indValue);
   else if (idValue == "UpdateMTDirection")
-	  return new UpdateMTDirection(paraValue, indValue);
+    return new UpdateMTDirection(paraValue, indValue);
   else if (idValue == "RotatingDirection")
-	  return new RotatingDirection(paraValue, indValue);
-	
-	//adhocReaction.h,adhocReaction.cc
+    return new RotatingDirection(paraValue, indValue);
+  
+  //adhocReaction.h,adhocReaction.cc
   else if(idValue=="VertexNoUpdateFromPosition")
     return new VertexNoUpdateFromPosition(paraValue,indValue); 
   else if(idValue=="VertexNoUpdateBoundary")
@@ -192,21 +192,20 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if(idValue=="StrainTest")
     return new StrainTest(paraValue,indValue); 
   else if(idValue=="CalculateVertexStressDirection")
-	  return new CalculateVertexStressDirection(paraValue,indValue); 
+    return new CalculateVertexStressDirection(paraValue,indValue); 
 
-  /* cellTime.h */
+  // cellTime.h
   else if (idValue=="CellTimeDerivative")
-	  return new CellTimeDerivative(paraValue, indValue);
+    return new CellTimeDerivative(paraValue, indValue);
 	
-  //Default, if nothing found
+  // Default, if nothing found
   else {
     std::cerr << "\nBaseReaction::createReaction() WARNING: Reactiontype " 
-							<< idValue << " not known, no reaction created.\n\7";
+	      << idValue << " not known, no reaction created.\n\7";
     exit(-1);
   }
 }
 
-//!This creator reads from an open file and then calls for the main creator
 BaseReaction* 
 BaseReaction::createReaction(std::istream &IN ) {
   
@@ -236,7 +235,7 @@ BaseReaction::createReaction(std::istream &IN ) {
 
 void BaseReaction::
 derivs(Tissue &T,
-			 std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &cellData,
        std::vector< std::vector<double> > &walldata,
        std::vector< std::vector<double> > &vertexData,
        std::vector< std::vector<double> > &cellderivs, 
@@ -248,22 +247,22 @@ derivs(Tissue &T,
 }  
 
 void BaseReaction::initiate(Tissue &T,
-														std::vector< std::vector<double> > &cellData,
-														std::vector< std::vector<double> > &walldata,
-														std::vector< std::vector<double> > &vertexData) 
+			    std::vector< std::vector<double> > &cellData,
+			    std::vector< std::vector<double> > &walldata,
+			    std::vector< std::vector<double> > &vertexData) 
 {
 }
 
 void BaseReaction::update(Tissue &T,
-													std::vector< std::vector<double> > &cellData,
-													std::vector< std::vector<double> > &walldata,
-													std::vector< std::vector<double> > &vertexData,
-													double h) 
+			  std::vector< std::vector<double> > &cellData,
+			  std::vector< std::vector<double> > &walldata,
+			  std::vector< std::vector<double> > &vertexData,
+			  double h) 
 {
 }
 
 void BaseReaction::print( std::ofstream &os ) {
   std::cerr << "BaseReaction::print(ofstream) should not be used. "
-						<< "Should always be mapped onto one of the real types.\n";
+	    << "Should always be mapped onto one of the real types.\n";
   exit(0);
 }
