@@ -48,7 +48,7 @@ its structure can be found at the documentation for Tissue::readInit(std::istrea
 
 <li> solver parameter file: With this file parameters for the solver is
 provided. Information of its structure can be found in
-BaseSolver::getSolver().
+static BaseSolver::getSolver(Tissue*,const std::string&).
 
 </ul>
 
