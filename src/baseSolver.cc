@@ -169,492 +169,492 @@ void BaseSolver::print(std::ostream &os)
   static int tCount=0;
   static int NOld=0,okOld=0,badOld=0;
   static double tOld=0.0;
-	double time=myTimes::getDiffTime();
+  double time=myTimes::getDiffTime();
   std::cerr << tCount << " " << t_ << " " << cellData_.size() << " " 
-						<< wallData_.size() << " " << vertexData_.size() << " "
-						<< numOk_ << " " << numBad_ << "  " << t_-tOld << " " 
-						<< static_cast<int>(cellData_.size())-static_cast<int>(NOld) 
-						<< " " << numOk_-okOld << " " << numBad_-badOld << " "
-						<< time << std::endl;; 
+	    << wallData_.size() << " " << vertexData_.size() << " "
+	    << numOk_ << " " << numBad_ << "  " << t_-tOld << " " 
+	    << static_cast<int>(cellData_.size())-static_cast<int>(NOld) 
+	    << " " << numOk_-okOld << " " << numBad_-badOld << " "
+	    << time << std::endl;; 
   tOld = t_;
   NOld = cellData_.size();
   okOld = numOk_;
   badOld = numBad_;
-	///
-	/// Print vertex, cell, and wall variables
   ///
-	if( printFlag_==0 ) {
-		if( tCount==0 )
-			os << numPrint_ << "\n";
-	  size_t Nv = vertexData_.size(); 
-		if( !Nv ) {
-			os << "0 0" << std::endl << "0 0" << std::endl;
-			return;
-		}
-		//Print the vertex positions
-		size_t dimension = vertexData_[0].size();
-		os << Nv << " " << dimension << std::endl;
-		for( size_t i=0 ; i<Nv ; ++i ) {
-			for( size_t d=0 ; d<dimension ; ++d )
-				os << vertexData_[i][d] << " ";
-			os << std::endl;
-		}
-		//os << std::endl;
-		//Print the cells, first connected vertecis and then variables
-		size_t Nc = cellData_.size();
-		int numPrintVar=cellData_[0].size()+3;
-		os << Nc << " " << numPrintVar << std::endl;
-		for( size_t i=0 ; i<Nc ; ++i ) {
-			size_t Ncv = T_->cell(i).numVertex(); 
-			os << Ncv << " ";
-			for( size_t k=0 ; k<Ncv ; ++k )
-				os << T_->cell(i).vertex(k)->index() << " ";
-			
-			for( size_t k=0 ; k<cellData_[i].size() ; ++k )
-				os << cellData_[i][k] << " ";
-			os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
-				 << T_->cell(i).numWall() << std::endl;
-		}		
-		// Print wall variables, first the two connected vertices and then the variables
-		numPrintVar=wallData_[0].size()+4;
-		size_t Nw = wallData_.size();
-		os << Nw << " " << numPrintVar << std::endl;
-		for( size_t i=0 ; i<Nw ; ++i ) {
-			//os << "2 ";
-			os << T_->wall(i).vertex1()->index() << " " 
-				 << T_->wall(i).vertex2()->index() << " ";
-			for( size_t k=0 ; k<wallData_[i].size() ; ++k )
-				os << wallData_[i][k] << " ";
-			double distance = T_->wall(i).lengthFromVertexPosition(vertexData_);
-			os << i << " " << distance
-				 << " " << distance-wallData_[i][0] << " " << (distance-wallData_[i][0])/wallData_[i][0]
-				 << std::endl;
-		}		
-		os << std::endl;
+  /// Print vertex, cell, and wall variables
+  ///
+  if( printFlag_==0 ) {
+    if( tCount==0 )
+      os << numPrint_ << "\n";
+    size_t Nv = vertexData_.size(); 
+    if( !Nv ) {
+      os << "0 0" << std::endl << "0 0" << std::endl;
+      return;
+    }
+    //Print the vertex positions
+    size_t dimension = vertexData_[0].size();
+    os << Nv << " " << dimension << std::endl;
+    for( size_t i=0 ; i<Nv ; ++i ) {
+      for( size_t d=0 ; d<dimension ; ++d )
+	os << vertexData_[i][d] << " ";
+      os << std::endl;
+    }
+    //os << std::endl;
+    //Print the cells, first connected vertecis and then variables
+    size_t Nc = cellData_.size();
+    int numPrintVar=cellData_[0].size()+3;
+    os << Nc << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      size_t Ncv = T_->cell(i).numVertex(); 
+      os << Ncv << " ";
+      for( size_t k=0 ; k<Ncv ; ++k )
+	os << T_->cell(i).vertex(k)->index() << " ";
+      
+      for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+	os << cellData_[i][k] << " ";
+      os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+	 << T_->cell(i).numWall() << std::endl;
+    }		
+    // Print wall variables, first the two connected vertices and then the variables
+    numPrintVar=wallData_[0].size()+4;
+    size_t Nw = wallData_.size();
+    os << Nw << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nw ; ++i ) {
+      //os << "2 ";
+      os << T_->wall(i).vertex1()->index() << " " 
+	 << T_->wall(i).vertex2()->index() << " ";
+      for( size_t k=0 ; k<wallData_[i].size() ; ++k )
+	os << wallData_[i][k] << " ";
+      double distance = T_->wall(i).lengthFromVertexPosition(vertexData_);
+      os << i << " " << distance
+	 << " " << distance-wallData_[i][0] << " " << (distance-wallData_[i][0])/wallData_[i][0]
+	 << std::endl;
+    }		
+    os << std::endl;
   }
-	///
-	/// Print vertex and cell variables
-	///
+  ///
+  /// Print vertex and cell variables
+  ///
   else if( printFlag_==1 ) {
-		if( tCount==0 )
-			os << numPrint_ << "\n";
-	  size_t Nv = vertexData_.size(); 
-		if( !Nv ) {
-			os << "0 0" << std::endl << "0 0" << std::endl;
-			return;
-		}
-		//Print the vertex positions
-		size_t dimension = vertexData_[0].size();
-		os << Nv << " " << dimension << std::endl;
-		for( size_t i=0 ; i<Nv ; ++i ) {
-			for( size_t d=0 ; d<dimension ; ++d )
-				os << vertexData_[i][d] << " ";
-			os << std::endl;
-		}
-		//os << std::endl;
-		//Print the cells, first connected vertecis and then variables
-		size_t Nc = cellData_.size();
-		int numPrintVar=cellData_[0].size()+3;
-		os << Nc << " " << numPrintVar << std::endl;
-		for( size_t i=0 ; i<Nc ; ++i ) {
-			size_t Ncv = T_->cell(i).numVertex(); 
-			os << Ncv << " ";
-			for( size_t k=0 ; k<Ncv ; ++k )
-				os << T_->cell(i).vertex(k)->index() << " ";
-			
-			for( size_t k=0 ; k<cellData_[i].size() ; ++k )
-				os << cellData_[i][k] << " ";
-			os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
-				 << T_->cell(i).numWall() << std::endl;
-		}		
-		os << std::endl;
+    if( tCount==0 )
+      os << numPrint_ << "\n";
+    size_t Nv = vertexData_.size(); 
+    if( !Nv ) {
+      os << "0 0" << std::endl << "0 0" << std::endl;
+      return;
+    }
+    //Print the vertex positions
+    size_t dimension = vertexData_[0].size();
+    os << Nv << " " << dimension << std::endl;
+    for( size_t i=0 ; i<Nv ; ++i ) {
+      for( size_t d=0 ; d<dimension ; ++d )
+	os << vertexData_[i][d] << " ";
+      os << std::endl;
+    }
+    //os << std::endl;
+    //Print the cells, first connected vertecis and then variables
+    size_t Nc = cellData_.size();
+    int numPrintVar=cellData_[0].size()+3;
+    os << Nc << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      size_t Ncv = T_->cell(i).numVertex(); 
+      os << Ncv << " ";
+      for( size_t k=0 ; k<Ncv ; ++k )
+	os << T_->cell(i).vertex(k)->index() << " ";
+      
+      for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+	os << cellData_[i][k] << " ";
+      os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+	 << T_->cell(i).numWall() << std::endl;
+    }		
+    os << std::endl;
   }
-	///
-	/// Print vertex and wall variables
-	///
+  ///
+  /// Print vertex and wall variables
+  ///
   else if( printFlag_==2 ) {
-		if( tCount==0 )
-			os << numPrint_ << "\n";
-		size_t Nv = vertexData_.size(); 
-		if( !Nv ) {
-			os << "0 0" << std::endl << "0 0" << std::endl;
-			return;
-		}
-		//Print the vertex positions
-		size_t dimension = vertexData_[0].size();
-		os << Nv << " " << dimension << std::endl;
-		for( size_t i=0 ; i<Nv ; ++i ) {
-			for( size_t d=0 ; d<dimension ; ++d )
-				os << vertexData_[i][d] << " ";
-			os << std::endl;
-		}
-		//os << std::endl;
-		// Print the walls, first connected vertecis and then variables
-		size_t Nw = wallData_.size();
-		int numPrintVar=wallData_[0].size()+4;
-		os << Nw << " " << numPrintVar << std::endl;
-		for( size_t i=0 ; i<Nw ; ++i ) {
-			os << "2 ";
-			os << T_->wall(i).vertex1()->index() << " " 
-				 << T_->wall(i).vertex2()->index() << " ";
-			for( size_t k=0 ; k<wallData_[i].size() ; ++k )
-				os << wallData_[i][k] << " ";
-			double distance = T_->wall(i).lengthFromVertexPosition(vertexData_);
-			os << i << " " << distance
-				 << " " << distance-wallData_[i][0] << " " << (distance-wallData_[i][0])/wallData_[i][0]
-				 << std::endl;
-		}		
-		os << std::endl;
+    if( tCount==0 )
+      os << numPrint_ << "\n";
+    size_t Nv = vertexData_.size(); 
+    if( !Nv ) {
+      os << "0 0" << std::endl << "0 0" << std::endl;
+      return;
+    }
+    //Print the vertex positions
+    size_t dimension = vertexData_[0].size();
+    os << Nv << " " << dimension << std::endl;
+    for( size_t i=0 ; i<Nv ; ++i ) {
+      for( size_t d=0 ; d<dimension ; ++d )
+	os << vertexData_[i][d] << " ";
+      os << std::endl;
+    }
+    //os << std::endl;
+    // Print the walls, first connected vertecis and then variables
+    size_t Nw = wallData_.size();
+    int numPrintVar=wallData_[0].size()+4;
+    os << Nw << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nw ; ++i ) {
+      os << "2 ";
+      os << T_->wall(i).vertex1()->index() << " " 
+	 << T_->wall(i).vertex2()->index() << " ";
+      for( size_t k=0 ; k<wallData_[i].size() ; ++k )
+	os << wallData_[i][k] << " ";
+      double distance = T_->wall(i).lengthFromVertexPosition(vertexData_);
+      os << i << " " << distance
+	 << " " << distance-wallData_[i][0] << " " << (distance-wallData_[i][0])/wallData_[i][0]
+	 << std::endl;
+    }		
+    os << std::endl;
   }
-	///
-	/// Print cell variables for gnuplot
-	///
+  ///
+  /// Print cell variables for gnuplot
+  ///
   else if( printFlag_==3 ) {
-		//Print the cells, first connected vertecis and then variables
-		size_t Nc = cellData_.size();
-		//os << Nc << " " << numPrintVar << std::endl;
-		for( size_t i=0 ; i<Nc ; ++i ) {
-			os << "0 " << i << " " << t_ << " ";
-			for( size_t k=0 ; k<cellData_[i].size() ; ++k )
-				os << cellData_[i][k] << " ";
-			os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
-				 << T_->cell(i).numWall() << std::endl;
-		}		
-		size_t Nw = wallData_.size();
-		for( size_t i=0 ; i<Nw ; ++i ) {
-			os << "1 " << i << " " << t_ << " ";
-			for( size_t k=0 ; k<wallData_[i].size() ; ++k )
-				os << wallData_[i][k] << " ";
-			os << i << " " << T_->wall(i).lengthFromVertexPosition(vertexData_)
-				 << " " << T_->wall(i).lengthFromVertexPosition(vertexData_)-wallData_[i][0]
-				 << std::endl;
-		}				
-		os << std::endl;
+    //Print the cells, first connected vertecis and then variables
+    size_t Nc = cellData_.size();
+    //os << Nc << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      os << "0 " << i << " " << t_ << " ";
+      for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+	os << cellData_[i][k] << " ";
+      os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+	 << T_->cell(i).numWall() << std::endl;
+    }		
+    size_t Nw = wallData_.size();
+    for( size_t i=0 ; i<Nw ; ++i ) {
+      os << "1 " << i << " " << t_ << " ";
+      for( size_t k=0 ; k<wallData_[i].size() ; ++k )
+	os << wallData_[i][k] << " ";
+      os << i << " " << T_->wall(i).lengthFromVertexPosition(vertexData_)
+	 << " " << T_->wall(i).lengthFromVertexPosition(vertexData_)-wallData_[i][0]
+	 << std::endl;
+    }				
+    os << std::endl;
   }
-
+  
   else if (printFlag_ == 96) {
-	  size_t dimensions = vertexData_[0].size();
-	  
-	  for (size_t i = 0; i < T_->numCell(); ++i) {
-		  Cell &cell = T_->cell(i);
-
-		  if (cell.isNeighbor(T_->background())) {
-			  continue;
-		  }
-
-		  std::vector<double> angles;
-
-		  for (size_t j = 0; j < cell.numVertex(); ++j) {
-			  Vertex *v1 = cell.vertex((j - 1 + cell.numVertex()) % cell.numVertex());
-			  Vertex *v2 = cell.vertex(j % cell.numVertex());
-			  Vertex *v3 = cell.vertex((j + 1) % cell.numVertex());
-
-			  std::vector<double> u(dimensions);
-			  std::vector<double> v(dimensions);
-
-			  for (size_t d = 0; d < dimensions; ++d) {
-				  u[d] = vertexData_[v1->index()][d] - vertexData_[v2->index()][d];
-				  v[d] = vertexData_[v3->index()][d] - vertexData_[v2->index()][d];
-			  }
-
-			  double udotv = 0.0;
-			  double absu = 0.0;
-			  double absv = 0.0;
-
-			  for (size_t d = 0; d < dimensions; ++d) {
-				  udotv += u[d] * v[d];
-				  absu += std::pow(u[d], 2.0);
-				  absv += std::pow(v[d], 2.0);
-			  }
-
-			  absu = std::sqrt(absu);
-			  absv = std::sqrt(absv);
-
-			  double c = udotv / (absu * absv);
-
-			  while (std::abs(c) > 1.0)
-			  {
-				  c *= 0.99;
-			  }
-
-			  angles.push_back(std::acos(c));
-		  }
-
-		  std::vector<double>::iterator iterator;
-
-		  iterator = std::min_element(angles.begin(), angles.end());
-		  double min = *iterator;
-
-		  iterator = std::max_element(angles.begin(), angles.end());
-		  double max = *iterator;
-
-		  std::cout << max / min << "\n";
-	  }
-  }
-
-  else if (printFlag_ == 97) {
-	  for (size_t i = 0; i < T_->numCell(); ++i) {
-		  Cell &cell = T_->cell(i);
-		  
-		  if (cell.isNeighbor(T_->background())) {
-			  continue;
-		  }
-		  
-		  double length = 0.0;
-		  
-		  for (size_t j = 0; j < cell.numWall(); ++j) {
-			  Wall *wall = cell.wall(j);
-			  
-			  length += wall->lengthFromVertexPosition(vertexData_);
-		  }
-		  
-		  double area = cell.calculateVolume(vertexData_, 0);
-		  
-		  std::cout << std::pow(length, 2.0) / area << "\n";
-	  }
-  }
-
-  else if (printFlag_ == 98) {
-	  std::list<int> neighbors;
-
-	  for (size_t i = 0; i < T_->numCell(); ++i) {
-		  Cell &cell = T_->cell(i);
-
-		  if (cell.isNeighbor(T_->background())) {
-			  continue;
-		  } else {
-			  std::set<Cell *> candidates;
-
-			  for (size_t j = 0; j < cell.numWall(); ++j)
-			  {
-				  Wall *wall = cell.wall(j);
-				  
-				  if (wall->cell1() != &cell) {
-					  candidates.insert(wall->cell1());
-				  }
-				  
-				  if (wall->cell2() != &cell) {
-					  candidates.insert(wall->cell2());
-					  
-				  }
-			  }
-			  
-			  if (!candidates.empty()) {
-				  neighbors.push_back(candidates.size());
-			  }
-		  }
-	  }
-	  
-	  if (neighbors.empty()) {
-		  std::cout << "> 0\n";
-		  return;
-	  } 
-	  
-	  std::vector<int> histogram(*(std::max_element(neighbors.begin(), neighbors.end())) + 1, 0);
-	  
-	  for (std::list<int>::const_iterator i = neighbors.begin(), e = neighbors.end(); i != e; ++i) {
-		  ++histogram[*i];
-	  }
-	  
-	  double sum = 0.0;
-
-	  for (std::vector<int>::const_iterator i = histogram.begin(), e = histogram.end(); i != e; ++i) {
-		  sum += *i;
-	  }
-	  
-	  std::cout << "> " <<  histogram.size() << "\n";
-	  for (size_t i = 0; i < histogram.size(); ++i) {
-		  std::cout << i << " " << (double) histogram[i] / sum << "\n";
-	  }
-  }
-
-  else if (printFlag_ == 99) {
-	  size_t dimensions = vertexData_[0].size();
-	  
-	  for (size_t i = 0; i < T_->numVertex(); ++i) {
-		  Vertex *vertex = T_->vertexP(i);
-		  
-		  std::vector<double> vertexPosition(dimensions);
-		  
-		  std::cout << t_ << " ";
-		  
-		  for (size_t j = 0; j < dimensions; ++j) {
-			  std::cout << (vertexPosition[j] = vertexData_[vertex->index()][j]) << " ";
-		  }
-
-// 		  std::cout << "\n";
-
-// 		  std::cout << t_ << " ";
-
-		  std::vector<double> stressDirection = vertex->stressDirection();
-
-		  double A = 0.0;
-		  
-		  for (size_t j = 0; j < stressDirection.size(); ++j) {
-			  A += (stressDirection[j] * stressDirection[j]);
-		  }
-
-		  A = std::sqrt(A);
-
-		  for (size_t j = 0; j < stressDirection.size(); ++j) {
-			  std::cout << (stressDirection[j] / A) << " ";
-		  }
-
-		  std::cout << "\n";
-		  
-	  }
-	  std::cout << "\n";
-  }
-
-	///
-	/// For printing pin1 also in membranes
-	///
-	else if (printFlag_==4) {
-		if( tCount==0 )
-			os << numPrint_ << "\n";
-		size_t Nv = vertexData_.size(); 
-		if( !Nv ) {
-			os << "0 0" << std::endl << "0 0" << std::endl;
-			return;
-		}
-		//Print the vertex positions
-		size_t dimension = vertexData_[0].size();
-		os << T_->numVertex() << " " << dimension << std::endl;
-		for( size_t i=0 ; i<Nv ; ++i ) {
-			for( size_t d=0 ; d<dimension ; ++d )
-				os << vertexData_[i][d] << " ";
-			os << std::endl;
-		}
-		os << std::endl;
-		//Print the cells, first connected vertecis and then variables
-		size_t Nc = cellData_.size();
-		// For membrane PIN1 printing (version3)
-		//////////////////////////////////////////////////////////////////////
-		os << Nc << std::endl;
-		size_t pinI=8,xI=9;
-		//size_t auxinI=4,mI=7;
-		std::vector<double> parameter(1);
-		parameter[0]=0.01;
-		for( size_t i=0 ; i<Nc ; ++i ) {
-			size_t Ncv = T_->cell(i).numVertex(); 
-			os << Ncv << " ";
-			for( size_t k=0 ; k<Ncv ; ++k )
-				os << T_->cell(i).vertex(k)->index() << " ";
-			
-			//pin polarization
-			//////////////////////////////////////////////////////////////////////
-			size_t numWalls=T_->cell(i).numWall();
-			
-			//Polarization coefficient normalization constant
-			double sum=0.0;
-			std::vector<double> Pij(numWalls);
-			for( size_t n=0 ; n<numWalls ; ++n ) {
-				if( T_->cell(i).wall(n)->cell1() != T_->background() &&
-						T_->cell(i).wall(n)->cell2() != T_->background() ) { 
-					size_t neighI;
-					if( T_->cell(i).wall(n)->cell1()->index()==i )
-						neighI = T_->cell(i).wall(n)->cell2()->index();
-					else
-						neighI = T_->cell(i).wall(n)->cell1()->index();
-					//double powX = std::pow(cellData_[ neighI ][ xI ],parameter[5));
-					//double Cij = powX/(std::pow(parameter[4),parameter[5))+powX);
-					sum += Pij[n] = cellData_[ neighI ][ xI ];
-					//sum += Pij[n] = (1.0-parameter[2]) + 
-					//parameter[2]*cellData_[ neighI ][xI];
-				}
-			}
-			sum += parameter[0];
-			//sum /= numWalls;//For adjusting for different num neigh
-			
-			if( sum >= 0.0 )
-				os << parameter[0]*cellData_[i][pinI] / sum << " ";
-			else
-				os << "0.0 ";
-			
-			for( size_t n=0 ; n<numWalls ; ++n ) {
-				double pol=0.0;
-				if( sum != 0.0 )
-					pol = cellData_[i][pinI] * Pij[n] / sum;
-				os << pol << " ";
-			}
-			os << std::endl;
-		}
+    size_t dimensions = vertexData_[0].size();
+    
+    for (size_t i = 0; i < T_->numCell(); ++i) {
+      Cell &cell = T_->cell(i);
+      
+      if (cell.isNeighbor(T_->background())) {
+	continue;
+      }
+      
+      std::vector<double> angles;
+      
+      for (size_t j = 0; j < cell.numVertex(); ++j) {
+	Vertex *v1 = cell.vertex((j - 1 + cell.numVertex()) % cell.numVertex());
+	Vertex *v2 = cell.vertex(j % cell.numVertex());
+	Vertex *v3 = cell.vertex((j + 1) % cell.numVertex());
+	
+	std::vector<double> u(dimensions);
+	std::vector<double> v(dimensions);
+	
+	for (size_t d = 0; d < dimensions; ++d) {
+	  u[d] = vertexData_[v1->index()][d] - vertexData_[v2->index()][d];
+	  v[d] = vertexData_[v3->index()][d] - vertexData_[v2->index()][d];
 	}
-	///
-	/// For printing pin1 also in membranes using a wall property
-	///
-	else if (printFlag_==5) {
-		if( tCount==0 )
-			os << numPrint_ << "\n";
-		size_t Nv = vertexData_.size(); 
-		if( !Nv ) {
-			os << "0 0" << std::endl << "0 0" << std::endl;
-			return;
-		}
-		//Print the vertex positions
-		size_t dimension = vertexData_[0].size();
-		os << T_->numVertex() << " " << dimension << std::endl;
-		for( size_t i=0 ; i<Nv ; ++i ) {
-			for( size_t d=0 ; d<dimension ; ++d )
-				os << vertexData_[i][d] << " ";
-			os << std::endl;
-		}
-		os << std::endl;
-		//Print the cells, first connected vertecis and then variables
-		size_t Nc = cellData_.size();
-		// For membrane PIN1 printing wall version
-		//////////////////////////////////////////////////////////////////////
-		os << Nc << std::endl;
-		size_t pinI=8,xI=1;
-		//size_t auxinI=4,mI=7;
-		std::vector<double> parameter(1);
-		parameter[0]=0.01;
-		for( size_t i=0 ; i<Nc ; ++i ) {
-			size_t Ncv = T_->cell(i).numVertex(); 
-			os << Ncv << " ";
-			for( size_t k=0 ; k<Ncv ; ++k )
-				os << T_->cell(i).vertex(k)->index() << " ";
-			
-			//pin polarization
-			//////////////////////////////////////////////////////////////////////
-			size_t numWalls=T_->cell(i).numWall();
-			
-			//Polarization coefficient normalization constant
-			double sum=0.0;
-			std::vector<double> Pij(numWalls);
-			double minPin=0.0;
-			for( size_t n=0 ; n<numWalls ; ++n ) {
-				size_t neighI = T_->cell(i).wall(n)->index();
-				sum += Pij[n] = wallData_[ neighI ][ xI ];
-				if (Pij[n]<minPin) {
-					minPin=Pij[n];
-				}
-				//sum += Pij[n] = (1.0-parameter[2]) + 
-				//parameter[2]*cellData_[ neighI ][xI];
-			}
-			if (minPin<0.0) {
-				sum -= minPin*numWalls;
-				for( size_t n=0 ; n<numWalls ; ++n ) {
-					Pij[n] -= minPin;
-				}
-			}
-			sum += parameter[0];
-			//if( sum >= 0.0 )
-			//os << parameter[0]*cellData_[i][pinI] / sum << " ";
-			//else
-			os << "0.0 ";
-			
-			for( size_t n=0 ; n<numWalls ; ++n ) {
-				double pol=0.0;
-				if( sum != 0.0 )
-					pol = cellData_[i][pinI] * Pij[n] / sum;
-				os << pol << " ";
-			}
-			os << std::endl;
-		}
+	
+	double udotv = 0.0;
+	double absu = 0.0;
+	double absv = 0.0;
+	
+	for (size_t d = 0; d < dimensions; ++d) {
+	  udotv += u[d] * v[d];
+	  absu += std::pow(u[d], 2.0);
+	  absv += std::pow(v[d], 2.0);
+	}
+	
+	absu = std::sqrt(absu);
+	absv = std::sqrt(absv);
+	
+	double c = udotv / (absu * absv);
+	
+	while (std::abs(c) > 1.0)
+	  {
+	    c *= 0.99;
+	  }
+	
+	angles.push_back(std::acos(c));
+      }
+      
+      std::vector<double>::iterator iterator;
+      
+      iterator = std::min_element(angles.begin(), angles.end());
+      double min = *iterator;
+      
+      iterator = std::max_element(angles.begin(), angles.end());
+      double max = *iterator;
+      
+      std::cout << max / min << "\n";
+    }
+  }
+  
+  else if (printFlag_ == 97) {
+    for (size_t i = 0; i < T_->numCell(); ++i) {
+      Cell &cell = T_->cell(i);
+      
+      if (cell.isNeighbor(T_->background())) {
+	continue;
+      }
+      
+      double length = 0.0;
+      
+      for (size_t j = 0; j < cell.numWall(); ++j) {
+	Wall *wall = cell.wall(j);
+	
+	length += wall->lengthFromVertexPosition(vertexData_);
+      }
+      
+      double area = cell.calculateVolume(vertexData_, 0);
+      
+      std::cout << std::pow(length, 2.0) / area << "\n";
+    }
+  }
+  
+  else if (printFlag_ == 98) {
+    std::list<int> neighbors;
+    
+    for (size_t i = 0; i < T_->numCell(); ++i) {
+      Cell &cell = T_->cell(i);
+      
+      if (cell.isNeighbor(T_->background())) {
+	continue;
+      } else {
+	std::set<Cell *> candidates;
+	
+	for (size_t j = 0; j < cell.numWall(); ++j)
+	  {
+	    Wall *wall = cell.wall(j);
+	    
+	    if (wall->cell1() != &cell) {
+	      candidates.insert(wall->cell1());
+	    }
+	    
+	    if (wall->cell2() != &cell) {
+	      candidates.insert(wall->cell2());
+	      
+	    }
+	  }
+	
+	if (!candidates.empty()) {
+	  neighbors.push_back(candidates.size());
+	}
+      }
+    }
+    
+    if (neighbors.empty()) {
+      std::cout << "> 0\n";
+      return;
+    } 
+    
+    std::vector<int> histogram(*(std::max_element(neighbors.begin(), neighbors.end())) + 1, 0);
+    
+    for (std::list<int>::const_iterator i = neighbors.begin(), e = neighbors.end(); i != e; ++i) {
+      ++histogram[*i];
+    }
+    
+    double sum = 0.0;
+    
+    for (std::vector<int>::const_iterator i = histogram.begin(), e = histogram.end(); i != e; ++i) {
+      sum += *i;
+    }
+    
+    std::cout << "> " <<  histogram.size() << "\n";
+    for (size_t i = 0; i < histogram.size(); ++i) {
+      std::cout << i << " " << (double) histogram[i] / sum << "\n";
+    }
+  }
+  
+  else if (printFlag_ == 99) {
+    size_t dimensions = vertexData_[0].size();
+    
+    for (size_t i = 0; i < T_->numVertex(); ++i) {
+      Vertex *vertex = T_->vertexP(i);
+      
+      std::vector<double> vertexPosition(dimensions);
+      
+      std::cout << t_ << " ";
+      
+      for (size_t j = 0; j < dimensions; ++j) {
+	std::cout << (vertexPosition[j] = vertexData_[vertex->index()][j]) << " ";
+      }
+      
+      // 		  std::cout << "\n";
+      
+      // 		  std::cout << t_ << " ";
+      
+      std::vector<double> stressDirection = vertex->stressDirection();
+      
+      double A = 0.0;
+      
+      for (size_t j = 0; j < stressDirection.size(); ++j) {
+	A += (stressDirection[j] * stressDirection[j]);
+      }
+      
+      A = std::sqrt(A);
+      
+      for (size_t j = 0; j < stressDirection.size(); ++j) {
+	std::cout << (stressDirection[j] / A) << " ";
+      }
+      
+      std::cout << "\n";
+      
+    }
+    std::cout << "\n";
+  }
+  
+  ///
+  /// For printing pin1 also in membranes
+  ///
+  else if (printFlag_==4) {
+    if( tCount==0 )
+      os << numPrint_ << "\n";
+    size_t Nv = vertexData_.size(); 
+    if( !Nv ) {
+      os << "0 0" << std::endl << "0 0" << std::endl;
+      return;
+    }
+    //Print the vertex positions
+    size_t dimension = vertexData_[0].size();
+    os << T_->numVertex() << " " << dimension << std::endl;
+    for( size_t i=0 ; i<Nv ; ++i ) {
+      for( size_t d=0 ; d<dimension ; ++d )
+	os << vertexData_[i][d] << " ";
+      os << std::endl;
+    }
+    os << std::endl;
+    //Print the cells, first connected vertecis and then variables
+    size_t Nc = cellData_.size();
+    // For membrane PIN1 printing (version3)
+    //////////////////////////////////////////////////////////////////////
+    os << Nc << std::endl;
+    size_t pinI=8,xI=9;
+    //size_t auxinI=4,mI=7;
+    std::vector<double> parameter(1);
+    parameter[0]=0.01;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      size_t Ncv = T_->cell(i).numVertex(); 
+      os << Ncv << " ";
+      for( size_t k=0 ; k<Ncv ; ++k )
+	os << T_->cell(i).vertex(k)->index() << " ";
+      
+      //pin polarization
+      //////////////////////////////////////////////////////////////////////
+      size_t numWalls=T_->cell(i).numWall();
+      
+      //Polarization coefficient normalization constant
+      double sum=0.0;
+      std::vector<double> Pij(numWalls);
+      for( size_t n=0 ; n<numWalls ; ++n ) {
+	if( T_->cell(i).wall(n)->cell1() != T_->background() &&
+	    T_->cell(i).wall(n)->cell2() != T_->background() ) { 
+	  size_t neighI;
+	  if( T_->cell(i).wall(n)->cell1()->index()==i )
+	    neighI = T_->cell(i).wall(n)->cell2()->index();
+	  else
+	    neighI = T_->cell(i).wall(n)->cell1()->index();
+	  //double powX = std::pow(cellData_[ neighI ][ xI ],parameter[5));
+	  //double Cij = powX/(std::pow(parameter[4),parameter[5))+powX);
+	  sum += Pij[n] = cellData_[ neighI ][ xI ];
+	  //sum += Pij[n] = (1.0-parameter[2]) + 
+	  //parameter[2]*cellData_[ neighI ][xI];
+	}
+      }
+      sum += parameter[0];
+      //sum /= numWalls;//For adjusting for different num neigh
+      
+      if( sum >= 0.0 )
+	os << parameter[0]*cellData_[i][pinI] / sum << " ";
+      else
+	os << "0.0 ";
+      
+      for( size_t n=0 ; n<numWalls ; ++n ) {
+	double pol=0.0;
+	if( sum != 0.0 )
+	  pol = cellData_[i][pinI] * Pij[n] / sum;
+	os << pol << " ";
+      }
+      os << std::endl;
+    }
+  }
+  ///
+  /// For printing pin1 also in membranes using a wall property
+  ///
+  else if (printFlag_==5) {
+    if( tCount==0 )
+      os << numPrint_ << "\n";
+    size_t Nv = vertexData_.size(); 
+    if( !Nv ) {
+      os << "0 0" << std::endl << "0 0" << std::endl;
+      return;
+    }
+    //Print the vertex positions
+    size_t dimension = vertexData_[0].size();
+    os << T_->numVertex() << " " << dimension << std::endl;
+    for( size_t i=0 ; i<Nv ; ++i ) {
+      for( size_t d=0 ; d<dimension ; ++d )
+	os << vertexData_[i][d] << " ";
+      os << std::endl;
+    }
+    os << std::endl;
+    //Print the cells, first connected vertecis and then variables
+    size_t Nc = cellData_.size();
+    // For membrane PIN1 printing wall version
+    //////////////////////////////////////////////////////////////////////
+    os << Nc << std::endl;
+    size_t pinI=8,xI=1;
+    //size_t auxinI=4,mI=7;
+    std::vector<double> parameter(1);
+    parameter[0]=0.01;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      size_t Ncv = T_->cell(i).numVertex(); 
+      os << Ncv << " ";
+      for( size_t k=0 ; k<Ncv ; ++k )
+	os << T_->cell(i).vertex(k)->index() << " ";
+      
+      //pin polarization
+      //////////////////////////////////////////////////////////////////////
+      size_t numWalls=T_->cell(i).numWall();
+      
+      //Polarization coefficient normalization constant
+      double sum=0.0;
+      std::vector<double> Pij(numWalls);
+      double minPin=0.0;
+      for( size_t n=0 ; n<numWalls ; ++n ) {
+	size_t neighI = T_->cell(i).wall(n)->index();
+	sum += Pij[n] = wallData_[ neighI ][ xI ];
+	if (Pij[n]<minPin) {
+	  minPin=Pij[n];
+	}
+	//sum += Pij[n] = (1.0-parameter[2]) + 
+	//parameter[2]*cellData_[ neighI ][xI];
+      }
+      if (minPin<0.0) {
+	sum -= minPin*numWalls;
+	for( size_t n=0 ; n<numWalls ; ++n ) {
+	  Pij[n] -= minPin;
+	}
+      }
+      sum += parameter[0];
+      //if( sum >= 0.0 )
+      //os << parameter[0]*cellData_[i][pinI] / sum << " ";
+      //else
+      os << "0.0 ";
+      
+      for( size_t n=0 ; n<numWalls ; ++n ) {
+	double pol=0.0;
+	if( sum != 0.0 )
+	  pol = cellData_[i][pinI] * Pij[n] / sum;
+	os << pol << " ";
+      }
+      os << std::endl;
+    }
     //////////////////////////////////////////////////////////////////////
     //End Pij printing wall version
-	}
+  }
   else
     std::cerr << "BaseSolver::print() Wrong printFlag value\n";
   tCount++;
@@ -662,7 +662,7 @@ void BaseSolver::print(std::ostream &os)
 
 void BaseSolver::printInit(std::ostream &os) const
 {
-	assert( T_->numCell()==cellData_.size() && 
+  assert( T_->numCell()==cellData_.size() && 
 					T_->numWall()==wallData_.size() &&
 					T_->numVertex()==vertexData_.size() );
 

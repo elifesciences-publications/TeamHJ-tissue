@@ -16,6 +16,11 @@
 
 class Tissue;
 
+///
+/// @brief Base class for rules on how defined Directions are updated during simulations.
+///
+/// @see Direction
+///
 class BaseDirectionUpdate {
   
  private:
@@ -28,9 +33,9 @@ class BaseDirectionUpdate {
  public:
   
   static BaseDirectionUpdate* createDirectionUpdate(std::vector<double> &paraValue, 
-																										std::vector< std::vector<size_t> > 
-																										&indValue,
-																										std::string idValue );
+						    std::vector< std::vector<size_t> > 
+						    &indValue,
+						    std::string idValue );
   static BaseDirectionUpdate* createDirectionUpdate( std::istream &IN ); 
   
   //Constructor/destructor not defined!
@@ -60,20 +65,20 @@ class BaseDirectionUpdate {
   inline void setVariableIndex(size_t i, std::vector<size_t> &value);
   inline void setVariableIndex(std::vector< std::vector<size_t> > &value);
   
-	virtual void initiate(Tissue &T,
-												std::vector< std::vector<double> > &cellData,
-												std::vector< std::vector<double> > &wallData,
-												std::vector< std::vector<double> > &vertexData,
-												std::vector< std::vector<double> > &cellDerivs,
-												std::vector< std::vector<double> > &wallDerivs,
-												std::vector< std::vector<double> > &vertexDerivs );
+  virtual void initiate(Tissue &T,
+			std::vector< std::vector<double> > &cellData,
+			std::vector< std::vector<double> > &wallData,
+			std::vector< std::vector<double> > &vertexData,
+			std::vector< std::vector<double> > &cellDerivs,
+			std::vector< std::vector<double> > &wallDerivs,
+			std::vector< std::vector<double> > &vertexDerivs );
   virtual void update(Tissue &T, double h,
-											std::vector< std::vector<double> > &cellData,
-											std::vector< std::vector<double> > &wallData,
-											std::vector< std::vector<double> > &vertexData,
-											std::vector< std::vector<double> > &cellDerivs,
-											std::vector< std::vector<double> > &wallDerivs,
-											std::vector< std::vector<double> > &vertexDerivs );
+		      std::vector< std::vector<double> > &cellData,
+		      std::vector< std::vector<double> > &wallData,
+		      std::vector< std::vector<double> > &vertexData,
+		      std::vector< std::vector<double> > &cellDerivs,
+		      std::vector< std::vector<double> > &wallDerivs,
+		      std::vector< std::vector<double> > &vertexDerivs );
   virtual void print( std::ofstream &os );
 };
 

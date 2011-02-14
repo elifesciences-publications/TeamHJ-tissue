@@ -16,6 +16,11 @@
 
 class Tissue;
 
+///
+/// @brief Base class for rules on how Directions are updated at cell divisions.
+///
+/// @see Direction
+///
 class BaseDirectionDivision {
   
  private:

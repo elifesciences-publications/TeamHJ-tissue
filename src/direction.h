@@ -17,6 +17,18 @@
 
 class Tissue;
 
+///
+/// @brief This class defines all rules for specific directions in the cells.
+///
+/// Directions can be defined for cells in a tissue to hold vectorial information, e.g. MT/MF directions.
+/// This class is a base class holding two main update base classes. One for dynamic updates
+/// during a simulation, and on for rules relating the direction to cell divisions.
+///
+/// @see BaseDirectionUpdate
+/// @see BaseDirectionDivision
+/// @see Tissue
+/// @see Cell
+/// 
 class Direction {
   
  private:
@@ -51,28 +63,28 @@ class Direction {
   int addUpdate( std::istream &IN );
   int addDivision( std::istream &IN );
   void initiate(Tissue &T,
-								std::vector< std::vector<double> > &cellData,
-								std::vector< std::vector<double> > &wallData,
-								std::vector< std::vector<double> > &vertexData,
-								std::vector< std::vector<double> > &cellDerivs,
-								std::vector< std::vector<double> > &wallDerivs,
-								std::vector< std::vector<double> > &vertexDerivs );
-
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData,
+		std::vector< std::vector<double> > &cellDerivs,
+		std::vector< std::vector<double> > &wallDerivs,
+		std::vector< std::vector<double> > &vertexDerivs );
+  
   void update(Tissue &T,double step,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
-
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
+  
   void divide(Tissue &T,size_t cellI,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
 //!Returns the id string
