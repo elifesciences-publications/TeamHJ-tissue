@@ -54,7 +54,7 @@ size_t BaseSolver::debugCount() const
 	exit(-1);
 }
 
-BaseSolver *BaseSolver::getSolver(Tissue *T, const std::string &file)
+BaseSolver* BaseSolver::getSolver(Tissue *T, const std::string &file)
 {
 	std::istream *IN = myFiles::openFile(file);
 	if (!IN) {

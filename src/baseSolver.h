@@ -70,7 +70,7 @@ protected:
   /// @see RK5Adaptive::readParameterFile()
   /// @see RK4::readParameterFile()
   ///
-  static BaseSolver *getSolver(Tissue *T, const std::string &file);
+  static BaseSolver* getSolver(Tissue *T, const std::string &file);
   
   size_t debugCount() const;
   

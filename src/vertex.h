@@ -195,9 +195,10 @@ class Vertex {
   /// A boundary vertex is defined from whether any of the connected walls is
   /// connected to the background.
   ///
-  /// @para Cell* background is a pointer to the tissue background.
+  /// @param background is a pointer to the tissue background (of type Cell).
   ///
   /// @return 1 if boundary and 0 otherwise.
+  ///
   int isBoundary(Cell *background) const;
   
   ///

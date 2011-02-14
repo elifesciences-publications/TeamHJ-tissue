@@ -1,21 +1,20 @@
-/**
- * Filename     : growth.cc
- * Description  : Classes describing growth updates
- * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
- * Created      : April 2006
- * Revision     : $Id:$
- */
+//
+// Filename     : growth.cc
+// Description  : Classes describing growth updates
+// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+// Created      : April 2006
+// Revision     : $Id:$
+//
 #include"growth.h"
 #include"baseReaction.h"
 
-//!Constructor
 WallGrowthExponentialTruncated::
 WallGrowthExponentialTruncated(std::vector<double> &paraValue, 
 			       std::vector< std::vector<size_t> > 
 			       &indValue ) {
   
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( paraValue.size()!=2 ) {
     std::cerr << "WallGrowthExponentialTruncated::"
 	      << "WallGrowthExponentialTruncated() "
@@ -29,13 +28,13 @@ WallGrowthExponentialTruncated(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("WallGrowthExponentialTruncated");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "k_growth";
@@ -43,10 +42,6 @@ WallGrowthExponentialTruncated(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Derivative contribution for the growth
-/*! Deriving the time derivative contribution for the growth for all
-  walls in the tissue.
-*/
 void WallGrowthExponentialTruncated::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -64,14 +59,13 @@ derivs(Tissue &T,
       wallData[i][lengthIndex]*(1-wallData[i][lengthIndex]/parameter(1));
 }
 
-//!Constructor
 WallGrowthExponentialStressTruncated::
 WallGrowthExponentialStressTruncated(std::vector<double> &paraValue, 
 			       std::vector< std::vector<size_t> > 
 			       &indValue ) {
   
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( paraValue.size()!=2 ) {
     std::cerr << "WallGrowthExponentialStressTruncated::"
 	      << "WallGrowthExponentialStressTruncated() "
@@ -85,13 +79,13 @@ WallGrowthExponentialStressTruncated(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("WallGrowthExponentialStressTruncated");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "k_growth";
@@ -99,11 +93,7 @@ WallGrowthExponentialStressTruncated(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Derivative contribution for the growth
-/*! Deriving the time derivative contribution for the growth for all
-  walls in the tissue.
-*/
-void WallGrowthExponentialStressTruncated::
+void WallGrowthExponentialStretchTruncated::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
        std::vector< std::vector<double> > &wallData,
@@ -125,8 +115,7 @@ derivs(Tissue &T,
     distance = std::sqrt(distance);
     if( distance>wallData[i][lengthIndex] )
       wallDerivs[i][lengthIndex] += parameter(0)*
-	(distance-wallData[i][lengthIndex])*
-	wallData[i][lengthIndex]*(1-wallData[i][lengthIndex]/parameter(1));
+	(distance-wallData[i][lengthIndex])*(1-wallData[i][lengthIndex]/parameter(1));
   }
 }
 
@@ -136,7 +125,7 @@ WallGrowthStress(std::vector<double> &paraValue,
 		 &indValue ) {
   
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( paraValue.size()!=4 ) {
     std::cerr << "WallGrowthStress::"
 	      << "WallGrowthStress() "
@@ -160,35 +149,32 @@ WallGrowthStress(std::vector<double> &paraValue,
     exit(0);
   }
   
-  if( (indValue.size()!=1 && indValue.size()!=2) || indValue[0].size() != 1 || (paraValue[2]==0 && (indValue.size()!=2 || !indValue[1].size())) ) {
+  if( (indValue.size()!=1 && indValue.size()!=2) || indValue[0].size() != 1 
+      || (paraValue[2]==0 && (indValue.size()!=2 || !indValue[1].size())) ) {
     std::cerr << "WallGrowthStress::"
 	      << "WallGrowthStress() "
 	      << "One variable index is used (wall length index) at first "
-	      << "level, and stress variable indices at second (if stretch_flag not set)."
+	      << "level, and stress variable indices at second (if strain_flag not set)."
 	      << std::endl;
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("WallGrowthStress");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "k_growth";
-  tmp[1] = "stress_threshold";
-  tmp[2] = "stretch_flag";
+  tmp[1] = "s_threshold";
+  tmp[2] = "strain_flag";
   tmp[3] = "linear_flag";
   setParameterId( tmp );
 }
 
-//! Derivative contribution for the growth
-/*! Deriving the time derivative contribution for the growth for all
-  walls in the tissue.
-*/
 void WallGrowthStress::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -205,11 +191,11 @@ derivs(Tissue &T,
     size_t v1 = T.wall(i).vertex1()->index();
     size_t v2 = T.wall(i).vertex2()->index();
     double stress=0.0;
-    if (!parameter(2)) {
+    if (!parameter(2)) {//Stress used, read from saved data in the wall
       for (size_t k=0; k<numVariableIndex(1); ++k)
 	stress += wallData[i][variableIndex(1,k)];
     }
-    else {
+    else { //Strain/stretch used
       double distance=0.0;
       for( size_t d=0 ; d<vertexData[v1].size() ; d++ )
 	distance += (vertexData[v1][d]-vertexData[v2][d])*
@@ -233,7 +219,7 @@ WallGrowthStressSpatial(std::vector<double> &paraValue,
 			&indValue ) {
   
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( paraValue.size()!=6 ) {
     std::cerr << "WallGrowthStressSpatial::"
 	      << "WallGrowthStressSpatial() "
@@ -518,10 +504,6 @@ WallGrowthStressConcentrationHill(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Derivative contribution for the growth
-/*! Deriving the time derivative contribution for the growth for all
-  walls in the tissue.
-*/
 void WallGrowthStressConcentrationHill::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
@@ -572,14 +554,13 @@ derivs(Tissue &T,
 	}
 }
 
-//!Constructor
 WallGrowthConstantStressEpidermalAsymmetric::
 WallGrowthConstantStressEpidermalAsymmetric(std::vector<double> &paraValue, 
 			       std::vector< std::vector<size_t> > 
 			       &indValue ) {
   
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( paraValue.size()!=2 ) {
     std::cerr << "WallGrowthConstantStressEpidermalAsymmetric::"
 	      << "WallGrowthConstantStressEpidermalAsymmetric() "
@@ -593,13 +574,13 @@ WallGrowthConstantStressEpidermalAsymmetric(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("WallGrowthConstantStressEpidermalAsymmetric");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "k_growth";
@@ -607,10 +588,6 @@ WallGrowthConstantStressEpidermalAsymmetric(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Derivative contribution for the growth
-/*! Deriving the time derivative contribution for the growth for all
-  walls in the tissue.
-*/
 void WallGrowthConstantStressEpidermalAsymmetric::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,

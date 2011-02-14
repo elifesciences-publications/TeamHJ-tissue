@@ -1,10 +1,10 @@
-/**
- * Filename     : mechanicalSpring.h
- * Description  : Classes describing mechanical updates for wall springs
- * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
- * Created      : September 2007
- * Revision     : $Id:$
- */
+//
+// Filename     : mechanicalSpring.h
+// Description  : Classes describing mechanical updates for wall springs
+// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+// Created      : September 2007
+// Revision     : $Id:$
+//
 #ifndef MECHANICALSPRING_H
 #define MECHANICALSPRING_H
 
@@ -12,15 +12,61 @@
 #include"baseReaction.h"
 #include<cmath>
 
-//!Updates vertices from an asymmetric wall spring potential
+///
+/// @brief Updates vertices from an asymmetric wall spring potential
+///
+/// The update (in all dimensions) are given by
+///
+/// @f[ \frac{dx_i}{dt} = (x_{i}-x_{j}) \frac{K_{force}}{L_{ij}}(1-\frac{L_{ij}}{d}) @f]
+///
+/// where @f$ d @f$ = distance between vertices,
+/// where @f$ x_i,x_j @f$ = vertex position in specific dimension,
+/// @f$ L_{ij} @f$ = variable for the resting length of the wall.
+///
+/// The parameters are @f$ K_{force} @f$ (parameter(0)), which sets the strength
+/// of the spring (spring constant), and @f$ K_{adh} @f$ (parameter(1)), which
+/// sets the relative strength of adhesive forces compared to repressive
+/// forces (when adhesive forces, the two parameters are multiplied 
+/// (@f$ K=K_{force}K_{adhFrac} @f$). 
+/// The update needs the index of the wall length variable at the 
+/// first level (variableIndex(0,0)), and 
+/// optionally a variable for storing the total wall Force (variableIndex(1,0)). 
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// VertexFromWallSpring 2 2 1 0/1
+/// K_force K_adh
+/// L_ij-index
+/// [Forcesave-index]
+/// @endverbatim
+///
+/// Alternatively if no force save index is supplied the first line
+/// can be replaced by 'VertexFromWallSpring 2 1 1'.
+///
 class VertexFromWallSpring : public BaseReaction {
   
  public:
-  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
   VertexFromWallSpring(std::vector<double> &paraValue, 
 		       std::vector< std::vector<size_t> > 
-		       &indValue );
-  
+		       &indValue );  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
 	      std::vector< std::vector<double> > &wallData,
@@ -42,11 +88,26 @@ class VertexFromWallSpring : public BaseReaction {
 class VertexFromDoubleWallSpring : public BaseReaction {
   
  public:
-  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
   VertexFromDoubleWallSpring(std::vector<double> &paraValue, 
 			     std::vector< std::vector<size_t> > 
 			     &indValue );
-  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
 	      std::vector< std::vector<double> > &wallData,
@@ -65,12 +126,27 @@ class VertexFromWallSpringSpatial : public BaseReaction {
   
   double Kpow_;
   
- public:
-  
+ public:  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
   VertexFromWallSpringSpatial(std::vector<double> &paraValue, 
 			      std::vector< std::vector<size_t> > 
 			      &indValue );
-  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
 	      std::vector< std::vector<double> > &wallData,
@@ -100,11 +176,26 @@ class VertexFromWallSpringMTSpatial : public BaseReaction {
   double Kpow_;
   
  public:
-  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
   VertexFromWallSpringMTSpatial(std::vector<double> &paraValue, 
 				std::vector< std::vector<size_t> > 
 				&indValue );
-  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
 	      std::vector< std::vector<double> > &wallData,
@@ -121,11 +212,26 @@ class VertexFromWallSpringMTSpatial : public BaseReaction {
 class VertexFromWallSpringMT : public BaseReaction {
   
  public:
-  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
   VertexFromWallSpringMT(std::vector<double> &paraValue, 
 			 std::vector< std::vector<size_t> > 
 			 &indValue );
-  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
 	      std::vector< std::vector<double> > &wallData,
@@ -147,11 +253,26 @@ class VertexFromWallSpringMT : public BaseReaction {
 class VertexFromWallSpringMTHistory : public BaseReaction {
   
  public:
-  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
   VertexFromWallSpringMTHistory(std::vector<double> &paraValue, 
 				std::vector< std::vector<size_t> > 
-				&indValue );
-  
+				&indValue );  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
 	      std::vector< std::vector<double> > &wallData,
@@ -169,11 +290,26 @@ class VertexFromWallSpringMTHistory : public BaseReaction {
 class VertexFromEpidermalWallSpring : public BaseReaction {
   
  public:
-  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
   VertexFromEpidermalWallSpring(std::vector<double> &paraValue, 
 				std::vector< std::vector<size_t> > 
 				&indValue );
-  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///    
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
 	      std::vector< std::vector<double> > &wallData,
@@ -187,11 +323,26 @@ class VertexFromEpidermalWallSpring : public BaseReaction {
 class VertexFromEpidermalCellWallSpring : public BaseReaction {
   
  public:
-  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
   VertexFromEpidermalCellWallSpring(std::vector<double> &paraValue, 
 				    std::vector< std::vector<size_t> > 
 				    &indValue );
-  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///  
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
 	      std::vector< std::vector<double> > &wallData,
@@ -204,9 +355,25 @@ class VertexFromEpidermalCellWallSpring : public BaseReaction {
 class VertexFromWallSpringExperimental : public BaseReaction
 {
  public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
   VertexFromWallSpringExperimental(std::vector<double> &paraValue,
 				   std::vector< std::vector<size_t> > &indValue);
-  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///  
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
 	      std::vector< std::vector<double> > &wallData,
@@ -223,11 +390,26 @@ class VertexFromWallSpringExperimental : public BaseReaction
 class VertexFromWallSpringConcentrationHill : public BaseReaction {
   
  public:
-  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
   VertexFromWallSpringConcentrationHill(std::vector<double> &paraValue, 
 					std::vector< std::vector<size_t> > 
 					&indValue );
-  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///  
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
 	      std::vector< std::vector<double> > &wallData,
@@ -240,11 +422,26 @@ class VertexFromWallSpringConcentrationHill : public BaseReaction {
 class VertexFromWallSpringMTConcentrationHill : public BaseReaction {
   
  public:
-  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
   VertexFromWallSpringMTConcentrationHill(std::vector<double> &paraValue, 
 					  std::vector< std::vector<size_t> > 
 					  &indValue );
-  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///  
   void derivs(Tissue &T,
 	      std::vector< std::vector<double> > &cellData,
 	      std::vector< std::vector<double> > &wallData,
@@ -266,18 +463,33 @@ class VertexFromWallSpringMTConcentrationHill : public BaseReaction {
 class VertexFromDoubleWallSpringMTConcentrationHill : public BaseReaction {
   
  public:
-  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
   VertexFromDoubleWallSpringMTConcentrationHill(std::vector<double> &paraValue, 
-																								std::vector< std::vector<size_t> > 
-																								&indValue );
-  
+						std::vector< std::vector<size_t> > 
+						&indValue );
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///  
   void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
 #endif
