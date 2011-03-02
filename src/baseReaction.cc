@@ -14,6 +14,7 @@
 #include "growth.h"
 #include "mechanical.h"
 #include "mechanicalSpring.h"
+#include "mechanicalTRBS.h"
 #include "network.h"
 
 //#include"massAction.h"
@@ -141,6 +142,12 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	  return new VertexFromCellPlaneSphereCylinderConcentrationHill(paraValue, indValue);
   else if (idValue == "DebugReaction")
 	  return new DebugReaction(paraValue, indValue);
+
+	// mechanicalTRBS.h (.cc)
+	// Mechanical updates related to triangular (biquadratic) springs
+  else if (idValue == "VertexFromTRBS")
+	  return new VertexFromTRBS(paraValue, indValue);
+
 	
   //network.h,network.cc
   else if(idValue=="AuxinModelSimple1")
