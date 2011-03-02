@@ -93,7 +93,7 @@ WallGrowthExponentialStressTruncated(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-void WallGrowthExponentialStretchTruncated::
+void WallGrowthExponentialStressTruncated::
 derivs(Tissue &T,
        std::vector< std::vector<double> > &cellData,
        std::vector< std::vector<double> > &wallData,
