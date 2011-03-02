@@ -10,6 +10,7 @@
 #include "baseReaction.h"
 #include "mechanicalTRBS.h"
 #include "tissue.h"
+#include <cmath>
 
 VertexFromTRBS::
 VertexFromTRBS(std::vector<double> &paraValue, 
@@ -56,13 +57,18 @@ derivs(Tissue &T,
   size_t wallLengthIndex = variableIndex(0,0);
   size_t numWalls = 3; // defined only for triangles at the moment
 
-  for( size_t i=0 ; i<numCells ; ++i ) {
+ 
+ 
+ 
+ for( size_t i=0 ; i<numCells ; ++i ) {
     if( T.cell(i).numWall() != numWalls ) {
       std::cerr << "VertexFromTRBS::derivs() only defined for triangular cells."
 		<< std::endl;
       exit(-1);
     }
 
+    double young = parameter(0);
+    double poisson =parameter(1);
     size_t v1 = T.cell(i).vertex(0)->index();
     size_t v2 = T.cell(i).vertex(1)->index();
     size_t v3 = T.cell(i).vertex(2)->index();
@@ -80,38 +86,125 @@ derivs(Tissue &T,
     //position[1][1] y for vertex 2 (of the cell)
     //position[2][2] z for vertex 3 (of the cell)
     std::vector<double> length(numWalls);
-    length[0] = T.wall(w1)->lengthFromVertexPosition(vertexData);
-    length[1] = T.wall(w2)->lengthFromVertexPosition(vertexData);
-    length[2] = T.wall(w3)->lengthFromVertexPosition(vertexData);
+    length[0] = T.wall(w1).lengthFromVertexPosition(vertexData);
+    length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
+    length[2] = T.wall(w3).lengthFromVertexPosition(vertexData);
 
-    size_t dimension = vertexData[v1].size();
-    assert( vertexData[v2].size()==dimension );
-    assert( vertexData[v3].size()==dimension );
+   
 
-    //Calculate shared factors
-    double distance=0.0;
-    for( size_t d=0 ; d<dimension ; d++ )
-      distance += (vertexData[v1][d]-vertexData[v2][d])*
-	(vertexData[v1][d]-vertexData[v2][d]);
-    distance = std::sqrt(distance);
-    double wallLength=wallData[i][wallLengthIndex];
-    double coeff = parameter(0)*((1.0/wallLength)-(1.0/distance));
-    if( distance <= 0.0 && wallLength <=0.0 ) {
-      //std::cerr << i << " - " << wallLength << " " << distance << std::endl;
-      coeff = 0.0;
-    }
-    if( distance>wallLength )
-      coeff *=parameter(1);
+
+
+
+ 
+   
+   
+
+    //Lame coefficients                                                                                         (can be defined out of loop)
+    double lambda=young*poisson/(1-poisson*poisson);
+    double mio=young/(1+poisson);
+
+
+    //Area of the element                                      
+    double Area=std::sqrt( ( restingLength[0]+restingLength[1]+restingLength[2])*
+                           (-restingLength[0]+restingLength[1]+restingLength[2])*
+                           ( restingLength[0]-restingLength[1]+restingLength[2])*
+                           ( restingLength[0]+restingLength[1]-restingLength[2])  )*0.25;
+
+    //Angles of the element                                                                                    ( assuming the order: 0,L0,1,L1,2,L2 )
+    double Angle[3];
+    Angle[0]=std::asin(2*Area/(restingLength[0]*restingLength[2]));                              // can be ommited by cotan(A)=.25*sqrt(4*b*b*c*c/K-1)
+    Angle[1]=std::asin(2*Area/(restingLength[0]*restingLength[1]));        
+    Angle[2]=std::asin(2*Area/(restingLength[1]*restingLength[2]));
+
+    //Tensile Stiffness
+    double tensileStiffness[3];
+    double const temp = 1.0/(Area*16);                                                                                  //??
+    double cotan[3] = {1.0/std::tan(Angle[0]),1.0/std::tan(Angle[1]),1.0/std::tan(Angle[2])};
     
-    //Save force in wall variable if appropriate
-    if( numVariableIndexLevel()>1 )
-      wallData[i][variableIndex(1,0)] = coeff*distance;
+    tensileStiffness[0]=(2*cotan[0]*cotan[0]*(lambda+mio)+mio)*temp;
+    tensileStiffness[1]=(2*cotan[1]*cotan[1]*(lambda+mio)+mio)*temp;
+    tensileStiffness[2]=(2*cotan[2]*cotan[2]*(lambda+mio)+mio)*temp;
+   
+   //Angular Stiffness
+    double angularStiffness[3];
+    angularStiffness[0]=(2*cotan[1]*cotan[2]*(lambda+mio)-mio)*temp;
+    angularStiffness[1]=(2*cotan[0]*cotan[2]*(lambda+mio)-mio)*temp;
+    angularStiffness[2]=(2*cotan[0]*cotan[1]*(lambda+mio)-mio)*temp;
+   
     
-    //Update both vertices for each dimension
-    for(size_t d=0 ; d<dimension ; d++ ) {
-      double div = (vertexData[v1][d]-vertexData[v2][d])*coeff;
-      vertexDerivs[v1][d] -= div;
-      vertexDerivs[v2][d] += div;
-    }
+
+    //Calculate biquadratic strains  
+    double Delta[3];
+    Delta[0]=(length[0])*(length[0])-(restingLength[0])*(restingLength[0]);
+    Delta[1]=(length[1])*(length[1])-(restingLength[1])*(restingLength[1]);
+    Delta[2]=(length[2])*(length[2])-(restingLength[2])*(restingLength[2]);
+    //derivatives of vertices
+    
+    double Force[3][3];
+    Force[0][0]= (tensileStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0]+angularStiffness[0]*Delta[1])*(position[0][1]-position[0][0])
+                +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[0]+angularStiffness[0]*Delta[2])*(position[0][2]-position[0][0]); 
+    Force[1][0]= (tensileStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0]+angularStiffness[0]*Delta[1])*(position[1][1]-position[1][0])
+                +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[0]+angularStiffness[0]*Delta[2])*(position[1][2]-position[1][0]); 
+    Force[2][0]= (tensileStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0]+angularStiffness[0]*Delta[1])*(position[2][1]-position[2][0])
+                +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[0]+angularStiffness[0]*Delta[2])*(position[2][2]-position[2][0]); 
+
+    Force[0][1]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[1]+angularStiffness[1]*Delta[0])*(position[0][0]-position[0][1])
+                +(tensileStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1]+angularStiffness[1]*Delta[2])*(position[0][2]-position[0][1]); 
+    Force[1][1]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[1]+angularStiffness[1]*Delta[0])*(position[1][0]-position[1][1])
+                +(tensileStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1]+angularStiffness[1]*Delta[2])*(position[1][2]-position[1][1]); 
+    Force[2][1]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[1]+angularStiffness[1]*Delta[0])*(position[2][0]-position[2][1])
+                +(tensileStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1]+angularStiffness[1]*Delta[2])*(position[2][2]-position[2][1]); 
+
+    Force[0][2]= (tensileStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2]+angularStiffness[2]*Delta[0])*(position[0][0]-position[0][2])
+                +(tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[2]+angularStiffness[2]*Delta[1])*(position[0][1]-position[0][2]); 
+    Force[1][2]= (tensileStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2]+angularStiffness[2]*Delta[0])*(position[1][0]-position[1][2])
+                +(tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[2]+angularStiffness[2]*Delta[1])*(position[1][1]-position[1][2]); 
+    Force[2][2]= (tensileStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2]+angularStiffness[2]*Delta[0])*(position[2][0]-position[2][2])
+                +(tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[2]+angularStiffness[2]*Delta[1])*(position[2][1]-position[2][2]); 
+
+
+    vertexDerivs[v1][0]= Force[0][0];
+    vertexDerivs[v1][1]= Force[1][0];
+    vertexDerivs[v1][2]= Force[2][0];
+    
+    vertexDerivs[v2][0]= Force[0][1];
+    vertexDerivs[v2][1]= Force[1][1];
+    vertexDerivs[v2][2]= Force[2][1];
+    
+    vertexDerivs[v3][0]= Force[0][2];
+    vertexDerivs[v3][1]= Force[1][2];
+    vertexDerivs[v3][2]= Force[2][2];
+
+
+    //-------------------------------------------------------------------------------------------
+//     size_t dimension = vertexData[v1].size();
+//     assert( vertexData[v2].size()==dimension );
+//     assert( vertexData[v3].size()==dimension );
+// 
+//     //Calculate shared factors
+//     double distance=0.0;
+//     for( size_t d=0 ; d<dimension ; d++ )
+//       distance += (vertexData[v1][d]-vertexData[v2][d])*
+// 	(vertexData[v1][d]-vertexData[v2][d]);
+//     distance = std::sqrt(distance);
+//     double wallLength=wallData[i][wallLengthIndex];
+//     double coeff = parameter(0)*((1.0/wallLength)-(1.0/distance));
+//     if( distance <= 0.0 && wallLength <=0.0 ) {
+//       //std::cerr << i << " - " << wallLength << " " << distance << std::endl;
+//       coeff = 0.0;
+//     }
+//     if( distance>wallLength )
+//       coeff *=parameter(1);
+//     
+//     //Save Force in wall variable if appropriate
+//     if( numVariableIndexLevel()>1 )
+//       wallData[i][variableIndex(1,0)] = coeff*distance;
+//     
+//     //Update both vertices for each dimension
+//     for(size_t d=0 ; d<dimension ; d++ ) {
+//       double div = (vertexData[v1][d]-vertexData[v2][d])*coeff;
+//       vertexDerivs[v1][d] -= div;
+//       vertexDerivs[v2][d] += div;
+//     }
   }
 }
