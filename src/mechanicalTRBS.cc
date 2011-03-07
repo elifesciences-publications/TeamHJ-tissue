@@ -121,9 +121,9 @@ derivs(Tissue &T,
     double const temp = 1.0/(Area*16);                                                                                  //??
     double cotan[3] = {1.0/std::tan(Angle[0]),1.0/std::tan(Angle[1]),1.0/std::tan(Angle[2])};
     
-    tensileStiffness[0]=(2*cotan[0]*cotan[0]*(lambda+mio)+mio)*temp;
-    tensileStiffness[1]=(2*cotan[1]*cotan[1]*(lambda+mio)+mio)*temp;
-    tensileStiffness[2]=(2*cotan[2]*cotan[2]*(lambda+mio)+mio)*temp;
+    tensileStiffness[0]=(2*cotan[2]*cotan[2]*(lambda+mio)+mio)*temp;
+    tensileStiffness[1]=(2*cotan[0]*cotan[0]*(lambda+mio)+mio)*temp;
+    tensileStiffness[2]=(2*cotan[1]*cotan[1]*(lambda+mio)+mio)*temp;
    
    //Angular Stiffness
     double angularStiffness[3];
@@ -141,39 +141,40 @@ derivs(Tissue &T,
     //derivatives of vertices
     
     double Force[3][3];
-    Force[0][0]= (tensileStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0]+angularStiffness[0]*Delta[1])*(position[0][1]-position[0][0])
-                +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[0]+angularStiffness[0]*Delta[2])*(position[0][2]-position[0][0]); 
-    Force[1][0]= (tensileStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0]+angularStiffness[0]*Delta[1])*(position[1][1]-position[1][0])
-                +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[0]+angularStiffness[0]*Delta[2])*(position[1][2]-position[1][0]); 
-    Force[2][0]= (tensileStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0]+angularStiffness[0]*Delta[1])*(position[2][1]-position[2][0])
-                +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[0]+angularStiffness[0]*Delta[2])*(position[2][2]-position[2][0]); 
+          
+    Force[0][0]= (tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2])*(position[0][1]-position[0][0])
+                +(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[0][2]-position[0][0]); 
+    Force[1][0]= (tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2])*(position[1][1]-position[1][0])
+                +(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[1][2]-position[1][0]); 
+    Force[2][0]= (tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2])*(position[2][1]-position[2][0])
+                +(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[2][2]-position[2][0]); 
 
-    Force[0][1]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[1]+angularStiffness[1]*Delta[0])*(position[0][0]-position[0][1])
-                +(tensileStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1]+angularStiffness[1]*Delta[2])*(position[0][2]-position[0][1]); 
-    Force[1][1]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[1]+angularStiffness[1]*Delta[0])*(position[1][0]-position[1][1])
-                +(tensileStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1]+angularStiffness[1]*Delta[2])*(position[1][2]-position[1][1]); 
-    Force[2][1]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[1]+angularStiffness[1]*Delta[0])*(position[2][0]-position[2][1])
-                +(tensileStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1]+angularStiffness[1]*Delta[2])*(position[2][2]-position[2][1]); 
+    Force[0][1]= (tensileStiffness[0]*Delta[0]+angularStiffness[0]*Delta[2]+angularStiffness[1]*Delta[1])*(position[0][0]-position[0][1])
+                +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0])*(position[0][2]-position[0][1]); 
+    Force[1][1]= (tensileStiffness[0]*Delta[0]+angularStiffness[0]*Delta[2]+angularStiffness[1]*Delta[1])*(position[1][0]-position[1][1])
+                +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0])*(position[1][2]-position[1][1]); 
+    Force[2][1]= (tensileStiffness[0]*Delta[0]+angularStiffness[0]*Delta[2]+angularStiffness[1]*Delta[1])*(position[2][0]-position[2][1])
+                +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0])*(position[2][2]-position[2][1]); 
 
-    Force[0][2]= (tensileStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2]+angularStiffness[2]*Delta[0])*(position[0][0]-position[0][2])
-                +(tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[2]+angularStiffness[2]*Delta[1])*(position[0][1]-position[0][2]); 
-    Force[1][2]= (tensileStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2]+angularStiffness[2]*Delta[0])*(position[1][0]-position[1][2])
-                +(tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[2]+angularStiffness[2]*Delta[1])*(position[1][1]-position[1][2]); 
-    Force[2][2]= (tensileStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2]+angularStiffness[2]*Delta[0])*(position[2][0]-position[2][2])
-                +(tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[2]+angularStiffness[2]*Delta[1])*(position[2][1]-position[2][2]); 
+    Force[0][2]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1])*(position[0][0]-position[0][2])
+                +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[0][1]-position[0][2]); 
+    Force[1][2]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1])*(position[1][0]-position[1][2])
+                +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][1]-position[1][2]); 
+    Force[2][2]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1])*(position[2][0]-position[2][2])
+                +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[2][1]-position[2][2]); 
 
 
-    vertexDerivs[v1][0]= Force[0][0];
-    vertexDerivs[v1][1]= Force[1][0];
-    vertexDerivs[v1][2]= Force[2][0];
+    vertexDerivs[v1][0]+= Force[0][0];
+    vertexDerivs[v1][1]+= Force[1][0];
+    vertexDerivs[v1][2]+= Force[2][0];
     
-    vertexDerivs[v2][0]= Force[0][1];
-    vertexDerivs[v2][1]= Force[1][1];
-    vertexDerivs[v2][2]= Force[2][1];
+    vertexDerivs[v2][0]+= Force[0][1];
+    vertexDerivs[v2][1]+= Force[1][1];
+    vertexDerivs[v2][2]+= Force[2][1];
     
-    vertexDerivs[v3][0]= Force[0][2];
-    vertexDerivs[v3][1]= Force[1][2];
-    vertexDerivs[v3][2]= Force[2][2];
+    vertexDerivs[v3][0]+= Force[0][2];
+    vertexDerivs[v3][1]+= Force[1][2];
+    vertexDerivs[v3][2]+= Force[2][2];
 
 
     //-------------------------------------------------------------------------------------------
