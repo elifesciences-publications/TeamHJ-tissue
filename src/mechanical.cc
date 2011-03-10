@@ -1539,11 +1539,11 @@ derivs(Tissue &T,
       else
 	scalarProdSign[k]=-1;
     }
-    //  		for (size_t k=1; k<cell.numVertex(); ++k)
-    //  			if (scalarProdSign[k]!=scalarProdSign[0]) {
-    //  				std::cerr << "Cell " << n << " has diverging signs on scalar product." << std::endl;
-    //  				break;
-    //  			}
+    // for (size_t k=1; k<cell.numVertex(); ++k)
+    //   if (scalarProdSign[k]!=scalarProdSign[0]) {
+    //     std::cerr << "Cell " << n << " has diverging signs on scalar product." << std::endl;
+    //     break;
+    //   }
     int scalarProdSignSum=0;
     for (size_t k=0; k<scalarProdSign.size(); ++k)
       scalarProdSignSum += scalarProdSign[k];
@@ -1624,7 +1624,7 @@ derivs(Tissue &T,
     //cellData[cell.index()][d] = normal[d];
   }
   //std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
-  //				<< std::endl;
+  //	      << std::endl;
 }
 
 VertexFromCellPlaneSpatial::

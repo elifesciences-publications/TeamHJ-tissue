@@ -209,6 +209,29 @@ class VertexFromWallSpringMTSpatial : public BaseReaction {
 /// @brief Updates vertices from an spatially asymmetric wall spring potential
 /// given by microtubule directions
 ///
+/// This function has a base level for the spring constant and then adds a
+/// factor dependent on the MT direction in the cells. The spring constant 
+/// of the wall is determined by:
+///
+/// @f[ k = p_0 + p_1*|n_{wall} n_{MT}| @f]
+///
+/// where the MT factor comes from the absolute value of the scalar products 
+/// of the wall vector and cell direction (microtubular) vector. An additional
+/// parameter @f$p_{2}@f$ sets an additional multiplied contribution if the spring
+/// is contracted.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// VertexFromWallSpringMT 3 2 2 0/1
+/// K_homogeneous K_MT f_adh
+/// L_ij-index MT-index
+/// [Forcesave-index]
+/// @endverbatim
+///
+/// Alternatively if no force save index is supplied the first line
+/// can be replaced by 'VertexFromWallSpringMT 3 1 2'.
+///
 class VertexFromWallSpringMT : public BaseReaction {
   
  public:

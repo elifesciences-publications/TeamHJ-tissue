@@ -294,19 +294,19 @@ VertexFromWallSpringMT(std::vector<double> &paraValue,
   // Do some checks on the parameters and variable indeces
   if( paraValue.size()!=3 ) {
     std::cerr << "VertexFromWallSpringMT::"
-							<< "VertexFromWallSpringMT() "
-							<< "Uses three parameters K_force^min K_force^max "
-							<< "frac_adhesion.\n";
+	      << "VertexFromWallSpringMT() "
+	      << "Uses three parameters K_force^min K_force^max "
+	      << "frac_adhesion.\n";
     exit(0);
   }
   if( indValue.size() < 1 || indValue.size() > 2 
-			|| indValue[0].size() != 2 
-			|| (indValue.size()==2 && indValue[1].size() != 1) ) {
+      || indValue[0].size() != 2 
+      || (indValue.size()==2 && indValue[1].size() != 1) ) {
     std::cerr << "VertexFromWallSpringMT::"
-							<< "VertexFromWallSpringMT() "
-							<< "Wall length index and cell MT direction start index"
-							<< "given at first level,"
-							<< " and optionally wall variable save index in second.\n";
+	      << "VertexFromWallSpringMT() "
+	      << "Wall length index and cell MT direction start index"
+	      << "given at first level,"
+	      << " and optionally wall variable save index in second.\n";
     exit(0);
   }
   //Set the variable values
