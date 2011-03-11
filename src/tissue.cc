@@ -1623,106 +1623,106 @@ updateDirectionDivision(size_t cellI,
 
 void Tissue::
 checkCompartmentChange( std::vector< std::vector<double> > &cellData,
-												std::vector< std::vector<double> > &wallData,
-												std::vector< std::vector<double> > &vertexData,
-												std::vector< std::vector<double> > &cellDeriv,
-												std::vector< std::vector<double> > &wallDeriv,
-												std::vector< std::vector<double> > &vertexDeriv ) {
-
-	unsigned int uglyHackCounter = 0;
+			std::vector< std::vector<double> > &wallData,
+			std::vector< std::vector<double> > &vertexData,
+			std::vector< std::vector<double> > &cellDeriv,
+			std::vector< std::vector<double> > &wallDeriv,
+			std::vector< std::vector<double> > &vertexDeriv ) {
   
-	for( size_t l=0 ; l<numCompartmentChange() ; ++l ) {
-		for( size_t i=0 ; i<numCell() ; ++i ) {
-			++uglyHackCounter;
-
-			if (uglyHackCounter > 1000000) {
-				// Time to bail out.
-				std::cerr << "Ugly hack counter lager than a million!\n";
-				std::exit(EXIT_FAILURE);
-			}
-
-			if( compartmentChange(l)->flag(this,i,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv) ) {
-				compartmentChange(l)->update(this,i,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv);
-				//If cell division, sort walls and vertices for cell plus 
-				//divided cell plus their neighbors
-				//Get list of potential cells to be sorted
-				//Also add division rule for directions
-				if( compartmentChange(l)->numChange()==1 ) {
-					std::set<size_t> sortCell;
-					sortCell.insert(i);
-					size_t ii=numCell()-1;
-					sortCell.insert(ii);
-					for( size_t k=0 ; k<cell(i).numWall() ; ++k ) {
-						if( cell(i).wall(k)->cell1()->index() == i )
-							sortCell.insert(cell(i).wall(k)->cell2()->index());
-						else
-							sortCell.insert(cell(i).wall(k)->cell1()->index());
-					}
-					for( size_t k=0 ; k<cell(ii).numWall() ; ++k ) {
-						if( cell(ii).wall(k)->cell1()->index() == ii )
-							sortCell.insert(cell(ii).wall(k)->cell2()->index());
-						else
-							sortCell.insert(cell(ii).wall(k)->cell1()->index());
-					}									
-					//Remove if background within the list
-					sortCell.erase( static_cast<size_t>(-1) );
-					//Sort the cells
-					//for( std::set<size_t>::iterator k=sortCell.begin() ; 
-					//	 k!=sortCell.end() ; ++k )
-					//std::cerr << *k << " ";
-					//std::cerr << "to be sorted" << std::endl;
-
-					// If one of the daughter
-					// cells is on the edge and
-					// only has the other daughter
-					// cell as its neighbor the
-					// other daughter cell needs
-					// to be sorted
-					// first. Therefore we save
-					// all cells with only one
-					// neighbor in a second set of
-					// indexes and sort them in a
-					// second round.
-					std::set<size_t> oneNeighborCells;
-					
-					for (std::set<size_t>::iterator k = sortCell.begin(); k != sortCell.end(); ++k)
-					{
-						Cell &cellToSort = cell(*k);
-						
-						int counter = 0;
-						
-						for (size_t wallIndex = 0; wallIndex < cellToSort.numWall(); ++wallIndex)
-						{
-							if (cellToSort.cellNeighbor(wallIndex) != background())
-							{
-								++counter;
-							}
-						}
-						
-						if (counter == 1)
-						{
-							oneNeighborCells.insert(cellToSort.index());
-						}
-						else
-						{
-							cellToSort.sortWallAndVertex(*this);
-						}
-					}
-					
-					for (std::set<size_t>::iterator k = oneNeighborCells.begin(); k != oneNeighborCells.end(); ++k)
-					{
-						Cell &cellToSort = cell(*k);
-						
-						cellToSort.sortWallAndVertex(*this);
-					}
-				}	
-				else if( compartmentChange(l)->numChange()==-1 )
-					--i;
-				else if( compartmentChange(l)->numChange()<-1 )
-					i=numCell()+1;
-			}
+  unsigned int uglyHackCounter = 0;
+  
+  for( size_t l=0 ; l<numCompartmentChange() ; ++l ) {
+    for( size_t i=0 ; i<numCell() ; ++i ) {
+      ++uglyHackCounter;
+      
+      if (uglyHackCounter > 1000000) {
+	// Time to bail out.
+	std::cerr << "Ugly hack counter lager than a million!\n";
+	std::exit(EXIT_FAILURE);
+      }
+      
+      if( compartmentChange(l)->flag(this,i,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv) ) {
+	compartmentChange(l)->update(this,i,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv);
+	//If cell division, sort walls and vertices for cell plus 
+	//divided cell plus their neighbors
+	//Get list of potential cells to be sorted
+	//Also add division rule for directions
+	if( compartmentChange(l)->numChange()==1 ) {
+	  std::set<size_t> sortCell;
+	  sortCell.insert(i);
+	  size_t ii=numCell()-1;
+	  sortCell.insert(ii);
+	  for( size_t k=0 ; k<cell(i).numWall() ; ++k ) {
+	    if( cell(i).wall(k)->cell1()->index() == i )
+	      sortCell.insert(cell(i).wall(k)->cell2()->index());
+	    else
+	      sortCell.insert(cell(i).wall(k)->cell1()->index());
+	  }
+	  for( size_t k=0 ; k<cell(ii).numWall() ; ++k ) {
+	    if( cell(ii).wall(k)->cell1()->index() == ii )
+	      sortCell.insert(cell(ii).wall(k)->cell2()->index());
+	    else
+	      sortCell.insert(cell(ii).wall(k)->cell1()->index());
+	  }									
+	  //Remove if background within the list
+	  sortCell.erase( static_cast<size_t>(-1) );
+	  //Sort the cells
+	  //for( std::set<size_t>::iterator k=sortCell.begin() ; 
+	  //	 k!=sortCell.end() ; ++k )
+	  //std::cerr << *k << " ";
+	  //std::cerr << "to be sorted" << std::endl;
+	  
+	  // If one of the daughter
+	  // cells is on the edge and
+	  // only has the other daughter
+	  // cell as its neighbor the
+	  // other daughter cell needs
+	  // to be sorted
+	  // first. Therefore we save
+	  // all cells with only one
+	  // neighbor in a second set of
+	  // indexes and sort them in a
+	  // second round.
+	  std::set<size_t> oneNeighborCells;
+	  
+	  for (std::set<size_t>::iterator k = sortCell.begin(); k != sortCell.end(); ++k)
+	    {
+	      Cell &cellToSort = cell(*k);
+	      
+	      int counter = 0;
+	      
+	      for (size_t wallIndex = 0; wallIndex < cellToSort.numWall(); ++wallIndex)
+		{
+		  if (cellToSort.cellNeighbor(wallIndex) != background())
+		    {
+		      ++counter;
+		    }
 		}
-	}
+	      
+	      if (counter == 1)
+		{
+		  oneNeighborCells.insert(cellToSort.index());
+		}
+	      else
+		{
+		  cellToSort.sortWallAndVertex(*this);
+		}
+	    }
+	  
+	  for (std::set<size_t>::iterator k = oneNeighborCells.begin(); k != oneNeighborCells.end(); ++k)
+	    {
+	      Cell &cellToSort = cell(*k);
+	      
+	      cellToSort.sortWallAndVertex(*this);
+	    }
+	}	
+	else if( compartmentChange(l)->numChange()==-1 )
+	  --i;
+	else if( compartmentChange(l)->numChange()<-1 )
+	  i=numCell()+1;
+      }
+    }
+  }
 }
 
 void Tissue::removeCell(size_t cellIndex,
