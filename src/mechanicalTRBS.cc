@@ -90,8 +90,8 @@ derivs(Tissue &T,
     // Lame coefficients (can be defined out of loop)
     double lambda=young*poisson/(1-poisson*poisson);
     double mio=young/(1+poisson);
-
-    //Area of the element (Heron's formula)                                    
+    
+    // Area of the element (using Heron's formula)                                      
     double Area=std::sqrt( ( restingLength[0]+restingLength[1]+restingLength[2])*
                            (-restingLength[0]+restingLength[1]+restingLength[2])*
                            ( restingLength[0]-restingLength[1]+restingLength[2])*
