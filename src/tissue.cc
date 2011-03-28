@@ -1550,8 +1550,8 @@ void Tissue::derivs( std::vector< std::vector<double> > &cellData,
 		     std::vector< std::vector<double> > &vertexData,
 		     std::vector< std::vector<double> > &cellDeriv,
 		     std::vector< std::vector<double> > &wallDeriv,
-		     std::vector< std::vector<double> > &vertexDeriv ) {
-  
+		     std::vector< std::vector<double> > &vertexDeriv ) 
+{  
   //Set all derivatives to zero
   for( size_t i=0 ; i<cellDeriv.size() ; ++i )
     std::fill(cellDeriv[i].begin(),cellDeriv[i].end(),0.0);
@@ -1567,32 +1567,35 @@ void Tissue::derivs( std::vector< std::vector<double> > &cellData,
 }
 
 void::Tissue::initiateReactions(std::vector< std::vector<double> > &cellData,
-																std::vector< std::vector<double> > &wallData,
-																std::vector< std::vector<double> > &vertexData) 
+				std::vector< std::vector<double> > &wallData,
+				std::vector< std::vector<double> > &vertexData,
+				std::vector< std::vector<double> > &cellDeriv,
+				std::vector< std::vector<double> > &wallDeriv,
+				std::vector< std::vector<double> > &vertexDeriv ) 
 {
-	for (size_t i=0; i<numReaction(); ++i)
-		reaction(i)->initiate(*this,cellData,wallData,vertexData);
+  for (size_t i=0; i<numReaction(); ++i)
+    reaction(i)->initiate(*this,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv);
 }
 
 void::Tissue::updateReactions(std::vector< std::vector<double> > &cellData,
-															std::vector< std::vector<double> > &wallData,
-															std::vector< std::vector<double> > &vertexData,
-															double step) 
+			      std::vector< std::vector<double> > &wallData,
+			      std::vector< std::vector<double> > &vertexData,
+			      double step) 
 {
-	for (size_t i=0; i<numReaction(); ++i)
-		reaction(i)->update(*this,cellData,wallData,vertexData,step);	
+  for (size_t i=0; i<numReaction(); ++i)
+    reaction(i)->update(*this,cellData,wallData,vertexData,step);	
 }
 
 void::Tissue::
 initiateDirection(std::vector< std::vector<double> > &cellData,
-									std::vector< std::vector<double> > &wallData,
-									std::vector< std::vector<double> > &vertexData,
-									std::vector< std::vector<double> > &cellDerivs,
-									std::vector< std::vector<double> > &wallDerivs,
-									std::vector< std::vector<double> > &vertexDerivs ) 
+		  std::vector< std::vector<double> > &wallData,
+		  std::vector< std::vector<double> > &vertexData,
+		  std::vector< std::vector<double> > &cellDerivs,
+		  std::vector< std::vector<double> > &wallDerivs,
+		  std::vector< std::vector<double> > &vertexDerivs ) 
 {
-	direction()->initiate(*this,cellData,wallData,vertexData,cellDerivs,
-												wallDerivs,vertexDerivs);
+  direction()->initiate(*this,cellData,wallData,vertexData,cellDerivs,
+			wallDerivs,vertexDerivs);
 }
 
 void::Tissue::
@@ -1610,15 +1613,15 @@ updateDirection(double step,
 
 void::Tissue::
 updateDirectionDivision(size_t cellI,
-												std::vector< std::vector<double> > &cellData,
-												std::vector< std::vector<double> > &wallData,
-												std::vector< std::vector<double> > &vertexData,
-												std::vector< std::vector<double> > &cellDerivs,
-												std::vector< std::vector<double> > &wallDerivs,
-												std::vector< std::vector<double> > &vertexDerivs) 
+			std::vector< std::vector<double> > &cellData,
+			std::vector< std::vector<double> > &wallData,
+			std::vector< std::vector<double> > &vertexData,
+			std::vector< std::vector<double> > &cellDerivs,
+			std::vector< std::vector<double> > &wallDerivs,
+			std::vector< std::vector<double> > &vertexDerivs) 
 {
-	direction()->divide(*this,cellI,cellData,wallData,vertexData,
-											cellDerivs,wallDerivs,vertexDerivs);	
+  direction()->divide(*this,cellI,cellData,wallData,vertexData,
+		      cellDerivs,wallDerivs,vertexDerivs);	
 }
 
 void Tissue::

@@ -247,7 +247,8 @@ derivs(Tissue &T,
        std::vector< std::vector<double> > &vertexData,
        std::vector< std::vector<double> > &cellderivs, 
        std::vector< std::vector<double> > &wallderivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       std::vector< std::vector<double> > &vertexDerivs ) 
+{
   std::cerr << "BaseReaction::derivs() should not be used. "
 	    << "Should always be mapped onto one of the real types.\n";
   exit(0);
@@ -256,7 +257,10 @@ derivs(Tissue &T,
 void BaseReaction::initiate(Tissue &T,
 			    std::vector< std::vector<double> > &cellData,
 			    std::vector< std::vector<double> > &walldata,
-			    std::vector< std::vector<double> > &vertexData) 
+			    std::vector< std::vector<double> > &vertexData,
+			    std::vector< std::vector<double> > &cellderivs, 
+			    std::vector< std::vector<double> > &wallderivs,
+			    std::vector< std::vector<double> > &vertexDerivs )
 {
 }
 

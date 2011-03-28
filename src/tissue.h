@@ -527,7 +527,10 @@ class Tissue {
   ///
   void initiateReactions(std::vector< std::vector<double> > &cellData,
 			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData);
+			 std::vector< std::vector<double> > &vertexData,
+			 std::vector< std::vector<double> > &cellDeriv,
+			 std::vector< std::vector<double> > &wallDeriv,
+			 std::vector< std::vector<double> > &vertexDeriv );
   ///
   /// @brief Takes care of 'discrete' updates during simulations
   ///

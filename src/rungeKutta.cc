@@ -60,7 +60,7 @@ void RK5Adaptive::simulate(size_t verbose)
   }
   
   // Initiate reactions and direction for those where it is applicable
-  T_->initiateReactions(cellData_, wallData_, vertexData_);
+  T_->initiateReactions(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_, vertexDerivs_);
   if (cellData_.size()!=cellDerivs_.size())
     cellDerivs_.resize(cellData_.size(),cellDerivs_[0]);
   if (wallData_.size()!=wallDerivs_.size())
@@ -78,7 +78,7 @@ void RK5Adaptive::simulate(size_t verbose)
   assert( vertexData_.size() == T_->numVertex() && 
 	  vertexData_.size()==vertexDerivs_.size() );
   
-	//
+  //
   // Create all vectors that will be needed here and by rkqs and rkck!
   //
   size_t Nc=T_->numCell(),Nw=T_->numWall(),Nv=T_->numVertex();
@@ -561,7 +561,7 @@ void RK4::simulate(size_t verbose)
   }
 
   // Initiate reactions and direction for those where it is applicable
-  T_->initiateReactions(cellData_, wallData_, vertexData_);
+  T_->initiateReactions(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_, vertexDerivs_);
 	if (cellData_.size()!=cellDerivs_.size())
 		cellDerivs_.resize(cellData_.size(),cellDerivs_[0]);
 	if (wallData_.size()!=wallDerivs_.size())

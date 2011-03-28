@@ -206,6 +206,9 @@ class BaseReaction {
   /// @param cellData The current state for the cells used for the update.
   /// @param wallData The current state for the walls used for the update.
   /// @param vertexData The current state for the vertices used for the update.
+  /// @param cellDerivs The cell derivs to which the output of the reaction is added.
+  /// @param wallDerivs The wall derivs to which the output of the reaction is added.
+  /// @param vertexDerivs The vertex derivs to which the output of the reaction is added.
   ///
   /// @see Tissue::initiateReactions()
   /// @see Tissue::readInit(std::istream &,int)
@@ -214,9 +217,13 @@ class BaseReaction {
   virtual void initiate(Tissue &T,
 			std::vector< std::vector<double> > &cellData,
 			std::vector< std::vector<double> > &wallData,
-			std::vector< std::vector<double> > &vertexData);
+			std::vector< std::vector<double> > &vertexData,
+			std::vector< std::vector<double> > &cellDerivs,
+			std::vector< std::vector<double> > &wallDerivs,
+			std::vector< std::vector<double> > &vertexDerivs );
   ///
-  /// @brief Calculates the derivative given the state in cell[wall,vertex]Data and adds it to cell[wall,vertex]Derivs.
+  /// @brief Calculates the derivative given the state in
+  /// cell[wall,vertex]Data and adds it to cell[wall,vertex]Derivs.
   ///
   /// This function, together with the constructor are the main functions
   /// needed to create a new reaction class. It calculates the time derivative
