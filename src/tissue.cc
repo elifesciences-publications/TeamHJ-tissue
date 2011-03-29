@@ -94,7 +94,7 @@ Tissue::Tissue( std::vector< std::vector<double> > &cellData,
   assert( numWall );
   assert( numVertex );
   
-  //Set all indeces to the placement in the vectors
+  //Set all indices to the placement in the vectors
   for( size_t i=0 ; i<numCell ; ++i )
     cell(i).setIndex(i);
   for( size_t i=0 ; i<numWall ; ++i )

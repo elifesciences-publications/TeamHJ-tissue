@@ -419,102 +419,129 @@ rkck(double h,
     dc4=c4-13525.0/55296.0,dc6=c6-0.25;
   
   size_t Nc=cellData_.size(),Nw=wallData_.size(),Nv=vertexData_.size(),
-    Ncvar=cellData_[0].size(),Nwvar=wallData_[0].size(),
+    Nwvar=wallData_[0].size(),
     Nvvar=vertexData_[0].size();
-  
-  for (size_t i=0; i< Nc; ++i)
+	
+  for (size_t i=0; i< Nc; ++i) {
+		size_t Ncvar = cellData_[i];
     for (size_t j=0; j<Ncvar; ++j)
       yTempRkckC[i][j]=cellData_[i][j]+b21*h*cellDerivs_[i][j];
-  for (size_t i=0; i< Nw; ++i)
+	}
+  for (size_t i=0; i< Nw; ++i) {
     for (size_t j=0; j<Nwvar; ++j)
       yTempRkckW[i][j]=wallData_[i][j]+b21*h*wallDerivs_[i][j];
-  for (size_t i=0; i< Nv; ++i)
+	}
+  for (size_t i=0; i< Nv; ++i) {
     for (size_t j=0; j<Nvvar; ++j)
       yTempRkckV[i][j]=vertexData_[i][j]+b21*h*vertexDerivs_[i][j];
-  
+  }
   
   T_->derivs(yTempRkckC,yTempRkckW,yTempRkckV,ak2C,ak2W,ak2V); // t + a2h
-  for (size_t i=0; i< Nc; ++i)
+  for (size_t i=0; i< Nc; ++i) {
+		size_t Ncvar = cellData_[i];
     for (size_t j=0; j<Ncvar; ++j)
       yTempRkckC[i][j]=cellData_[i][j]+h*(b31*cellDerivs_[i][j]+b32*ak2C[i][j]);
-  for (size_t i=0; i< Nw; ++i)
+	}
+  for (size_t i=0; i< Nw; ++i) {
     for (size_t j=0; j<Nwvar; ++j)
       yTempRkckW[i][j]=wallData_[i][j]+h*(b31*wallDerivs_[i][j]+b32*ak2W[i][j]);
-  for (size_t i=0; i< Nv; ++i)
+	}
+  for (size_t i=0; i< Nv; ++i) {
     for (size_t j=0; j<Nvvar; ++j)
       yTempRkckV[i][j]=vertexData_[i][j]+h*(b31*vertexDerivs_[i][j]+b32*ak2V[i][j]);
-  
+  }
+
   T_->derivs(yTempRkckC,yTempRkckW,yTempRkckV,ak3C,ak2W,ak3V); // t + a3h
-  for (size_t i=0; i< Nc; ++i)
+  for (size_t i=0; i< Nc; ++i) {
+		size_t Ncvar = cellData_[i];
     for (size_t j=0; j<Ncvar; ++j)
       yTempRkckC[i][j]=cellData_[i][j]+h*(b41*cellDerivs_[i][j]+b42*ak2C[i][j]+b43*ak3C[i][j]);
-  for (size_t i=0; i< Nw; ++i)
+	}
+  for (size_t i=0; i< Nw; ++i) {
     for (size_t j=0; j<Nwvar; ++j)
       yTempRkckW[i][j]=wallData_[i][j]+h*(b41*wallDerivs_[i][j]+b42*ak2W[i][j]+b43*ak3W[i][j]);
-  for (size_t i=0; i< Nv; ++i)
+	}
+  for (size_t i=0; i< Nv; ++i) {
     for (size_t j=0; j<Nvvar; ++j)
       yTempRkckV[i][j]=vertexData_[i][j]+h*(b41*vertexDerivs_[i][j]+b42*ak2V[i][j]+b43*ak3V[i][j]);
-  
+  }
+
   T_->derivs(yTempRkckC,yTempRkckW,yTempRkckV,ak4C,ak4W,ak4V); // t + a4 * h
-  for (size_t i=0; i< Nc; ++i)
-    for (size_t j=0; j<Ncvar; ++j)
+  for (size_t i=0; i< Nc; ++i) {
+		size_t Ncvar = cellData_[i];
+		for (size_t j=0; j<Ncvar; ++j)
       yTempRkckC[i][j]=cellData_[i][j]+h*
         (b51*cellDerivs_[i][j]+b52*ak2C[i][j]+b53*ak3C[i][j]+b54*ak4C[i][j]);
-  for (size_t i=0; i< Nw; ++i)
+	}
+  for (size_t i=0; i< Nw; ++i) {
     for (size_t j=0; j<Nwvar; ++j)
       yTempRkckW[i][j]=wallData_[i][j]+h*
         (b51*wallDerivs_[i][j]+b52*ak2W[i][j]+b53*ak3W[i][j]+b54*ak4W[i][j]);
-  for (size_t i=0; i< Nv; ++i)
+	}
+  for (size_t i=0; i< Nv; ++i) {
     for (size_t j=0; j<Nvvar; ++j)
       yTempRkckV[i][j]=vertexData_[i][j]+h*
         (b51*vertexDerivs_[i][j]+b52*ak2V[i][j]+b53*ak3V[i][j]+b54*ak4V[i][j]);
-  
+  }
+
   T_->derivs(yTempRkckC,yTempRkckW,yTempRkckV,ak5C,ak5W,ak5V); // t + a5 * h
-  for (size_t i=0; i< Nc; ++i)
+  for (size_t i=0; i< Nc; ++i) {
+		size_t Ncvar = cellData_[i];
     for (size_t j=0; j<Ncvar; ++j)
       yTempRkckC[i][j]=cellData_[i][j]+h*
         (b61*cellDerivs_[i][j]+b62*ak2C[i][j]+b63*ak3C[i][j]+b64*ak4C[i][j]+
          b65*ak5C[i][j]);
-  for (size_t i=0; i< Nw; ++i)
+	}
+  for (size_t i=0; i< Nw; ++i) {
     for (size_t j=0; j<Nwvar; ++j)
       yTempRkckW[i][j]=wallData_[i][j]+h*
         (b61*wallDerivs_[i][j]+b62*ak2W[i][j]+b63*ak3W[i][j]+b64*ak4W[i][j]+
          b65*ak5W[i][j]);
-  for (size_t i=0; i< Nv; ++i)
+	}
+  for (size_t i=0; i< Nv; ++i) {
     for (size_t j=0; j<Nvvar; ++j)
       yTempRkckV[i][j]=vertexData_[i][j]+h*
         (b61*vertexDerivs_[i][j]+b62*ak2V[i][j]+b63*ak3V[i][j]+b64*ak4V[i][j]+
          b65*ak5V[i][j]);
-  
+  }
+
   T_->derivs(yTempRkckC,yTempRkckW,yTempRkckV,ak6C,ak6W,ak6V); // t + a6 * h
-  for (size_t i=0; i< Nc; ++i)
+  for (size_t i=0; i< Nc; ++i) {
+		size_t Ncvar = cellData_[i];
     for (size_t j=0; j<Ncvar; ++j)
       yOutC[i][j]=cellData_[i][j]+h*
         (c1*cellDerivs_[i][j]+c3*ak3C[i][j]+c4*ak4C[i][j]+c6*ak6C[i][j]);
-  for (size_t i=0; i< Nw; ++i)
+	}
+  for (size_t i=0; i< Nw; ++i) {
     for (size_t j=0; j<Nwvar; ++j)
       yOutW[i][j]=wallData_[i][j]+h*
         (c1*wallDerivs_[i][j]+c3*ak3W[i][j]+c4*ak4W[i][j]+c6*ak6W[i][j]);
-  for (size_t i=0; i< Nv; ++i)
+	}
+  for (size_t i=0; i< Nv; ++i) {
     for (size_t j=0; j<Nvvar; ++j)
       yOutV[i][j]=vertexData_[i][j]+h*
         (c1*vertexDerivs_[i][j]+c3*ak3V[i][j]+c4*ak4V[i][j]+c6*ak6V[i][j]);
-  
-  for (size_t i=0; i< Nc; ++i)
+  }
+
+  for (size_t i=0; i< Nc; ++i) {
+		size_t Ncvar = cellData_[i];
     for (size_t j=0; j<Ncvar; ++j)
       yErrC[i][j]=h*
         (dc1*cellDerivs_[i][j]+dc3*ak3C[i][j]+dc4*ak4C[i][j]+
          dc5*ak5C[i][j]+dc6*ak6C[i][j]);
-  for (size_t i=0; i< Nw; ++i)
+	}
+  for (size_t i=0; i< Nw; ++i) {
     for (size_t j=0; j<Nwvar; ++j)
       yErrW[i][j]=h*
         (dc1*wallDerivs_[i][j]+dc3*ak3W[i][j]+dc4*ak4W[i][j]+
          dc5*ak5W[i][j]+dc6*ak6W[i][j]);
-  for (size_t i=0; i< Nv; ++i)
+	}
+  for (size_t i=0; i< Nv; ++i) {
     for (size_t j=0; j<Nvvar; ++j)
       yErrV[i][j]=h*
         (dc1*vertexDerivs_[i][j]+dc3*ak3V[i][j]+dc4*ak4V[i][j]+
          dc5*ak5V[i][j]+dc6*ak6V[i][j]);
+	}
 }
 
 //
