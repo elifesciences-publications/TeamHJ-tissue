@@ -358,7 +358,8 @@ initiate(Tissue &T,
 {
   size_t dimension=3; //Only implemented for 3D models
   assert (dimension==vertexData[0].size());
-  size_t numVariable = cellData[0].size();
+  size_t numVariable = T.cell(0).numVariable();
+  assert (numVariable==cellData[0].size());
   // Create the new variables
   if (variableIndex(1,0) != numVariable) {
     std::cerr << "VertexFromTRBScenterTriangulation::initiate() "

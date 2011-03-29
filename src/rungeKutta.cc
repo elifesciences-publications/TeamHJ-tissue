@@ -10,9 +10,9 @@
 #include "rungeKutta.h"
 
 RK5Adaptive::RK5Adaptive(Tissue *T,std::ifstream &IN)
-	: BaseSolver(T,IN)
+  : BaseSolver(T,IN)
 {
-	readParameterFile(IN);
+  readParameterFile(IN);
 }
 
 void RK5Adaptive::readParameterFile(std::ifstream &IN)
@@ -34,7 +34,7 @@ void RK5Adaptive::simulate(size_t verbose)
   double tiny = 1e-9*eps_; // Caveat! Using new definition
   double  h, hNext, hDid;
   
-	//
+  //
   //Check that h1 and endTime - startTime are > 0
   //
   if (h1_ > 0.0 && (endTime_ - startTime_) > 0.0)
@@ -45,7 +45,7 @@ void RK5Adaptive::simulate(size_t verbose)
 	      << "No simulation performed.\n";
     exit(-1);
   }
-
+  
   //
   // Check that sizes of permanent data is ok
   //
@@ -60,17 +60,18 @@ void RK5Adaptive::simulate(size_t verbose)
   }
   
   // Initiate reactions and direction for those where it is applicable
-  T_->initiateReactions(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_, vertexDerivs_);
+  T_->initiateReactions(cellData_, wallData_, vertexData_, cellDerivs_, 
+			wallDerivs_, vertexDerivs_);
   if (cellData_.size()!=cellDerivs_.size())
     cellDerivs_.resize(cellData_.size(),cellDerivs_[0]);
   if (wallData_.size()!=wallDerivs_.size())
     wallDerivs_.resize(wallData_.size(),wallDerivs_[0]);
   if (vertexData_.size()!=vertexDerivs_.size())
     vertexDerivs_.resize(vertexData_.size(),vertexDerivs_[0]);
-
-  T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_,
-			vertexDerivs_);
-
+  
+  T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, 
+			wallDerivs_, vertexDerivs_);
+  
   assert( cellData_.size() == T_->numCell() && 
 	  cellData_.size()==cellDerivs_.size() );
   assert( wallData_.size() == T_->numWall() && 
@@ -86,16 +87,16 @@ void RK5Adaptive::simulate(size_t verbose)
   std::vector< std::vector<double> > yScalC(Nc),yScalW(Nw),yScalV(Nv);
   //Used by rkqs
   std::vector< std::vector<double> > yTempC(Nc),yTempW(Nw),yTempV(Nv),
-		yErrC(Nc),yErrW(Nw),yErrV(Nv);
+    yErrC(Nc),yErrW(Nw),yErrV(Nv);
   //used by rkck
   std::vector< std::vector<double> > ak2C(Nc),ak2W(Nw),ak2V(Nv),
-		ak3C(Nc),ak3W(Nw),ak3V(Nv),
-		ak4C(Nc),ak4W(Nw),ak4V(Nv),
+    ak3C(Nc),ak3W(Nw),ak3V(Nv),
+    ak4C(Nc),ak4W(Nw),ak4V(Nv),
     ak5C(Nc),ak5W(Nw),ak5V(Nv),
-		ak6C(Nc),ak6W(Nw),ak6V(Nv),
-		yTempRkckC(Nc),yTempRkckW(Nw),yTempRkckV(Nv);
+    ak6C(Nc),ak6W(Nw),ak6V(Nv),
+    yTempRkckC(Nc),yTempRkckW(Nw),yTempRkckV(Nv);
   //Resize each vector
-	size_t Ncvar=T_->cell(0).numVariable();
+  size_t Ncvar=T_->cell(0).numVariable();
   for (size_t i=0; i<Nc; ++i) {
     yScalC[i].resize(cellData_[i].size());
     yErrC[i].resize(cellData_[i].size());
@@ -107,7 +108,7 @@ void RK5Adaptive::simulate(size_t verbose)
     ak6C[i].resize(cellData_[i].size());
     yTempRkckC[i].resize(cellData_[i].size());
   }
-	size_t Nwvar=T_->wall(0).numVariable()+1;
+  size_t Nwvar=T_->wall(0).numVariable()+1;
   for (size_t i=0; i<Nw; ++i) {
     yScalW[i].resize(wallData_[i].size());
     yErrW[i].resize(wallData_[i].size());
@@ -118,8 +119,8 @@ void RK5Adaptive::simulate(size_t verbose)
     ak5W[i].resize(wallData_[i].size());
     ak6W[i].resize(wallData_[i].size());
     yTempRkckW[i].resize(wallData_[i].size());
-	}
-	size_t Nvvar=T_->vertex(0).numPosition();
+  }
+  size_t Nvvar=T_->vertex(0).numPosition();
   for (size_t i=0; i<Nv; ++i) {
     yScalV[i].resize(vertexData_[i].size());
     yErrV[i].resize(vertexData_[i].size());
@@ -130,8 +131,8 @@ void RK5Adaptive::simulate(size_t verbose)
     ak5V[i].resize(vertexData_[i].size());
     ak6V[i].resize(vertexData_[i].size());
     yTempRkckV[i].resize(vertexData_[i].size());
-	}
-
+  }
+  
   // Initiate print times
   //////////////////////////////////////////////////////////////////////
   double printTime = endTime_ + tiny;
@@ -147,108 +148,106 @@ void RK5Adaptive::simulate(size_t verbose)
     printTime = startTime_ - tiny;
     printDeltaTime = (endTime_ - startTime_) / ((double) (numPrint_ - 1));
   }
-	
+  
   // Go
   //////////////////////////////////////////////////////////////////////
   t_ = startTime_;
   numOk_ = numBad_ = 0;
   for (unsigned int nstp = 0;; nstp++) {
     if (debugFlag()) {
-			cellDataCopy_[debugCount()] = cellData_;
-		} 
+      cellDataCopy_[debugCount()] = cellData_;
+    } 
     // Update the derivatives
     T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,
-							 vertexDerivs_);
-
+	       vertexDerivs_);
+    
     // Calculate 'scaling' for error measure
-		Nc = yScalC.size();
-		if( Nc )
-			Ncvar = yScalC[0].size();
-		Nw = yScalW.size();
-		if( Nw )
-			Nwvar = yScalW[0].size();
-		Nv = yScalV.size();
-		if( Nv )
-			Nvvar = yScalV[0].size();
-
-    for (size_t i=0; i<Nc; ++i)
+    Nc = yScalC.size();
+    Nw = yScalW.size();
+    Nv = yScalV.size();    
+    for (size_t i=0; i<Nc; ++i) {
+      Ncvar = yScalC[i].size();
       for (size_t j = 0; j<Ncvar; ++j)
         yScalC[i][j] = std::fabs(cellData_[i][j]) + 
-					std::fabs(cellDerivs_[i][j] * h) + tiny;
-    for (size_t i=0; i<Nw; ++i)
+	  std::fabs(cellDerivs_[i][j] * h) + tiny;
+    }
+    for (size_t i=0; i<Nw; ++i) {
+      Nwvar = yScalW[i].size();
       for (size_t j = 0; j<Nwvar; ++j)
         yScalW[i][j] = std::fabs(wallData_[i][j]) + 
-					std::fabs(wallDerivs_[i][j] * h) + tiny;
-    for (size_t i=0; i<Nv; ++i)
+	  std::fabs(wallDerivs_[i][j] * h) + tiny;
+    }
+    for (size_t i=0; i<Nv; ++i) {
+      Nvvar = yScalV[i].size();
       for (size_t j = 0; j<Nvvar; ++j)
         yScalV[i][j] = std::fabs(vertexData_[i][j]) + 
-					std::fabs(vertexDerivs_[i][j] * h) + tiny;
-		
+	  std::fabs(vertexDerivs_[i][j] * h) + tiny;
+    }
     // Print if applicable 
     //if (printFlag_ && t_ >= printTime) {
     if (t_ >= printTime) {
       printTime += printDeltaTime;
       print();
     }
-
+    
     // Check if step is larger than max allowed
     // max step end is min of endTime_ and printTime
     double tMin = endTime_< printTime ? endTime_ : printTime;
     if (t_+h > tMin) h = tMin - t_;
-
+    
     // Update
     rkqs(h,hDid,hNext,yScalC,yScalW,yScalV,yTempC,yTempW,yTempV, 
-				 yErrC,yErrW,yErrV,ak2C,ak2W,ak2V,ak3C,ak3W,ak3V,
-				 ak4C,ak4W,ak4V,ak5C,ak5W,ak5V,ak6C,ak6W,ak6V, 
-				 yTempRkckC,yTempRkckW,yTempRkckV);
+	 yErrC,yErrW,yErrV,ak2C,ak2W,ak2V,ak3C,ak3W,ak3V,
+	 ak4C,ak4W,ak4V,ak5C,ak5W,ak5V,ak6C,ak6W,ak6V, 
+	 yTempRkckC,yTempRkckW,yTempRkckV);
     if (hDid == h) ++numOk_; else ++numBad_;
-				
-		//
+    
+    //
     // Check for discrete and reaction updates
     //
     T_->updateDirection(h,cellData_,wallData_,vertexData_,cellDerivs_,
 			wallDerivs_,vertexDerivs_);
     T_->updateReactions(cellData_,wallData_,vertexData_,h);
     T_->checkCompartmentChange(cellData_,wallData_,vertexData_,
-															 cellDerivs_,wallDerivs_,vertexDerivs_ );
-		
+			       cellDerivs_,wallDerivs_,vertexDerivs_ );
+    
     // Check the tissue connectivity in each step
     T_->checkConnectivity(1);
-		
+    
     // Rescale all temporary vectors as well
     if (cellData_.size() != yScalC.size() ||
-	    wallData_.size() != yScalW.size() ||
-	    vertexData_.size() != yScalV.size())
-    {
-      yScalC.resize(cellData_.size(), yScalC[0]);
-      yScalW.resize(wallData_.size(), yScalW[0]);
-      yScalV.resize(vertexData_.size(), yScalV[0]);
-      yTempC.resize(cellData_.size(), yTempC[0]);
-      yTempW.resize(wallData_.size(), yTempW[0]);
-      yTempV.resize(vertexData_.size(), yTempV[0]);
-      yErrC.resize(cellData_.size(), yErrC[0]);
-      yErrW.resize(wallData_.size(), yErrW[0]);
-      yErrV.resize(vertexData_.size(), yErrV[0]);
-      ak2C.resize(cellData_.size(), ak2C[0]);
-      ak2W.resize(wallData_.size(), ak2W[0]);
-      ak2V.resize(vertexData_.size(), ak2V[0]);
-      ak3C.resize(cellData_.size(), ak3C[0]);
-      ak3W.resize(wallData_.size(), ak3W[0]);
-      ak3V.resize(vertexData_.size(), ak3V[0]);
-      ak4C.resize(cellData_.size(), ak4C[0]);
-      ak4W.resize(wallData_.size(), ak4W[0]);
-      ak4V.resize(vertexData_.size(), ak4V[0]);
-      ak5C.resize(cellData_.size(), ak5C[0]);
-      ak5W.resize(wallData_.size(), ak5W[0]);
-      ak5V.resize(vertexData_.size(), ak5V[0]);
-      ak6C.resize(cellData_.size(), ak6C[0]);
-      ak6W.resize(wallData_.size(), ak6W[0]);
-      ak6V.resize(vertexData_.size(), ak6V[0]);
-      yTempRkckC.resize(cellData_.size(), yTempRkckC[0]);
-      yTempRkckW.resize(wallData_.size(), yTempRkckW[0]);
-      yTempRkckV.resize(vertexData_.size(), yTempRkckV[0]);
-    }
-				
+	wallData_.size() != yScalW.size() ||
+	vertexData_.size() != yScalV.size())
+      {
+	yScalC.resize(cellData_.size(), yScalC[0]);
+	yScalW.resize(wallData_.size(), yScalW[0]);
+	yScalV.resize(vertexData_.size(), yScalV[0]);
+	yTempC.resize(cellData_.size(), yTempC[0]);
+	yTempW.resize(wallData_.size(), yTempW[0]);
+	yTempV.resize(vertexData_.size(), yTempV[0]);
+	yErrC.resize(cellData_.size(), yErrC[0]);
+	yErrW.resize(wallData_.size(), yErrW[0]);
+	yErrV.resize(vertexData_.size(), yErrV[0]);
+	ak2C.resize(cellData_.size(), ak2C[0]);
+	ak2W.resize(wallData_.size(), ak2W[0]);
+	ak2V.resize(vertexData_.size(), ak2V[0]);
+	ak3C.resize(cellData_.size(), ak3C[0]);
+	ak3W.resize(wallData_.size(), ak3W[0]);
+	ak3V.resize(vertexData_.size(), ak3V[0]);
+	ak4C.resize(cellData_.size(), ak4C[0]);
+	ak4W.resize(wallData_.size(), ak4W[0]);
+	ak4V.resize(vertexData_.size(), ak4V[0]);
+	ak5C.resize(cellData_.size(), ak5C[0]);
+	ak5W.resize(wallData_.size(), ak5W[0]);
+	ak5V.resize(vertexData_.size(), ak5V[0]);
+	ak6C.resize(cellData_.size(), ak6C[0]);
+	ak6W.resize(wallData_.size(), ak6W[0]);
+	ak6V.resize(vertexData_.size(), ak6V[0]);
+	yTempRkckC.resize(cellData_.size(), yTempRkckC[0]);
+	yTempRkckW.resize(wallData_.size(), yTempRkckW[0]);
+	yTempRkckV.resize(vertexData_.size(), yTempRkckV[0]);
+      }
+    
     // If the end t is passed return (print if applicable)
     if (t_ >= endTime_) {
       //if (printFlag_) {
@@ -278,66 +277,68 @@ void RK5Adaptive::simulate(size_t verbose)
 #define PSHRNK -0.25
 #define ERRCON 1.89e-4
 void RK5Adaptive::rkqs(double hTry, double &hDid, double &hNext,
-											 std::vector< std::vector<double> > &yScalC,
-											 std::vector< std::vector<double> > &yScalW,
-											 std::vector< std::vector<double> > &yScalV,
-											 std::vector< std::vector<double> > &yTempC,
-											 std::vector< std::vector<double> > &yTempW,
-											 std::vector< std::vector<double> > &yTempV,
-											 std::vector< std::vector<double> > &yErrC,
-											 std::vector< std::vector<double> > &yErrW,
-											 std::vector< std::vector<double> > &yErrV,
-											 std::vector< std::vector<double> > &ak2C,
-											 std::vector< std::vector<double> > &ak2W,
-											 std::vector< std::vector<double> > &ak2V,
-											 std::vector< std::vector<double> > &ak3C,
-											 std::vector< std::vector<double> > &ak3W,
-											 std::vector< std::vector<double> > &ak3V,
-											 std::vector< std::vector<double> > &ak4C,
-											 std::vector< std::vector<double> > &ak4W,
-											 std::vector< std::vector<double> > &ak4V,
-											 std::vector< std::vector<double> > &ak5C,
-											 std::vector< std::vector<double> > &ak5W,
-											 std::vector< std::vector<double> > &ak5V,
-											 std::vector< std::vector<double> > &ak6C,
-											 std::vector< std::vector<double> > &ak6W,
-											 std::vector< std::vector<double> > &ak6V,
-											 std::vector< std::vector<double> > &yTempRkckC,
-											 std::vector< std::vector<double> > &yTempRkckW,
-											 std::vector< std::vector<double> > &yTempRkckV)
+		       std::vector< std::vector<double> > &yScalC,
+		       std::vector< std::vector<double> > &yScalW,
+		       std::vector< std::vector<double> > &yScalV,
+		       std::vector< std::vector<double> > &yTempC,
+		       std::vector< std::vector<double> > &yTempW,
+		       std::vector< std::vector<double> > &yTempV,
+		       std::vector< std::vector<double> > &yErrC,
+		       std::vector< std::vector<double> > &yErrW,
+		       std::vector< std::vector<double> > &yErrV,
+		       std::vector< std::vector<double> > &ak2C,
+		       std::vector< std::vector<double> > &ak2W,
+		       std::vector< std::vector<double> > &ak2V,
+		       std::vector< std::vector<double> > &ak3C,
+		       std::vector< std::vector<double> > &ak3W,
+		       std::vector< std::vector<double> > &ak3V,
+		       std::vector< std::vector<double> > &ak4C,
+		       std::vector< std::vector<double> > &ak4W,
+		       std::vector< std::vector<double> > &ak4V,
+		       std::vector< std::vector<double> > &ak5C,
+		       std::vector< std::vector<double> > &ak5W,
+		       std::vector< std::vector<double> > &ak5V,
+		       std::vector< std::vector<double> > &ak6C,
+		       std::vector< std::vector<double> > &ak6W,
+		       std::vector< std::vector<double> > &ak6V,
+		       std::vector< std::vector<double> > &yTempRkckC,
+		       std::vector< std::vector<double> > &yTempRkckW,
+		       std::vector< std::vector<double> > &yTempRkckV)
 {
   double errMax, h, hTemp, tNew, aux;
   h = hTry;
   for (;;) {
     rkck(h,yTempC,yTempW,yTempV,yErrC,yErrW,yErrV,ak2C,ak2W,ak2V,
-				 ak3C,ak3W,ak3V,ak4C,ak4W,ak4V,ak5C,ak5W,ak5V,
-				 ak6C,ak6W,ak6V,yTempRkckC,yTempRkckW,yTempRkckV);
+	 ak3C,ak3W,ak3V,ak4C,ak4W,ak4V,ak5C,ak5W,ak5V,
+	 ak6C,ak6W,ak6V,yTempRkckC,yTempRkckW,yTempRkckV);
     errMax = 0.0;
-		size_t N=cellData_.size();
-		size_t Nv=cellData_[0].size();
-    for (size_t i=0; i<N; ++i)
+    size_t N=cellData_.size();
+    for (size_t i=0; i<N; ++i) {
+      size_t Nv=cellData_[i].size();
       for (size_t j=0; j<Nv; ++j) {
         aux = std::fabs(yErrC[i][j] / yScalC[i][j]);
         if (aux > errMax)
-					errMax = aux;
+	  errMax = aux;
       }
-		N=wallData_.size();
-		Nv=wallData_[0].size();
-    for (size_t i=0; i<N; ++i)
+    }
+    N=wallData_.size();
+    for (size_t i=0; i<N; ++i) {
+      size_t Nv=wallData_[i].size();
       for (size_t j=0; j<Nv; ++j) {
         aux = std::fabs(yErrW[i][j] / yScalW[i][j]);
         if (aux > errMax)
-					errMax = aux;
+	  errMax = aux;
       }
-		N=vertexData_.size();
-		Nv=vertexData_[0].size();
-    for (size_t i=0; i<N; ++i)
+    }
+    N=vertexData_.size();
+    for (size_t i=0; i<N; ++i) {
+      Nv=vertexData_[i].size();
       for (size_t j=0; j<Nv; ++j) {
         aux = std::fabs(yErrV[i][j] / yScalV[i][j]);
         if (aux > errMax)
-					errMax = aux;
+	  errMax = aux;
       }
-		
+    }
     errMax /= eps_;
     if (errMax <= 1.0) break;
     hTemp = SAFETY * h * pow(errMax, PSHRNK);
@@ -355,21 +356,24 @@ void RK5Adaptive::rkqs(double hTry, double &hDid, double &hNext,
   else hNext = 5.0 * h;
   t_ += (hDid = h);
   
-	size_t Nc=cellData_.size();
-	size_t Ncvar=cellData_[0].size();
-  for (size_t i=0; i<Nc; ++i)
+  size_t Nc=cellData_.size();
+  for (size_t i=0; i<Nc; ++i) {
+    size_t Ncvar=cellData_[i].size();
     for (size_t j=0; j<Ncvar; ++j)
       cellData_[i][j] = yTempC[i][j];
-	size_t Nw=wallData_.size();
-	size_t Nwvar=wallData_[0].size();
-  for (size_t i=0; i<Nw; ++i)
+  }
+  size_t Nw=wallData_.size();
+  for (size_t i=0; i<Nw; ++i) {
+    size_t Nwvar=wallData_[i].size();
     for (size_t j=0; j<Nwvar; ++j)
       wallData_[i][j] = yTempW[i][j];
-	size_t Nv=vertexData_.size();
-	size_t Nvvar=vertexData_[0].size();
-  for (size_t i=0; i<Nv; ++i)
+  }
+  size_t Nv=vertexData_.size();
+  for (size_t i=0; i<Nv; ++i) {
+    size_t Nvvar=vertexData_[i].size();
     for (size_t j=0; j<Nvvar; ++j)
       vertexData_[i][j] = yTempV[i][j];
+  }
 }
 #undef SAFETY
 #undef PGROW
@@ -378,30 +382,30 @@ void RK5Adaptive::rkqs(double hTry, double &hDid, double &hNext,
 
 void RK5Adaptive::
 rkck(double h,
-		 std::vector< std::vector<double> > &yOutC,
-		 std::vector< std::vector<double> > &yOutW,
-		 std::vector< std::vector<double> > &yOutV,
-		 std::vector< std::vector<double> > &yErrC,
-		 std::vector< std::vector<double> > &yErrW,
-		 std::vector< std::vector<double> > &yErrV,
-		 std::vector< std::vector<double> > &ak2C,
-		 std::vector< std::vector<double> > &ak2W,
-		 std::vector< std::vector<double> > &ak2V,
-		 std::vector< std::vector<double> > &ak3C,
-		 std::vector< std::vector<double> > &ak3W,
-		 std::vector< std::vector<double> > &ak3V,
-		 std::vector< std::vector<double> > &ak4C,
-		 std::vector< std::vector<double> > &ak4W,
-		 std::vector< std::vector<double> > &ak4V,
-		 std::vector< std::vector<double> > &ak5C,
-		 std::vector< std::vector<double> > &ak5W,
-		 std::vector< std::vector<double> > &ak5V,
-		 std::vector< std::vector<double> > &ak6C,
-		 std::vector< std::vector<double> > &ak6W,
-		 std::vector< std::vector<double> > &ak6V,
-		 std::vector< std::vector<double> > &yTempRkckC, 
-		 std::vector< std::vector<double> > &yTempRkckW, 
-		 std::vector< std::vector<double> > &yTempRkckV ) 
+     std::vector< std::vector<double> > &yOutC,
+     std::vector< std::vector<double> > &yOutW,
+     std::vector< std::vector<double> > &yOutV,
+     std::vector< std::vector<double> > &yErrC,
+     std::vector< std::vector<double> > &yErrW,
+     std::vector< std::vector<double> > &yErrV,
+     std::vector< std::vector<double> > &ak2C,
+     std::vector< std::vector<double> > &ak2W,
+     std::vector< std::vector<double> > &ak2V,
+     std::vector< std::vector<double> > &ak3C,
+     std::vector< std::vector<double> > &ak3W,
+     std::vector< std::vector<double> > &ak3V,
+     std::vector< std::vector<double> > &ak4C,
+     std::vector< std::vector<double> > &ak4W,
+     std::vector< std::vector<double> > &ak4V,
+     std::vector< std::vector<double> > &ak5C,
+     std::vector< std::vector<double> > &ak5W,
+     std::vector< std::vector<double> > &ak5V,
+     std::vector< std::vector<double> > &ak6C,
+     std::vector< std::vector<double> > &ak6W,
+     std::vector< std::vector<double> > &ak6V,
+     std::vector< std::vector<double> > &yTempRkckC, 
+     std::vector< std::vector<double> > &yTempRkckW, 
+     std::vector< std::vector<double> > &yTempRkckV ) 
 {  
   //static double a2=0.2,a3=0.3,a4=0.6,a5=1.0,a6=0.875;
   static double b21=0.2,
@@ -414,10 +418,10 @@ rkck(double h,
   double dc1=c1-2825.0/27648.0,dc3=c3-18575.0/48384.0,
     dc4=c4-13525.0/55296.0,dc6=c6-0.25;
   
-	size_t Nc=cellData_.size(),Nw=wallData_.size(),Nv=vertexData_.size(),
-		Ncvar=cellData_[0].size(),Nwvar=wallData_[0].size(),
-		Nvvar=vertexData_[0].size();
-
+  size_t Nc=cellData_.size(),Nw=wallData_.size(),Nv=vertexData_.size(),
+    Ncvar=cellData_[0].size(),Nwvar=wallData_[0].size(),
+    Nvvar=vertexData_[0].size();
+  
   for (size_t i=0; i< Nc; ++i)
     for (size_t j=0; j<Ncvar; ++j)
       yTempRkckC[i][j]=cellData_[i][j]+b21*h*cellDerivs_[i][j];
@@ -427,7 +431,7 @@ rkck(double h,
   for (size_t i=0; i< Nv; ++i)
     for (size_t j=0; j<Nvvar; ++j)
       yTempRkckV[i][j]=vertexData_[i][j]+b21*h*vertexDerivs_[i][j];
-
+  
   
   T_->derivs(yTempRkckC,yTempRkckW,yTempRkckV,ak2C,ak2W,ak2V); // t + a2h
   for (size_t i=0; i< Nc; ++i)
@@ -513,13 +517,13 @@ rkck(double h,
          dc5*ak5V[i][j]+dc6*ak6V[i][j]);
 }
 
-///////////////////////////////////////////////////////////////////////
+//
 // CLASS SOLVERRK4
-///////////////////////////////////////////////////////////////////////
+//
 RK4::RK4(Tissue *T,std::ifstream &IN)
-	:BaseSolver(T,IN)
+  :BaseSolver(T,IN)
 {
-	readParameterFile(IN);
+  readParameterFile(IN);
 }
 
 void RK4::readParameterFile(std::ifstream &IN)
@@ -537,19 +541,19 @@ void RK4::readParameterFile(std::ifstream &IN)
 
 void RK4::simulate(size_t verbose) 
 {
-	//
-	// Check that h1 and endTime-startTime are > 0
+  //
+  // Check that h1 and endTime-startTime are > 0
   //
   if( !(h_>0. && (endTime_-startTime_)>0.) ) {
     std::cerr << "Rk4::simulate() Wrong time borders or time step for "
-							<< "simulation. No simulation performed.\n";
+	      << "simulation. No simulation performed.\n";
     return;
   }
-	std::cerr << "Simulating using fourth-order Runge-Kutta\n";
-
-	//
-	// Check that sizes of permanent data is ok
-	//
+  std::cerr << "Simulating using fourth-order Runge-Kutta\n";
+  
+  //
+  // Check that sizes of permanent data is ok
+  //
   if( cellData_.size() && cellData_.size() != cellDerivs_.size() ) {
     cellDerivs_.resize( cellData_.size(),cellData_[0]);
   }
@@ -559,46 +563,47 @@ void RK4::simulate(size_t verbose)
   if( vertexData_.size() && vertexData_.size() != vertexDerivs_.size() ) {
     vertexDerivs_.resize( vertexData_.size(),vertexData_[0]);
   }
-
+  
   // Initiate reactions and direction for those where it is applicable
-  T_->initiateReactions(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_, vertexDerivs_);
-	if (cellData_.size()!=cellDerivs_.size())
-		cellDerivs_.resize(cellData_.size(),cellDerivs_[0]);
-	if (wallData_.size()!=wallDerivs_.size())
-		wallDerivs_.resize(wallData_.size(),wallDerivs_[0]);
-	if (vertexData_.size()!=vertexDerivs_.size())
-		vertexDerivs_.resize(vertexData_.size(),vertexDerivs_[0]);
+  T_->initiateReactions(cellData_, wallData_, vertexData_, cellDerivs_, 
+			wallDerivs_, vertexDerivs_);
+  if (cellData_.size()!=cellDerivs_.size())
+    cellDerivs_.resize(cellData_.size(),cellDerivs_[0]);
+  if (wallData_.size()!=wallDerivs_.size())
+    wallDerivs_.resize(wallData_.size(),wallDerivs_[0]);
+  if (vertexData_.size()!=vertexDerivs_.size())
+    vertexDerivs_.resize(vertexData_.size(),vertexDerivs_[0]);
   T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, wallDerivs_,
-				    vertexDerivs_);
-
+			vertexDerivs_);
+  
   assert( cellData_.size() == T_->numCell() && 
-					cellData_.size()==cellDerivs_.size() );
+	  cellData_.size()==cellDerivs_.size() );
   assert( wallData_.size() == T_->numWall() && 
-					wallData_.size()==wallDerivs_.size() );
+	  wallData_.size()==wallDerivs_.size() );
   assert( vertexData_.size() == T_->numVertex() && 
-					vertexData_.size()==vertexDerivs_.size() );
-	
-	//
+	  vertexData_.size()==vertexDerivs_.size() );
+  
+  //
   // Create all vectors that will be needed by rk4()!
   //
-	size_t Nc=T_->numCell(),Nw=T_->numWall(),Nv=T_->numVertex();
+  size_t Nc=T_->numCell(),Nw=T_->numWall(),Nv=T_->numVertex();
   std::vector< std::vector<double> > ytCell(Nc),dytCell(Nc),dymCell(Nv),
-		ytWall(Nw),dytWall(Nw),dymWall(Nw),
-		ytVertex(Nw),dytVertex(Nw),dymVertex(Nw);
+    ytWall(Nw),dytWall(Nw),dymWall(Nw),
+    ytVertex(Nw),dytVertex(Nw),dymVertex(Nw);
   //Resize each vector
-	size_t Ncvar=T_->cell(0).numVariable();
+  size_t Ncvar=T_->cell(0).numVariable();
   for( size_t i=0 ; i<Nc ; ++i ) {
     ytCell[i].resize(Ncvar);
     dytCell[i].resize(Ncvar);
     dymCell[i].resize(Ncvar);
   }
-	size_t Nwvar=T_->wall(0).numVariable()+1;
+  size_t Nwvar=T_->wall(0).numVariable()+1;
   for( size_t i=0 ; i<Nw ; ++i ) {
     ytWall[i].resize(Nwvar);
     dytWall[i].resize(Nwvar);
     dymWall[i].resize(Nwvar);
   }
-	size_t Nvvar=T_->vertex(0).numPosition();
+  size_t Nvvar=T_->vertex(0).numPosition();
   for( size_t i=0 ; i<Nv ; ++i ) {
     ytVertex[i].resize(Nvvar);
     dytVertex[i].resize(Nvvar);
@@ -626,12 +631,12 @@ void RK4::simulate(size_t verbose)
   t_=startTime_;
   numOk_ = numBad_ = 0;
   while( t_<endTime_ ) {
-		if (debugFlag()) {
-			cellDataCopy_[debugCount()] = cellData_;
-		} 
-		//Update the derivatives
+    if (debugFlag()) {
+      cellDataCopy_[debugCount()] = cellData_;
+    } 
+    //Update the derivatives
     T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,
-							 vertexDerivs_);
+	       vertexDerivs_);
     
     //Print if applicable 
     //if( printFlag_ && t_ >= printTime ) {
@@ -639,29 +644,29 @@ void RK4::simulate(size_t verbose)
       printTime += printDeltaTime;
       print();
     }
-
+    
     //Check if step is larger than max allowed
     //max step end is min of endTime_ and printTime
     //double tMin= endTime_<printTime ? endTime_ : printTime;
     //if( t_+h>tMin ) h=tMin-t_;
-
+    
     //Update
     rk4(ytCell,ytWall,ytVertex,dytCell,dytWall,dytVertex,
-				dymCell,dymWall,dymVertex);
+	dymCell,dymWall,dymVertex);
     numOk_++;
     
-		//
+    //
     // Check for discrete and reaction updates
     //
-		T_->updateDirection(h_,cellData_,wallData_,vertexData_,cellDerivs_,
-												wallDerivs_,vertexDerivs_);
-		T_->updateReactions(cellData_,wallData_,vertexData_,h_);
+    T_->updateDirection(h_,cellData_,wallData_,vertexData_,cellDerivs_,
+			wallDerivs_,vertexDerivs_);
+    T_->updateReactions(cellData_,wallData_,vertexData_,h_);
     T_->checkCompartmentChange(cellData_,wallData_,vertexData_,
-															 cellDerivs_,wallDerivs_,vertexDerivs_ );
-		
-		// Check the tissue connectivity in each step
-		T_->checkConnectivity(1);
-
+			       cellDerivs_,wallDerivs_,vertexDerivs_ );
+    
+    // Check the tissue connectivity in each step
+    T_->checkConnectivity(1);
+    
     // Resize temporary containers as well
     if(cellData_.size() != ytCell.size() ) {
       ytCell.resize( cellData_.size(), ytCell[0] );
@@ -674,7 +679,7 @@ void RK4::simulate(size_t verbose)
       dytVertex.resize( vertexDerivs_.size(), dytVertex[0] );
       dymVertex.resize( vertexDerivs_.size(), dymVertex[0] );
     }
-		
+    
     //update time variable
     if( (t_+h_)==t_ ) {
       std::cerr << "Rk4::simulate() Step size too small.";
@@ -686,7 +691,7 @@ void RK4::simulate(size_t verbose)
   if (1) {
     //Update the derivatives
     T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,
-							 vertexDerivs_);
+	       vertexDerivs_);
     print();
   }
   std::cerr << "Simulation done.\n"; 
@@ -694,91 +699,91 @@ void RK4::simulate(size_t verbose)
 }
 
 void RK4::rk4(std::vector< std::vector<double> > &ytCell,
-							std::vector< std::vector<double> > &ytWall,
-							std::vector< std::vector<double> > &ytVertex,
-							std::vector< std::vector<double> > &dytCell,
-							std::vector< std::vector<double> > &dytWall,
-							std::vector< std::vector<double> > &dytVertex,
-							std::vector< std::vector<double> > &dymCell,
-							std::vector< std::vector<double> > &dymWall,
-							std::vector< std::vector<double> > &dymVertex )
+	      std::vector< std::vector<double> > &ytWall,
+	      std::vector< std::vector<double> > &ytVertex,
+	      std::vector< std::vector<double> > &dytCell,
+	      std::vector< std::vector<double> > &dytWall,
+	      std::vector< std::vector<double> > &dytVertex,
+	      std::vector< std::vector<double> > &dymCell,
+	      std::vector< std::vector<double> > &dymWall,
+	      std::vector< std::vector<double> > &dymVertex )
 {  
   double hh=0.5*h_;
   double h6=h_/6.0;
-	// Take first half step
-	// Is this first derivs calculation needed?
-	T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,vertexDerivs_);
-	for( size_t i=0 ; i<ytCell.size() ; ++i )
-		for( size_t j=0 ; j<ytCell[i].size() ; ++j )
-			ytCell[i][j] = cellData_[i][j] + hh*cellDerivs_[i][j];
-	for( size_t i=0 ; i<ytWall.size() ; ++i )
-		for( size_t j=0 ; j<ytWall[i].size() ; ++j )
-			ytWall[i][j] = wallData_[i][j] + hh*wallDerivs_[i][j];
-	for( size_t i=0 ; i<ytVertex.size() ; ++i )
-		for( size_t j=0 ; j<ytVertex[i].size() ; ++j )
-			ytVertex[i][j] = vertexData_[i][j] + hh*vertexDerivs_[i][j];
-	
-	// Take second half step
-	T_->derivs(ytCell,ytWall,ytVertex,dytCell,dytWall,dytVertex);    
-	for( size_t i=0 ; i<ytCell.size() ; ++i )
-		for( size_t j=0 ; j<ytCell[i].size() ; ++j )
-			ytCell[i][j] = cellData_[i][j] + hh*dytCell[i][j];
-	for( size_t i=0 ; i<ytWall.size() ; ++i )
-		for( size_t j=0 ; j<ytWall[i].size() ; ++j )
-			ytWall[i][j] = wallData_[i][j] + hh*dytWall[i][j];
-	for( size_t i=0 ; i<ytVertex.size() ; ++i )
-		for( size_t j=0 ; j<ytVertex[i].size() ; ++j )
-			ytVertex[i][j] = vertexData_[i][j] + hh*dytVertex[i][j];
-	
-	// Take temporary 'full' step
-	T_->derivs(ytCell,ytWall,ytVertex,dymCell,dymWall,dymVertex);
-	for( size_t i=0 ; i<cellData_.size() ; ++i )
-		for( size_t j=0 ; j<cellData_[i].size() ; ++j ) {
-			ytCell[i][j] = cellData_[i][j] + h_*dymCell[i][j];
-			dymCell[i][j] += dytCell[i][j];
-		}
-	for( size_t i=0 ; i<wallData_.size() ; ++i )
-		for( size_t j=0 ; j<wallData_[i].size() ; ++j ) {
-			ytWall[i][j] = wallData_[i][j] + h_*dymWall[i][j];
-			dymWall[i][j] += dytWall[i][j];
-		}
-	for( size_t i=0 ; i<vertexData_.size() ; ++i )
-		for( size_t j=0 ; j<vertexData_[i].size() ; ++j ) {
-			ytVertex[i][j] = vertexData_[i][j] + h_*dymVertex[i][j];
-			dymVertex[i][j] = dytVertex[i][j];
-		}
-	// Take full step
-	T_->derivs(ytCell,ytWall,ytVertex,dytCell,dytWall,dytVertex);
-	for( size_t i=0 ; i<cellData_.size() ; ++i )
-		for( size_t j=0 ; j<cellData_[i].size() ; ++j )
-			cellData_[i][j] = cellData_[i][j] +
-				h6*(cellDerivs_[i][j]+dytCell[i][j]+2.0*dymCell[i][j]);
-	for( size_t i=0 ; i<wallData_.size() ; ++i )
-		for( size_t j=0 ; j<wallData_[i].size() ; ++j )
-			wallData_[i][j] = wallData_[i][j] +
-				h6*(wallDerivs_[i][j]+dytWall[i][j]+2.0*dymWall[i][j]);
-	for( size_t i=0 ; i<vertexData_.size() ; ++i )
-		for( size_t j=0 ; j<vertexData_[i].size() ; ++j )
-			vertexData_[i][j] = vertexData_[i][j] + 
-				h6*(vertexDerivs_[i][j]+dytVertex[i][j]+2.0*dymVertex[i][j]);
+  // Take first half step
+  // Is this first derivs calculation needed?
+  T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,vertexDerivs_);
+  for( size_t i=0 ; i<ytCell.size() ; ++i )
+    for( size_t j=0 ; j<ytCell[i].size() ; ++j )
+      ytCell[i][j] = cellData_[i][j] + hh*cellDerivs_[i][j];
+  for( size_t i=0 ; i<ytWall.size() ; ++i )
+    for( size_t j=0 ; j<ytWall[i].size() ; ++j )
+      ytWall[i][j] = wallData_[i][j] + hh*wallDerivs_[i][j];
+  for( size_t i=0 ; i<ytVertex.size() ; ++i )
+    for( size_t j=0 ; j<ytVertex[i].size() ; ++j )
+      ytVertex[i][j] = vertexData_[i][j] + hh*vertexDerivs_[i][j];
+  
+  // Take second half step
+  T_->derivs(ytCell,ytWall,ytVertex,dytCell,dytWall,dytVertex);    
+  for( size_t i=0 ; i<ytCell.size() ; ++i )
+    for( size_t j=0 ; j<ytCell[i].size() ; ++j )
+      ytCell[i][j] = cellData_[i][j] + hh*dytCell[i][j];
+  for( size_t i=0 ; i<ytWall.size() ; ++i )
+    for( size_t j=0 ; j<ytWall[i].size() ; ++j )
+      ytWall[i][j] = wallData_[i][j] + hh*dytWall[i][j];
+  for( size_t i=0 ; i<ytVertex.size() ; ++i )
+    for( size_t j=0 ; j<ytVertex[i].size() ; ++j )
+      ytVertex[i][j] = vertexData_[i][j] + hh*dytVertex[i][j];
+  
+  // Take temporary 'full' step
+  T_->derivs(ytCell,ytWall,ytVertex,dymCell,dymWall,dymVertex);
+  for( size_t i=0 ; i<cellData_.size() ; ++i )
+    for( size_t j=0 ; j<cellData_[i].size() ; ++j ) {
+      ytCell[i][j] = cellData_[i][j] + h_*dymCell[i][j];
+      dymCell[i][j] += dytCell[i][j];
+    }
+  for( size_t i=0 ; i<wallData_.size() ; ++i )
+    for( size_t j=0 ; j<wallData_[i].size() ; ++j ) {
+      ytWall[i][j] = wallData_[i][j] + h_*dymWall[i][j];
+      dymWall[i][j] += dytWall[i][j];
+    }
+  for( size_t i=0 ; i<vertexData_.size() ; ++i )
+    for( size_t j=0 ; j<vertexData_[i].size() ; ++j ) {
+      ytVertex[i][j] = vertexData_[i][j] + h_*dymVertex[i][j];
+      dymVertex[i][j] = dytVertex[i][j];
+    }
+  // Take full step
+  T_->derivs(ytCell,ytWall,ytVertex,dytCell,dytWall,dytVertex);
+  for( size_t i=0 ; i<cellData_.size() ; ++i )
+    for( size_t j=0 ; j<cellData_[i].size() ; ++j )
+      cellData_[i][j] = cellData_[i][j] +
+	h6*(cellDerivs_[i][j]+dytCell[i][j]+2.0*dymCell[i][j]);
+  for( size_t i=0 ; i<wallData_.size() ; ++i )
+    for( size_t j=0 ; j<wallData_[i].size() ; ++j )
+      wallData_[i][j] = wallData_[i][j] +
+	h6*(wallDerivs_[i][j]+dytWall[i][j]+2.0*dymWall[i][j]);
+  for( size_t i=0 ; i<vertexData_.size() ; ++i )
+    for( size_t j=0 ; j<vertexData_[i].size() ; ++j )
+      vertexData_[i][j] = vertexData_[i][j] + 
+	h6*(vertexDerivs_[i][j]+dytVertex[i][j]+2.0*dymVertex[i][j]);
 }
 
 //!Finds the maximal |dydt|/|y| for the system
 double RK4::maxDerivative() {  
-	std::cerr << "RK4::maxDerivative()" << std::endl;
-	exit(-1);
-//   double max=0.0,val;
-//   for( size_t i=0 ; i<N() ; i++ ) {
-//     for( size_t j=0 ; j<M() ; j++ ) {
-//       if( y_[i][j]!=0 )
-// 				val = fabs( dydt_[i][j]/y_[i][j] );
-//       else
-// 				val = fabs( dydt_[i][j] );
-      
-//       if( val>max ) 
-// 				max = val;
-//     }
-//   }
-//   return max;
+  std::cerr << "RK4::maxDerivative()" << std::endl;
+  exit(-1);
+  //   double max=0.0,val;
+  //   for( size_t i=0 ; i<N() ; i++ ) {
+  //     for( size_t j=0 ; j<M() ; j++ ) {
+  //       if( y_[i][j]!=0 )
+  // 				val = fabs( dydt_[i][j]/y_[i][j] );
+  //       else
+  // 				val = fabs( dydt_[i][j] );
+  
+  //       if( val>max ) 
+  // 				max = val;
+  //     }
+  //   }
+  //   return max;
 }
 

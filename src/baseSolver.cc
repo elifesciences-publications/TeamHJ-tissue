@@ -16,85 +16,85 @@
 
 BaseSolver::BaseSolver()
 {
-	//C_=0;
+  //C_=0;
 }
 
 BaseSolver::BaseSolver(Tissue *T,std::ifstream &IN)
 {
-	//C_=0;
-	setTissue(T);
-	getInit();
-
+  //C_=0;
+  setTissue(T);
+  getInit();
+  
   //check debugging status
-	std::string debugCheck = myConfig::getValue("debug_output", 0);
-	if(!debugCheck.empty()) {
-		std::cerr << "Performing simulation in debug-mode\n";
-		debugFlag_ = true;
-		if (debugFlag_) {
-			int numCopy = 10;
-			cellDataCopy_.resize(numCopy);
-		}
-	}
-	else 
-		debugFlag_=false;
+  std::string debugCheck = myConfig::getValue("debug_output", 0);
+  if(!debugCheck.empty()) {
+    std::cerr << "Performing simulation in debug-mode\n";
+    debugFlag_ = true;
+    if (debugFlag_) {
+      int numCopy = 10;
+      cellDataCopy_.resize(numCopy);
+    }
+  }
+  else 
+    debugFlag_=false;
 }
 
 BaseSolver::~BaseSolver()
 {
-	
+  
 }
 
 size_t BaseSolver::debugCount() const
 {
-	static size_t count = 0;
-	if (debugFlag()) 
-		return count++ % cellDataCopy_.size(); 
-	std::cerr << "Warning  BaseSolver::debugCount() should never be" 
-						<< " called when debugFlag == " << debugFlag() << "\n"; 
-	exit(-1);
+  static size_t count = 0;
+  if (debugFlag()) 
+    return count++ % cellDataCopy_.size(); 
+  std::cerr << "Warning  BaseSolver::debugCount() should never be" 
+	    << " called when debugFlag == " << debugFlag() << "\n"; 
+  exit(-1);
 }
 
 BaseSolver* BaseSolver::getSolver(Tissue *T, const std::string &file)
 {
-	std::istream *IN = myFiles::openFile(file);
-	if (!IN) {
-		std::cerr << "BaseSolver::BaseSolver() - "
-							<< "Cannot open file " << file << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	std::string idValue;
-	*IN >> idValue;
-
-	BaseSolver *solver;
-	if (idValue == "RK5Adaptive")
-		solver = new RK5Adaptive(T,(std::ifstream &) *IN);
-	else if (idValue == "RK4")
-		solver = new RK4(T,(std::ifstream &) *IN);
-	else {
-		std::cerr << "BaseSolver::BaseSolver() - "
-							<< "Unknown solver: " << idValue << std::endl;
-		delete IN;
-		exit(EXIT_FAILURE);
-	}
-	delete IN;
-	return solver;
+  std::istream *IN = myFiles::openFile(file);
+  if (!IN) {
+    std::cerr << "BaseSolver::BaseSolver() - "
+	      << "Cannot open file " << file << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  std::string idValue;
+  *IN >> idValue;
+  
+  BaseSolver *solver;
+  if (idValue == "RK5Adaptive")
+    solver = new RK5Adaptive(T,(std::ifstream &) *IN);
+  else if (idValue == "RK4")
+    solver = new RK4(T,(std::ifstream &) *IN);
+  else {
+    std::cerr << "BaseSolver::BaseSolver() - "
+	      << "Unknown solver: " << idValue << std::endl;
+    delete IN;
+    exit(EXIT_FAILURE);
+  }
+  delete IN;
+  return solver;
 }
 
 void BaseSolver::getInit()
 {
-	//
-	// Resize data vectors
-	//
-	cellData_.resize(T_->numCell());
-	cellDerivs_.resize(T_->numCell());
-	wallData_.resize(T_->numWall());
-	wallDerivs_.resize(T_->numWall());
-	vertexData_.resize(T_->numVertex());
-	vertexDerivs_.resize(T_->numVertex());
+  //
+  // Resize data vectors
+  //
+  cellData_.resize(T_->numCell());
+  cellDerivs_.resize(T_->numCell());
+  wallData_.resize(T_->numWall());
+  wallDerivs_.resize(T_->numWall());
+  vertexData_.resize(T_->numVertex());
+  vertexDerivs_.resize(T_->numVertex());
   
-	//
-	// Copy variable values from tissue
-	//
+  //
+  // Copy variable values from tissue
+  //
   for( size_t i=0 ; i<T_->numCell() ; ++i ) {
     cellData_[i].resize(T_->cell(i).numVariable());
     cellDerivs_[i].resize(T_->cell(i).numVariable());
@@ -120,22 +120,22 @@ void BaseSolver::getInit()
 
 void BaseSolver::setTissueVariables()
 {
-	//
-	// Check size of data vectors
-	//
-	if (cellData_.size() != T_->numCell() ||
-			wallData_.size() != T_->numWall() ||
-			vertexData_.size() != T_->numVertex()) {
-		std::cerr << "BaseSolver::setTissueVariables wrong size of data:" << std::endl
-							<< "Data\tTissue\tInternal" << std::endl
-							<< "Cell\t" << T_->numCell() << "\t" << cellData_.size() << std::endl
-							<< "Wall\t" << T_->numWall() << "\t" << wallData_.size() << std::endl
-							<< "Vertex\t" << T_->numVertex() << "\t" << vertexData_.size() << std::endl;
-		exit(-1);
+  //
+  // Check size of data vectors
+  //
+  if (cellData_.size() != T_->numCell() ||
+      wallData_.size() != T_->numWall() ||
+      vertexData_.size() != T_->numVertex()) {
+    std::cerr << "BaseSolver::setTissueVariables wrong size of data:" << std::endl
+	      << "Data\tTissue\tInternal" << std::endl
+	      << "Cell\t" << T_->numCell() << "\t" << cellData_.size() << std::endl
+	      << "Wall\t" << T_->numWall() << "\t" << wallData_.size() << std::endl
+	      << "Vertex\t" << T_->numVertex() << "\t" << vertexData_.size() << std::endl;
+    exit(-1);
   }
-	//
-	// Copy variable values to tissue
-	//
+  //
+  // Copy variable values to tissue
+  //
   for (size_t i=0; i<T_->numCell(); ++i) {
     for (size_t j=0; j<cellData_[i].size(); ++j)
       T_->cell(i).setVariable(j,cellData_[i][j]);
@@ -143,11 +143,11 @@ void BaseSolver::setTissueVariables()
   
   for (size_t i=0; i<T_->numWall(); ++i) {
     T_->wall(i).setLength(wallData_[i][0]);
-		T_->wall(i).setVariable(wallData_[i]);
+    T_->wall(i).setVariable(wallData_[i]);
   }
   
   for (size_t i=0; i<T_->numVertex(); ++i) {
-		T_->vertex(i).setPosition(vertexData_[i]);
+    T_->vertex(i).setPosition(vertexData_[i]);
   }
 }
 
@@ -159,8 +159,8 @@ void BaseSolver::readParameterFile(std::ifstream &IN)
 
 void BaseSolver::simulate(size_t verbose)
 {
-	if (verbose)
-  std::cerr << "BaseSolver::simulate(void)\n";
+  if (verbose)
+    std::cerr << "BaseSolver::simulate(void)\n";
   exit(-1);
 }
 
@@ -192,7 +192,7 @@ void BaseSolver::print(std::ostream &os)
       return;
     }
     //Print the vertex positions
-    size_t dimension = vertexData_[0].size();
+    size_t dimension = T_->vertex(0).numPosition(); // was vertexData_[0].size();
     os << Nv << " " << dimension << std::endl;
     for( size_t i=0 ; i<Nv ; ++i ) {
       for( size_t d=0 ; d<dimension ; ++d )
@@ -202,7 +202,7 @@ void BaseSolver::print(std::ostream &os)
     //os << std::endl;
     //Print the cells, first connected vertecis and then variables
     size_t Nc = cellData_.size();
-    int numPrintVar=cellData_[0].size()+3;
+    int numPrintVar=T_->cell(0).numVariable()+3; // was cellData_[0].size()+3;
     os << Nc << " " << numPrintVar << std::endl;
     for( size_t i=0 ; i<Nc ; ++i ) {
       size_t Ncv = T_->cell(i).numVertex(); 
@@ -216,7 +216,7 @@ void BaseSolver::print(std::ostream &os)
 	 << T_->cell(i).numWall() << std::endl;
     }		
     // Print wall variables, first the two connected vertices and then the variables
-    numPrintVar=wallData_[0].size()+4;
+    numPrintVar=T_->wall(0).numVariable()+5; // was wallData_[0].size()+4;
     size_t Nw = wallData_.size();
     os << Nw << " " << numPrintVar << std::endl;
     for( size_t i=0 ; i<Nw ; ++i ) {
@@ -244,7 +244,7 @@ void BaseSolver::print(std::ostream &os)
       return;
     }
     //Print the vertex positions
-    size_t dimension = vertexData_[0].size();
+    size_t dimension = T_->vertex(0).numPosition(); // was vertexData_[0].size();
     os << Nv << " " << dimension << std::endl;
     for( size_t i=0 ; i<Nv ; ++i ) {
       for( size_t d=0 ; d<dimension ; ++d )
@@ -254,7 +254,7 @@ void BaseSolver::print(std::ostream &os)
     //os << std::endl;
     //Print the cells, first connected vertecis and then variables
     size_t Nc = cellData_.size();
-    int numPrintVar=cellData_[0].size()+3;
+    int numPrintVar=T_->cell(0).numVariable()+3; // was cellData_[0].size()+3;
     os << Nc << " " << numPrintVar << std::endl;
     for( size_t i=0 ; i<Nc ; ++i ) {
       size_t Ncv = T_->cell(i).numVertex(); 
@@ -281,7 +281,7 @@ void BaseSolver::print(std::ostream &os)
       return;
     }
     //Print the vertex positions
-    size_t dimension = vertexData_[0].size();
+    size_t dimension = T_->vertex(0).numPosition(); //was vertexData_[0].size();
     os << Nv << " " << dimension << std::endl;
     for( size_t i=0 ; i<Nv ; ++i ) {
       for( size_t d=0 ; d<dimension ; ++d )
@@ -291,7 +291,7 @@ void BaseSolver::print(std::ostream &os)
     //os << std::endl;
     // Print the walls, first connected vertecis and then variables
     size_t Nw = wallData_.size();
-    int numPrintVar=wallData_[0].size()+4;
+    int numPrintVar=T_->wall(0).numVariable()+5; //was wallData_[0].size()+4;
     os << Nw << " " << numPrintVar << std::endl;
     for( size_t i=0 ; i<Nw ; ++i ) {
       os << "2 ";
