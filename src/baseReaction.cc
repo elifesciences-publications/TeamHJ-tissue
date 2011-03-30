@@ -119,36 +119,38 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if(idValue=="EpidermalVertexForce")
     return new EpidermalVertexForce(paraValue,indValue); 
   else if (idValue == "VertexFromPressureExperimental")
-	  return new VertexFromPressureExperimental(paraValue, indValue);
+    return new VertexFromPressureExperimental(paraValue, indValue);
   else if (idValue == "CellVolumeExperimental")
-	  return new CellVolumeExperimental(paraValue, indValue);
+    return new CellVolumeExperimental(paraValue, indValue);
   else if (idValue == "EpidermalRadialForce")
-	  return new EpidermalRadialForce(paraValue, indValue);
+    return new EpidermalRadialForce(paraValue, indValue);
   else if (idValue == "PerpendicularWallPressure")
-	  return new PerpendicularWallPressure(paraValue, indValue);
+    return new PerpendicularWallPressure(paraValue, indValue);
   else if (idValue == "VertexFromCellPlane")
-	  return new VertexFromCellPlane(paraValue, indValue);
+    return new VertexFromCellPlane(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneSpatial")
-	  return new VertexFromCellPlaneSpatial(paraValue, indValue);
+    return new VertexFromCellPlaneSpatial(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneConcentrationHill")
-	  return new VertexFromCellPlaneConcentrationHill(paraValue, indValue);
+    return new VertexFromCellPlaneConcentrationHill(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneNormalized")
-	  return new VertexFromCellPlaneNormalized(paraValue, indValue);
+    return new VertexFromCellPlaneNormalized(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneNormalizedSpatial")
-	  return new VertexFromCellPlaneNormalizedSpatial(paraValue, indValue);
+    return new VertexFromCellPlaneNormalizedSpatial(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneSphereCylinder")
-	  return new VertexFromCellPlaneSphereCylinder(paraValue, indValue);
+    return new VertexFromCellPlaneSphereCylinder(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneSphereCylinderConcentrationHill")
-	  return new VertexFromCellPlaneSphereCylinderConcentrationHill(paraValue, indValue);
+    return new VertexFromCellPlaneSphereCylinderConcentrationHill(paraValue, indValue);
   else if (idValue == "DebugReaction")
-	  return new DebugReaction(paraValue, indValue);
-
-	// mechanicalTRBS.h (.cc)
-	// Mechanical updates related to triangular (biquadratic) springs
+    return new DebugReaction(paraValue, indValue);
+  
+  // mechanicalTRBS.h (.cc)
+  // Mechanical updates related to triangular (biquadratic) springs
   else if (idValue == "VertexFromTRBS")
-	  return new VertexFromTRBS(paraValue, indValue);
-
-	
+    return new VertexFromTRBS(paraValue, indValue);
+  else if (idValue == "VertexFromTRBScenterTriangulation")
+    return new VertexFromTRBScenterTriangulation(paraValue, indValue);
+  
+  
   //network.h,network.cc
   else if(idValue=="AuxinModelSimple1")
     return new AuxinModelSimple1(paraValue,indValue); 

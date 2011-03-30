@@ -31,23 +31,32 @@ class AuxinModelStress : public BaseReaction {
 	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
-//!A linear polarization cell-based auxin transport model
-/*!A complete pattern generating auxin model based on only cellular
-  compartments. The four molecules are updated according to:
-  
-  dA_i/dt = p0*M_i + p1 - p2*A_i +p5*\Sum_{neigh} (A_n-A_i) + 
-  p4*\Sum_{neigh} (P_ni*A_n-P_in*A_i) 
-  
-  dP_i/dt = p6 - p7*P_i 
-  
-  dX_i/dt = p8*A_i - p9*X_i
-  
-  dM_i/dt = p10*\Theta_L1 - p11*M_i
-  
-  P_in = P_i*X_n/(p_3+\Sum_{k,neigh}X_k)
-  
-  In addition, the column index for auxin, PIN, X, and M should be given.
-*/
+///
+/// @brief A linear polarization cell-based auxin transport model
+///
+/// A complete pattern generating auxin model based on only cellular
+/// compartments. The four molecules A(uxin), P(IN), X(auxin induced
+/// molecule), and M(epidermally expressed molecule) are updated
+/// according to:
+///  
+/// @f[ \frac{dA_i}{dt} = p_0 M_i + p_1 - p_2 A_i + p_4 \sum_{n}^{neigh} (P_{ni} A_n - P_{in} A_i) + p_5 \sum_{n}^{neigh} (A_n-A_i) @f] 
+///  
+/// @f[ \frac{dP_i}{dt} = p_6 - p_7 P_i @f] 
+///  
+/// @f[ \frac{dX_i}{dt} = p_8 A_i - p_9 X_i @f]
+///  
+/// @f[ \frac{dM_i}{dt} = p_{10} \Theta_{L1} - p_{11} M_i @f]
+///  
+/// @f[ P_{in} = \frac{P_i X_n}{(p_3 + \sum_{k}^{neigh} X_k)} @f]
+///  
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// AuxinModelSimple1 12 1 4
+/// p_0 ... p_11
+/// A_index P_index X_index M_index
+/// @endverbatim
+///
 class AuxinModelSimple1 : public BaseReaction {
   
  public:
