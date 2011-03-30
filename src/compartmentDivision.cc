@@ -14,33 +14,33 @@
 
 DivisionVolumeViaLongestWall::
 DivisionVolumeViaLongestWall(std::vector<double> &paraValue, 
-														 std::vector< std::vector<size_t> > 
-														 &indValue ) {
+			     std::vector< std::vector<size_t> > 
+			     &indValue ) {
   //
   // Do some checks on the parameters and variable indeces
   //
   if( paraValue.size()!=3 ) {
     std::cerr << "DivisionVolumeViaLongestWall::"
-							<< "DivisionVolumeViaLongestWall() "
-							<< "Three parameters used V_threshold, LWall_frac, and"
-							<< "Lwall_threshold." << std::endl;
+	      << "DivisionVolumeViaLongestWall() "
+	      << "Three parameters used V_threshold, LWall_frac, and"
+	      << "Lwall_threshold." << std::endl;
     exit(0);
   }
   if( indValue.size() != 1 ) {
     std::cerr << "DivisionVolumeViaLongestWall::"
-							<< "DivisionVolumeViaLongestWall() "
-							<< "Variable indices for volume dependent cell "
-							<< "variables is used.\n";
+	      << "DivisionVolumeViaLongestWall() "
+	      << "Variable indices for volume dependent cell "
+	      << "variables is used.\n";
     exit(0);
   }
   //
-	// Set the variable values
+  // Set the variable values
   //
   setId("DivisionVolumeViaLongestWall");
-	setNumChange(1);
+  setNumChange(1);
   setParameter(paraValue);  
   setVariableIndex(indValue);
-	//
+  //
   // Set the parameter identities
   //
   std::vector<std::string> tmp( numParameter() );
@@ -59,10 +59,10 @@ flag(Tissue *T,size_t i,
      std::vector< std::vector<double> > &cellDerivs,
      std::vector< std::vector<double> > &wallDerivs,
      std::vector< std::vector<double> > &vertexDerivs ) {
-	
+  
   if( T->cell(i).calculateVolume(vertexData) > parameter(0) ) {
     std::cerr << "Cell " << i << " marked for division with volume " 
-							<< T->cell(i).volume() << std::endl;
+	      << T->cell(i).volume() << std::endl;
     return 1;
   } 
   return 0;
@@ -80,10 +80,10 @@ update(Tissue *T,size_t i,
   Cell *divCell = &(T->cell(i));
   size_t dimension = vertexData[0].size();
   assert( divCell->numWall() > 1 );
-	assert( dimension==2 || dimension==3 ); 
-	//
+  assert( dimension==2 || dimension==3 ); 
+  //
   // Find longest wall
-	// 
+  // 
   size_t wI=0,w3I=divCell->numWall();
   double maxLength = divCell->wall(0)->setLengthFromVertexPosition(vertexData);
   for( size_t k=1 ; k<divCell->numWall() ; ++k ) {
@@ -94,81 +94,81 @@ update(Tissue *T,size_t i,
     }
   }   
   
-	//
-	// Find position for first new vertex
-	//
+  //
+  // Find position for first new vertex
+  //
   std::vector<double> nW(dimension),nW2(dimension),v1Pos(dimension),
-		v2Pos(dimension);
+    v2Pos(dimension);
   size_t v1wI = divCell->wall(wI)->vertex1()->index();
   size_t v2wI = divCell->wall(wI)->vertex2()->index();
-	for( size_t d=0 ; d<dimension ; ++d ) {
+  for( size_t d=0 ; d<dimension ; ++d ) {
     nW[d] = (vertexData[v1wI][d]-vertexData[v2wI][d])/maxLength;
     v1Pos[d] = 0.5*(vertexData[v1wI][d]+vertexData[v2wI][d]);
   }
-	//
+  //
   // Find intersection with another wall via vector perpendicular to first wall
-	//
-	if (dimension==2) {
-		nW2[1] = nW[0];
-		nW2[0] = -nW[1];
-	}
-	else if (dimension==3) {
-		nW2[0]=nW[0];
-		nW2[1]=nW[1];
-		nW2[2]=nW[2];
-	}
-	if (findSecondDivisionWall(vertexData, divCell, wI, w3I, v1Pos, nW2, v2Pos)) {
-		std::cerr << "DivisionVolumeViaLongestWall::update "
-							<< "failed to find the second wall for division!" << std::endl;
-		exit(-1);
-	}
-	//
+  //
+  if (dimension==2) {
+    nW2[1] = nW[0];
+    nW2[0] = -nW[1];
+  }
+  else if (dimension==3) {
+    nW2[0]=nW[0];
+    nW2[1]=nW[1];
+    nW2[2]=nW[2];
+  }
+  if (findSecondDivisionWall(vertexData, divCell, wI, w3I, v1Pos, nW2, v2Pos)) {
+    std::cerr << "DivisionVolumeViaLongestWall::update "
+	      << "failed to find the second wall for division!" << std::endl;
+    exit(-1);
+  }
+  //
   // Do the division (add one cell, three walls, and two vertices)
   //
-	size_t numWallTmp=wallData.size();
-	assert( numWallTmp==T->numWall() );
-	//Divide
-	T->divideCell(divCell,wI,w3I,v1Pos,v2Pos,cellData,wallData,vertexData,
-								cellDeriv,wallDeriv,vertexDeriv,variableIndex(0),
-								parameter(2));
-	assert( numWallTmp+3 == T->numWall() );
-	
-	//Change length of new wall between the divided daugther cells 
-	wallData[numWallTmp][0] *= parameter(1);
-	
-	//Check that the division did not mess up the data structure
-	//T->checkConnectivity(1);	
+  size_t numWallTmp=wallData.size();
+  assert( numWallTmp==T->numWall() );
+  //Divide
+  T->divideCell(divCell,wI,w3I,v1Pos,v2Pos,cellData,wallData,vertexData,
+		cellDeriv,wallDeriv,vertexDeriv,variableIndex(0),
+		parameter(2));
+  assert( numWallTmp+3 == T->numWall() );
+  
+  //Change length of new wall between the divided daugther cells 
+  wallData[numWallTmp][0] *= parameter(1);
+  
+  //Check that the division did not mess up the data structure
+  //T->checkConnectivity(1);	
 }
 
 DivisionVolumeViaLongestWallSpatial::
 DivisionVolumeViaLongestWallSpatial(std::vector<double> &paraValue, 
-														 std::vector< std::vector<size_t> > 
-														 &indValue ) {
+				    std::vector< std::vector<size_t> > 
+				    &indValue ) {
   //
   // Do some checks on the parameters and variable indeces
   //
   if( paraValue.size()!=4 ) {
     std::cerr << "DivisionVolumeViaLongestWallSpatial::"
-							<< "DivisionVolumeViaLongestWallSpatial() "
-							<< "Four parameters used V_threshold, LWall_frac, "
-							<< "Lwall_threshold, and spatial threshold." << std::endl;
+	      << "DivisionVolumeViaLongestWallSpatial() "
+	      << "Four parameters used V_threshold, LWall_frac, "
+	      << "Lwall_threshold, and spatial threshold." << std::endl;
     exit(0);
   }
   if( indValue.size() != 2 || indValue[0].size() != 1) {
     std::cerr << "DivisionVolumeViaLongestWallSpatial::"
-							<< "DivisionVolumeViaLongestWallSpatial() "
-							<< "Spatial index in first level and variable indices for volume dependent cell "
-							<< "variables in second need to be provided." << std::endl;
+	      << "DivisionVolumeViaLongestWallSpatial() "
+	      << "Spatial index in first level and variable indices for volume dependent cell "
+	      << "variables in second need to be provided." << std::endl;
     exit(0);
   }
   //
-	// Set the variable values
+  // Set the variable values
   //
   setId("DivisionVolumeViaLongestWallSpatial");
-	setNumChange(1);
+  setNumChange(1);
   setParameter(paraValue);  
   setVariableIndex(indValue);
-	//
+  //
   // Set the parameter identities
   //
   std::vector<std::string> tmp( numParameter() );
@@ -176,7 +176,7 @@ DivisionVolumeViaLongestWallSpatial(std::vector<double> &paraValue,
   tmp[0] = "V_threshold";
   tmp[1] = "LWall_frac";
   tmp[2] = "LWall_threshold";
-	tmp[3] = "spatial_threshold";
+  tmp[3] = "spatial_threshold";
   setParameterId( tmp );
 }
 

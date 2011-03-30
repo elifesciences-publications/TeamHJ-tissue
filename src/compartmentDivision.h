@@ -13,31 +13,33 @@
 #include "tissue.h"
 #include "baseCompartmentChange.h"
 
-//!Divides a cell when volume above a threshold
-/*!Divides a cell when volume above a threshold. New wall is created
-  prependicular to the longest cell wall.
- */
+///
+/// @brief Divides a cell when volume above a threshold
+///
+/// Divides a cell when volume above a threshold. New wall is created
+/// prependicular to the longest cell wall.
+///
 class DivisionVolumeViaLongestWall : public BaseCompartmentChange {
   
  public:
   
   DivisionVolumeViaLongestWall(std::vector<double> &paraValue, 
-															 std::vector< std::vector<size_t> > 
-															 &indValue );
+			       std::vector< std::vector<size_t> > 
+			       &indValue );
   int flag(Tissue *T,size_t i,
-					 std::vector< std::vector<double> > &cellData,
-					 std::vector< std::vector<double> > &wallData,
-					 std::vector< std::vector<double> > &vertexData,
-					 std::vector< std::vector<double> > &cellDerivs,
-					 std::vector< std::vector<double> > &wallDerivs,
-					 std::vector< std::vector<double> > &vertexDerivs );
+	   std::vector< std::vector<double> > &cellData,
+	   std::vector< std::vector<double> > &wallData,
+	   std::vector< std::vector<double> > &vertexData,
+	   std::vector< std::vector<double> > &cellDerivs,
+	   std::vector< std::vector<double> > &wallDerivs,
+	   std::vector< std::vector<double> > &vertexDerivs );
   void update(Tissue* T,size_t i,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );  
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );  
 };
 
 ///

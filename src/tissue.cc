@@ -2066,97 +2066,97 @@ removeEpidermalCellsAtDistance(std::vector< std::vector<double> > &cellData,
 }
 
 void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I, 
-												 std::vector<double> &v1Pos,
-												 std::vector<double> &v2Pos,
-												 std::vector< std::vector<double> > &cellData,
-												 std::vector< std::vector<double> > &wallData,
-												 std::vector< std::vector<double> > &vertexData,
-												 std::vector< std::vector<double> > &cellDeriv,
-												 std::vector< std::vector<double> > &wallDeriv,
-												 std::vector< std::vector<double> > &vertexDeriv,
-												 std::vector<size_t> &volumeChangeList,
-												 double threshold) 
-
+			 std::vector<double> &v1Pos,
+			 std::vector<double> &v2Pos,
+			 std::vector< std::vector<double> > &cellData,
+			 std::vector< std::vector<double> > &wallData,
+			 std::vector< std::vector<double> > &vertexData,
+			 std::vector< std::vector<double> > &cellDeriv,
+			 std::vector< std::vector<double> > &wallDeriv,
+			 std::vector< std::vector<double> > &vertexDeriv,
+			 std::vector<size_t> &volumeChangeList,
+			 double threshold) 
+  
 {	
-	size_t Nc=numCell(),Nw=numWall(),Nv=numVertex();
-	size_t i = divCell->index();
+  size_t Nc=numCell(),Nw=numWall(),Nv=numVertex();
+  size_t i = divCell->index();
   size_t dimension = vertexData[0].size();
-
-	//Move new vertices if closer than threshold to old vertex
-	if( threshold>=0.0 ) {
-		Wall *w1 = divCell->wall(wI), *w2 = divCell->wall(w3I);
-		double w1L=0.0,w2L=0.0,t1=0.0,t2=0.0;
-		for( size_t dim=0; dim<dimension; ++dim ) {
-			w1L += (vertexData[w1->vertex1()->index()][dim]-
-							vertexData[w1->vertex2()->index()][dim]) *
-				(vertexData[w1->vertex1()->index()][dim] -
-				 vertexData[w1->vertex2()->index()][dim]);
-			w2L += (vertexData[w2->vertex1()->index()][dim]-
-							vertexData[w2->vertex2()->index()][dim]) *
-				(vertexData[w2->vertex1()->index()][dim] -
-				 vertexData[w2->vertex2()->index()][dim]);
-			t1 += (v1Pos[dim]-vertexData[w1->vertex2()->index()][dim])*
-				(v1Pos[dim]-vertexData[w1->vertex2()->index()][dim]);
-			t2 += (v2Pos[dim]-vertexData[w2->vertex2()->index()][dim])*
-				(v2Pos[dim]-vertexData[w2->vertex2()->index()][dim]);
-		}
-		w1L = std::sqrt(w1L);
-		w2L = std::sqrt(w2L);
-		t1 = std::sqrt(t1)/w1L;
-		t2 = std::sqrt(t2)/w2L;
-		assert( t1>=0.0 && t1<=1.0 );
-		assert( t2>=0.0 && t2<=1.0 );
-		if( t1<threshold ) {
-			std::cerr << "Tissue::divideCell() Moving vertex 1 from "
-								<< t1 << " to " << threshold << std::endl;
-			t1=threshold;
-			for( size_t dim=0; dim<dimension; ++dim ) {
-				v1Pos[dim] = vertexData[w1->vertex2()->index()][dim] +
-					t1*(vertexData[w1->vertex1()->index()][dim]-
-							vertexData[w1->vertex2()->index()][dim]);
-			}
-		}
-		else if( t1>(1.0-threshold) ) {
-			std::cerr << "Tissue::divideCell() Moving vertex 1 from "
-								<< t1 << " to " << 1.0-threshold << std::endl;
-			t1 = threshold;
-			for( size_t dim=0; dim<dimension; ++dim ) {
-				v1Pos[dim] = vertexData[w1->vertex1()->index()][dim] +
-					t1*(vertexData[w1->vertex2()->index()][dim]-
-							vertexData[w1->vertex1()->index()][dim]);
-			}
-		}
-		if( t2<threshold ) {
-			std::cerr << "Tissue::divideCell() Moving vertex 2 from "
-								<< t2 << " to " << threshold << std::endl;
-			t2=threshold;
-			for( size_t dim=0; dim<dimension; ++dim ) {
-				v2Pos[dim] = vertexData[w2->vertex2()->index()][dim] +
-					t2*(vertexData[w2->vertex1()->index()][dim]-
-							vertexData[w2->vertex2()->index()][dim]);
-			}
-		}
-		else if( t2>(1.0-threshold) ) {
-			std::cerr << "Tissue::divideCell() Moving vertex 2 from "
-								<< t2 << " to " << 1.0-threshold << std::endl;
-			t2 = threshold;
-			for( size_t dim=0; dim<dimension; ++dim ) {
-				v2Pos[dim] = vertexData[w2->vertex1()->index()][dim] +
-					t2*(vertexData[w2->vertex2()->index()][dim]-
-							vertexData[w2->vertex1()->index()][dim]);
-			}
-		}		
-	}
-
-	//Create the new data structure and set indices in the tissue vectors
-	//
-	//Add the new cell
-	addCell( cell(i) );
-	cell(Nc).setIndex(Nc);
+  
+  //Move new vertices if closer than threshold to old vertex
+  if( threshold>=0.0 ) {
+    Wall *w1 = divCell->wall(wI), *w2 = divCell->wall(w3I);
+    double w1L=0.0,w2L=0.0,t1=0.0,t2=0.0;
+    for( size_t dim=0; dim<dimension; ++dim ) {
+      w1L += (vertexData[w1->vertex1()->index()][dim]-
+	      vertexData[w1->vertex2()->index()][dim]) *
+	(vertexData[w1->vertex1()->index()][dim] -
+	 vertexData[w1->vertex2()->index()][dim]);
+      w2L += (vertexData[w2->vertex1()->index()][dim]-
+	      vertexData[w2->vertex2()->index()][dim]) *
+	(vertexData[w2->vertex1()->index()][dim] -
+	 vertexData[w2->vertex2()->index()][dim]);
+      t1 += (v1Pos[dim]-vertexData[w1->vertex2()->index()][dim])*
+	(v1Pos[dim]-vertexData[w1->vertex2()->index()][dim]);
+      t2 += (v2Pos[dim]-vertexData[w2->vertex2()->index()][dim])*
+	(v2Pos[dim]-vertexData[w2->vertex2()->index()][dim]);
+    }
+    w1L = std::sqrt(w1L);
+    w2L = std::sqrt(w2L);
+    t1 = std::sqrt(t1)/w1L;
+    t2 = std::sqrt(t2)/w2L;
+    assert( t1>=0.0 && t1<=1.0 );
+    assert( t2>=0.0 && t2<=1.0 );
+    if( t1<threshold ) {
+      std::cerr << "Tissue::divideCell() Moving vertex 1 from "
+		<< t1 << " to " << threshold << std::endl;
+      t1=threshold;
+      for( size_t dim=0; dim<dimension; ++dim ) {
+	v1Pos[dim] = vertexData[w1->vertex2()->index()][dim] +
+	  t1*(vertexData[w1->vertex1()->index()][dim]-
+	      vertexData[w1->vertex2()->index()][dim]);
+      }
+    }
+    else if( t1>(1.0-threshold) ) {
+      std::cerr << "Tissue::divideCell() Moving vertex 1 from "
+		<< t1 << " to " << 1.0-threshold << std::endl;
+      t1 = threshold;
+      for( size_t dim=0; dim<dimension; ++dim ) {
+	v1Pos[dim] = vertexData[w1->vertex1()->index()][dim] +
+	  t1*(vertexData[w1->vertex2()->index()][dim]-
+	      vertexData[w1->vertex1()->index()][dim]);
+      }
+    }
+    if( t2<threshold ) {
+      std::cerr << "Tissue::divideCell() Moving vertex 2 from "
+		<< t2 << " to " << threshold << std::endl;
+      t2=threshold;
+      for( size_t dim=0; dim<dimension; ++dim ) {
+	v2Pos[dim] = vertexData[w2->vertex2()->index()][dim] +
+	  t2*(vertexData[w2->vertex1()->index()][dim]-
+	      vertexData[w2->vertex2()->index()][dim]);
+      }
+    }
+    else if( t2>(1.0-threshold) ) {
+      std::cerr << "Tissue::divideCell() Moving vertex 2 from "
+		<< t2 << " to " << 1.0-threshold << std::endl;
+      t2 = threshold;
+      for( size_t dim=0; dim<dimension; ++dim ) {
+	v2Pos[dim] = vertexData[w2->vertex1()->index()][dim] +
+	  t2*(vertexData[w2->vertex2()->index()][dim]-
+	      vertexData[w2->vertex1()->index()][dim]);
+      }
+    }		
+  }
+  
+  //Create the new data structure and set indices in the tissue vectors
+  //
+  //Add the new cell
+  addCell( cell(i) );
+  cell(Nc).setIndex(Nc);
   cellData.resize(Nc+1,cellData[i]);
   cellDeriv.resize(Nc+1,cellDeriv[0]);
   
-	//Add the two new vertices
+  //Add the two new vertices
   Vertex tmpVertex;
   tmpVertex.setPosition(v1Pos);
   tmpVertex.setIndex(Nv);
@@ -2168,188 +2168,188 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
   vertexData.resize(Nv+2,v2Pos);  
   vertexDeriv.resize(Nv+2,vertexDeriv[0]);  
   
-	//Add the three new walls
+  //Add the three new walls
   Wall tmpWall;
-	//New wall dividing old cell into two
+  //New wall dividing old cell into two
   tmpWall.setIndex(Nw);
   addWall(tmpWall);
   wallData.resize(Nw+1,wallData[0]);
-	double tmpLength = 0.0;
-	for( size_t d=0 ; d<dimension ; ++d )
-		tmpLength += (v1Pos[d]-v2Pos[d])*(v1Pos[d]-v2Pos[d]);
-	wallData[Nw][0] = std::sqrt( tmpLength );
-
-	//Wall continuing the first selected wall
+  double tmpLength = 0.0;
+  for( size_t d=0 ; d<dimension ; ++d )
+    tmpLength += (v1Pos[d]-v2Pos[d])*(v1Pos[d]-v2Pos[d]);
+  wallData[Nw][0] = std::sqrt( tmpLength );
+  
+  //Wall continuing the first selected wall
   addWall( *(cell(i).wall(wI)) );
   wall(Nw+1).setIndex(Nw+1);
-	//Set new lengths as fractions of the old determined from the new 
+  //Set new lengths as fractions of the old determined from the new 
   //vertex position
-	double oldL = wallData[cell(i).wall(wI)->index()][0];
-	size_t v1w = cell(i).wall(wI)->vertex1()->index();
-	size_t v2w = cell(i).wall(wI)->vertex2()->index();
-	tmpLength=0.0; 
-	double tmpLengthFrac=0.0; 
-	for( size_t d=0 ; d<dimension ; ++d ) {
-		tmpLengthFrac += (v1Pos[d]-vertexData[v1w][d])*
-			(v1Pos[d]-vertexData[v1w][d]);
-		tmpLength += (vertexData[v2w][d]-vertexData[v1w][d])*
-			(vertexData[v2w][d]-vertexData[v1w][d]);
-	}
-	tmpLength = std::sqrt( tmpLength );
-	tmpLengthFrac = std::sqrt( tmpLengthFrac );
-	double lengthFrac = tmpLengthFrac/tmpLength;
-	wallData.resize(Nw+2,wallData[cell(i).wall(wI)->index()]);
+  double oldL = wallData[cell(i).wall(wI)->index()][0];
+  size_t v1w = cell(i).wall(wI)->vertex1()->index();
+  size_t v2w = cell(i).wall(wI)->vertex2()->index();
+  tmpLength=0.0; 
+  double tmpLengthFrac=0.0; 
+  for( size_t d=0 ; d<dimension ; ++d ) {
+    tmpLengthFrac += (v1Pos[d]-vertexData[v1w][d])*
+      (v1Pos[d]-vertexData[v1w][d]);
+    tmpLength += (vertexData[v2w][d]-vertexData[v1w][d])*
+      (vertexData[v2w][d]-vertexData[v1w][d]);
+  }
+  tmpLength = std::sqrt( tmpLength );
+  tmpLengthFrac = std::sqrt( tmpLengthFrac );
+  double lengthFrac = tmpLengthFrac/tmpLength;
+  wallData.resize(Nw+2,wallData[cell(i).wall(wI)->index()]);
   wallData[cell(i).wall(wI)->index()][0] = lengthFrac*oldL;
   wallData[Nw+1][0] = oldL-wallData[cell(i).wall(wI)->index()][0];
-	
-	//Wall continuing the second selected wall
+  
+  //Wall continuing the second selected wall
   addWall(*(cell(i).wall(w3I)));
   wall(Nw+2).setIndex(Nw+2);
-	//Set new lengths as fractions of the old determined from the new
+  //Set new lengths as fractions of the old determined from the new
   //vertex position
-	oldL = wallData[cell(i).wall(w3I)->index()][0];
-	v1w = cell(i).wall(w3I)->vertex1()->index();
-	v2w = cell(i).wall(w3I)->vertex2()->index();
-	tmpLength=0.0; 
-	tmpLengthFrac=0.0; 
-	for( size_t d=0 ; d<dimension ; ++d ) {
-		tmpLengthFrac += (v2Pos[d]-vertexData[v1w][d])*
-			(v2Pos[d]-vertexData[v1w][d]);
-		tmpLength += (vertexData[v2w][d]-vertexData[v1w][d])*
-			(vertexData[v2w][d]-vertexData[v1w][d]);
-	}
-	tmpLength = std::sqrt( tmpLength );
-	tmpLengthFrac = std::sqrt( tmpLengthFrac );
-	lengthFrac = tmpLengthFrac/tmpLength;
+  oldL = wallData[cell(i).wall(w3I)->index()][0];
+  v1w = cell(i).wall(w3I)->vertex1()->index();
+  v2w = cell(i).wall(w3I)->vertex2()->index();
+  tmpLength=0.0; 
+  tmpLengthFrac=0.0; 
+  for( size_t d=0 ; d<dimension ; ++d ) {
+    tmpLengthFrac += (v2Pos[d]-vertexData[v1w][d])*
+      (v2Pos[d]-vertexData[v1w][d]);
+    tmpLength += (vertexData[v2w][d]-vertexData[v1w][d])*
+      (vertexData[v2w][d]-vertexData[v1w][d]);
+  }
+  tmpLength = std::sqrt( tmpLength );
+  tmpLengthFrac = std::sqrt( tmpLengthFrac );
+  lengthFrac = tmpLengthFrac/tmpLength;
   wallData.resize(Nw+3,wallData[cell(i).wall(w3I)->index()]);
-	wallData[cell(i).wall(w3I)->index()][0] = lengthFrac*oldL;
-	wallData[Nw+2][0] = oldL-wallData[cell(i).wall(w3I)->index()][0];
-
-	//Resize derivative matrix as well
-	wallDeriv.resize(Nw+3,wallDeriv[0]);
+  wallData[cell(i).wall(w3I)->index()][0] = lengthFrac*oldL;
+  wallData[Nw+2][0] = oldL-wallData[cell(i).wall(w3I)->index()][0];
   
-	// Create connection matrix by first selecting vertices and walls for
-	// the new and old cells
-	//
+  //Resize derivative matrix as well
+  wallDeriv.resize(Nw+3,wallDeriv[0]);
+  
+  // Create connection matrix by first selecting vertices and walls for
+  // the new and old cells
+  //
   std::vector<size_t> oldVIndex,newVIndex,oldWIndex,newWIndex,
-		usedWIndex( cell(i).numWall() );
-	
-	//Extract walls and vertices for 'old' cell
-	size_t tmpWIndex = cell(i).wall(wI)->index(); 
-	size_t tmpVIndex = cell(i).wall(wI)->vertex1()->index();
-	size_t nextW = wI;
-	//size_t count=0;
-	//std::cerr << "wI=" << wI << "(" << cell(i).wall(wI)->index() 
-	//				<< ") w3I=" << w3I << "(" << cell(i).wall(w3I)->index() 
-	//				<< ")" << std::endl;
-	do {
-		//std::cerr << count << " " << nextW << "  " << tmpWIndex << " " 
-		//				<< tmpVIndex << std::endl;
-		//add to new vectors
-		oldWIndex.push_back( tmpWIndex );
-		oldVIndex.push_back( tmpVIndex );
-		//mark as used
-		usedWIndex[nextW] = 1;
-		//usedVIndex[xxx] = 1;
-		//find next wall
-		nextW = cell(i).numWall();
-		size_t flag=0;
-		for( size_t w=0 ; w<cell(i).numWall() ; ++w ) {
-			if( !usedWIndex[w] && (cell(i).wall(w)->vertex1()->index()==tmpVIndex ||
-														 cell(i).wall(w)->vertex2()->index()==tmpVIndex ) ) {
-				nextW = w;
-				flag++;
-			}
-		}
-		if( flag != 1 ) {
-			std::cerr << "Tissue::divideCell() " << flag  
-								<< " walls marked for next wall..." << std::endl;
-			std::cerr << tmpVIndex << std::endl;
-			for( size_t w=0 ; w<cell(i).numWall() ; ++w ) {
-				std::cerr << w << " " << usedWIndex[w] << " " 
-									<< cell(i).wall(w)->vertex1()->index() << " "
-									<< cell(i).wall(w)->vertex2()->index() << std::endl;
-			}
-		}
-		assert( flag==1 );
-		tmpWIndex = cell(i).wall(nextW)->index();
-		if( cell(i).wall(nextW)->vertex1()->index()==tmpVIndex )
-			tmpVIndex = cell(i).wall(nextW)->vertex2()->index();
-		else if( cell(i).wall(nextW)->vertex2()->index()==tmpVIndex )
-			tmpVIndex = cell(i).wall(nextW)->vertex1()->index();
-		else {
-			std::cerr << "Tissue::DivideCell() " 
-								<< "Wrong vertex indices for chosen wall " 
-								<< cell(i).wall(nextW)->vertex1()->index() << " "
-								<< cell(i).wall(nextW)->vertex2()->index() << std::endl;
-			exit(-1);
-		}
-		//std::cerr << count++ << " " << nextW << "  " << tmpWIndex << " " 
-		//				<< tmpVIndex << std::endl;
-	} while( nextW != w3I ); 
-	if( cell(i).wall(nextW)->vertex1()->index()==oldVIndex[oldVIndex.size()-1] )
-		oldWIndex.push_back(cell(i).wall(w3I)->index());
-	else if( cell(i).wall(nextW)->vertex2()->index()==oldVIndex[oldVIndex.size()-1] )
-		oldWIndex.push_back(Nw+2);
-	else {
-		std::cerr << "Wrong last index for old cell (not in w3I)" << std::endl;
-		exit(-1);
-	}
-	//Extract walls and vertices for 'new' cell
-	tmpWIndex = Nw+1;//new copy of wI; 
-	tmpVIndex = wall(Nw+1).vertex2()->index();
-	//std::cerr << "Old cell done..." << std::endl;
-	usedWIndex[wI]=0;
-	usedWIndex[w3I]=0;
-	nextW=wI;
-	do {
-		//std::cerr << count << " " << nextW << "  " << tmpWIndex << " " 
-		//				<< tmpVIndex << std::endl;
-		//add to new vectors
-		newWIndex.push_back( tmpWIndex );
-		newVIndex.push_back( tmpVIndex );
-		//mark as used
-		usedWIndex[nextW] = 1;
-		//usedVIndex[xxx] = 1;
-		//find next wall
-		nextW = cell(i).numWall();
-		size_t flag=0;
-		for( size_t w=0 ; w<cell(i).numWall() ; ++w ) {
-			if( !usedWIndex[w] && ( cell(i).wall(w)->vertex1()->index()==tmpVIndex ||
-															cell(i).wall(w)->vertex2()->index()==tmpVIndex ) ) {
-				nextW = w;
-				flag++;
-			}
-		}
-		if( flag != 1 )
-			std::cerr << flag << " walls marked for next wall..." << std::endl;
-		assert( flag==1 );
-		tmpWIndex = cell(i).wall(nextW)->index();
-		if( cell(i).wall(nextW)->vertex1()->index()==tmpVIndex )
-			tmpVIndex = cell(i).wall(nextW)->vertex2()->index();
-		else if( cell(i).wall(nextW)->vertex2()->index()==tmpVIndex )
-			tmpVIndex = cell(i).wall(nextW)->vertex1()->index();
-		else {
-			std::cerr << "Tissue::DivideCell() " 
-								<< "Wrong vertex indices for chosen wall " 
-								<< cell(i).wall(nextW)->vertex1() << " "
-								<< cell(i).wall(nextW)->vertex2() << std::endl;
-			exit(-1);
-		}
-		//std::cerr << count++ << " " << nextW << "  " << tmpWIndex << " " 
-		//				<< tmpVIndex << std::endl;
-	} while( nextW != w3I ); 
-	if( cell(i).wall(nextW)->vertex1()->index()==newVIndex[newVIndex.size()-1] )
-		newWIndex.push_back(cell(i).wall(w3I)->index());
-	else if( cell(i).wall(nextW)->vertex2()->index()==newVIndex[newVIndex.size()-1] )
-		newWIndex.push_back(Nw+2);
-	else {
-		std::cerr << "Wrong last index for new cell (not in w3I)" << std::endl;
-		exit(-1);
-	}
-	
-	//std::cerr << "New cell done..." << std::endl;
-	
+    usedWIndex( cell(i).numWall() );
+  
+  //Extract walls and vertices for 'old' cell
+  size_t tmpWIndex = cell(i).wall(wI)->index(); 
+  size_t tmpVIndex = cell(i).wall(wI)->vertex1()->index();
+  size_t nextW = wI;
+  //size_t count=0;
+  //std::cerr << "wI=" << wI << "(" << cell(i).wall(wI)->index() 
+  //				<< ") w3I=" << w3I << "(" << cell(i).wall(w3I)->index() 
+  //				<< ")" << std::endl;
+  do {
+    //std::cerr << count << " " << nextW << "  " << tmpWIndex << " " 
+    //				<< tmpVIndex << std::endl;
+    //add to new vectors
+    oldWIndex.push_back( tmpWIndex );
+    oldVIndex.push_back( tmpVIndex );
+    //mark as used
+    usedWIndex[nextW] = 1;
+    //usedVIndex[xxx] = 1;
+    //find next wall
+    nextW = cell(i).numWall();
+    size_t flag=0;
+    for( size_t w=0 ; w<cell(i).numWall() ; ++w ) {
+      if( !usedWIndex[w] && (cell(i).wall(w)->vertex1()->index()==tmpVIndex ||
+			     cell(i).wall(w)->vertex2()->index()==tmpVIndex ) ) {
+	nextW = w;
+	flag++;
+      }
+    }
+    if( flag != 1 ) {
+      std::cerr << "Tissue::divideCell() " << flag  
+		<< " walls marked for next wall..." << std::endl;
+      std::cerr << tmpVIndex << std::endl;
+      for( size_t w=0 ; w<cell(i).numWall() ; ++w ) {
+	std::cerr << w << " " << usedWIndex[w] << " " 
+		  << cell(i).wall(w)->vertex1()->index() << " "
+		  << cell(i).wall(w)->vertex2()->index() << std::endl;
+      }
+    }
+    assert( flag==1 );
+    tmpWIndex = cell(i).wall(nextW)->index();
+    if( cell(i).wall(nextW)->vertex1()->index()==tmpVIndex )
+      tmpVIndex = cell(i).wall(nextW)->vertex2()->index();
+    else if( cell(i).wall(nextW)->vertex2()->index()==tmpVIndex )
+      tmpVIndex = cell(i).wall(nextW)->vertex1()->index();
+    else {
+      std::cerr << "Tissue::DivideCell() " 
+		<< "Wrong vertex indices for chosen wall " 
+		<< cell(i).wall(nextW)->vertex1()->index() << " "
+		<< cell(i).wall(nextW)->vertex2()->index() << std::endl;
+      exit(-1);
+    }
+    //std::cerr << count++ << " " << nextW << "  " << tmpWIndex << " " 
+    //				<< tmpVIndex << std::endl;
+  } while( nextW != w3I ); 
+  if( cell(i).wall(nextW)->vertex1()->index()==oldVIndex[oldVIndex.size()-1] )
+    oldWIndex.push_back(cell(i).wall(w3I)->index());
+  else if( cell(i).wall(nextW)->vertex2()->index()==oldVIndex[oldVIndex.size()-1] )
+    oldWIndex.push_back(Nw+2);
+  else {
+    std::cerr << "Wrong last index for old cell (not in w3I)" << std::endl;
+    exit(-1);
+  }
+  //Extract walls and vertices for 'new' cell
+  tmpWIndex = Nw+1;//new copy of wI; 
+  tmpVIndex = wall(Nw+1).vertex2()->index();
+  //std::cerr << "Old cell done..." << std::endl;
+  usedWIndex[wI]=0;
+  usedWIndex[w3I]=0;
+  nextW=wI;
+  do {
+    //std::cerr << count << " " << nextW << "  " << tmpWIndex << " " 
+    //				<< tmpVIndex << std::endl;
+    //add to new vectors
+    newWIndex.push_back( tmpWIndex );
+    newVIndex.push_back( tmpVIndex );
+    //mark as used
+    usedWIndex[nextW] = 1;
+    //usedVIndex[xxx] = 1;
+    //find next wall
+    nextW = cell(i).numWall();
+    size_t flag=0;
+    for( size_t w=0 ; w<cell(i).numWall() ; ++w ) {
+      if( !usedWIndex[w] && ( cell(i).wall(w)->vertex1()->index()==tmpVIndex ||
+			      cell(i).wall(w)->vertex2()->index()==tmpVIndex ) ) {
+	nextW = w;
+	flag++;
+      }
+    }
+    if( flag != 1 )
+      std::cerr << flag << " walls marked for next wall..." << std::endl;
+    assert( flag==1 );
+    tmpWIndex = cell(i).wall(nextW)->index();
+    if( cell(i).wall(nextW)->vertex1()->index()==tmpVIndex )
+      tmpVIndex = cell(i).wall(nextW)->vertex2()->index();
+    else if( cell(i).wall(nextW)->vertex2()->index()==tmpVIndex )
+      tmpVIndex = cell(i).wall(nextW)->vertex1()->index();
+    else {
+      std::cerr << "Tissue::DivideCell() " 
+		<< "Wrong vertex indices for chosen wall " 
+		<< cell(i).wall(nextW)->vertex1() << " "
+		<< cell(i).wall(nextW)->vertex2() << std::endl;
+      exit(-1);
+    }
+    //std::cerr << count++ << " " << nextW << "  " << tmpWIndex << " " 
+    //				<< tmpVIndex << std::endl;
+  } while( nextW != w3I ); 
+  if( cell(i).wall(nextW)->vertex1()->index()==newVIndex[newVIndex.size()-1] )
+    newWIndex.push_back(cell(i).wall(w3I)->index());
+  else if( cell(i).wall(nextW)->vertex2()->index()==newVIndex[newVIndex.size()-1] )
+    newWIndex.push_back(Nw+2);
+  else {
+    std::cerr << "Wrong last index for new cell (not in w3I)" << std::endl;
+    exit(-1);
+  }
+  
+  //std::cerr << "New cell done..." << std::endl;
+  
   //Add new vertices
   oldVIndex.push_back(Nv);
   oldVIndex.push_back(Nv+1);
@@ -2362,36 +2362,36 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
   //newWIndex.push_back(Nw+1);
   //newWIndex.push_back(Nw+2);
   
-	//std::cerr << "Cell " << i << " has " << cell(i).numWall() << " walls and " 
-	//				<< cell(i).numVertex() << " vertices" << std::endl;
-// 	for( size_t w=0 ; w<cell(i).numWall() ; ++w )
-// 		std::cerr << cell(i).wall(w)->index() << " ";
-// 	std::cerr << std::endl;
-// 	for( size_t v=0 ; v<cell(i).numVertex() ; ++v )
-// 		std::cerr << cell(i).vertex(v)->index() << " ";
-// 	std::cerr << std::endl;
-	
-// 	for( size_t k=0 ; k<oldWIndex.size() ; ++k )
-// 		std::cerr << oldWIndex[k] << " ";
-// 	std::cerr << "  ";
-// 	for( size_t k=0 ; k<newWIndex.size() ; ++k )
-// 		std::cerr << newWIndex[k] << " ";
-// 	std::cerr << std::endl;
-	
-// 	for( size_t k=0 ; k<oldVIndex.size() ; ++k )
-// 		std::cerr << oldVIndex[k] << " ";
-// 	std::cerr << "  ";
-// 	for( size_t k=0 ; k<newVIndex.size() ; ++k )
-// 		std::cerr << newVIndex[k] << " ";
-// 	std::cerr << std::endl;
-	//exit(0);
-	
+  //std::cerr << "Cell " << i << " has " << cell(i).numWall() << " walls and " 
+  //				<< cell(i).numVertex() << " vertices" << std::endl;
+  // 	for( size_t w=0 ; w<cell(i).numWall() ; ++w )
+  // 		std::cerr << cell(i).wall(w)->index() << " ";
+  // 	std::cerr << std::endl;
+  // 	for( size_t v=0 ; v<cell(i).numVertex() ; ++v )
+  // 		std::cerr << cell(i).vertex(v)->index() << " ";
+  // 	std::cerr << std::endl;
+  
+  // 	for( size_t k=0 ; k<oldWIndex.size() ; ++k )
+  // 		std::cerr << oldWIndex[k] << " ";
+  // 	std::cerr << "  ";
+  // 	for( size_t k=0 ; k<newWIndex.size() ; ++k )
+  // 		std::cerr << newWIndex[k] << " ";
+  // 	std::cerr << std::endl;
+  
+  // 	for( size_t k=0 ; k<oldVIndex.size() ; ++k )
+  // 		std::cerr << oldVIndex[k] << " ";
+  // 	std::cerr << "  ";
+  // 	for( size_t k=0 ; k<newVIndex.size() ; ++k )
+  // 		std::cerr << newVIndex[k] << " ";
+  // 	std::cerr << std::endl;
+  //exit(0);
+  
   //Set vertices and cells for the walls
   wall(Nw).setVertex( &(vertex(Nv)),&(vertex(Nv+1)) );
   wall(Nw).setCell( &(cell(i)),&(cell(Nc)) );
   assert( wall(Nw).cell1()->index()==i );
   assert( wall(Nw).cell2()->index()==Nc );
-	
+  
   wall(cell(i).wall(wI)->index()).setVertex2( &(vertex(Nv)) );
   int vInCellFlag=0;
   for( size_t k=0 ; k<oldVIndex.size() ; ++k )
@@ -2405,7 +2405,7 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
     if( newVIndex[k]==wall(Nw+1).vertex2()->index() ) 
       vInCellFlag++;
   assert( vInCellFlag==1 );
-	
+  
   if( wall(Nw+1).cell1()->index() == i ) {
     wall(Nw+1).setCell1( &(cell(Nc)) );
     if( wall(Nw+1).cell2()->index() < Nc ) {
@@ -2422,57 +2422,57 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
   }
   else {
     std::cerr << "Tissue::divideCell() "
-							<< "First wall not connected to dividing cell" << std::endl;
+	      << "First wall not connected to dividing cell" << std::endl;
     std::cerr << i << " " << cell(i).index() << "\t" 
-							<< wall( cell(i).wall(wI)->index() ).cell1()->index() << " "
-							<< wall(Nw+1).cell1()->index() << "\t"
-							<< wall(cell(i).wall(wI)->index()).cell2()->index() << " "
-							<< wall(Nw+1).cell2()->index() << "\n";		
+	      << wall( cell(i).wall(wI)->index() ).cell1()->index() << " "
+	      << wall(Nw+1).cell1()->index() << "\t"
+	      << wall(cell(i).wall(wI)->index()).cell2()->index() << " "
+	      << wall(Nw+1).cell2()->index() << "\n";		
     exit(-1);
   }
   
-	vInCellFlag=0;
-	size_t wInOldCellFlag=0;
+  vInCellFlag=0;
+  size_t wInOldCellFlag=0;
   for( size_t k=0 ; k<oldWIndex.size() ; ++k )
-		if( cell(i).wall(w3I)->index()==oldWIndex[k] )
-			wInOldCellFlag=1;
-	if( wInOldCellFlag ) {
-		for( size_t k=0 ; k<oldVIndex.size() ; ++k )
-			if( oldVIndex[k]==wall(cell(i).wall(w3I)->index()).vertex1()->index() ) 
-				vInCellFlag++;
-		if( vInCellFlag == 1 ) {
-			wall(cell(i).wall(w3I)->index()).setVertex2( &(vertex(Nv+1)) );
-			wall(Nw+2).setVertex1( &(vertex(Nv+1)) );
-		}
-		else {
-			wall(cell(i).wall(w3I)->index()).setVertex1( &(vertex(Nv+1)) );
-			wall(Nw+2).setVertex2( &(vertex(Nv+1)) );
-		}
-	}
-	else {		
-		for( size_t k=0 ; k<oldVIndex.size() ; ++k )
-			if( oldVIndex[k]==wall(Nw+2).vertex1()->index() ) 
-				vInCellFlag++;
-		if( vInCellFlag == 1 ) {
-			wall(Nw+2).setVertex2( &(vertex(Nv+1)) );
-			wall(cell(i).wall(w3I)->index()).setVertex1( &(vertex(Nv+1)) );
-		}
-		else {
-			wall(Nw+2).setVertex1( &(vertex(Nv+1)) );
-			wall(cell(i).wall(w3I)->index()).setVertex2( &(vertex(Nv+1)) );
-		}
-	}
-
-	//Change cell connection for new wall (w3I or Nw+2)
-	size_t newWallIndex = cell(i).wall(w3I)->index();
-	size_t w3IInNewCellFlag = 0;
-	for( size_t w=0 ; w<newWIndex.size() ; ++w )
-		if( newWIndex[w]==newWallIndex )
-			w3IInNewCellFlag++;
-	if( !w3IInNewCellFlag++ )
-		newWallIndex=Nw+2;
-	
-	if( wall(newWallIndex).cell1()->index() == i ) {
+    if( cell(i).wall(w3I)->index()==oldWIndex[k] )
+      wInOldCellFlag=1;
+  if( wInOldCellFlag ) {
+    for( size_t k=0 ; k<oldVIndex.size() ; ++k )
+      if( oldVIndex[k]==wall(cell(i).wall(w3I)->index()).vertex1()->index() ) 
+	vInCellFlag++;
+    if( vInCellFlag == 1 ) {
+      wall(cell(i).wall(w3I)->index()).setVertex2( &(vertex(Nv+1)) );
+      wall(Nw+2).setVertex1( &(vertex(Nv+1)) );
+    }
+    else {
+      wall(cell(i).wall(w3I)->index()).setVertex1( &(vertex(Nv+1)) );
+      wall(Nw+2).setVertex2( &(vertex(Nv+1)) );
+    }
+  }
+  else {		
+    for( size_t k=0 ; k<oldVIndex.size() ; ++k )
+      if( oldVIndex[k]==wall(Nw+2).vertex1()->index() ) 
+	vInCellFlag++;
+    if( vInCellFlag == 1 ) {
+      wall(Nw+2).setVertex2( &(vertex(Nv+1)) );
+      wall(cell(i).wall(w3I)->index()).setVertex1( &(vertex(Nv+1)) );
+    }
+    else {
+      wall(Nw+2).setVertex1( &(vertex(Nv+1)) );
+      wall(cell(i).wall(w3I)->index()).setVertex2( &(vertex(Nv+1)) );
+    }
+  }
+  
+  //Change cell connection for new wall (w3I or Nw+2)
+  size_t newWallIndex = cell(i).wall(w3I)->index();
+  size_t w3IInNewCellFlag = 0;
+  for( size_t w=0 ; w<newWIndex.size() ; ++w )
+    if( newWIndex[w]==newWallIndex )
+      w3IInNewCellFlag++;
+  if( !w3IInNewCellFlag++ )
+    newWallIndex=Nw+2;
+  
+  if( wall(newWallIndex).cell1()->index() == i ) {
     wall(newWallIndex).setCell1( &(cell(Nc)) );
     if( wall(newWallIndex).cell2()->index() < Nc ) {
       wall(newWallIndex).cell2()->addWall( &(wall(Nw+2)) );
@@ -2488,88 +2488,88 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
   }
   else {
     std::cerr << "Tissue::divideCell() "
-							<< "Second wall not connected to dividing cell" << std::endl;
+	      << "Second wall not connected to dividing cell" << std::endl;
     for( size_t k=0 ; k<cell(i).numWall() ; ++k ) {
       size_t v1w3Itmp = cell(i).wall(k)->vertex1()->index();
       size_t v2w3Itmp = cell(i).wall(k)->vertex2()->index();
       std::cerr << vertexData[v1w3Itmp][0] << " " 
-								<< vertexData[v1w3Itmp][1] << " 4\n"
-								<< vertexData[v2w3Itmp][0] << " "
-								<< vertexData[v2w3Itmp][1] << " 4\n\n\n";
+		<< vertexData[v1w3Itmp][1] << " 4\n"
+		<< vertexData[v2w3Itmp][0] << " "
+		<< vertexData[v2w3Itmp][1] << " 4\n\n\n";
     }
     exit(-1);
   }
-	
-	//Set cells and walls for the vertices
-	//
-	for( size_t v=0 ; v<newVIndex.size() ; ++v ) {
+  
+  //Set cells and walls for the vertices
+  //
+  for( size_t v=0 ; v<newVIndex.size() ; ++v ) {
     std::vector<Cell*> tmpCell;
     std::vector<Wall*> tmpWall;
     if( newVIndex[v]==Nv ) {
-			//First new vertex
+      //First new vertex
       tmpCell.push_back( &(cell(i)) );
       tmpCell.push_back( &(cell(Nc)) );
-			//plus one more
+      //plus one more
       if( cell(i).wall(wI)->cell1()->index()==i &&
-					cell(i).wall(wI)->cell2() != background() )
-				tmpCell.push_back( cell(i).wall(wI)->cell2() );
+	  cell(i).wall(wI)->cell2() != background() )
+	tmpCell.push_back( cell(i).wall(wI)->cell2() );
       else if( cell(i).wall(wI)->cell2()->index()==i &&
-							 cell(i).wall(wI)->cell1() != background() )
-				tmpCell.push_back( cell(i).wall(wI)->cell1() );
+	       cell(i).wall(wI)->cell1() != background() )
+	tmpCell.push_back( cell(i).wall(wI)->cell1() );
       else if( cell(i).wall(wI)->cell1()->index() != i &&
-							 cell(i).wall(wI)->cell2()->index() != i ){
-				std::cerr << "Tissue::divideCell() "
-									<< "Wall wI not connected to dividing cell" 
-									<< std::endl;
-				exit(-1);
+	       cell(i).wall(wI)->cell2()->index() != i ){
+	std::cerr << "Tissue::divideCell() "
+		  << "Wall wI not connected to dividing cell" 
+		  << std::endl;
+	exit(-1);
       }
       tmpWall.push_back( cell(i).wall(wI) );
       tmpWall.push_back( &(wall(Nw)) );
       tmpWall.push_back( &(wall(Nw+1)) );
     }
     else if( newVIndex[v]==Nv+1 ) {
-			//Second new vertex
+      //Second new vertex
       tmpCell.push_back( &(cell(i)) );
       tmpCell.push_back( &(cell(Nc)) );
       //plus one more
       if( cell(i).wall(w3I)->cell1()->index()==i ||
-					cell(i).wall(w3I)->cell1()->index()==Nc ) {
-				if( cell(i).wall(w3I)->cell2() != background() )
-					tmpCell.push_back( cell(i).wall(w3I)->cell2() );
-			}
-			else if( cell(i).wall(w3I)->cell2()->index()==i ||
-							 cell(i).wall(w3I)->cell2()->index()==Nc ) {
-				if( cell(i).wall(w3I)->cell1() != background() )
-					tmpCell.push_back( cell(i).wall(w3I)->cell1() );
-			}
+	  cell(i).wall(w3I)->cell1()->index()==Nc ) {
+	if( cell(i).wall(w3I)->cell2() != background() )
+	  tmpCell.push_back( cell(i).wall(w3I)->cell2() );
+      }
+      else if( cell(i).wall(w3I)->cell2()->index()==i ||
+	       cell(i).wall(w3I)->cell2()->index()==Nc ) {
+	if( cell(i).wall(w3I)->cell1() != background() )
+	  tmpCell.push_back( cell(i).wall(w3I)->cell1() );
+      }
       else {
-				std::cerr << "Tissue::divideCell() "
-									<< "Wall w3I not connected to dividing cell" 
-									<< std::endl;
-				exit(-1);
+	std::cerr << "Tissue::divideCell() "
+		  << "Wall w3I not connected to dividing cell" 
+		  << std::endl;
+	exit(-1);
       }
       tmpWall.push_back( cell(i).wall(w3I) );
       tmpWall.push_back( &(wall(Nw)) );
       tmpWall.push_back( &(wall(Nw+2)) );
     }
     else {
-			//For other vertices
+      //For other vertices
       for( size_t c=0 ; c<vertex(newVIndex[v]).numCell() ; ++c )
-				if( vertex(newVIndex[v]).cell(c)->index() == i )
-					vertex(newVIndex[v]).setCell(c,&(cell(Nc)));
+	if( vertex(newVIndex[v]).cell(c)->index() == i )
+	  vertex(newVIndex[v]).setCell(c,&(cell(Nc)));
       for( size_t w=0 ; w<vertex(newVIndex[v]).numWall() ; ++w ) {
-				if( vertex(newVIndex[v]).wall(w)->index() == 
-						cell(i).wall(wI)->index() )
-					vertex(newVIndex[v]).setWall(w,&(wall(Nw+1)));
+	if( vertex(newVIndex[v]).wall(w)->index() == 
+	    cell(i).wall(wI)->index() )
+	  vertex(newVIndex[v]).setWall(w,&(wall(Nw+1)));
       	else if( vertex(newVIndex[v]).wall(w)->index() == 
-								 cell(i).wall(w3I)->index() ) {
-					size_t w3IInNewFlag=0;
-					for( size_t ww=0 ; ww<newWIndex.size() ; ++ww )
-						if( newWIndex[ww] == cell(i).wall(w3I)->index() )
-							w3IInNewFlag++;
-					if( !w3IInNewFlag )
-						vertex(newVIndex[v]).setWall(w,&(wall(Nw+2)));
-				}
+		 cell(i).wall(w3I)->index() ) {
+	  size_t w3IInNewFlag=0;
+	  for( size_t ww=0 ; ww<newWIndex.size() ; ++ww )
+	    if( newWIndex[ww] == cell(i).wall(w3I)->index() )
+	      w3IInNewFlag++;
+	  if( !w3IInNewFlag )
+	    vertex(newVIndex[v]).setWall(w,&(wall(Nw+2)));
+	}
       }
     }
     if( newVIndex[v]>=Nv ) {
@@ -2577,24 +2577,24 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
       vertex(newVIndex[v]).setWall(tmpWall);
     }
   }
-
-	//Finally check if vertices in old cell connected to w3I should be changed
-	//to Nw+2
+  
+  //Finally check if vertices in old cell connected to w3I should be changed
+  //to Nw+2
   for( size_t v=0 ; v<oldVIndex.size() ; ++v ) {
-		if( oldVIndex[v] < Nv ) {
+    if( oldVIndex[v] < Nv ) {
       for( size_t w=0 ; w<vertex(oldVIndex[v]).numWall() ; ++w ) {
       	if( vertex(oldVIndex[v]).wall(w)->index() == 
-						cell(i).wall(w3I)->index() ) {
-					size_t w3IInOldFlag=0;
-					for( size_t ww=0 ; ww<oldWIndex.size() ; ++ww )
-						if( oldWIndex[ww] == cell(i).wall(w3I)->index() )
-							w3IInOldFlag++;
-					if( !w3IInOldFlag )
-						vertex(oldVIndex[v]).setWall(w,&(wall(Nw+2)));
-				}
-      }
-		}
+	    cell(i).wall(w3I)->index() ) {
+	  size_t w3IInOldFlag=0;
+	  for( size_t ww=0 ; ww<oldWIndex.size() ; ++ww )
+	    if( oldWIndex[ww] == cell(i).wall(w3I)->index() )
+	      w3IInOldFlag++;
+	  if( !w3IInOldFlag )
+	    vertex(oldVIndex[v]).setWall(w,&(wall(Nw+2)));
 	}
+      }
+    }
+  }
   
   //Set walls and vertices for the cells
   //This should be done after the vertex and wall insertion not to
@@ -2621,29 +2621,29 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
     tmpV[v] = &(vertex(newVIndex[v]));
   cell(Nc).setWall(tmpW);
   cell(Nc).setVertex(tmpV);
-	assert( wall(Nw).cell1()->index()==i );
+  assert( wall(Nw).cell1()->index()==i );
   assert( wall(Nw).cell2()->index()==Nc );
-	
-	//Update directional wall vector if applicable
-	updateDirectionDivision(i,cellData,wallData,vertexData,
-													cellDeriv,wallDeriv,vertexDeriv);
-
-	// Update the volume dependent variables for each cell variable index 
-	// given in volumeChangeList
-	if (volumeChangeList.size()) {
-		cell(i).sortWallAndVertex(*this);
-		cell(Nc).sortWallAndVertex(*this);
-		double Vi = cell(i).calculateVolume(vertexData);
-		double Vn = cell(Nc).calculateVolume(vertexData);
-		double fi = Vi/(Vi+Vn);
-		double fn = Vn/(Vi+Vn);
-		
-		for (size_t k=0; k<volumeChangeList.size(); ++k) {
-			cellData[i][volumeChangeList[k]] *= fi;
-			cellData[Nc][volumeChangeList[k]] *= fn;
-		}
-	}		
-	//checkConnectivity(1);
+  
+  //Update directional wall vector if applicable
+  updateDirectionDivision(i,cellData,wallData,vertexData,
+			  cellDeriv,wallDeriv,vertexDeriv);
+  
+  // Update the volume dependent variables for each cell variable index 
+  // given in volumeChangeList
+  if (volumeChangeList.size()) {
+    cell(i).sortWallAndVertex(*this);
+    cell(Nc).sortWallAndVertex(*this);
+    double Vi = cell(i).calculateVolume(vertexData);
+    double Vn = cell(Nc).calculateVolume(vertexData);
+    double fi = Vi/(Vi+Vn);
+    double fn = Vn/(Vi+Vn);
+    
+    for (size_t k=0; k<volumeChangeList.size(); ++k) {
+      cellData[i][volumeChangeList[k]] *= fi;
+      cellData[Nc][volumeChangeList[k]] *= fn;
+    }
+  }		
+  //checkConnectivity(1);
 }
 
 void Tissue::removeTwoVertex( size_t index ) 
