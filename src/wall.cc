@@ -59,7 +59,8 @@ setLengthFromVertexPosition( std::vector< std::vector<double> >
   return length();
 }
 
-double Wall::lengthFromVertexPosition()
+double Wall::
+lengthFromVertexPosition()
 {
   size_t dimension = vertex1()->numPosition();
   double distance=0.0;
@@ -69,8 +70,9 @@ double Wall::lengthFromVertexPosition()
   return std::sqrt(distance);
 }
 
-double Wall::lengthFromVertexPosition( std::vector< std::vector<double> > 
-																			 &vertexData)
+double Wall::
+lengthFromVertexPosition( std::vector< std::vector<double> > 
+			  &vertexData)
 {
   size_t dimension = vertex1()->numPosition();
   size_t v1I=vertex1()->index();

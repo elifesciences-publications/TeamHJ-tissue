@@ -325,104 +325,104 @@ findTwoDivisionWalls(std::vector< std::vector<double> > &vertexData,
 
 int BaseCompartmentChange::
 findSecondDivisionWall(std::vector< std::vector<double> > &vertexData, 
-											 Cell *divCell, size_t &wI, size_t &w3I, 
-											 std::vector<double> &v1Pos, 
-											 std::vector<double> &n, 
-											 std::vector<double> &v2Pos)
+		       Cell *divCell, size_t &wI, size_t &w3I, 
+		       std::vector<double> &v1Pos, 
+		       std::vector<double> &n, 
+		       std::vector<double> &v2Pos)
 {	
-	size_t dimension=vertexData[0].size();
-	w3I=divCell->numWall();
-	//double minDist,w3s;
-	std::vector<size_t> w3Tmp;
-	std::vector<double> w3tTmp;
-	int flag=0,vertexFlag=0;
-	
-	if (dimension==2) {
-		for (size_t k=0; k<divCell->numWall(); ++k) {
-			if (k!=wI) {
-				size_t v1w3Itmp = divCell->wall(k)->vertex1()->index();
-				size_t v2w3Itmp = divCell->wall(k)->vertex2()->index();
-				std::vector<double> w3(dimension),w0(dimension);
-				for (size_t d=0; d<dimension; ++d) {
-					w3[d] = vertexData[v2w3Itmp][d]-vertexData[v1w3Itmp][d];
-					w0[d] = v1Pos[d]-vertexData[v1w3Itmp][d];
-				}
-				double a=0.0,b=0.0,c=0.0,d=0.0,e=0.0;//a=1.0
-				for (size_t dim=0; dim<dimension; ++dim) {
-					a += n[dim]*n[dim];
-					b += n[dim]*w3[dim];
-					c += w3[dim]*w3[dim];
-					d += n[dim]*w0[dim];
-					e += w3[dim]*w0[dim];
-				}
-				double fac=a*c-b*b;//a*c-b*b
-				if (fac>1e-10) {//else parallell and not applicable
-					fac = 1.0/fac;
-					//double s = fac*(b*e-c*d);
-					double t = fac*(a*e-b*d);//fac*(a*e-b*d)
-					if (t>0.0 && t<=1.0) {//within wall
-						//double dx0 = w0[0] +fac*((b*e-c*d)*n[0]+()*w3[0]); 					
-						++flag;
-						if (t==1.0)
-							++vertexFlag;
-						w3I = k;
-						w3Tmp.push_back(k);
-						w3tTmp.push_back(t);
-					}
-				}
-			}
-		}
-	}//if (dimension==2)
-	else if (dimension==3) {
-		for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
-			if( k!=wI ) {
-				size_t v1w3Itmp = divCell->wall(k)->vertex1()->index();
-				size_t v2w3Itmp = divCell->wall(k)->vertex2()->index();
-				std::vector<double> w3(dimension),w0(dimension);
-				double fac1=0.0,fac2=0.0;
-				for( size_t d=0 ; d<dimension ; ++d ) {
-					w3[d] = vertexData[v2w3Itmp][d]-vertexData[v1w3Itmp][d];
-					fac1 += n[d]*(v1Pos[d]-vertexData[v1w3Itmp][d]);
-					fac2 += n[d]*w3[d]; 
-				}
-				if( fac2 != 0.0 ) {//else parallell and not applicable
-					double t = fac1/fac2;
-					if( t>0.0 && t<=1.0 ) {//within wall
-						//std::cerr << "wall " << k << " (t=" << t << " " << fac1 << "/"
-						//				<< fac2 
-						//				<< ") chosen as second wall"
-						//				<< std::endl;					
-						++flag;
-						if (t==1.0)
-							++vertexFlag;
-						w3I = k;
-						w3Tmp.push_back(k);
-						w3tTmp.push_back(t);
-					}
-				}
-			}
-		}
-	}//if (dimension==3)	
-	//
-	// Check that division consistent
-	//
-	assert( w3I != divCell->numWall() && w3I != wI );
-	if( flag != 1 && !(flag==2 && vertexFlag) ) {
-		std::cerr << "baseCompartmentChange::findSecondDivisionWall Warning"
-							<< " more than one wall possible as connection "
-							<< "for cell " << divCell->index() << " (" << dimension << "dim)" << std::endl 
-							<< flag << " possible walls found and " << vertexFlag 
-							<< " marked as vertices." << std::endl; 
-		printCellWallError(vertexData, divCell, w3Tmp, wI, w3I,v1Pos,n);
-		return -1;
-	}	
-	//
-	// Set the second vertex position using the collected t
-	//
-	size_t v1w3I = divCell->wall(w3I)->vertex1()->index();
-	size_t v2w3I = divCell->wall(w3I)->vertex2()->index();
-	for( size_t d=0 ; d<dimension ; ++d )
-		v2Pos[d] = vertexData[v1w3I][d] + 
-			w3tTmp[w3tTmp.size()-1]*(vertexData[v2w3I][d]-vertexData[v1w3I][d]);		
-	return 0;
+  size_t dimension=vertexData[0].size();
+  w3I=divCell->numWall();
+  //double minDist,w3s;
+  std::vector<size_t> w3Tmp;
+  std::vector<double> w3tTmp;
+  int flag=0,vertexFlag=0;
+  
+  if (dimension==2) {
+    for (size_t k=0; k<divCell->numWall(); ++k) {
+      if (k!=wI) {
+	size_t v1w3Itmp = divCell->wall(k)->vertex1()->index();
+	size_t v2w3Itmp = divCell->wall(k)->vertex2()->index();
+	std::vector<double> w3(dimension),w0(dimension);
+	for (size_t d=0; d<dimension; ++d) {
+	  w3[d] = vertexData[v2w3Itmp][d]-vertexData[v1w3Itmp][d];
+	  w0[d] = v1Pos[d]-vertexData[v1w3Itmp][d];
+	}
+	double a=0.0,b=0.0,c=0.0,d=0.0,e=0.0;//a=1.0
+	for (size_t dim=0; dim<dimension; ++dim) {
+	  a += n[dim]*n[dim];
+	  b += n[dim]*w3[dim];
+	  c += w3[dim]*w3[dim];
+	  d += n[dim]*w0[dim];
+	  e += w3[dim]*w0[dim];
+	}
+	double fac=a*c-b*b;//a*c-b*b
+	if (fac>1e-10) {//else parallell and not applicable
+	  fac = 1.0/fac;
+	  //double s = fac*(b*e-c*d);
+	  double t = fac*(a*e-b*d);//fac*(a*e-b*d)
+	  if (t>0.0 && t<=1.0) {//within wall
+	    //double dx0 = w0[0] +fac*((b*e-c*d)*n[0]+()*w3[0]); 					
+	    ++flag;
+	    if (t==1.0)
+	      ++vertexFlag;
+	    w3I = k;
+	    w3Tmp.push_back(k);
+	    w3tTmp.push_back(t);
+	  }
+	}
+      }
+    }
+  }//if (dimension==2)
+  else if (dimension==3) {
+    for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
+      if( k!=wI ) {
+	size_t v1w3Itmp = divCell->wall(k)->vertex1()->index();
+	size_t v2w3Itmp = divCell->wall(k)->vertex2()->index();
+	std::vector<double> w3(dimension),w0(dimension);
+	double fac1=0.0,fac2=0.0;
+	for( size_t d=0 ; d<dimension ; ++d ) {
+	  w3[d] = vertexData[v2w3Itmp][d]-vertexData[v1w3Itmp][d];
+	  fac1 += n[d]*(v1Pos[d]-vertexData[v1w3Itmp][d]);
+	  fac2 += n[d]*w3[d]; 
+	}
+	if( fac2 != 0.0 ) {//else parallell and not applicable
+	  double t = fac1/fac2;
+	  if( t>0.0 && t<=1.0 ) {//within wall
+	    //std::cerr << "wall " << k << " (t=" << t << " " << fac1 << "/"
+	    //				<< fac2 
+	    //				<< ") chosen as second wall"
+	    //				<< std::endl;					
+	    ++flag;
+	    if (t==1.0)
+	      ++vertexFlag;
+	    w3I = k;
+	    w3Tmp.push_back(k);
+	    w3tTmp.push_back(t);
+	  }
+	}
+      }
+    }
+  }//if (dimension==3)	
+  //
+  // Check that division consistent
+  //
+  assert( w3I != divCell->numWall() && w3I != wI );
+  if( flag != 1 && !(flag==2 && vertexFlag) ) {
+    std::cerr << "baseCompartmentChange::findSecondDivisionWall Warning"
+	      << " more than one wall possible as connection "
+	      << "for cell " << divCell->index() << " (" << dimension << "dim)" << std::endl 
+	      << flag << " possible walls found and " << vertexFlag 
+	      << " marked as vertices." << std::endl; 
+    printCellWallError(vertexData, divCell, w3Tmp, wI, w3I,v1Pos,n);
+    return -1;
+  }	
+  //
+  // Set the second vertex position using the collected t
+  //
+  size_t v1w3I = divCell->wall(w3I)->vertex1()->index();
+  size_t v2w3I = divCell->wall(w3I)->vertex2()->index();
+  for( size_t d=0 ; d<dimension ; ++d )
+    v2Pos[d] = vertexData[v1w3I][d] + 
+      w3tTmp[w3tTmp.size()-1]*(vertexData[v2w3I][d]-vertexData[v1w3I][d]);		
+  return 0;
 }

@@ -14,14 +14,14 @@
 VertexFromCellPressure::
 VertexFromCellPressure(std::vector<double> &paraValue, 
 		       std::vector< std::vector<size_t> > 
-		       &indValue ) {
-  
+		       &indValue ) 
+{  
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
-  if( paraValue.size()!=2 ) {
+  //
+  if( paraValue.size()!=2 || (paraValue[1] != 0.0 && paraValue[1] != 1.0) ) {
     std::cerr << "VertexFromCellPressure::"
 	      << "VertexFromCellPressure() "
-	      << "Uses two parameters K_force and normalizeVolumeFlag.\n";
+	      << "Uses two parameters K_force and normalizeVolumeFlag (= 0 or 1).\n";
     exit(0);
   }
   if( indValue.size() != 0 ) {
@@ -31,13 +31,13 @@ VertexFromCellPressure(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("VertexFromCellPressure");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp[0] = "K_force";
   tmp[1] = "f_V_norm";
@@ -58,8 +58,8 @@ derivs(Tissue &T,
   size_t dimension;
   dimension = T.vertex(0).numPosition(); 
   
-  //Assumming vertices and walls are sorted
-  //////////////////////////////////////////////////////////////////////
+  //Assumming vertices and walls are sorted and 2 dimensions
+  //
   assert( dimension==2 );
   //For each cell
   for (size_t cellI = 0; cellI < numCells; ++cellI) {

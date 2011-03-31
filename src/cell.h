@@ -241,9 +241,23 @@ class Cell {
   /// @brief Calculates the cell volume(area) from the vertex positions.
   ///
   /// Uses a cross-product rule of the wall directions to calculate the cell
-  /// area. Works only if the cell vertices are sorted/cyclic. The vertex
+  /// area. In two dimensions the calculation is:
+  ///
+  /// @f[ A = \frac{1}{2} | \sum_i^{vertex} (x_i y_{i+1} - y_i x_{i+1}) | @f]
+  /// 
+  /// In three dimensions, the rule is:
+  ///
+  /// @f[ A = \frac{1}{2} \sqrt{\sum_i^{vertex} (r_i \times r_{i+1})^2} @f]
+  ///
+  /// where @f$r_i @f$ is the vector from the cell center to vertex i.
+  ///  
+  /// Works only if the cell vertices are sorted/cyclic. The vertex
   /// positions used are taken from the provided matrix. The volume is returned
   /// and also stored in a volume variable in the Cell.
+  ///
+  /// Note: The 3D version adds the area of triangles meshed with the
+  /// center and maybe should be replaced with the cross-product rule
+  /// on the PCA-extracted plane. (the 2D version).
   /// 
   /// @see volume()
   ///
