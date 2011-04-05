@@ -185,28 +185,40 @@ public:
 ///
 /// @brief Adds additional vertices to all walls
 ///
-/// 'Meshing' is applied by inserting additional vertices for all walls
+/// Wall 'meshing' is applied by inserting additional vertices for all walls.
+/// This creates new vertices connected to one of the previous walls that are 
+/// now divided into several walls. Only a single parameter is given which
+/// sets the number of new vertices per wall. The 'remeshing' is done in the 
+/// initiation step and there is no contribution to the derivative for this 
+/// reaction.
+///
+/// In the model file the reaction is defined as:
+///
+/// @verbatim
+/// InitiateWallMesh 1 0
+/// numVertex
+/// @endverbatim 
 /// 
 class InitiateWallMesh : public BaseReaction {
   
-public:
+ public:
   
   InitiateWallMesh(std::vector<double> &paraValue, 
-									 std::vector< std::vector<size_t> > 
-									 &indValue );
+		   std::vector< std::vector<size_t> > 
+		   &indValue );
   
-	void initiate(Tissue &T,
-								std::vector< std::vector<double> > &cellData,
-								std::vector< std::vector<double> > &wallData,
-								std::vector< std::vector<double> > &vertexData);
-
+  void initiate(Tissue &T,
+		std::vector< std::vector<double> > &cellData,
+		std::vector< std::vector<double> > &wallData,
+		std::vector< std::vector<double> > &vertexData);
+  
   void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
 ///
