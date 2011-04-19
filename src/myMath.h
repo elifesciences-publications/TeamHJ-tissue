@@ -19,6 +19,12 @@ namespace myMath
 	size_t jacobiTransformation(std::vector< std::vector<double> > A, std::vector< std::vector<double > > &V, std::vector<double> &d);
 	
 	signed int sign(const double argument);
+	
+	/// 
+	/// @brief calculates the area of a triangle with given vertices
+	double areaTriangle(const std::vector<double> &p1,
+			    const std::vector<double> &p2,
+			    const std::vector<double> &p3);
 }
 	
 #endif /* MYMATH_H */

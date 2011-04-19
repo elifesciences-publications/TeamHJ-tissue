@@ -660,6 +660,24 @@ class Tissue {
 		   std::vector< std::vector<double> > &vertexDeriv,
 		   std::vector<size_t> &volumeChangeList,
 		   double threshold=0.0);
+
+  ///
+  /// @brief Updates topology and variables at a cell division assuming trangulation with center
+  ///
+  /// ...
+  /// ...
+  ///
+  /// @note Requires that the cell is triangulated with the center position stored in the celldata
+  ///
+  void divideCellCenterTriangulation( Cell *divCell, size_t v1, size_t v2, size_t centerIndex,
+				      std::vector< std::vector<double> > &cellData,
+				      std::vector< std::vector<double> > &wallData,
+				      std::vector< std::vector<double> > &vertexData,
+				      std::vector< std::vector<double> > &cellDeriv,
+				      std::vector< std::vector<double> > &wallDeriv,
+				      std::vector< std::vector<double> > &vertexDeriv,
+				      std::vector<size_t> &volumeChangeList );
+  
   ///
   /// @brief Sorts cell.wall and cell.vertex vectors to be cyclic 
   ///

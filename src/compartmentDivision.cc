@@ -1280,36 +1280,36 @@ update(Tissue *T,size_t cellI,
 	//T->checkConnectivity(1);		
 }
 
-//!Constructor
 DivisionVolumeRandomDirection::
 DivisionVolumeRandomDirection(std::vector<double> &paraValue, 
-			     std::vector< std::vector<size_t> > 
-			     &indValue ) {
+			      std::vector< std::vector<size_t> > 
+			      &indValue ) {
   
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
-	if ( paraValue.size() != 4) {
-		std::cerr << "DivisionVolumeRandomDirection::"
-		<< "DivisionVolumeRandomDirection() "
-		<< "Four parameters used V_threshold, LWall_frac, Lwall_threshold, and COM (1 = COM, 0 = Random).\n";
-		std::exit(EXIT_FAILURE);
-	}
+  //
+  if ( paraValue.size() != 4) {
+    std::cerr << "DivisionVolumeRandomDirection::"
+	      << "DivisionVolumeRandomDirection() "
+	      << "Four parameters used V_threshold, LWall_frac, "
+	      << "Lwall_threshold, and COM (1 = COM, 0 = Random).\n";
+    std::exit(EXIT_FAILURE);
+  }
   if( indValue.size() != 1 ) {
     std::cerr << "DivisionVolumeRandomDirection::"
-							<< "DivisionVolumeRandomDirection() "
-							<< "Indices for volume dependent cell "
-							<< "variables are at first level.\n";
+	      << "DivisionVolumeRandomDirection() "
+	      << "Indices for volume dependent cell "
+	      << "variables are at first level.\n";
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("DivisionVolumeRandomDirection");
-	setNumChange(1);
+  setNumChange(1);
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "V_threshold";
@@ -1319,9 +1319,6 @@ DivisionVolumeRandomDirection(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Flags a cell for division if the volume above threshold
-/*! 
- */
 int DivisionVolumeRandomDirection::
 flag(Tissue *T,size_t i,
      std::vector< std::vector<double> > &cellData,
@@ -1330,10 +1327,10 @@ flag(Tissue *T,size_t i,
      std::vector< std::vector<double> > &cellDerivs,
      std::vector< std::vector<double> > &wallDerivs,
      std::vector< std::vector<double> > &vertexDerivs ) {
-	
+  
   if( T->cell(i).calculateVolume(vertexData) > parameter(0) ) {
     std::cerr << "Cell " << i << " marked for division with volume " 
-							<< T->cell(i).volume() << std::endl;
+	      << T->cell(i).volume() << std::endl;
     return 1;
   } 
   return 0;
@@ -1355,22 +1352,22 @@ update(Tissue *T,size_t cellI,
   assert( dimension==2 );
   
   std::vector<double> com;
-
+  
   if (parameter(3) == 1)
-  {
-	  com = divCell->positionFromVertex(vertexData);
-  }
+    {
+      com = divCell->positionFromVertex(vertexData);
+    }
   else
-  {
-	  try
-	  {
-		  com = divCell->randomPositionInCell(vertexData);
-	  }
-	  catch (Cell::FailedToFindRandomPositionInCellException)
-	  {
-		  return;
-	  }
-  }
+    {
+      try
+	{
+	  com = divCell->randomPositionInCell(vertexData);
+	}
+      catch (Cell::FailedToFindRandomPositionInCellException)
+	{
+	  return;
+	}
+    }
   
   std::vector<double> n(dimension);
   double phi=2*3.14*myRandom::Rnd();
@@ -1378,7 +1375,7 @@ update(Tissue *T,size_t cellI,
   n[1] = std::cos(phi);
   
   //Find two (and two only) intersecting walls
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<size_t> wI(2);
   std::vector<double> s(2);
   wI[0]=0;
@@ -1420,12 +1417,12 @@ update(Tissue *T,size_t cellI,
 	  wI[flag] = k;
 	}				
 	flag++;
-			}
+      }
     }
   }
   assert( wI[1] != divCell->numWall() && wI[0] != wI[1] );
   if( flag != 2 ) {
-	  return;
+    return;
     // std::cerr << "divideVolumeVisStrain::update Warning"
     // 	      << " not two walls possible as connection "
     // 	      << "for cell " 
@@ -1514,6 +1511,132 @@ update(Tissue *T,size_t cellI,
   //Check that the division did not mess up the data structure
   //T->checkConnectivity(1);		
 }
+
+
+
+DivisionVolumeRandomDirectionCenterTriangulation::
+DivisionVolumeRandomDirectionCenterTriangulation(std::vector<double> &paraValue, 
+						 std::vector< std::vector<size_t> > 
+						 &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if ( paraValue.size() != 1) {
+    std::cerr << "DivisionVolumeRandomDirectionCenterTriangulation::"
+	      << "DivisionVolumeRandomDirectionCenterTriangulation() "
+	      << "One parameter used V_threshold, " << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 1) {
+    std::cerr << "DivisionVolumeRandomDirectionCenterTriangulation::"
+	      << "DivisionVolumeRandomDirectionCenterTriangulation() "
+	      << "First level should store the index where the central vertex "
+	      << "is located (followed by resting lengths of internal edges)."
+	      << "Indices for volume dependent cell "
+	      << "variables are at second level." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("DivisionVolumeRandomDirectionCenterTriangulation");
+  setNumChange(1);
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "V_threshold";
+  setParameterId( tmp );
+}
+
+int DivisionVolumeRandomDirectionCenterTriangulation::
+flag(Tissue *T,size_t i,
+     std::vector< std::vector<double> > &cellData,
+     std::vector< std::vector<double> > &wallData,
+     std::vector< std::vector<double> > &vertexData,
+     std::vector< std::vector<double> > &cellDerivs,
+     std::vector< std::vector<double> > &wallDerivs,
+     std::vector< std::vector<double> > &vertexDerivs ) {
+  
+  if( T->cell(i).calculateVolumeTriangular(vertexData,cellData,variableIndex(0,0)) > 
+      parameter(0) ) {
+    std::cerr << "Cell " << i << " marked for division with volume " 
+	      << T->cell(i).volume() << std::endl;
+    return 1;
+  } 
+  return 0;
+}
+
+void DivisionVolumeRandomDirectionCenterTriangulation::
+update(Tissue *T,size_t cellI,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDeriv,
+       std::vector< std::vector<double> > &wallDeriv,
+       std::vector< std::vector<double> > &vertexDeriv ) {
+  
+  Cell *divCell = &(T->cell(cellI));
+  size_t cellIndex = divCell->index();
+  size_t dimension = vertexData[0].size();
+  size_t numV = divCell->numVertex();
+  assert( divCell->numWall() > 2 );
+  assert( dimension==3 );
+  
+  // Find first vertex (random)
+  size_t b;
+  size_t counter = 0;
+  do {
+    b = (size_t) myRandom::Rnd()*numV; 
+    counter++;
+  } while (divCell->vertex(b)->numWall()>2 && counter<1000);
+  if (counter>999) {
+    std::cerr << "DivisionVolumeRandomDirectionCenterTriangulation::"
+	      << "DivisionVolumeRandomDirectionCenterTriangulation() " << std::endl
+	      << " Could not find vertex with two walls." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  // Select second vertex creating as equally sized daughters as possible.
+  double halfArea = 0.5*divCell->volume();
+  double tmpArea = 0.0;
+
+  std::vector<double> center(dimension);
+  for (size_t i=0; i<dimension; i++)
+    center[i] = cellData[cellIndex][variableIndex(0,0)+i];
+  size_t best=0;
+  double minArea = divCell->volume();
+  for (size_t i=1; i<numV; i++)
+    { 
+      std::vector<double> v1pos=vertexData[ divCell->vertex((b+i-1)%numV)->index() ];
+      std::vector<double> v2pos=vertexData[divCell->vertex((b+i)%numV)->index()];
+      tmpArea += myMath::areaTriangle(center,v1pos,v2pos);
+      if ( std::abs(tmpArea-halfArea)< minArea && 
+	   divCell->vertex((b+i)%numV)->numWall()==2 ) {  
+	best=i;
+	minArea = std::abs( tmpArea-halfArea );
+      }
+    }
+  size_t e = (b+best)%(numV); // e is the index of the end vertex of division wall 
+  
+  // Divide the cell
+  size_t numWallTmp = T->numWall();
+  size_t numVertexTmp = T->numVertex();
+  size_t numCellTmp = T->numCell();
+  T->divideCellCenterTriangulation(divCell,b,e,variableIndex(0,0),
+				   cellData,wallData,vertexData,
+				   cellDeriv,wallDeriv,vertexDeriv,
+				   variableIndex(1));
+  assert( numWallTmp+6 == T->numWall() );
+  assert( numVertexTmp+5 == T->numVertex() );
+  assert( numCellTmp+1 == T->numCell() );
+  
+  //Check that the division did not mess up the data structure
+  //T->checkConnectivity(1);		
+}
+
 
 DivisionForceDirection::DivisionForceDirection(std::vector<double> &paraValue,
 									  std::vector< std::vector<size_t> > &indValue)

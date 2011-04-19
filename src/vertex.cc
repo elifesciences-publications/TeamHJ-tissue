@@ -26,6 +26,17 @@ Vertex::Vertex( const Vertex & vertexCopy )
   wall_ = vertexCopy.wall();
   stressDirection_ = vertexCopy.stressDirection();
 }
+
+Vertex::
+Vertex( const std::vector<double> &position, size_t indexVal )
+{
+  position_ = position;
+  index_ = indexVal;
+  id_ = "";
+  //cell_ = vertexCopy.cell();
+  //wall_ = vertexCopy.wall();
+  //stressDirection_ = vertexCopy.stressDirection();
+}
   
 Vertex::~Vertex() 
 {

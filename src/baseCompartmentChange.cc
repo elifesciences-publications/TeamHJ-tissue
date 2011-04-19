@@ -39,6 +39,8 @@ createCompartmentChange(std::vector<double> &paraValue,
     return new DivisionVolumeViaDirection(paraValue,indValue);
 	else if(idValue=="DivisionVolumeRandomDirection")
     return new DivisionVolumeRandomDirection(paraValue,indValue);
+	else if(idValue=="DivisionVolumeRandomDirectionCenterTriangulation")
+    return new DivisionVolumeRandomDirectionCenterTriangulation(paraValue,indValue);
 	else if(idValue=="DivisionVolumeViaShortestPath")
     return new DivisionVolumeViaShortestPath(paraValue,indValue);
   else if (idValue == "DivisionForceDirection")

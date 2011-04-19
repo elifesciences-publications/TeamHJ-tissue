@@ -264,6 +264,17 @@ class Cell {
   double calculateVolume( std::vector< std::vector<double> > 
 			  &vertexData, size_t signFlag=0 );
   ///
+  /// @brief Calculates the cell volume(area) from the vertex positions using triangles.
+  ///
+  /// Assumes center 'vertex' defined and uses triangles to calculate the area (2D volume).
+  ///
+  /// @see volume()
+  ///
+  double calculateVolumeTriangular( std::vector< std::vector<double> > 
+				    &vertexData,
+				    std::vector< std::vector<double> > &cellData,
+				    size_t centerIndex);
+  ///
   /// @brief Calculates the cell center-of-mass position.
   ///
   /// Uses a cross-product rule to define the center of mass of the cell. Works

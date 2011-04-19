@@ -27,8 +27,8 @@ Cell::Cell( const Cell & cellCopy ) {
   mitosisFlag_ = cellCopy.mitosisFlag();
   wall_ = cellCopy.wall();
   vertex_ = cellCopy.vertex();
-	variable_ = cellCopy.variable();
-	E_ = cellCopy.getPCAPlane();
+  variable_ = cellCopy.variable();
+  E_ = cellCopy.getPCAPlane();
 }
 
 Cell::Cell(size_t indexVal,std::string idVal) {

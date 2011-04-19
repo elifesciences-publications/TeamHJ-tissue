@@ -37,8 +37,9 @@ class Vertex {
  public:
   
   Vertex();
-  Vertex( const Vertex & cellCopy );
-  
+  Vertex( const Vertex & vertexCopy );
+  Vertex( const std::vector<double> &position, size_t indexVal=static_cast<size_t>(-1));
+
   ~Vertex();
   
   ///
