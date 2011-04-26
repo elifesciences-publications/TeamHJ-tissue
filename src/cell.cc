@@ -602,6 +602,23 @@ double Cell::calculateVolume( std::vector< std::vector<double> > 				           
   }
 }
 
+double Cell::
+calculateVolumeCenterTriangulation( std::vector< std::vector<double> > 
+				    &vertexData,
+				    std::vector< std::vector<double> > &cellData,
+				    size_t centerIndex)
+{
+  double area = 0.0;
+  size_t dimension=vertexData[0].size();
+  std::vector<double> p1(dimension);
+  for (size_t d=0; d<dimension; ++d)
+    p1[d] = cellData[index()][centerIndex+d];
+  for (size_t i=0; i<numVertex()-1; ++i) {    
+    area += myMath::areaTriangle(p1,vertexData[vertex(i)->index()],vertexData[vertex(i+1)->index()]);
+  }
+  return area;
+}
+
 std::vector<double> Cell::positionFromVertex() 
 {
 	assert( numVertex() );

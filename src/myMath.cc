@@ -195,4 +195,10 @@ namespace myMath
     
     return std::sqrt( ( a+b+c)*(-a+b+c)*( a-b+c)*( a+b-c) )*0.25;
   }
+
+  double pi()
+  {
+    return 3.14159265;
+  }
+
 }

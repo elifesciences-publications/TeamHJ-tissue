@@ -1560,7 +1560,7 @@ flag(Tissue *T,size_t i,
      std::vector< std::vector<double> > &wallDerivs,
      std::vector< std::vector<double> > &vertexDerivs ) {
   
-  if( T->cell(i).calculateVolumeTriangular(vertexData,cellData,variableIndex(0,0)) > 
+  if( T->cell(i).calculateVolumeCenterTriangulation(vertexData,cellData,variableIndex(0,0)) > 
       parameter(0) ) {
     std::cerr << "Cell " << i << " marked for division with volume " 
 	      << T->cell(i).volume() << std::endl;
@@ -1622,16 +1622,16 @@ update(Tissue *T,size_t cellI,
   size_t e = (b+best)%(numV); // e is the index of the end vertex of division wall 
   
   // Divide the cell
-  size_t numWallTmp = T->numWall();
-  size_t numVertexTmp = T->numVertex();
-  size_t numCellTmp = T->numCell();
+  //size_t numWallTmp = T->numWall();
+  //size_t numVertexTmp = T->numVertex();
+  //size_t numCellTmp = T->numCell();
   T->divideCellCenterTriangulation(divCell,b,e,variableIndex(0,0),
 				   cellData,wallData,vertexData,
 				   cellDeriv,wallDeriv,vertexDeriv,
 				   variableIndex(1));
-  assert( numWallTmp+6 == T->numWall() );
-  assert( numVertexTmp+5 == T->numVertex() );
-  assert( numCellTmp+1 == T->numCell() );
+  //assert( numWallTmp+6 == T->numWall() );
+  //assert( numVertexTmp+5 == T->numVertex() );
+  //assert( numCellTmp+1 == T->numCell() );
   
   //Check that the division did not mess up the data structure
   //T->checkConnectivity(1);		

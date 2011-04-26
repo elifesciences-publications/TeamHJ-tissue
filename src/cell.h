@@ -270,10 +270,10 @@ class Cell {
   ///
   /// @see volume()
   ///
-  double calculateVolumeTriangular( std::vector< std::vector<double> > 
-				    &vertexData,
-				    std::vector< std::vector<double> > &cellData,
-				    size_t centerIndex);
+  double calculateVolumeCenterTriangulation( std::vector< std::vector<double> > 
+					     &vertexData,
+					     std::vector< std::vector<double> > &cellData,
+					     size_t centerIndex);
   ///
   /// @brief Calculates the cell center-of-mass position.
   ///

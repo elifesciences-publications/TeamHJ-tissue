@@ -2658,9 +2658,10 @@ divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerI
 			       std::vector<size_t> &volumeChangeList )
 {
   size_t dimension=vertexData[0].size();
+  size_t cellIndex = divCell->index();
   std::vector<double> centerPosition(dimension);
   for (size_t i=0; i<dimension; i++ ) {
-    centerPosition[i] = cellData[divCell->index()][centerIndex+i];
+    centerPosition[i] = cellData[cellIndex][centerIndex+i];
   }
   
   //=================================================================
@@ -2703,7 +2704,7 @@ divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerI
   vertexLeft[nvLeft-1]=divCell->vertex(e);
 
   // Add vertices to cell Left
-  Cell Left(divCell->index(),"");
+  Cell Left(cellIndex,"");
   for (size_t i=0; i<nvLeft; ++i)
     Left.addVertex(vertexLeft[i]);
 
@@ -2735,24 +2736,26 @@ divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerI
   Cell Right(numCell(),"");
   for (size_t i=0; i<nvRight; ++i)
     Right.addVertex(vertexRight[i]);
-  cellData.push_back(cellData[divCell->index()]);
+  cellData.push_back(cellData[cellIndex]);
 
   
   //=====================================
   // Selecting centers of new cells
   //===================================== 
-  // choosing the best line for left cell
+  // choosing the best line for LEFT cell
   double areaTemp=0;
   std::vector<double> subareaTemp(nvLeft-4);
   size_t counter=0;
   subareaTemp[counter] = myMath::areaTriangle(vertexLeft[0]->position(),
 					      vertexLeft[1]->position(),
 					      vertexLeft[3]->position());
-  for (size_t i=3; i<nvLeft-2; ++i) {
+  counter++;
+  for (size_t i=3; i<nvLeft-3; ++i) {
     subareaTemp[counter] = subareaTemp[counter-1] +
       myMath::areaTriangle(vertexLeft[0]->position(),
 			   vertexLeft[i]->position(),
 			   vertexLeft[i+1]->position());
+    counter++;
   }
   subareaTemp[counter] = subareaTemp[counter-1] +
     myMath::areaTriangle(vertexLeft[0]->position(),
@@ -2765,7 +2768,7 @@ divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerI
   size_t bestTri = 0;
   size_t bestVert = 3;
   counter = 1;
-  for (size_t i=3; i<nvLeft-2; ++i) {
+  for (size_t i=3; i<nvLeft-3; ++i) {
     if (std::abs(subareaTemp[counter]-halfArea)<bestArea ) { 
       bestVert= i+1;
       bestTri = counter;
@@ -2777,162 +2780,238 @@ divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerI
   std::vector<double> cLeft(dimension);
   for (size_t d=0; d<dimension; ++d)
     cLeft[d] = 0.5*(vertexLeft[0]->position(d)+vertexLeft[eLeft]->position(d));
-    
 
-
-  AreaTemp[0]=0;
-  for i=1:nvRight-2
-	  {double a= std::sqrt( (position[0][0]-position[i][0])*(position[0][0]-position[i][0]) +   // define the position in right cell
-				(position[0][1]-position[i][1])*(position[0][1]-position[i][1]) +
-				(position[0][2]-position[i][2])*(position[0][2]-position[i][2]) );
-	   
-	   double  b= std::sqrt( (position[0][0]-position[i+1][0])*(position[0][0]-position[i+1][0]) +
-				 (position[0][1]-position[i+1][1])*(position[0][1]-position[i+1][1]) +
-				 (position[0][2]-position[i+1][2])*(position[0][2]-position[i+1][2]) );
-
-	   double  c= std::sqrt( (position[i][0]-position[i+1][0])*(position[i][0]-position[i+1][0]) +
-				 (position[i][1]-position[i+1][1])*(position[i][1]-position[i+1][1]) +
-				 (position[i][2]-position[i+1][2])*(position[i][2]-position[i+1][2]) );
-	   
-	   double Area=std::sqrt( ( a+b+c)*(-a+b+c)*( a-b+c)*( a+b-c) )*0.25;
-	   
-	   AreaTemp[i]=AreaTemp[i-1]+Area;
-	  }
-  middle=AreaTemp[nvRight-2];//half   the total area right cell
-  best=0;
-  for i=1:nvRight-2
-	  {if abs(AreaTemp[i]-middle)<  abs(AreaTemp[best]-middle) 
-	   best=i;
-	  }
-  eRight=best+1;
-  cRight=middle point of 0 & eRight
-    
-
+  // choosing the best line for RIGHT cell
+  areaTemp=0;
+  subareaTemp.resize(nvRight-4);
+  counter=0;
+  subareaTemp[counter] = myMath::areaTriangle(vertexRight[0]->position(),
+					      vertexRight[1]->position(),
+					      vertexRight[3]->position());
+  counter++;
+  for (size_t i=3; i<nvRight-3; ++i) {
+    subareaTemp[counter] = subareaTemp[counter-1] +
+      myMath::areaTriangle(vertexRight[0]->position(),
+			   vertexRight[i]->position(),
+			   vertexRight[i+1]->position());
+    counter++;
+  }
+  subareaTemp[counter] = subareaTemp[counter-1] +
+    myMath::areaTriangle(vertexRight[0]->position(),
+			 vertexRight[nvRight-3]->position(),
+			 vertexRight[nvRight-1]->position());  
+  areaTemp = subareaTemp[counter];
+  halfArea = 0.5*areaTemp;
+  
+  bestArea = std::abs(subareaTemp[0]-halfArea);
+  bestTri = 0;
+  bestVert = 3;
+  counter = 1;
+  for (size_t i=3; i<nvRight-3; ++i) {
+    if (std::abs(subareaTemp[counter]-halfArea)<bestArea ) { 
+      bestVert= i+1;
+      bestTri = counter;
+      bestArea = std::abs(subareaTemp[counter]-halfArea);
+    }
+    counter++;
+  }
+  size_t eRight=bestVert;
+  std::vector<double> cRight(dimension);
+  for (size_t d=0; d<dimension; ++d)
+    cRight[d] = 0.5*(vertexRight[0]->position(d)+vertexRight[eRight]->position(d));
 
 //===============================
-// SECTION 4 :resting shape
+// Calculating resting shape
 //===============================
 
 //LHS angles
-  angleLeftcellL[0]=0;
-for i=1:eLeft-2
-  {a= ( internalWallOld[(b+i-1)mod(nv)]*internalWallOld[(b+i-1)mod(nv)]
-       +internalWallOld[(b+i)mod(nv)]*internalWallOld[(b+i)mod(nv)]
-       -wallOld[(b+i-1)mod(nv)]*wallOld[(b+i-1)mod(nv)]                )  /  (2*internalWallOld[b+i-1]*internalWallOld[b+i]);
-   angleLeftCellL[0]=angleLeftCellL[0]+acos(a);
+  std::vector<double> angleLeftCell(nvLeft);
+  std::vector<double> angleLeftCellL(nvLeft);
+  std::vector<double> angleLeftCellR(nvLeft);
+  size_t edgeStart = centerIndex+dimension;//internal edges start at this index in cellData
+  angleLeftCellL[0]=0.0;
+  for (size_t i=1; i<eLeft-1; ++i) {
+    size_t eI1 = edgeStart+((b+i-1)%nv);
+    size_t eI2 = edgeStart+((b+i)%nv);
+    size_t wI = divCell->wall((b+i-1)%nv)->index();
+    double a = ( cellData[cellIndex][eI1]*cellData[cellIndex][eI1]
+		 + cellData[cellIndex][eI2]*cellData[cellIndex][eI2]
+		 - wallData[wI][0]*wallData[wI][0] )  
+      / (2.0*cellData[cellIndex][eI1]*cellData[cellIndex][eI2]);
+    angleLeftCellL[0] += std::acos(a);
   }
-
-a= ( internalWallOld[b]*internalWallOld[b]
-    +WallOld[b]*WallOld[b]
-    -internalWallOld[(b+1)mod(nv)]*internalWallOld[(b+1)mod(nv)]       )  / (2*internalWallOld[b]*WallOld[b]);
-angleLeftCell[1]=acos(a);
- 
-angleLeftCell[2]=pi;
-
-for i=3:nvLeft-3
-  {ar= ( internalWallOld[(b+i-3)mod(nv)]*internalWallOld[(b+i-3)mod(nv)]
-        +internalWallOld[(b+i-2)mod(nv)]*internalWallOld[(b+i-2)mod(nv)]
-        -WallOld[(b+i-3)mod(nv)]*WallOld[(b+i-2)mod(nv)]                ) /  (2*internalWallOld[(b+i-3)mod(nv)]*internalWallOld[(b+i-2)mod(nv)]) ;
-   al= ( internalWallOld[(b+i-1)mod(nv)]*internalWallOld[(b+i-1)mod(nv)]
-        +internalWallOld[(b+i-2)mod(nv)]*internalWallOld[(b+i-2)mod(nv)]
-        -WallOld[(b+i-2)mod(nv)]*WallOld[(b+i-2)mod(nv)]                ) /  (2*internalWallOld[(b+i-3)mod(nv)]*internalWallOld[(b+i-2)mod(nv)])   ;
   
-   angleLeftCell[i]=acos(ar)+acos(al);
+  size_t eI1 = edgeStart+b;
+  size_t eI2 = edgeStart+((b+1)%nv);
+  size_t wI = divCell->wall(b)->index();
+  double a = ( cellData[cellIndex][eI1]*cellData[cellIndex][eI1]
+	       +wallData[wI][0]*wallData[wI][0]
+	       -cellData[cellIndex][eI2]*cellData[cellIndex][eI2] ) 
+    / (2.0*cellData[cellIndex][eI1]*wallData[wI][0]);
+  angleLeftCell[1] = std::acos(a);
+  
+  angleLeftCell[2]=myMath::pi();
+  
+  for (size_t i=3; i<nvLeft-2; ++i) {
+    eI1 = edgeStart+((b+i-3)%nv);
+    eI2 = edgeStart+((b+i-2)%nv);
+    wI = divCell->wall((b+i-3)%nv)->index();
+    double ar = ( cellData[cellIndex][eI2]*cellData[cellIndex][eI2]
+		  +wallData[wI][0]*wallData[wI][0]
+		  -cellData[cellIndex][eI1]*cellData[cellIndex][eI1])  / 
+      (2.0*cellData[cellIndex][eI2]*wallData[wI][0]);
+    
+    eI1 = edgeStart+((b+i-1)%nv);
+    eI2 = edgeStart+((b+i-2)%nv);
+    wI = divCell->wall((b+i-2)%nv)->index();
+    double al = ( cellData[cellIndex][eI2]*cellData[cellIndex][eI2]
+		  +wallData[wI][0]*wallData[wI][0]
+		  -cellData[cellIndex][eI1]*cellData[cellIndex][eI1] )
+      / (2.0*cellData[cellIndex][eI2]*wallData[wI][0]);
+    angleLeftCell[i]=std::acos(ar)+std::acos(al);
   } 
-
-angleLeftCell[nvLeft-2]=pi;
-
-a= ( internalWallOld[e]*internalWallOld[e]
-    +WallOld[(e-1)mod(nv)]*WallOld[(e-1)mod(nv)]
-     -internalWallOld[(e-1)mod(nv)]*internalWallOld[(e-1)mod(nv)]        ) / (2*internalWallOld[e]*WallOld[(e-1)mod(nv)]);
-angleLeftCell[nvLeft-1]=acos(a);
-
-
-//RHS angles
-angleRightcellL[0]=0;
-for i=1:eRight-2
-  {a= ( internalWallOld[(e+i-1)mod(nv)]*internalWallOld[(e+i-1)mod(nv)]
-       +internalWallOld[(e+i)mod(nv)]*internalWallOld[(e+i)mod(nv)]
-       -wallOld[(e+i-1)mod(nv)]*wallOld[(e+i-1)mod(nv)]                )  /  (2*internalWallOld[e+i-1]*internalWallOld[e+i]);
-   angleRightCellL[0]=angleRightCellL[0]+acos(a);
+  
+  angleLeftCell[nvLeft-2]=myMath::pi();
+  
+  eI1 = edgeStart+e;
+  eI2 = edgeStart+((nv+e-1)%nv);
+  wI = divCell->wall(nv+e-1)->index();
+  a = ( cellData[cellIndex][eI1]*cellData[cellIndex][eI1]
+	+wallData[wI][0]*wallData[wI][0]
+	-cellData[cellIndex][eI2]*cellData[cellIndex][eI2] ) 
+    / (2.0*cellData[cellIndex][eI1]*wallData[wI][0]);
+  angleLeftCell[nvLeft-1] = std::acos(a);
+  
+  //RHS angles
+  std::vector<double> angleRightCell(nvRight);
+  std::vector<double> angleRightCellL(nvRight);
+  std::vector<double> angleRightCellR(nvRight);
+  angleRightCellL[0]=0.0;
+  for (size_t i=1; i<eRight-1; ++i) {
+    eI1 = edgeStart+((e+i-1)%nv);
+    eI2 = edgeStart+((e+i)%nv);
+    wI = divCell->wall((e+i-1)%nv)->index();
+    a = ( cellData[cellIndex][eI1]*cellData[cellIndex][eI1]
+	  + cellData[cellIndex][eI2]*cellData[cellIndex][eI2]
+	  - wallData[wI][0]*wallData[wI][0] )  
+      / (2.0*cellData[cellIndex][eI1]*cellData[cellIndex][eI2]);
+    angleRightCellL[0] += std::acos(a);
   }
-
-a= ( internalWallOld[e]*internalWallOld[e]
-    +WallOld[e]*WallOld[e]
-    -internalWallOld[(e+1)mod(nv)]*internalWallOld[(e+1)mod(nv)]       )  / (2*internalWallOld[e]*WallOld[e]);
-angleRightCell[1]=acos(a);
- 
-angleRightCell[2]=pi;
-
-for i=3:nvRight-3
-  {ar= ( internalWallOld[(e+i-3)mod(nv)]*internalWallOld[(e+i-3)mod(nv)]
-        +internalWallOld[(e+i-2)mod(nv)]*internalWallOld[(e+i-2)mod(nv)]
-        -WallOld[(e+i-3)mod(nv)]*WallOld[(e+i-2)mod(nv)]                ) /  (2*internalWallOld[(e+i-3)mod(nv)]*internalWallOld[(e+i-2)mod(nv)]) ;
-   al= ( internalWallOld[(e+i-1)mod(nv)]*internalWallOld[(e+i-1)mod(nv)]
-        +internalWallOld[(e+i-2)mod(nv)]*internalWallOld[(e+i-2)mod(nv)]
-        -WallOld[(e+i-2)mod(nv)]*WallOld[(e+i-2)mod(nv)]                ) /  (2*internalWallOld[(e+i-3)mod(nv)]*internalWallOld[(e+i-2)mod(nv)])   ;
   
-   angleRightCell[i]=acos(ar)+acos(al);
+  eI1 = edgeStart+e;
+  eI2 = edgeStart+((e+1)%nv);
+  wI = divCell->wall(e)->index();
+  a = ( cellData[cellIndex][eI1]*cellData[cellIndex][eI1]
+	+wallData[wI][0]*wallData[wI][0]
+	-cellData[cellIndex][eI2]*cellData[cellIndex][eI2] ) 
+    / (2.0*cellData[cellIndex][eI1]*wallData[wI][0]);
+  angleRightCell[1] = std::acos(a);
+  
+  angleRightCell[2]=myMath::pi();
+  
+  for (size_t i=3; i<nvRight-2; ++i) {
+    eI1 = edgeStart+((e+i-3)%nv);
+    eI2 = edgeStart+((e+i-2)%nv);
+    wI = divCell->wall((e+i-3)%nv)->index();
+    double ar = ( cellData[cellIndex][eI2]*cellData[cellIndex][eI2]
+		  +wallData[wI][0]*wallData[wI][0]
+		  -cellData[cellIndex][eI1]*cellData[cellIndex][eI1])  / 
+      (2.0*cellData[cellIndex][eI2]*wallData[wI][0]);
+    
+    eI1 = edgeStart+((e+i-1)%nv);
+    eI2 = edgeStart+((e+i-2)%nv);
+    wI = divCell->wall((e+i-2)%nv)->index();
+    double al = ( cellData[cellIndex][eI2]*cellData[cellIndex][eI2]
+		  +wallData[wI][0]*wallData[wI][0]
+		  -cellData[cellIndex][eI1]*cellData[cellIndex][eI1] )
+      / (2.0*cellData[cellIndex][eI2]*wallData[wI][0]);
+    angleRightCell[i]=std::acos(ar)+std::acos(al);
   } 
+  
+  angleRightCell[nvRight-2]=myMath::pi();
+  
+  eI1 = edgeStart+b;
+  eI2 = edgeStart+((nv+b-1)%nv);
+  wI = divCell->wall(nv+b-1)->index();
+  a = ( cellData[cellIndex][eI1]*cellData[cellIndex][eI1]
+	+wallData[wI][0]*wallData[wI][0]
+	-cellData[cellIndex][eI2]*cellData[cellIndex][eI2] ) 
+    / (2.0*cellData[cellIndex][eI1]*wallData[wI][0]);
+  angleRightCell[nvRight-1] = std::acos(a);
+  
+  //LHS walls
+  std::vector<double> wallLeft(nvLeft);
+  wallLeft[0]=cellData[cellIndex][edgeStart+b];
+  wI = divCell->wall(b)->index();
+  wallLeft[1]=wallLeft[2]=0.5*wallData[wI][0];
+  for (size_t i=3; i<nvLeft-3; ++i) { 
+    wI = divCell->wall((b+i-2)%nv)->index();
+    wallLeft[i]=wallData[wI][0];
+  }
+  wI = divCell->wall((nv+e-1)%nv)->index();
+  wallLeft[nvLeft-3]=wallLeft[nvLeft-2]=0.5*wallData[wI][0];
+  wallLeft[nvLeft-1]=cellData[cellIndex][edgeStart+e];
+  
+  //LHS internal edges
+  std::vector<double> internalWallLeft(nvLeft);
+  double ratio=0.5;
+  internalWallLeft[0] = ratio*cellData[cellIndex][edgeStart+((b+eLeft-2)%nv)];
 
-angleRightCell[nvRight-2]=pi;
+  internalWallLeft[1] = std::sqrt(internalWallLeft[0]*internalWallLeft[0] + 
+				  wallLeft[0]*wallLeft[0] - 
+				  2*internalWallLeft[0]*wallLeft[0]*std::cos(angleLeftCellL[0]));
 
-a= ( internalWallOld[b]*internalWallOld[b]
-    +WallOld[(b-1)mod(nv)]*WallOld[(b-1)mod(nv)]
-     -internalWallOld[(b-1)mod(nv)]*internalWallOld[(b-1)mod(nv)]        ) / (2*internalWallOld[b]*WallOld[(b-1)mod(nv)]);
-angleRightCell[nvRight-1]=acos(a);
-
-
-
-angleLeftCell[0]=0;  // useless
-angleLeftCellR[0]=0; // useless
-
-//LHS walls
-
-WallLeft[0]=internalWallOld[b];
-WallLeft[1]=0.5*WallOld[b];
-WallLeft[2]=0.5*WallOld[b];
-for i=3:nvLeft-4 WallLeft[i]=WallOld[(b+i-2)mod(nv)];
-WallLeft[nvLeft-3]=0.5*WallOld[(e-1)mod(nv)];
-WallLeft[nvLeft-2]=0.5*WallOld[(e-1)mod(nv)]; 
+  angleLeftCellR[1] = std::asin(internalWallLeft[0]*std::sin(angleLeftCellL[0])/internalWallLeft[1]);
+  angleLeftCellL[1] = angleLeftCell[1]-angleLeftCellR[1];
  
-ratio=0.5;
-internalWallLeft[0]=ratio*internalWallOld[(b+eLeft-2)mod(nv)];
-internalWallLeft[1]=sqrt(internalWallLeft[0]*internalWallLeft[0]+WallLeft[0]*WallLeft[0]-2*internalWallLeft[0]*WallLeft[0]*cos(angleLeftCellL[0]));
-angleLeftCellR[1]=asin(internalWallLeft[0]*sin(angleLeftCell[0])/internalWallLeft[1]);
-angleLeftCellL[1]=angleLeftCell[1]-angleLeftCellR[1];
- 
- for i=1:nvLeft-1
-    {internalWallLeft[i]=sqrt( internalWallLeft[i-1]*internalWallLeft[i-1] + WallLeft[i-1]*WallLeft[i-1]
-                              -2*internalWallLeft[i-1]*WallLeft[i-1]*cos(angleLeftCellL[i-1]));
-     angleLeftCellR[1]=asin(internalWallLeft[i-1]*sin(angleLeftCell[i-1])/internalWallLeft[i]);
-     angleLeftCellL[i]=angleLeftCell[i]-angleLeftCellR[i];
+  for (size_t i=2; i<nvLeft; ++i) {
+    internalWallLeft[i] = std::sqrt( internalWallLeft[i-1]*internalWallLeft[i-1] + 
+				     wallLeft[i-1]*wallLeft[i-1]
+				     -2.0*internalWallLeft[i-1]*wallLeft[i-1]*
+				     std::cos(angleLeftCellL[i-1]) );
+    angleLeftCellR[i]=std::asin(internalWallLeft[i-1] *
+				std::sin(angleLeftCellL[i-1])/internalWallLeft[i]);
+    angleLeftCellL[i]=angleLeftCell[i]-angleLeftCellR[i];
     }
-// internalWallLeft[eLeft]=(1-ratio)*internalWallOld[(b+eLeft-2)mod(nv)]; //this must be consistant with above equations
-
+  //this must be consistant with above equations:
+  // internalWallLeft[eLeft]=(1-ratio)*internalWallOld[(b+eLeft-2)mod(nv)]; 
+  
 //RHS walls
+  std::vector<double> wallRight(nvRight);
+  wallRight[0]=cellData[cellIndex][edgeStart+e];
+  wI = divCell->wall(e)->index();
+  wallRight[1]=wallRight[2]=0.5*wallData[wI][0];
+  for (size_t i=3; i<nvRight-3; ++i) { 
+    wI = divCell->wall((e+i-2)%nv)->index();
+    wallRight[i]=wallData[wI][0];
+  }
+  wI = divCell->wall((nv+b-1)%nv)->index();
+  wallRight[nvRight-3]=wallRight[nvRight-2]=0.5*wallData[wI][0];
+  wallRight[nvRight-1]=cellData[cellIndex][edgeStart+b];
+  
+  //RHS internal edges
+  std::vector<double> internalWallRight(nvRight);
+  internalWallRight[0] = ratio*cellData[cellIndex][edgeStart+((e+eRight-2)%nv)];
 
-WallRight[0]=internalWallOld[e];
-WallRight[1]=0.5*WallOld[e];
-WallRight[2]=0.5*WallOld[e];
-for i=3:nvRight-4 WallRight[i]=WallOld[(e+i-2)mod(nv)];
-WallRight[nvRight-3]=0.5*WallOld[(b-1)mod(nv)];
-WallRight[nvRight-2]=0.5*WallOld[(b-1)mod(nv)]; 
- 
-ratio=0.5;
-internalWallRight[0]=ratio*internalWallOld[(e+eRight-2)mod(nv)];
-internalWallRight[1]=sqrt(internalWallRight[0]*internalWallRight[0]+WallRight[0]*WallRight[0]-2*internalWallRight[0]*WallRight[0]*cos(angleRightCellL[0]));
-angleRightCellR[1]=asin(internalWallRight[0]*sin(angleRightCell[0])/internalWallRight[1]);
-angleRightCellL[1]=angleRightCell[1]-angleRightCellR[1];
- 
- for i=1:nvRight-1
-    {internalWallRight[i]=sqrt( internalWallRight[i-1]*internalWallRight[i-1] + WallRight[i-1]*WallRight[i-1]
-                              -2*internalWallRight[i-1]*WallRight[i-1]*cos(angleRightCellL[i-1]));
-     angleRightCellR[1]=asin(internalWallRight[i-1]*sin(angleRightCell[i-1])/internalWallRight[i]);
-     angleRightCellL[i]=angleRightCell[i]-angleRightCellR[i];
-    }
-// internalWallRight[eRight]=(1-ratio)*internalWallOld[(e+eRight-2)mod(nv)]; //this must be consistant with above equations
+  internalWallRight[1] = std::sqrt(internalWallRight[0]*internalWallRight[0] + 
+				  wallRight[0]*wallRight[0] - 
+				  2*internalWallRight[0]*wallRight[0]*std::cos(angleRightCellL[0]));
 
+  angleRightCellR[1] = std::asin(internalWallRight[0]*std::sin(angleRightCellL[0])/
+				 internalWallRight[1]);
+  angleRightCellL[1] = angleRightCell[1]-angleRightCellR[1];
+ 
+  for (size_t i=2; i<nvRight; ++i) {
+    internalWallRight[i] = std::sqrt( internalWallRight[i-1]*internalWallRight[i-1] + 
+				      wallRight[i-1]*wallRight[i-1]
+				      -2.0*internalWallRight[i-1]*wallRight[i-1]*
+				      std::cos(angleRightCellL[i-1]) );
+    angleRightCellR[i]=std::asin(internalWallRight[i-1] *
+				 std::sin(angleRightCellL[i-1])/internalWallRight[i]);
+    angleRightCellL[i]=angleRightCell[i]-angleRightCellR[i];
+  }
+  //this must be consistant with above equations:
+  // internalWallRight[eRight]=(1-ratio)*internalWallOld[(e+eRight-2)mod(nv)]; 
 }
 
 void Tissue::removeTwoVertex( size_t index ) 

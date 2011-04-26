@@ -22,9 +22,15 @@ namespace myMath
 	
 	/// 
 	/// @brief calculates the area of a triangle with given vertices
+	///
 	double areaTriangle(const std::vector<double> &p1,
 			    const std::vector<double> &p2,
 			    const std::vector<double> &p3);
+	///
+	/// @brief Returns PI with 9 digits
+	///
+	double pi();
 }
+
 	
 #endif /* MYMATH_H */
