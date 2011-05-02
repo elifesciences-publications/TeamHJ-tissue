@@ -213,8 +213,9 @@ void BaseSolver::print(std::ostream &os)
       
       for (size_t k=0; k<numPrintCellVar; ++k) // was for( size_t k=0 ; k<cellData_[i].size() ; ++k )
 	os << cellData_[i][k] << " ";
-      os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
-	 << T_->cell(i).numWall() << std::endl;
+      //os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+      //<< T_->cell(i).numWall() << std::endl;
+	 os << T_->cell(i).numWall() << std::endl;
     }		
     // Print wall variables, first the two connected vertices and then the variables
     numPrintVar=T_->wall(0).numVariable()+5; // was wallData_[0].size()+4;

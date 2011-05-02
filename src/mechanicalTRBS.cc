@@ -256,19 +256,15 @@ derivs(Tissue &T,
       
       // Lengths are from com-vertex(k), vertex(k)-vertex(k+1) (wall(k)), com-vertex(k+1)
       std::vector<double> length(numWalls);
-      length[0] = std::sqrt( (position[0][0]-position[1][0])*
-			     (position[0][0]-position[1][0]) +
-			     (position[0][1]-position[1][1])*
-			     (position[0][1]-position[1][1]) +
-			     (position[0][2]-position[1][2])*
-			     (position[0][2]-position[1][2]) );
+      length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
+			     (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
+			     (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
+
       length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
-      length[2] = std::sqrt( (position[0][0]-position[2][0])*
-			     (position[0][0]-position[2][0]) +
-			     (position[0][1]-position[2][1])*
-			     (position[0][1]-position[2][1]) +
-			     (position[0][2]-position[2][2])*
-			     (position[0][2]-position[2][2]) );
+
+      length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
+			     (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
+			     (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
       
       // Lame coefficients (can be defined out of loop)
       double lambda=young*poisson/(1-poisson*poisson);
@@ -310,29 +306,29 @@ derivs(Tissue &T,
       double Force[3][3];                                           
       
       Force[0][0]= (tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2])*(position[1][0]-position[0][0])
-	+(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[2][0]-position[0][0]); 
+               	  +(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[2][0]-position[0][0]); 
       Force[0][1]= (tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2])*(position[1][1]-position[0][1])
-	+(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[2][1]-position[0][1]); 
+	          +(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[2][1]-position[0][1]); 
       Force[0][2]= (tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2])*(position[1][2]-position[0][2])
-	+(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[2][2]-position[0][2]); 
+	          +(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[2][2]-position[0][2]); 
       
       Force[1][0]= (tensileStiffness[0]*Delta[0]+angularStiffness[0]*Delta[2]+angularStiffness[1]*Delta[1])*(position[0][0]-position[1][0])
-	+(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0])*(position[2][0]-position[1][0]); 
+	          +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0])*(position[2][0]-position[1][0]); 
       Force[1][1]= (tensileStiffness[0]*Delta[0]+angularStiffness[0]*Delta[2]+angularStiffness[1]*Delta[1])*(position[0][1]-position[1][1])
-	+(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0])*(position[2][1]-position[1][1]); 
+	          +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0])*(position[2][1]-position[1][1]); 
       Force[1][2]= (tensileStiffness[0]*Delta[0]+angularStiffness[0]*Delta[2]+angularStiffness[1]*Delta[1])*(position[0][2]-position[1][2])
-	+(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0])*(position[2][2]-position[1][2]); 
+	          +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0])*(position[2][2]-position[1][2]); 
       
       Force[2][0]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1])*(position[0][0]-position[2][0])
-	+(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][0]-position[2][0]); 
+	          +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][0]-position[2][0]); 
       Force[2][1]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1])*(position[0][1]-position[2][1])
-	+(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][1]-position[2][1]); 
+	          +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][1]-position[2][1]); 
       Force[2][2]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1])*(position[0][2]-position[2][2])
-	+(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][2]-position[2][2]); 
+	          +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][2]-position[2][2]); 
       
       // adding forces to the total vertexDerivs
       
-      cellDerivs[i][comIndex]+= Force[0][0];
+      cellDerivs[i][comIndex  ]+= Force[0][0];
       cellDerivs[i][comIndex+1]+= Force[0][1];
       cellDerivs[i][comIndex+2]+= Force[0][2];
       
@@ -383,12 +379,9 @@ initiate(Tissue &T,
     for (size_t k=0; k<numInternalWall; ++k) {
       Vertex *tmpVertex = T.cell(i).vertex(k); 
       size_t vertexIndex = tmpVertex->index();
-      double distance = std::sqrt( (com[0]-vertexData[vertexIndex][0])*
-				   (com[0]-vertexData[vertexIndex][0])+
-				   (com[1]-vertexData[vertexIndex][1])*
-				   (com[1]-vertexData[vertexIndex][1])+
-				   (com[2]-vertexData[vertexIndex][2])*
-				   (com[2]-vertexData[vertexIndex][2]) );   
+      double distance = std::sqrt( (com[0]-vertexData[vertexIndex][0])*(com[0]-vertexData[vertexIndex][0])+
+				   (com[1]-vertexData[vertexIndex][1])*(com[1]-vertexData[vertexIndex][1])+
+				   (com[2]-vertexData[vertexIndex][2])*(com[2]-vertexData[vertexIndex][2]) );   
       cellData[i][numVariable+dimension+k] = distance;
     }
   }
