@@ -2961,7 +2961,8 @@ divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerI
 				  wallLeft[0]*wallLeft[0] - 
 				  2*internalWallLeft[0]*wallLeft[0]*std::cos(angleLeftCellL[0]));
 
-  angleLeftCellR[1] = std::asin(internalWallLeft[0]*std::sin(angleLeftCellL[0])/internalWallLeft[1]);
+  angleLeftCellR[1] = std::acos((WallLeft[0]*WallLeft[0]+internalWallLeft[1]*internalWallLeft[1]-internalWallLeft[0]*internalWallLeft[0])
+                                /(2*WallLeft[0]*internalWallLeft[1]));
   angleLeftCellL[1] = angleLeftCell[1]-angleLeftCellR[1];
  
   for (size_t i=2; i<nvLeft; ++i) {
@@ -2969,8 +2970,8 @@ divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerI
 				     wallLeft[i-1]*wallLeft[i-1]
 				     -2.0*internalWallLeft[i-1]*wallLeft[i-1]*
 				     std::cos(angleLeftCellL[i-1]) );
-    angleLeftCellR[i]=std::asin(internalWallLeft[i-1] *
-				std::sin(angleLeftCellL[i-1])/internalWallLeft[i]);
+    angleLeftCellR[i]=std::acos((WallLeft[i-1]*WallLeft[i-1]+internalWallLeft[i]*internalWallLeft[i]-internalWallLeft[i-1]*internalWallLeft[i-1])
+                                /(2*WallLeft[i-1]*internalWallLeft[i]));
     angleLeftCellL[i]=angleLeftCell[i]-angleLeftCellR[i];
     }
   //this must be consistant with above equations:
@@ -2997,8 +2998,9 @@ divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerI
 				  wallRight[0]*wallRight[0] - 
 				  2*internalWallRight[0]*wallRight[0]*std::cos(angleRightCellL[0]));
 
-  angleRightCellR[1] = std::asin(internalWallRight[0]*std::sin(angleRightCellL[0])/
-				 internalWallRight[1]);
+  angleRightCellR[1] = std::acos((WallRight[0]*WallRight[0]+internalWallRight[1]*internalWallRight[1]-internalWallRight[0]*internalWallRight[0])
+                                /(2*WallRight[0]*internalWallRight[1]));
+
   angleRightCellL[1] = angleRightCell[1]-angleRightCellR[1];
  
   for (size_t i=2; i<nvRight; ++i) {
@@ -3006,8 +3008,9 @@ divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerI
 				      wallRight[i-1]*wallRight[i-1]
 				      -2.0*internalWallRight[i-1]*wallRight[i-1]*
 				      std::cos(angleRightCellL[i-1]) );
-    angleRightCellR[i]=std::asin(internalWallRight[i-1] *
-				 std::sin(angleRightCellL[i-1])/internalWallRight[i]);
+    angleRightCellR[i]=std::acos((WallRight[i-1]*WallRight[i-1]+internalWallRight[i]*internalWallRight[i]-internalWallRight[i-1]*internalWallRight[i-1])
+                                /(2*WallRight[i-1]*internalWallRight[i]));
+
     angleRightCellL[i]=angleRightCell[i]-angleRightCellR[i];
   }
   //this must be consistant with above equations:
