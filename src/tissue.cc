@@ -2680,10 +2680,12 @@ divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerI
   // LHS
   std::vector<double> tmpPosition(dimension);
   std::vector<Vertex*> vertexLeft(nvLeft);
+  std::vector<Wall*> wallLeft(nvLeft);
   vertexLeft[0] = new Vertex(centerPosition,numVertex());
   vertexData.push_back(centerPosition);
   vertexLeft[1]= divCell->vertex(b);
-  
+  wallLeft[0] = new Wall(0.0,numWall());
+  wallData.push_back(wallData[0]);
   size_t v1 = divCell->vertex(b)->index();
   size_t v2 = divCell->vertex((b+1)%nv)->index();
   for (size_t d=0; d<dimension; ++d)
