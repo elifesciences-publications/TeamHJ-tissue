@@ -156,9 +156,9 @@ derivs(Tissue &T,
     double cc=std::cos(alpha);
     double ss=std::sin(alpha);
     
-    double Rot[3][3]={cc+u[1]*u[1]*(1-cc)      ,  u[1]*u[2]*(1-cc)-u[3]*ss ,  u[1]*u[3]*(1-cc)+u[2]*ss; 
-		      u[1]*u[2]*(1-cc)+u[3]*ss ,  cc+u[2]*u[2]*(1-cc)      ,  u[2]*u[3]*(1-cc)-u[1]*ss;       //<<<<<<<<<<<<<<<<<<<<<  check this
-		      u[1]*u[3]*(1-cc)-u[2]*ss ,  u[2]*u[3]*(1-cc)+u[1]*ss ,  cc+u[3]*u[3]*(1-cc)       };
+    double Rot[3][3]={ {cc+u[1]*u[1]*(1-cc)      ,  u[1]*u[2]*(1-cc)-u[3]*ss ,  u[1]*u[3]*(1-cc)+u[2]*ss}, 
+		       {u[1]*u[2]*(1-cc)+u[3]*ss ,  cc+u[2]*u[2]*(1-cc)      ,  u[2]*u[3]*(1-cc)-u[1]*ss},       
+		       {u[1]*u[3]*(1-cc)-u[2]*ss ,  u[2]*u[3]*(1-cc)+u[1]*ss ,  cc+u[3]*u[3]*(1-cc)     }  };
 
     double Q1[3]={Rot[0][0]*position[0][0]+Rot[0][1]*position[0][1]+Rot[0][2]*position[0][2],
 		  Rot[1][0]*position[0][0]+Rot[1][1]*position[0][1]+Rot[1][2]*position[0][2],
@@ -182,7 +182,7 @@ derivs(Tissue &T,
    
     double Acurr[3]={RotAnisocurr[0]+CMcurr[0],RotAnisocurr[1]+CMcurr[1],RotAnisocurr[2]+CMcurr[2]};                        //[temp(1) temp(2)]'+CMcurr'
 
-    double Bari[3][3]={Q1[0], Q2[0], Q3[0] ; Q1[1], Q2[1], Q3[1] ; 1, 1, 1 };
+    double Bari[3][3]={ {Q1[0], Q2[0], Q3[0]} , {Q1[1], Q2[1], Q3[1]} , {1, 1, 1} };
     double invBari[3][3]=  ;                                               //inverse of Bari
     double Abari[3]={invBari[0][0]*Acurr[0]+invBari[0][1]*Acurr[1]+invBari[0][2],
 		     invBari[1][0]*Acurr[0]+invBari[1][1]*Acurr[1]+invBari[1][2],
@@ -190,6 +190,8 @@ derivs(Tissue &T,
 
     // A=norm(cross(Q1-Q2,Q1-Q3))
     // AA=norm(cross(Q11-Q21,Q11-Q31))
+
+
     // providing P1 , P2 and P3 assuming : 1, L1, 2, L2, 3, L3, counterclockwise
     
     double P1[2]={0,0};
