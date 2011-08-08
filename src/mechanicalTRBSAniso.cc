@@ -208,12 +208,10 @@ derivs(Tissue &T,
     double D2[2]={temp*(P3[1]-P1[1]), -temp*(P3[0]-P1[0])};
     double D3[2]={temp*(P1[1]-P2[1]), -temp*(P1[0]-P2[0])};
     
-    double temp1=1/std::sqrt((Anisorest[0]*Anisorest[0]+Anisorest[1]*Anisorest[1])*(D1[0]*D1[0]+D1[1]*D1[1]));
-    double temp2=1/std::sqrt((Anisorest[0]*Anisorest[0]+Anisorest[1]*Anisorest[1])*(D2[0]*D2[0]+D2[1]*D2[1]));
-    double temp3=1/std::sqrt((Anisorest[0]*Anisorest[0]+Anisorest[1]*Anisorest[1])*(D3[0]*D3[0]+D3[1]*D3[1]));
-    double teta[3]={ std::acos(temp1*(Anisorest[0]*D1[0]+Anisorest[1]*D1[1])),
-		     std::acos(tepm2*(Anisorest[0]*D2[0]+Anisorest[1]*D2[1])),                      
-		     std::acos(temp3*(Anisorest[0]*D3[0]+Anisorest[1]*D3[1])) };            //acos((dot(Anisorest,Dk))/(norm(Anisorest)*norm(Dk))),
+    
+    double teta[3]=
+    { std::acos((Anisorest[0]*D1[0]+Anisorest[1]*D1[1])/std::sqrt((Anisorest[0]*Anisorest[0]+Anisorest[1]*Anisorest[1])*(D1[0]*D1[0]+D1[1]*D1[1]))),
+      std::acos((Anisorest[0]*D2[0]+Anisorest[1]*D2[1])/std::sqrt((Anisorest[0]*Anisorest[0]+Anisorest[1]*Anisorest[1])*(D2[0]*D2[0]+D2[1]*D2[1]))),             std::acos((Anisorest[0]*D3[0]+Anisorest[1]*D3[1])/std::sqrt((Anisorest[0]*Anisorest[0]+Anisorest[1]*Anisorest[1])*(D3[0]*D3[0]+D3[1]*D3[1]))) };                   //acos((dot(Anisorest,Dk))/(norm(Anisorest)*norm(Dk))),
     
     
     
