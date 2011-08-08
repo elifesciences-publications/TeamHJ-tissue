@@ -100,20 +100,6 @@ derivs(Tissue &T,
     double lambdaT=youngT*poissonT/(1-poissonT*poissonT);                                    // Longitudinal and Transverse Poisson coefficients 
     double mioT=youngT/(1+poissonT);
     
-    //---- Anisotropic Correction-------------------------------
-    double const PI=3.14159265358979;
-    double deltaLam=lambdaL-lambdaT;
-    double deltaMio=mioL-mioT;
-    double teta[3];
-    
-
-
-
-    teta[0]=2*PI/3;          // angle between anisotropy vector and D1(dirrection of D is perpendicular to triangle edge
-    teta[1]=2*PI/3;          // these angles are the only data we need for considering anisotropy direction.These amounts are
-    teta[2]=0;               // just for test.
-    //------------------------------------------------------------------------
-
     //Resting area of the element (using Heron's formula)                                      
     double restingArea=std::sqrt( ( restingLength[0]+restingLength[1]+restingLength[2])*
                                   (-restingLength[0]+restingLength[1]+restingLength[2])*
@@ -127,6 +113,8 @@ derivs(Tissue &T,
     Angle[1]=std::asin(2*restingArea/(restingLength[0]*restingLength[1]));        
     Angle[2]=std::asin(2*restingArea/(restingLength[1]*restingLength[2]));
     
+
+
     //Tensile Stiffness
     double tensileStiffness[3];
     double const temp = 1.0/(restingArea*16);                                      
@@ -153,10 +141,87 @@ derivs(Tissue &T,
                            ( length[0]-length[1]+length[2])*
                            ( length[0]+length[1]-length[2])  )*0.25;
     
-//---- Anisotropic Correction-------------------------------
+    //---- Anisotropic Correction-------------------------------
+    double const PI=3.14159265358979;
+    double deltaLam=lambdaL-lambdaT;
+    double deltaMio=mioL-mioT;
+    double teta[3];
+    
+    //double ez[3]={0,0,1};
+    double La[3]={position[1][0]-position[0][0],position[1][1]-position[0][1],position[1][2]-position[0][2]};  // Q2-Q1
+    double Lb[3]={position[2][0]-position[0][0],position[2][1]-position[0][1],position[2][2]-position[0][2]};  // Q3-Q1
+    double normal[3]={La[1]*Lb[2]-La[2]*Lb[1] , La[3]*Lb[0]-La[0]*Lb[3] , La[0]*Lb[1]-La[1]*Lb[0]};            // cross(Q2-Q1,Q3-Q1)
+    double alpha=-std::acos(normal[2]/std::sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2])); //-acos((dot(k,normal))/norm(normal))
+    double u[3]={-normal[1]/std::sqrt(normal[0]*normal[0]+normal[1]*normal[1]),normal[0]/std::sqrt(normal[0]*normal[0]+normal[1]*normal[1]),0};                                                                                                                           // cross(k,normal)/norm(cross(k,normal))
+    double cc=std::cos(alpha);
+    double ss=std::sin(alpha);
+    
+    double Rot[3][3]={cc+u[1]*u[1]*(1-cc)      ,  u[1]*u[2]*(1-cc)-u[3]*ss ,  u[1]*u[3]*(1-cc)+u[2]*ss; 
+		      u[1]*u[2]*(1-cc)+u[3]*ss ,  cc+u[2]*u[2]*(1-cc)      ,  u[2]*u[3]*(1-cc)-u[1]*ss;       //<<<<<<<<<<<<<<<<<<<<<  check this
+		      u[1]*u[3]*(1-cc)-u[2]*ss ,  u[2]*u[3]*(1-cc)+u[1]*ss ,  cc+u[3]*u[3]*(1-cc)       };
+
+    double Q1[3]={Rot[0][0]*position[0][0]+Rot[0][1]*position[0][1]+Rot[0][2]*position[0][2],
+		  Rot[1][0]*position[0][0]+Rot[1][1]*position[0][1]+Rot[1][2]*position[0][2],
+		  Rot[2][0]*position[0][0]+Rot[2][1]*position[0][1]+Rot[2][2]*position[0][2]};                                    //Rot*Q1
+
+    double Q2[3]={Rot[0][0]*position[1][0]+Rot[0][1]*position[1][1]+Rot[0][2]*position[1][2],
+		  Rot[1][0]*position[1][0]+Rot[1][1]*position[1][1]+Rot[1][2]*position[1][2],
+		  Rot[2][0]*position[1][0]+Rot[2][1]*position[1][1]+Rot[2][2]*position[1][2]};                                    //Rot*Q2
+    
+    double Q3[3]={Rot[0][0]*position[2][0]+Rot[0][1]*position[2][1]+Rot[0][2]*position[2][2],
+		  Rot[1][0]*position[2][0]+Rot[1][1]*position[2][1]+Rot[1][2]*position[2][2],
+		  Rot[2][0]*position[2][0]+Rot[2][1]*position[2][1]+Rot[2][2]*position[2][2]};                                    //Rot*Q3
+
+    double CMcurr[3]={(Q1[0]+Q2[0]+Q3[0])/3,(Q1[1]+Q2[1]+Q3[1])/3,(Q1[2]+Q2[2]+Q3[2])/3};
+
+
+    // Anisocurr: Anisotropy dirrection vector in the current shape which should be provided in advance
+    double RotAnisocurr[3]={ Rot[0][0]*Anisocurr[0]+Rot[0][1]*Anisocurr[1]+Rot[0][2]*Anisocurr[2],
+			     Rot[1][0]*Anisocurr[0]+Rot[1][1]*Anisocurr[1]+Rot[1][2]*Anisocurr[2],
+			     Rot[2][0]*Anisocurr[0]+Rot[2][1]*Anisocurr[1]+Rot[2][2]*Anisocurr[2] };                        //Rot*Anisocurr;
+   
+    double Acurr[3]={RotAnisocurr[0]+CMcurr[0],RotAnisocurr[1]+CMcurr[1],RotAnisocurr[2]+CMcurr[2]};                        //[temp(1) temp(2)]'+CMcurr'
+
+    double Bari[3][3]={Q1[0], Q2[0], Q3[0] ; Q1[1], Q2[1], Q3[1] ; 1, 1, 1 };
+    double invBari[3][3]=  ;                                               //inverse of Bari
+    double Abari[3]={invBari[0][0]*Acurr[0]+invBari[0][1]*Acurr[1]+invBari[0][2],
+		     invBari[1][0]*Acurr[0]+invBari[1][1]*Acurr[1]+invBari[1][2],
+		     invBari[2][0]*Acurr[0]+invBari[2][1]*Acurr[1]+invBari[2][2]  };                     // invBari*[Acurr(1) Acurr(2) 1]'
+
+    // A=norm(cross(Q1-Q2,Q1-Q3))
+    // AA=norm(cross(Q11-Q21,Q11-Q31))
+    // providing P1 , P2 and P3 assuming : 1, L1, 2, L2, 3, L3, counterclockwise
+    
+    double P1[2]={0,0};
+    double P2[2]={0,restingLength[0]};
+    double P3[2]={restingLength[2]*std::sin(Angle[0]),restingLength[2]*std::cos(Angle[0])};
+    
+    double Arest[2]={P1[0]*Abari[0]+P2[0]*Abari[1]+P3[0]*Abari[2] ,  P1[1]*Abari[0]+ P2[1]*Abari[1]+ P3[1]*Abari[2]};
+                                                                                            //[P1(0) P2(0) P3(0) ; P1(1) P2(1) P3(1) ; 1 1 1 ]*Abari;
+    double CMrest[2]={(P1[1]+P2[1]+P3[1])/3,(P1[2]+P2[2]+P3[2])/3};
+    double Anisorest[2]={Arest[0]-CMrest[0],Arest[1]-CMrest[1]};
+
+    double temp=1/restingArea;
+    double D1[2]={temp*(P2[1]-P3[1]), -temp*(P2[0]-P3[0])};
+    double D2[2]={temp*(P3[1]-P1[1]), -temp*(P3[0]-P1[0])};
+    double D3[2]={temp*(P1[1]-P2[1]), -temp*(P1[0]-P2[0])};
+    
+    double temp1=1/((Anisorest[0]*Anisorest[0]+Anisorest[1]*Anisorest[1])*(D1[0]*D1[0]+D1[1]*D1[1]));
+    double temp2=1/((Anisorest[0]*Anisorest[0]+Anisorest[1]*Anisorest[1])*(D2[0]*D2[0]+D2[1]*D2[1]));
+    double temp3=1/((Anisorest[0]*Anisorest[0]+Anisorest[1]*Anisorest[1])*(D3[0]*D3[0]+D3[1]*D3[1]));
+    double teta[3]={ std::acos(temp1*(Anisorest[0]*D1[0]+Anisorest[1]*D1[1])),
+		     std::acos(tepm2*(Anisorest[0]*D2[0]+Anisorest[1]*D2[1])),                      
+		     std::acos(temp3*(Anisorest[0]*D3[0]+Anisorest[1]*D3[1])) };            //acos((dot(Anisorest,Dk))/(norm(Anisorest)*norm(Dk))),
+    
+    
+    
+    //------------------------------------------------------------------------
+    
+    
+    //---- Anisotropic Correction-------------------------------
     
     double  Rcirc2=(0.25*length[0]*length[1]*length[2]/Area)*(0.25*length[0]*length[1]*length[2]/Area);  // square of radius of circumstancing circle
-   
+    
     
     double derIprim1[3][3];         // Invariants and their derivatives
     double derIprim4[3][3];
@@ -165,10 +230,10 @@ derivs(Tissue &T,
     double DiDm;                    // inner products between shape vectors
     double DnDr;
     double DsDp;
-
+    
     double QiQj;                    // inner products between position vectors of vertices
     double QrQs;
-
+    
     double aDi;                     // inner products between shape vectors and anisotropy vector(direction)
     double aDj;
     double aDm;
@@ -176,7 +241,7 @@ derivs(Tissue &T,
     double aDr;
     double aDs;
     double aDn;
-
+    
     int k;
     for ( int m=0 ; m<3 ; ++m )
       {
