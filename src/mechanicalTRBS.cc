@@ -804,13 +804,19 @@ derivs(Tissue &T,
 			     Rot[2][1]*cellData[cellIndex][variableIndex(0,2)+1]+
 			     Rot[2][2]*cellData[cellIndex][variableIndex(0,2)+2] };//Rot*Anisocurr;
    
-    double Acurr[3]={RotAnisocurr[0]+CMcurr[0],RotAnisocurr[1]+CMcurr[1],RotAnisocurr[2]+CMcurr[2]};                        //[temp(1) temp(2)]'+CMcurr'
+    double Acurr[3]={RotAnisocurr[0]+CMcurr[0],RotAnisocurr[1]+CMcurr[1],RotAnisocurr[2]+CMcurr[2]};//[temp(1) temp(2)]'+CMcurr'
 
-    double Bari[3][3]={ {Q1[0], Q2[0], Q3[0]} , {Q1[1], Q2[1], Q3[1]} , {1, 1, 1} };
-    double invBari[3][3];//= Bari;//CHANGE!!! inverse of Bari
+    //double Bari[3][3]={ {Q1[0], Q2[0], Q3[0]} , {Q1[1], Q2[1], Q3[1]} , {1, 1, 1} };
+   
+ 
+    temp=1/(Q1[0]*Q2[1]-Q1[1]*Q2[0]+Q1[1]*Q3[0]-Q1[0]*Q3[1]+Q2[0]*Q3[1]-Q2[1]*Q3[0]); //1/(determinant of Bari)
+    double invBari[3][3]={ {temp*(Q2[1]-Q3[1]), temp*(Q3[0]-Q2[0]), temp*(Q2[0]*Q3[1]-Q2[1]*Q3[0])}, // inverse of Bari
+			   {temp*(Q3[1]-Q1[1]), temp*(Q1[0]-Q3[0]), temp*(Q1[1]*Q3[0]-Q1[0]*Q3[1])},
+			   {temp*(Q1[1]-Q2[1]), temp*(Q2[0]-Q1[0]), temp*(Q1[0]*Q2[1]-Q1[1]*Q2[0])} };
+    
     double Abari[3]={invBari[0][0]*Acurr[0]+invBari[0][1]*Acurr[1]+invBari[0][2],
 		     invBari[1][0]*Acurr[0]+invBari[1][1]*Acurr[1]+invBari[1][2],
-		     invBari[2][0]*Acurr[0]+invBari[2][1]*Acurr[1]+invBari[2][2]  };                     // invBari*[Acurr(1) Acurr(2) 1]'
+		     invBari[2][0]*Acurr[0]+invBari[2][1]*Acurr[1]+invBari[2][2]  };// invBari*[Acurr(1) Acurr(2) 1]'
     
     // A=norm(cross(Q1-Q2,Q1-Q3))
     // AA=norm(cross(Q11-Q21,Q11-Q31))
