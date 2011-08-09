@@ -34,8 +34,6 @@
 /// L_ij-index
 /// @endverbatim
 ///
-/// Alternatively if no force save index is supplied the first line
-/// can be replaced by 'VertexFromWallTRBS 2 1 1'.
 ///
 class VertexFromTRBS : public BaseReaction {
   
@@ -205,5 +203,62 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 		std::vector< std::vector<double> > &wallDerivs,
 		std::vector< std::vector<double> > &vertexDerivs );  
 };
+
+///
+/// @brief Triangular spring model with anisotropy for plates (2D walls) assuming
+/// triangular walls/cells.
+///
+/// The update (in all dimensions) are given by
+///
+/// @f[ \frac{dx_i}{dt} = ... @f]
+///
+/// ...
+///
+/// The theory of the mechanical model comes from H. Delingette,
+/// Triangular springs for modelling non-linear membranes, IEEE Trans
+/// Vis Comput Graph 14, 329-41 (2008), wich is developed into an
+/// anisotropic model.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// VertexFromTRBSMT 4 1 2
+/// Y_modulus_Longitudinal P_coeff_Longitudinal Y_modulus_Transverse P_coeff_Transverse 
+/// L_ij-index MT_cellIndex
+/// @endverbatim
+///
+///
+class VertexFromTRBSMT : public BaseReaction {
+  
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  VertexFromTRBSMT(std::vector<double> &paraValue, 
+		   std::vector< std::vector<size_t> > 
+		   &indValue );  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
+};
+
 
 #endif

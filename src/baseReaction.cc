@@ -151,6 +151,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromTRBScenterTriangulation(paraValue, indValue);
   else if (idValue == "VertexFromTRBScenterTriangulationConcentrationHill")
     return new VertexFromTRBScenterTriangulationConcentrationHill(paraValue, indValue);
+  else if (idValue == "VertexFromTRBSMT")
+    return new VertexFromTRBSMT(paraValue, indValue);
     
   //network.h,network.cc
   else if(idValue=="AuxinModelSimple1")
