@@ -998,176 +998,203 @@ projectVerticesOnPCAPlane(std::vector< std::vector<double> > &vertexData)
 
 std::vector<double> Cell::getNormalToPCAPlane(void)
 {
-	if (E_.size()!=2 || E_[0].size() != 3) {
-		std::cerr << "Cell::getNormalToPCAPlane(): "
-							<< "PCAPlane not calculated or dimension not equal to three." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	size_t dimension = E_[0].size();
-	
-	std::vector<double> N(dimension);
-	
-	N[0] = E_[0][1] * E_[1][2] - E_[0][2] * E_[1][1];
-	N[1] = E_[0][2] * E_[1][0] - E_[0][0] * E_[1][2];
-	N[2] = E_[0][0] * E_[1][1] - E_[0][1] * E_[1][0];
-	
-	return N;
+  if (E_.size()!=2 || E_[0].size() != 3) {
+    std::cerr << "Cell::getNormalToPCAPlane(): "
+	      << "PCAPlane not calculated or dimension not equal to three." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  size_t dimension = E_[0].size();
+  
+  std::vector<double> N(dimension);
+  
+  N[0] = E_[0][1] * E_[1][2] - E_[0][2] * E_[1][1];
+  N[1] = E_[0][2] * E_[1][0] - E_[0][0] * E_[1][2];
+  N[2] = E_[0][0] * E_[1][1] - E_[0][1] * E_[1][0];
+  
+  return N;
+}
+
+std::vector<double> Cell::getNormalTriangular(std::vector< std::vector<double> > &vertexData)
+{
+  size_t dimension = vertexData[0].size();
+  if (numVertex()!=3 || dimension!=3) {
+    std::cerr << "Cell::getNormalTriangular(): "
+	      << "Only works for triangular cells in three dimensions." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  std::vector<double> N(dimension);
+  std::vector< std::vector<double> > E(2);
+  E[0].resize(dimension);
+  E[1].resize(dimension);
+  size_t v_0 = vertex(0)->index();
+  size_t v_1 = vertex(1)->index();
+  size_t v_2 = vertex(2)->index();
+  for (size_t d=0; d<dimension; ++d) {
+    E[0][d] = vertexData[v_1][d]-vertexData[v_0][d]; 
+    E[1][d] = vertexData[v_2][d]-vertexData[v_1][d]; 
+  }  
+  N[0] = E[0][1] * E[1][2] - E[0][2] * E[1][1];
+  N[1] = E[0][2] * E[1][0] - E[0][0] * E[1][2];
+  N[2] = E[0][0] * E[1][1] - E[0][1] * E[1][0];
+  
+  return N;
 }
 
 int Cell::
 vectorSignFromSort(std::vector<double> &n,
-									 std::vector< std::vector<double> > &vertexData) 
+		   std::vector< std::vector<double> > &vertexData) 
 {
-	size_t numV=numVertex();
-	size_t dimension=vertexData[0].size();
-	assert(numV>2);
-	int sign=1;
-	std::vector<int> scalarProdSign(numV);
-	std::vector<double> scalarProdVal(numV);
-	double scalarProdSum=0.0;
-	for (size_t k=0; k<numV; ++k) {
-		size_t k2=(k+1)%numV;
-		size_t k3=(k+2)%numV;
-		//Make sure ((v2-v1)x(v3-v2))n has same sign for all cells
-		std::vector<double> nw1(dimension),nw2(dimension);
-		for (size_t d=0; d<dimension; ++d) {
-			nw1[d] = vertexData[vertex(k2)->index()][d]-vertexData[vertex(k)->index()][d];
-			nw2[d] = vertexData[vertex(k3)->index()][d]-vertexData[vertex(k2)->index()][d];
-		}
-		//cross product
-		double scalarProd=0.0;
-		for (size_t d1=0; d1<dimension; ++d1) {
-			size_t d2=(d1+1)%dimension;
-			size_t d3=(d1+2)%dimension;
-			scalarProd += (nw1[d1]*nw2[d2]-nw1[d2]*nw2[d1])*n[d3];
-		}
-		scalarProdVal[k] = scalarProd;
-		scalarProdSum += scalarProd;
-		if (scalarProd>0.0)
-			scalarProdSign[k]=1;
-		else
-			scalarProdSign[k]=-1;
-	}
-	int scalarProdSignSum=0;
-	for (size_t k=0; k<scalarProdSign.size(); ++k)
-		scalarProdSignSum += scalarProdSign[k];
-	
-	if (scalarProdSignSum<0) {
-		sign=-1;
-	}
-	else if (scalarProdSignSum==0) {
-		//std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
-		//				<< std::endl;
-		if (std::fabs(scalarProdSum)>0.01) {
-			if (scalarProdSum<0.0) {
-				sign=-1;
-			}
-		}
-		else {
-			std::cerr << "Cell::vectorSignFromSort() Cell " 
-								<< index() << " has no majority sign in right hand rule expression." 
-								<< std::endl;
-			exit(-1);
-		}
-	}
-	return sign;
+  size_t numV=numVertex();
+  size_t dimension=vertexData[0].size();
+  assert(numV>2);
+  int sign=1;
+  std::vector<int> scalarProdSign(numV);
+  std::vector<double> scalarProdVal(numV);
+  double scalarProdSum=0.0;
+  for (size_t k=0; k<numV; ++k) {
+    size_t k2=(k+1)%numV;
+    size_t k3=(k+2)%numV;
+    //Make sure ((v2-v1)x(v3-v2))n has same sign for all cells
+    std::vector<double> nw1(dimension),nw2(dimension);
+    for (size_t d=0; d<dimension; ++d) {
+      nw1[d] = vertexData[vertex(k2)->index()][d]-vertexData[vertex(k)->index()][d];
+      nw2[d] = vertexData[vertex(k3)->index()][d]-vertexData[vertex(k2)->index()][d];
+    }
+    //cross product
+    double scalarProd=0.0;
+    for (size_t d1=0; d1<dimension; ++d1) {
+      size_t d2=(d1+1)%dimension;
+      size_t d3=(d1+2)%dimension;
+      scalarProd += (nw1[d1]*nw2[d2]-nw1[d2]*nw2[d1])*n[d3];
+    }
+    scalarProdVal[k] = scalarProd;
+    scalarProdSum += scalarProd;
+    if (scalarProd>0.0)
+      scalarProdSign[k]=1;
+    else
+      scalarProdSign[k]=-1;
+  }
+  int scalarProdSignSum=0;
+  for (size_t k=0; k<scalarProdSign.size(); ++k)
+    scalarProdSignSum += scalarProdSign[k];
+  
+  if (scalarProdSignSum<0) {
+    sign=-1;
+  }
+  else if (scalarProdSignSum==0) {
+    //std::cerr << "Cell " << n << " has no majority sign in right hand rule expression." 
+    //				<< std::endl;
+    if (std::fabs(scalarProdSum)>0.01) {
+      if (scalarProdSum<0.0) {
+	sign=-1;
+      }
+    }
+    else {
+      std::cerr << "Cell::vectorSignFromSort() Cell " 
+		<< index() << " has no majority sign in right hand rule expression." 
+		<< std::endl;
+      exit(-1);
+    }
+  }
+  return sign;
 }
 
 
 bool Cell::isConcave(std::vector< std::vector<double> > &vertexData, const double tolerance)
 {
-	signed int s = 0;
-
-	for (size_t k = 0; k < numVertex(); ++k)
+  signed int s = 0;
+  
+  for (size_t k = 0; k < numVertex(); ++k)
+    {
+      Vertex *vertex1 = vertex((k + 0) % numVertex());
+      Vertex *vertex2 = vertex((k + 1) % numVertex());
+      Vertex *vertex3 = vertex((k + 2) % numVertex());
+      
+      const size_t vertexIndex1 = vertex1->index();
+      const size_t vertexIndex2 = vertex2->index();
+      const size_t vertexIndex3 = vertex3->index();
+      
+      const double ux = vertexData[vertexIndex2][0] - vertexData[vertexIndex1][0];
+      const double uy = vertexData[vertexIndex2][1] - vertexData[vertexIndex1][1];
+      
+      const double vx = vertexData[vertexIndex3][0] - vertexData[vertexIndex2][0];
+      const double vy = vertexData[vertexIndex3][1] - vertexData[vertexIndex2][1];
+      
+      const double u = std::sqrt(ux * ux + uy * uy);
+      const double v = std::sqrt(vx * vx + vy * vy);
+      
+      const double uv = ux *vx + uy * vy;
+      
+      const double costheta = uv / (u * v);
+      
+      if (std::abs(costheta - 1.0) < tolerance)
 	{
-		Vertex *vertex1 = vertex((k + 0) % numVertex());
-		Vertex *vertex2 = vertex((k + 1) % numVertex());
-		Vertex *vertex3 = vertex((k + 2) % numVertex());
-
-		const size_t vertexIndex1 = vertex1->index();
-		const size_t vertexIndex2 = vertex2->index();
-		const size_t vertexIndex3 = vertex3->index();
-
-		const double ux = vertexData[vertexIndex2][0] - vertexData[vertexIndex1][0];
-		const double uy = vertexData[vertexIndex2][1] - vertexData[vertexIndex1][1];
-
-		const double vx = vertexData[vertexIndex3][0] - vertexData[vertexIndex2][0];
-		const double vy = vertexData[vertexIndex3][1] - vertexData[vertexIndex2][1];
-
-		const double u = std::sqrt(ux * ux + uy * uy);
-		const double v = std::sqrt(vx * vx + vy * vy);
-
-		const double uv = ux *vx + uy * vy;
-
-		const double costheta = uv / (u * v);
-
-		if (std::abs(costheta - 1.0) < tolerance)
-		{
-			continue;
-		}
-
-		const double tmp = myMath::sign(ux * vy - uy * vx);
-
-		if (s == 0)
-		{
-			s = tmp;
-		}
-		else if (s != tmp)
-		{
-			return true;
-		}
+	  continue;
 	}
-
-	return false;
+      
+      const double tmp = myMath::sign(ux * vy - uy * vx);
+      
+      if (s == 0)
+	{
+	  s = tmp;
+	}
+      else if (s != tmp)
+	{
+	  return true;
+	}
+    }
+  
+  return false;
 }
 
 bool Cell::isFolded(std::vector< std::vector<double> > &vertexData)
 {
-	for (size_t k = 0; k < numWall(); ++k)
+  for (size_t k = 0; k < numWall(); ++k)
+    {
+      const Wall *wall1 = wall(k);
+      
+      const size_t a_index = wall1->vertex1()->index();
+      const size_t b_index = wall1->vertex2()->index();
+      
+      const double vx = vertexData[b_index][0] - vertexData[a_index][0];
+      const double vy = vertexData[b_index][1] - vertexData[a_index][1];
+      
+      for (size_t l = k + 2; l < numWall(); ++l)
 	{
-		const Wall *wall1 = wall(k);
-
-		const size_t a_index = wall1->vertex1()->index();
-		const size_t b_index = wall1->vertex2()->index();
-
-		const double vx = vertexData[b_index][0] - vertexData[a_index][0];
-		const double vy = vertexData[b_index][1] - vertexData[a_index][1];
-
-		for (size_t l = k + 2; l < numWall(); ++l)
-		{
-			if (k == 0 && l == numWall() - 1)
-			{
-				continue;
-			}
-
-			const Wall *wall2 = wall(l);
-
-			const size_t c_index = wall2->vertex1()->index();
-			const size_t d_index = wall2->vertex2()->index();
-
-			const double ux = vertexData[d_index][0] - vertexData[c_index][0];
-			const double uy = vertexData[d_index][1] - vertexData[c_index][1];
-
-			const double wx = vertexData[c_index][0] - vertexData[a_index][0];
-			const double wy = vertexData[c_index][1] - vertexData[a_index][1];
-
-			const double detA = vx * uy - ux * vy;
-
-			if (detA == 0.0)
-			{
-				continue;
-			}
-
-			const double p = (uy * wx - ux * wy) / detA;
-			const double q = (vy * wx - vx * wy) / detA;
-
-			if (p > 0.0 && p < 1.0 && q > 0.0 && q < 1.0)
-			{
-				return true;
-			}
-		}
-
+	  if (k == 0 && l == numWall() - 1)
+	    {
+	      continue;
+	    }
+	  
+	  const Wall *wall2 = wall(l);
+	  
+	  const size_t c_index = wall2->vertex1()->index();
+	  const size_t d_index = wall2->vertex2()->index();
+	  
+	  const double ux = vertexData[d_index][0] - vertexData[c_index][0];
+	  const double uy = vertexData[d_index][1] - vertexData[c_index][1];
+	  
+	  const double wx = vertexData[c_index][0] - vertexData[a_index][0];
+	  const double wy = vertexData[c_index][1] - vertexData[a_index][1];
+	  
+	  const double detA = vx * uy - ux * vy;
+	  
+	  if (detA == 0.0)
+	    {
+	      continue;
+	    }
+	  
+	  const double p = (uy * wx - ux * wy) / detA;
+	  const double q = (vy * wx - vx * wy) / detA;
+	  
+	  if (p > 0.0 && p < 1.0 && q > 0.0 && q < 1.0)
+	    {
+	      return true;
+	    }
 	}
-	
-	return false;
+      
+    }
+  
+  return false;
 }

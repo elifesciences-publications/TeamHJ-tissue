@@ -2624,6 +2624,93 @@ derivs(Tissue &T,
   }
 }
 
+VertexFromCellPlaneTriangular::
+VertexFromCellPlaneTriangular(std::vector<double> &paraValue,
+			      std::vector< std::vector<size_t> > &indValue)
+{
+  if (paraValue.size() != 2) {
+    std::cerr << "VertexFromCellPlaneTriangular::VertexFromCellPlaneTriangular() " 
+	      << "Uses two parameters: k_force and areaFlag" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (paraValue[1]!=0.0 && paraValue[1]!=1.0) {
+    std::cerr << "VertexFromCellPlaneTriangular::VertexFromCellPlaneTriangular() " 
+	      << "areaFlag must be zero (no area included) or one (area included)." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (indValue.size() != 0) {
+    std::cerr << "VertexFromCellPlaneTriangular::VertexFromCellPlaneTriangular() " 
+	      << std::endl
+	      << "No variable index used." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("VertexFromCellPlaneTriangular");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "k_force";
+  tmp[1] = "areaFlag";
+  
+  setParameterId(tmp);
+}
+
+void VertexFromCellPlaneTriangular::
+derivs(Tissue &T,
+       std::vector< std::vector<double> > &cellData,
+       std::vector< std::vector<double> > &wallData,
+       std::vector< std::vector<double> > &vertexData,
+       std::vector< std::vector<double> > &cellDerivs,
+       std::vector< std::vector<double> > &wallDerivs,
+       std::vector< std::vector<double> > &vertexDerivs)
+{
+  size_t dimension = vertexData[0].size();
+  if (dimension!=3) {
+    std::cerr << "VertexFromCellPlaneTriangular::VertexFromCellPlaneTriangular() " 
+	      << "Only implemented for three dimensions." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  for (size_t n = 0; n < T.numCell(); ++n) {
+    Cell cell = T.cell(n);
+    if (cell.numVertex()!=3) {
+      std::cerr << "VertexFromCellPlaneTriangular::VertexFromCellPlaneTriangular() " 
+		<< "Only implemented for triangular cells." << std::endl;
+      exit(EXIT_FAILURE);
+    }
+    std::vector<double> normal = cell.getNormalTriangular(vertexData);
+    double norm=0.0;
+    for (size_t d=0; d<dimension; ++d)
+      norm += normal[d]*normal[d];
+    if (norm != 1.0) {
+      norm = std::sqrt(norm);
+      assert(norm>0.0);
+      double normFac = 1.0/norm; 
+      for (size_t d=0; d<dimension; ++d)
+	normal[d] *= normFac;
+    }
+    
+    // Get the cell size
+    double A=1.0;
+    if (parameter(1)==1.0)
+      A = cell.calculateVolume(vertexData)/cell.numVertex();
+    
+    double coeff = parameter(0) * A;
+    //update the vertex derivatives
+    for (size_t k=0; k<cell.numVertex(); ++k) {
+      double vCoeff=coeff;
+      //if (cell.vertex(k)->isBoundary(T.background()))
+      //vCoeff *= 1.5;
+      for (size_t d=0; d<dimension; ++d) {
+	vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
+      }
+    }	
+    // For saving normals in direction used for test plotting
+    for (size_t d=0; d<dimension; ++d)
+      cellData[cell.index()][d] = normal[d];
+  }
+}
+
 DebugReaction::DebugReaction(std::vector<double> &paraValue,
 			     std::vector< std::vector<size_t> > &indValue)
 {

@@ -468,6 +468,44 @@ class VertexFromCellPlaneSphereCylinderConcentrationHill : public BaseReaction
 	      std::vector< std::vector<double> > &vertexDerivs);
 };
 
+///
+/// @brief Updates vertices from a 'pressure' term defined to act in the cell normal
+/// direction for triangular cells only.
+///
+/// This function calculates the area of a cell and then distribute a force 'outwards'
+/// among the cell vertices. It relies on that the cells are triangular.
+/// A cell contributes to a vertex update with
+///
+/// @f[ \frac{dx_{i}}{dt} = p_{0} A n_{i} / N_{vertex} @f]
+///
+/// where @f$p_{0}@f$ is a 'pressure' parameter, A is the cell area @f$n_{i}@f$ is the 
+/// cell normal component and @f$N_{vertex}@f$ is the number of vertices for the cell.
+/// An additional parameter @f$p_{2}@f$ can be used to not include the area factor if
+/// set to zero (normally it should be set to 1).
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// VertexFromCellPlaneTriangular 2 0
+/// P A_flag
+/// @endverbatim
+///
+///
+class VertexFromCellPlaneTriangular : public BaseReaction
+{
+ public:
+  VertexFromCellPlaneTriangular(std::vector<double> &paraValue,
+				std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs);
+};
+
 // Do not use this reaction. Restricted area (unless you are a developer).
 class DebugReaction : public BaseReaction
 {

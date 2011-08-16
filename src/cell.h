@@ -347,6 +347,14 @@ class Cell {
   std::vector<double> getNormalToPCAPlane(void);
   int vectorSignFromSort(std::vector<double> &n,
 			 std::vector< std::vector<double> > &vertexData);
+  ///
+  /// @brief Returns the normal to the cell plane for triangular cells
+  ///
+  /// Returns the normal vector of the cell plane 
+  /// calculated from the cell vertex poitions (in 3D). It relies on that
+  /// the vertices are sorted (cyclic) for the cell.
+  ///
+  std::vector<double> getNormalTriangular(std::vector< std::vector<double> > &vertexData);
 };
 
 inline size_t Cell::index() const 

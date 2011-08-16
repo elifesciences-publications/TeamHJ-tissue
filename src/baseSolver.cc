@@ -203,7 +203,7 @@ void BaseSolver::print(std::ostream &os)
     //Print the cells, first connected vertecis and then variables
     size_t Nc = cellData_.size();
     size_t numPrintCellVar = T_->cell(0).numVariable();
-    size_t numPrintVar=numPrintCellVar+3; // was cellData_[0].size()+3;   
+    size_t numPrintVar=numPrintCellVar+1; // was cellData_[0].size()+3;   
     os << Nc << " " << numPrintVar << std::endl;
     for( size_t i=0 ; i<Nc ; ++i ) {
       size_t Ncv = T_->cell(i).numVertex(); 
