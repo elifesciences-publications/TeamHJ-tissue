@@ -674,8 +674,6 @@ derivs(Tissue &T,
   size_t numWalls = 3; // defined only for triangles at the moment
   
   for( size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex ) {
-    std::cerr << "VertexFromTRBSMT::derivs() Test1, cell " << cellIndex 
-	      << " out of " << numCells << std::endl;
     if( T.cell(cellIndex).numWall() != numWalls ) {
       std::cerr << "VertexFromTRBSMT::derivs() only defined for triangular cells."
 		<< " Not for cells with " << T.cell(cellIndex).numWall() << " walls!"
@@ -720,8 +718,6 @@ derivs(Tissue &T,
                                   (-restingLength[0]+restingLength[1]+restingLength[2])*
                                   ( restingLength[0]-restingLength[1]+restingLength[2])*
                                   ( restingLength[0]+restingLength[1]-restingLength[2])  )*0.25;
-  std::cerr << "VertexFromTRBSMT::derivs() Test2" << std::endl;
-  std::cerr << "Resting Area: " << restingArea << std::endl;
     
     //Angles of the element ( assuming the order: 0,L0,1,L1,2,L2 )
     std::vector<double> Angle(3);
@@ -729,7 +725,6 @@ derivs(Tissue &T,
     // can be ommited by cotan(A)=.25*sqrt(4*b*b*c*c/K-1)
     Angle[1]=std::asin(2*restingArea/(restingLength[0]*restingLength[1]));        
     Angle[2]=std::asin(2*restingArea/(restingLength[1]*restingLength[2]));
-    std::cerr << "Angles: " << Angle[0] << " " << Angle[1] << " " << Angle[2] << std::endl;
     
     //Tensile Stiffness
     double tensileStiffness[3];
@@ -738,7 +733,6 @@ derivs(Tissue &T,
     cotan[0] = 1.0/std::tan(Angle[0]);
     cotan[1] = 1.0/std::tan(Angle[1]);
     cotan[2] = 1.0/std::tan(Angle[2]);    
-    std::cerr << "cotans: " << cotan[0] << " " << cotan[1] << " " << cotan[2] << std::endl;
     //the force is calculated based on Transverse coefficients
     //Longitudinal coefficients are considered in deltaF
     tensileStiffness[0]=(2*cotan[2]*cotan[2]*(lambdaT+mioT)+mioT)*temp;
@@ -762,7 +756,6 @@ derivs(Tissue &T,
                            (-length[0]+length[1]+length[2])*
                            ( length[0]-length[1]+length[2])*
                            ( length[0]+length[1]-length[2])  )*0.25;
-      std::cerr << "VertexFromTRBSMT::derivs() Test3" << std::endl;
 
     //---- Anisotropic Correction-------------------------------
     double deltaLam=lambdaL-lambdaT;
@@ -775,57 +768,87 @@ derivs(Tissue &T,
     La[1] = position[1][1]-position[0][1];
     La[2] = position[1][2]-position[0][2];  
 
-    double Lb[3]={position[2][0]-position[0][0],position[2][1]-position[0][1],position[2][2]-position[0][2]};  // Q3-Q1
-    double normal[3]={La[1]*Lb[2]-La[2]*Lb[1] , 
-		      La[2]*Lb[0]-La[0]*Lb[2] , 
-		      La[0]*Lb[1]-La[1]*Lb[0]};            // cross(Q2-Q1,Q3-Q1)
-    double alpha=-std::acos(normal[2]/
-			    std::sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2])); //-acos((dot(k,normal))/norm(normal))
-    double u[3]={-normal[1]/
-		 std::sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]),
-		 normal[0]/
-		 std::sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]),
-		 0};                                                                                                                           // cross(k,normal)/norm(cross(k,normal))
-    std::cerr << "normal[]: " << normal[0] << " " << normal[1] << " " << normal[2] << std::endl;
-    std::cerr << "alpha u[]: " << alpha << " " << u[0] << " " << u[1] << " " << u[2] << std::endl;
-    double cc=std::cos(alpha);
-    double ss=std::sin(alpha);
-    std::cerr << "VertexFromTRBSMT::derivs() Test3.3" << std::endl;
-    double Rot[3][3]={ {cc+u[0]*u[0]*(1-cc)      ,  u[0]*u[1]*(1-cc)-u[2]*ss ,  u[0]*u[2]*(1-cc)+u[1]*ss}, 
-		       {u[0]*u[1]*(1-cc)+u[2]*ss ,  cc+u[1]*u[1]*(1-cc)      ,  u[1]*u[2]*(1-cc)-u[0]*ss},       
-		       {u[0]*u[2]*(1-cc)-u[1]*ss ,  u[1]*u[2]*(1-cc)+u[0]*ss ,  cc+u[2]*u[2]*(1-cc)     }  };
+    std::vector<double> Lb(3); // Q3-Q1
+    Lb[0] = position[2][0]-position[0][0];
+    Lb[1] = position[2][1]-position[0][1];
+    Lb[2] = position[2][2]-position[0][2];  
 
-    double Q1[3]={Rot[0][0]*position[0][0]+Rot[0][1]*position[0][1]+Rot[0][2]*position[0][2],
-		  Rot[1][0]*position[0][0]+Rot[1][1]*position[0][1]+Rot[1][2]*position[0][2],
-		  Rot[2][0]*position[0][0]+Rot[2][1]*position[0][1]+Rot[2][2]*position[0][2]};                                    //Rot*Q1
+    std::vector<double> normal(3);//cross(Q2-Q1,Q3-Q1)
+    normal[0] = La[1]*Lb[2]-La[2]*Lb[1];
+    normal[1] = La[2]*Lb[0]-La[0]*Lb[2]; 
+    normal[2] = La[0]*Lb[1]-La[1]*Lb[0];            
+    //-acos((dot(k,normal))/norm(normal))
+    double alpha = -std::acos(normal[2]/
+			      std::sqrt(normal[0]*normal[0]+
+					normal[1]*normal[1]+normal[2]*normal[2]));     
+    std::vector<double> u(3); //rotational vector
+    std::vector<double> Q1(3),Q2(3),Q3(3); //Rot*pos
+    std::vector<double> RotAnisocurr(3); // rotated anisotropy vector (current shape)
+    if (alpha != 0.0) { //Triangle needs to be rotated down to x-y plane 
+      u[0] = -normal[1]/
+	std::sqrt(normal[0]*normal[0]+normal[1]*normal[1]);
+      u[1] = normal[0]/
+	std::sqrt(normal[0]*normal[0]+normal[1]*normal[1]);
+      double cc=std::cos(alpha);
+      double ss=std::sin(alpha);
+      double Rot[3][3]={ {cc+u[0]*u[0]*(1-cc)      ,  u[0]*u[1]*(1-cc)-u[2]*ss ,  u[0]*u[2]*(1-cc)+u[1]*ss}, 
+			 {u[0]*u[1]*(1-cc)+u[2]*ss ,  cc+u[1]*u[1]*(1-cc)      ,  u[1]*u[2]*(1-cc)-u[0]*ss},       
+			 {u[0]*u[2]*(1-cc)-u[1]*ss ,  u[1]*u[2]*(1-cc)+u[0]*ss ,  cc+u[2]*u[2]*(1-cc)     }  };
+      
+      
+      Q1[0] = Rot[0][0]*position[0][0]+Rot[0][1]*position[0][1]+Rot[0][2]*position[0][2];
+      Q1[1] = Rot[1][0]*position[0][0]+Rot[1][1]*position[0][1]+Rot[1][2]*position[0][2];
+      Q1[2] = Rot[2][0]*position[0][0]+Rot[2][1]*position[0][1]+Rot[2][2]*position[0][2];
+      
+      Q2[0] = Rot[0][0]*position[1][0]+Rot[0][1]*position[1][1]+Rot[0][2]*position[1][2];
+      Q2[1] = Rot[1][0]*position[1][0]+Rot[1][1]*position[1][1]+Rot[1][2]*position[1][2];
+      Q2[2] = Rot[2][0]*position[1][0]+Rot[2][1]*position[1][1]+Rot[2][2]*position[1][2];
+      
+      Q3[0] = Rot[0][0]*position[2][0]+Rot[0][1]*position[2][1]+Rot[0][2]*position[2][2];
+      Q3[1] = Rot[1][0]*position[2][0]+Rot[1][1]*position[2][1]+Rot[1][2]*position[2][2];
+      Q3[2] = Rot[2][0]*position[2][0]+Rot[2][1]*position[2][1]+Rot[2][2]*position[2][2];
+      
+      RotAnisocurr[0] = Rot[0][0]*cellData[cellIndex][variableIndex(0,1)]+
+	Rot[0][1]*cellData[cellIndex][variableIndex(0,1)+1]+
+	Rot[0][2]*cellData[cellIndex][variableIndex(0,1)+2];
+      RotAnisocurr[0] = Rot[1][0]*cellData[cellIndex][variableIndex(0,1)]+
+	Rot[1][1]*cellData[cellIndex][variableIndex(0,1)+1]+
+	Rot[1][2]*cellData[cellIndex][variableIndex(0,1)+2];
+      RotAnisocurr[0] = Rot[2][0]*cellData[cellIndex][variableIndex(0,1)]+
+	Rot[2][1]*cellData[cellIndex][variableIndex(0,1)+1]+
+	Rot[2][2]*cellData[cellIndex][variableIndex(0,1)+2];
+    }
+    else { // No rotation
 
-    double Q2[3]={Rot[0][0]*position[1][0]+Rot[0][1]*position[1][1]+Rot[0][2]*position[1][2],
-		  Rot[1][0]*position[1][0]+Rot[1][1]*position[1][1]+Rot[1][2]*position[1][2],
-		  Rot[2][0]*position[1][0]+Rot[2][1]*position[1][1]+Rot[2][2]*position[1][2]};                                    //Rot*Q2
+      Q1[0] = position[0][0];
+      Q1[1] = position[0][1];
+      Q1[2] = position[0][2];
+
+      Q2[0] = position[1][0];
+      Q2[1] = position[1][1];
+      Q2[2] = position[1][2];
+
+      Q3[0] = position[2][0];
+      Q3[1] = position[2][1];
+      Q3[2] = position[2][2];
+
+      RotAnisocurr[0] = cellData[cellIndex][variableIndex(0,1)];
+      RotAnisocurr[1] = cellData[cellIndex][variableIndex(0,1)+1];
+      RotAnisocurr[2] = cellData[cellIndex][variableIndex(0,1)+2];
+      
+    }
     
-    double Q3[3]={Rot[0][0]*position[2][0]+Rot[0][1]*position[2][1]+Rot[0][2]*position[2][2],
-		  Rot[1][0]*position[2][0]+Rot[1][1]*position[2][1]+Rot[1][2]*position[2][2],
-		  Rot[2][0]*position[2][0]+Rot[2][1]*position[2][1]+Rot[2][2]*position[2][2]};                                    //Rot*Q3
-
-    double CMcurr[3]={(Q1[0]+Q2[0]+Q3[0])/3,(Q1[1]+Q2[1]+Q3[1])/3,(Q1[2]+Q2[2]+Q3[2])/3};
-
-    double RotAnisocurr[3]={ Rot[0][0]*cellData[cellIndex][variableIndex(0,1)]+
-			     Rot[0][1]*cellData[cellIndex][variableIndex(0,1)+1]+
-			     Rot[0][2]*cellData[cellIndex][variableIndex(0,1)+2],
-			     Rot[1][0]*cellData[cellIndex][variableIndex(0,1)]+
-			     Rot[1][1]*cellData[cellIndex][variableIndex(0,1)+1]+
-			     Rot[1][2]*cellData[cellIndex][variableIndex(0,1)+2],
-			     Rot[2][0]*cellData[cellIndex][variableIndex(0,1)]+
-			     Rot[2][1]*cellData[cellIndex][variableIndex(0,1)+1]+
-			     Rot[2][2]*cellData[cellIndex][variableIndex(0,1)+2] };//Rot*Anisocurr;
-
+    std::vector<double> CMcurr(3); //Center of mass (current shape)
+    CMcurr[0] = (Q1[0]+Q2[0]+Q3[0])/3;
+    CMcurr[1] = (Q1[1]+Q2[1]+Q3[1])/3;
+    CMcurr[2] = (Q1[2]+Q2[2]+Q3[2])/3;
+    
     double Acurr[3]={RotAnisocurr[0]+CMcurr[0],RotAnisocurr[1]+CMcurr[1],RotAnisocurr[2]+CMcurr[2]};//[temp(1) temp(2)]'+CMcurr'
-
+    
     //double Bari[3][3]={ {Q1[0], Q2[0], Q3[0]} , {Q1[1], Q2[1], Q3[1]} , {1, 1, 1} };
    
  
     temp=1/(Q1[0]*Q2[1]-Q1[1]*Q2[0]+Q1[1]*Q3[0]-Q1[0]*Q3[1]+Q2[0]*Q3[1]-Q2[1]*Q3[0]); //1/(determinant of Bari)
-    std::cerr << "temp: " << temp << std::endl;
     double invBari[3][3]={ {temp*(Q2[1]-Q3[1]), temp*(Q3[0]-Q2[0]), temp*(Q2[0]*Q3[1]-Q2[1]*Q3[0])}, // inverse of Bari
 			   {temp*(Q3[1]-Q1[1]), temp*(Q1[0]-Q3[0]), temp*(Q1[1]*Q3[0]-Q1[0]*Q3[1])},
 			   {temp*(Q1[1]-Q2[1]), temp*(Q2[0]-Q1[0]), temp*(Q1[0]*Q2[1]-Q1[1]*Q2[0])} };
@@ -866,7 +889,6 @@ derivs(Tissue &T,
 				  (D3[0]*D3[0]+D3[1]*D3[1])));
     
     //------------------------------------------------------------------------
-      std::cerr << "VertexFromTRBSMT::derivs() Test5" << std::endl;
 
     //---- Anisotropic Correction-------------------------------
     
@@ -907,7 +929,6 @@ derivs(Tissue &T,
 	      derIprim1[m][coor]=derIprim1[m][coor]+2*DiDm*position[m][coor];
 	  }
       }
-      std::cerr << "VertexFromTRBSMT::derivs() Test6" << std::endl;
 
     double Iprim4=0;
     for ( int i=0 ; i<3 ; ++i )
@@ -977,7 +998,6 @@ derivs(Tissue &T,
 	      }
 	  }
       }		       
-      std::cerr << "VertexFromTRBSMT::derivs() Test7" << std::endl;
 
     double derI1[3][3];             // Invariants and their derivatives
     double derI4[3][3];
@@ -1002,7 +1022,6 @@ derivs(Tissue &T,
       
     //Forces of vertices   
     double Force[3][3];                                           
-      std::cerr << "VertexFromTRBSMT::derivs() Test8" << std::endl;
 
     Force[0][0]= (tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2])*(position[1][0]-position[0][0])
       +(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[2][0]-position[0][0])
@@ -1033,13 +1052,12 @@ derivs(Tissue &T,
       +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][2]-position[2][2])
       + deltaF[2][2];  
     
-    std::cerr << "Forces:" << std::endl 
-	      << Force[0][0] << " " << Force[0][1] << " " << Force[0][2] << std::endl
-	      << Force[1][0] << " " << Force[1][1] << " " << Force[1][2] << std::endl
-	      << Force[2][0] << " " << Force[2][1] << " " << Force[2][2] << std::endl;
+    // std::cerr << "Forces (cell " << cellIndex << "):" << std::endl 
+    // 	      << Force[0][0] << " " << Force[0][1] << " " << Force[0][2] << std::endl
+    // 	      << Force[1][0] << " " << Force[1][1] << " " << Force[1][2] << std::endl
+    // 	      << Force[2][0] << " " << Force[2][1] << " " << Force[2][2] << std::endl;
 
     // adding TRBSMT forces to the total vertexDerivs
-      std::cerr << "VertexFromTRBSMT::derivs() Test9" << std::endl;
 
     vertexDerivs[v1][0]+= Force[0][0];
     vertexDerivs[v1][1]+= Force[0][1];
