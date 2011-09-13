@@ -849,11 +849,11 @@ derivs(Tissue &T,
       RotAnisocurr[2] = cellData[cellIndex][variableIndex(0,1)+2];
       
     }
-    
+		double deltaF[3][3]; 
     if(RotAnisocurr[0]>0.001 || RotAnisocurr[1]>0.001) // if anisotropy vector is not perpendicular to the elements
-    {
-    
-    
+			{
+				
+				
     std::vector<double> CMcurr(3);    //Center of mass (rotated current shape)
     CMcurr[0] = (Q1[0]+Q2[0]+Q3[0])/3;
     CMcurr[1] = (Q1[1]+Q2[1]+Q3[1])/3;
@@ -861,17 +861,17 @@ derivs(Tissue &T,
     
     double Acurr[2]={RotAnisocurr[0]+CMcurr[0],RotAnisocurr[1]+CMcurr[1]}; // tip of aniso. vector which is lied in the element from CM   
     //double Bari[3][3]={ {Q1[0], Q2[0], Q3[0]} , {Q1[1], Q2[1], Q3[1]} , {1, 1, 1} } for converting coordinates to baricentric
-   
- 
+		
+		
     temp=1/(Q1[0]*Q2[1]-Q1[1]*Q2[0]+Q1[1]*Q3[0]-Q1[0]*Q3[1]+Q2[0]*Q3[1]-Q2[1]*Q3[0]); //1/(determinant of Bari)
     
     double invBari[3][3]={ {temp*(Q2[1]-Q3[1]), temp*(Q3[0]-Q2[0]), temp*(Q2[0]*Q3[1]-Q2[1]*Q3[0])}, // inverse of Bari
-			   {temp*(Q3[1]-Q1[1]), temp*(Q1[0]-Q3[0]), temp*(Q1[1]*Q3[0]-Q1[0]*Q3[1])},
-			   {temp*(Q1[1]-Q2[1]), temp*(Q2[0]-Q1[0]), temp*(Q1[0]*Q2[1]-Q1[1]*Q2[0])} };
+													 {temp*(Q3[1]-Q1[1]), temp*(Q1[0]-Q3[0]), temp*(Q1[1]*Q3[0]-Q1[0]*Q3[1])},
+													 {temp*(Q1[1]-Q2[1]), temp*(Q2[0]-Q1[0]), temp*(Q1[0]*Q2[1]-Q1[1]*Q2[0])} };
     
     double Abari[3]={invBari[0][0]*Acurr[0]+invBari[0][1]*Acurr[1]+invBari[0][2],
-		     invBari[1][0]*Acurr[0]+invBari[1][1]*Acurr[1]+invBari[1][2],
-		     invBari[2][0]*Acurr[0]+invBari[2][1]*Acurr[1]+invBari[2][2]  };// invBari*[Acurr(1) Acurr(2) 1]'
+										 invBari[1][0]*Acurr[0]+invBari[1][1]*Acurr[1]+invBari[1][2],
+										 invBari[2][0]*Acurr[0]+invBari[2][1]*Acurr[1]+invBari[2][2]  };// invBari*[Acurr(1) Acurr(2) 1]'
     
     // A=norm(cross(Q1-Q2,Q1-Q3))
     // AA=norm(cross(Q11-Q21,Q11-Q31))
@@ -943,17 +943,22 @@ derivs(Tissue &T,
     int k;
     for ( int m=0 ; m<3 ; ++m )
       {
-        for ( int coor=0 ; coor<3 ; ++coor ) derIprim1[m][coor]=0;
-	for ( int i=0 ; i<3 ; ++i )
-	  {            
-	    if ((i==0 && m==1)||(i==1 && m==0)) k=2;
-	    if ((i==0 && m==2)||(i==2 && m==0)) k=1;
-	    if ((i==1 && m==2)||(i==2 && m==1)) k=0; 
-	    if (i!=m) DiDm=-0.5*cotan[k]/restingArea;
-	    if (i==m) DiDm=0.25*restingLength[i]*restingLength[i] / (restingArea*restingArea);
-	    for ( int coor=0 ; coor<3 ; ++coor ) 
-	      derIprim1[m][coor]=derIprim1[m][coor]+2*DiDm*position[m][coor];
-	  }
+        for ( int coor=0 ; coor<3 ; ++coor ) 
+					derIprim1[m][coor]=0;
+				for ( int i=0 ; i<3 ; ++i )
+					{            
+						if ((i==0 && m==1)||(i==1 && m==0)) k=2;
+						else if ((i==0 && m==2)||(i==2 && m==0)) k=1;
+						else if ((i==1 && m==2)||(i==2 && m==1)) k=0; 
+						else {
+							std::cerr << "mechanicalTRBS::derivs() k not given a value..." << std::endl;
+							exit(-1);
+						}
+						if (i!=m) DiDm=-0.5*cotan[k]/restingArea;
+						if (i==m) DiDm=0.25*restingLength[i]*restingLength[i] / (restingArea*restingArea);
+						for ( int coor=0 ; coor<3 ; ++coor ) 
+							derIprim1[m][coor]=derIprim1[m][coor]+2*DiDm*position[m][coor];
+					}
       }
 
     double Iprim4=0;
@@ -1029,27 +1034,24 @@ derivs(Tissue &T,
     double derI4[3][3];
     double derI5[3][3];
     
-    
     double I1=( Delta[0]*cotan[0]+ Delta[1]*cotan[1]+Delta[2]*cotan[2])/(2*restingArea);
     double I4=0.5*Iprim4-0.5;
     
     for ( int i=0 ; i<3 ; ++i ) 
       for ( int j=0 ; j<3 ; ++j ) {
-	derI1[i][j]=0.5*derIprim1[i][j];
-	derI4[i][j]=0.5*derIprim4[i][j];
-	derI5[i][j]=0.25*derIprim5[i][j]-derI4[i][j];
+				derI1[i][j]=0.5*derIprim1[i][j];
+				derI4[i][j]=0.5*derIprim4[i][j];
+				derI5[i][j]=0.25*derIprim5[i][j]-derI4[i][j];
       }   
-    double deltaF[3][3]; 
-    
-    for ( int i=0 ; i<3 ; ++i ) 
+		for ( int i=0 ; i<3 ; ++i ) 
       for ( int j=0 ; j<3 ; ++j )
-	deltaF[i][j]=(-deltaLam*(I4*derI1[i][j]+I1*derI4[i][j])-
-		      deltaMio*derI5[i][j]+(deltaMio+deltaLam)*I4*derI4[i][j])*restingArea;
+				deltaF[i][j]=(-deltaLam*(I4*derI1[i][j]+I1*derI4[i][j])-
+											deltaMio*derI5[i][j]+(deltaMio+deltaLam)*I4*derI4[i][j])*restingArea;
     }
-    else // if anisotropy vector is perpendicular to the elements we put anisotropic correction 0
-    {for ( int i=0 ; i<3 ; ++i ) 
-      for ( int j=0 ; j<3 ; ++j )
-	deltaF[i][j]=0;
+    else {// if anisotropy vector is perpendicular to the elements we put anisotropic correction 0
+				for ( int i=0 ; i<3 ; ++i ) 
+					for ( int j=0 ; j<3 ; ++j )
+						deltaF[i][j]=0;
     	}  
     //Forces of vertices   
     double Force[3][3];                                           
