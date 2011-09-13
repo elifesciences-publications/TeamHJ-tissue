@@ -719,7 +719,7 @@ derivs(Tissue &T,
                                   ( restingLength[0]-restingLength[1]+restingLength[2])*
                                   ( restingLength[0]+restingLength[1]-restingLength[2])  )*0.25;
     
-    //Angles of the element ( assuming the order: 0,L0,1,L1,2,L2 )
+    //Angles of the element ( assuming the order: 0,L0,1,L1,2,L2 clockwise )
     std::vector<double> Angle(3);
     Angle[0]=std::asin(2*restingArea/(restingLength[0]*restingLength[2]));
     // can be ommited by cotan(A)=.25*sqrt(4*b*b*c*c/K-1)
@@ -764,7 +764,7 @@ derivs(Tissue &T,
     
     //double ez[3]={0,0,1};
     std::vector<double> La(3);// Q2-Q1
-    La[0]=position[1][0]-position[0][0];
+    La[0] = position[1][0]-position[0][0];
     La[1] = position[1][1]-position[0][1];
     La[2] = position[1][2]-position[0][2];  
 
@@ -773,22 +773,32 @@ derivs(Tissue &T,
     Lb[1] = position[2][1]-position[0][1];
     Lb[2] = position[2][2]-position[0][2];  
 
-    std::vector<double> normal(3);//cross(Q2-Q1,Q3-Q1)
-    normal[0] = La[1]*Lb[2]-La[2]*Lb[1];
-    normal[1] = La[2]*Lb[0]-La[0]*Lb[2]; 
-    normal[2] = La[0]*Lb[1]-La[1]*Lb[0];            
-    //-acos((dot(k,normal))/norm(normal))
+    std::vector<double> normal(3);//cross(Q2-Q1,Q3-Q1)  assuming clockwise ordering 
+    normal[0] = -La[1]*Lb[2]+La[2]*Lb[1];
+    normal[1] = -La[2]*Lb[0]+La[0]*Lb[2]; 
+    normal[2] = -La[0]*Lb[1]+La[1]*Lb[0];   
+    
+    //std::vector<double> normal(3);//cross(Q2-Q1,Q3-Q1)  assuming counter-clockwise ordering 
+    //normal[0] = La[1]*Lb[2]-La[2]*Lb[1];
+    //normal[1] = La[2]*Lb[0]-La[0]*Lb[2]; 
+    //normal[2] = La[0]*Lb[1]-La[1]*Lb[0];  
+                     
     double alpha = -std::acos(normal[2]/
 			      std::sqrt(normal[0]*normal[0]+
-					normal[1]*normal[1]+normal[2]*normal[2]));     
-    std::vector<double> u(3); //rotational vector
-    std::vector<double> Q1(3),Q2(3),Q3(3); //Rot*pos
-    std::vector<double> RotAnisocurr(3); // rotated anisotropy vector (current shape)
-    if (alpha != 0.0) { //Triangle needs to be rotated down to x-y plane 
+					normal[1]*normal[1]+
+					normal[2]*normal[2]));  // angle between z axis and normal vector  -acos((dot(k,normal))/norm(normal))
+					                        // minus sign is because of right rotation direction
+    std::vector<double> u(3);              //rotation vector
+    std::vector<double> Q1(3),Q2(3),Q3(3); //rotated position vectors of nodes
+    std::vector<double> RotAnisocurr(3);   // rotated anisotropy vector (current shape)
+    
+    if (normal[0]*normal[0]+normal[1]*normal[1]>0.001) 
+    { //If Triangle is not in x-y plane needs to be rotated down to that
       u[0] = -normal[1]/
 	std::sqrt(normal[0]*normal[0]+normal[1]*normal[1]);
       u[1] = normal[0]/
-	std::sqrt(normal[0]*normal[0]+normal[1]*normal[1]);
+	std::sqrt(normal[0]*normal[0]+normal[1]*normal[1]);//u=cross(k,normal), so u[2]=0
+	
       double cc=std::cos(alpha);
       double ss=std::sin(alpha);
       double Rot[3][3]={ {cc+u[0]*u[0]*(1-cc)      ,  u[0]*u[1]*(1-cc)-u[2]*ss ,  u[0]*u[2]*(1-cc)+u[1]*ss}, 
@@ -808,17 +818,19 @@ derivs(Tissue &T,
       Q3[1] = Rot[1][0]*position[2][0]+Rot[1][1]*position[2][1]+Rot[1][2]*position[2][2];
       Q3[2] = Rot[2][0]*position[2][0]+Rot[2][1]*position[2][1]+Rot[2][2]*position[2][2];
       
+      // Rotated anisotropy vector in the current shape
       RotAnisocurr[0] = Rot[0][0]*cellData[cellIndex][variableIndex(0,1)]+
-	Rot[0][1]*cellData[cellIndex][variableIndex(0,1)+1]+
-	Rot[0][2]*cellData[cellIndex][variableIndex(0,1)+2];
-      RotAnisocurr[0] = Rot[1][0]*cellData[cellIndex][variableIndex(0,1)]+
-	Rot[1][1]*cellData[cellIndex][variableIndex(0,1)+1]+
-	Rot[1][2]*cellData[cellIndex][variableIndex(0,1)+2];
-      RotAnisocurr[0] = Rot[2][0]*cellData[cellIndex][variableIndex(0,1)]+
-	Rot[2][1]*cellData[cellIndex][variableIndex(0,1)+1]+
-	Rot[2][2]*cellData[cellIndex][variableIndex(0,1)+2];
+			Rot[0][1]*cellData[cellIndex][variableIndex(0,1)+1]+
+			Rot[0][2]*cellData[cellIndex][variableIndex(0,1)+2];
+      RotAnisocurr[1] = Rot[1][0]*cellData[cellIndex][variableIndex(0,1)]+
+			Rot[1][1]*cellData[cellIndex][variableIndex(0,1)+1]+
+			Rot[1][2]*cellData[cellIndex][variableIndex(0,1)+2];
+      RotAnisocurr[2] = Rot[2][0]*cellData[cellIndex][variableIndex(0,1)]+
+	                Rot[2][1]*cellData[cellIndex][variableIndex(0,1)+1]+
+	                Rot[2][2]*cellData[cellIndex][variableIndex(0,1)+2];
     }
-    else { // No rotation
+    else 
+    { // No rotation needed as element has been on x-y plane already
 
       Q1[0] = position[0][0];
       Q1[1] = position[0][1];
@@ -838,17 +850,21 @@ derivs(Tissue &T,
       
     }
     
-    std::vector<double> CMcurr(3); //Center of mass (current shape)
+    if(RotAnisocurr[0]>0.001 || RotAnisocurr[1]>0.001) // if anisotropy vector is not perpendicular to the elements
+    {
+    
+    
+    std::vector<double> CMcurr(3);    //Center of mass (rotated current shape)
     CMcurr[0] = (Q1[0]+Q2[0]+Q3[0])/3;
     CMcurr[1] = (Q1[1]+Q2[1]+Q3[1])/3;
     CMcurr[2] = (Q1[2]+Q2[2]+Q3[2])/3;
     
-    double Acurr[3]={RotAnisocurr[0]+CMcurr[0],RotAnisocurr[1]+CMcurr[1],RotAnisocurr[2]+CMcurr[2]};//[temp(1) temp(2)]'+CMcurr'
-    
-    //double Bari[3][3]={ {Q1[0], Q2[0], Q3[0]} , {Q1[1], Q2[1], Q3[1]} , {1, 1, 1} };
+    double Acurr[2]={RotAnisocurr[0]+CMcurr[0],RotAnisocurr[1]+CMcurr[1]}; // tip of aniso. vector which is lied in the element from CM   
+    //double Bari[3][3]={ {Q1[0], Q2[0], Q3[0]} , {Q1[1], Q2[1], Q3[1]} , {1, 1, 1} } for converting coordinates to baricentric
    
  
     temp=1/(Q1[0]*Q2[1]-Q1[1]*Q2[0]+Q1[1]*Q3[0]-Q1[0]*Q3[1]+Q2[0]*Q3[1]-Q2[1]*Q3[0]); //1/(determinant of Bari)
+    
     double invBari[3][3]={ {temp*(Q2[1]-Q3[1]), temp*(Q3[0]-Q2[0]), temp*(Q2[0]*Q3[1]-Q2[1]*Q3[0])}, // inverse of Bari
 			   {temp*(Q3[1]-Q1[1]), temp*(Q1[0]-Q3[0]), temp*(Q1[1]*Q3[0]-Q1[0]*Q3[1])},
 			   {temp*(Q1[1]-Q2[1]), temp*(Q2[0]-Q1[0]), temp*(Q1[0]*Q2[1]-Q1[1]*Q2[0])} };
@@ -861,34 +877,44 @@ derivs(Tissue &T,
     // AA=norm(cross(Q11-Q21,Q11-Q31))
     
     
-    // providing P1 , P2 and P3 assuming : 1, L1, 2, L2, 3, L3, counterclockwise
+    // providing P0 , P1 and P2 assuming : 0, L0, 1, L1, 2, L2, clockwise  
     
-    double P1[2]={0,0};
-    double P2[2]={0,restingLength[0]};
-    double P3[2]={restingLength[2]*std::sin(Angle[0]),restingLength[2]*std::cos(Angle[0])};
+    double P0[2]={0,0};
+    double P1[2]={0,restingLength[0]};
+    double P2[2]={restingLength[2]*std::sin(Angle[0]),restingLength[2]*std::cos(Angle[0])};
     
-    double Arest[2]={P1[0]*Abari[0]+P2[0]*Abari[1]+P3[0]*Abari[2] ,  P1[1]*Abari[0]+ P2[1]*Abari[1]+ P3[1]*Abari[2]};
-    //[P1(0) P2(0) P3(0) ; P1(1) P2(1) P3(1) ; 1 1 1 ]*Abari;
-    double CMrest[2]={(P1[1]+P2[1]+P3[1])/3,(P1[2]+P2[2]+P3[2])/3};
+    // providing P0 , P1 and P2 assuming : 0, L0, 1, L1, 2, L2, clockwise  
+    
+    //double P0[2]={0,0};
+    //double P1[2]={restingLength[0]*std::sin(Angle[0]),restingLength[0]*std::cos(Angle[0])};
+    //double P2[2]={0,restingLength[2]};
+    
+    
+    
+    
+    
+    double Arest[2]={P0[0]*Abari[0]+P1[0]*Abari[1]+P2[0]*Abari[2] ,  P0[1]*Abari[0]+ P1[1]*Abari[1]+ P2[1]*Abari[2]};
+    //[P0(0) P1(0) P2(0) ; P0(1) P1(1) P2(1) ; 1 1 1 ]*Abari;
+    double CMrest[2]={(P0[0]+P1[0]+P2[0])/3,(P0[1]+P1[1]+P2[1])/3};
     double Anisorest[2]={Arest[0]-CMrest[0],Arest[1]-CMrest[1]};
     
     temp=1/restingArea;
-    double D1[2]={temp*(P2[1]-P3[1]), -temp*(P2[0]-P3[0])};
-    double D2[2]={temp*(P3[1]-P1[1]), -temp*(P3[0]-P1[0])};
-    double D3[2]={temp*(P1[1]-P2[1]), -temp*(P1[0]-P2[0])};
+    double D0[2]={-temp*(P1[1]-P2[1]),  temp*(P1[0]-P2[0])};
+    double D1[2]={-temp*(P2[1]-P0[1]),  temp*(P2[0]-P0[0])};
+    double D2[2]={-temp*(P0[1]-P1[1]),  temp*(P0[0]-P1[0])};
     
-    //teta = acos((dot(Anisorest,Dk))/(norm(Anisorest)*norm(Dk))),
-    teta[0] = std::acos((Anisorest[0]*D1[0]+Anisorest[1]*D1[1])/
+    //teta(k) = acos((dot(Anisorest,Dk))/(norm(Anisorest)*norm(Dk))),
+    teta[0] = std::acos((Anisorest[0]*D0[0]+Anisorest[1]*D0[1])/
+			std::sqrt((Anisorest[0]*Anisorest[0]+Anisorest[1]*Anisorest[1])*
+				  (D0[0]*D0[0]+D0[1]*D0[1])));
+    teta[1] = std::acos((Anisorest[0]*D1[0]+Anisorest[1]*D1[1])/
 			std::sqrt((Anisorest[0]*Anisorest[0]+Anisorest[1]*Anisorest[1])*
 				  (D1[0]*D1[0]+D1[1]*D1[1])));
-    teta[1] = std::acos((Anisorest[0]*D2[0]+Anisorest[1]*D2[1])/
+    teta[2] = std::acos((Anisorest[0]*D2[0]+Anisorest[1]*D2[1])/
 			std::sqrt((Anisorest[0]*Anisorest[0]+Anisorest[1]*Anisorest[1])*
 				  (D2[0]*D2[0]+D2[1]*D2[1])));
-    teta[2] = std::acos((Anisorest[0]*D3[0]+Anisorest[1]*D3[1])/
-			std::sqrt((Anisorest[0]*Anisorest[0]+Anisorest[1]*Anisorest[1])*
-				  (D3[0]*D3[0]+D3[1]*D3[1])));
     
-    //------------------------------------------------------------------------
+    
 
     //---- Anisotropic Correction-------------------------------
     
@@ -997,7 +1023,7 @@ derivs(Tissue &T,
 		  }
 	      }
 	  }
-      }		       
+      }		      
 
     double derI1[3][3];             // Invariants and their derivatives
     double derI4[3][3];
@@ -1019,7 +1045,12 @@ derivs(Tissue &T,
       for ( int j=0 ; j<3 ; ++j )
 	deltaF[i][j]=(-deltaLam*(I4*derI1[i][j]+I1*derI4[i][j])-
 		      deltaMio*derI5[i][j]+(deltaMio+deltaLam)*I4*derI4[i][j])*restingArea;
-      
+    }
+    else // if anisotropy vector is perpendicular to the elements we put anisotropic correction 0
+    {for ( int i=0 ; i<3 ; ++i ) 
+      for ( int j=0 ; j<3 ; ++j )
+	deltaF[i][j]=0;
+    	}  
     //Forces of vertices   
     double Force[3][3];                                           
 
