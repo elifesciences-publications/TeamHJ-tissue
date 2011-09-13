@@ -950,10 +950,10 @@ derivs(Tissue &T,
 						if ((i==0 && m==1)||(i==1 && m==0)) k=2;
 						else if ((i==0 && m==2)||(i==2 && m==0)) k=1;
 						else if ((i==1 && m==2)||(i==2 && m==1)) k=0; 
-						else {
-							std::cerr << "mechanicalTRBS::derivs() k not given a value..." << std::endl;
-							exit(-1);
-						}
+						//else {
+						//std::cerr << "mechanicalTRBS::derivs() k not given a value..." << std::endl;
+						//exit(-1);
+						//}
 						if (i!=m) DiDm=-0.5*cotan[k]/restingArea;
 						if (i==m) DiDm=0.25*restingLength[i]*restingLength[i] / (restingArea*restingArea);
 						for ( int coor=0 ; coor<3 ; ++coor ) 
