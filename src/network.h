@@ -298,4 +298,44 @@ class AuxinTransportCellCellNoGeometry : public BaseReaction {
 	      std::vector< std::vector<double> > &vertexDerivs );
 };
 
+///
+/// A cell-wall based auxin transport model including PINs and ROPs
+///
+/*!A complete (hopefully) pattern generating auxin model based on cell and wall
+  compartments. It uses two compartments for each wall and a single for the cells.
+  Auxin PIN and ROP molecules are updated according to:
+  
+  @f[ \frac{A_i}{dt} = p_0 - p_1 A_i + p_2*\Sum_{j} (A_{ij}) - p_3*\Sum_{j} (A_i) - 
+  p_4 \sum_{j} (P_{ij}*A_i) @f]
+  
+  dA_{ij}/dt = (from above) + p_5 (A_{ji}-A_{ij})
+
+  dP_i/dt = p_6 - p_7 P_i + \Sum_j (p_8 P_{ij} - p_9 P_i R_{ij} 
+  
+  dP_{ij} = (from above)
+
+  dR_i/dt = p_{10} - p_{11} R_i + \Sum_j ( p_{12} R_{ij} - p_{13} R_i A_{ij})
+  
+  dR_{ij}/dt = (from above)
+  
+  In addition, the column index for auxin, PIN, AUX1, PID, X, 
+  and M should be given.
+*/
+class AuxinROPModel : public BaseReaction {
+  
+ public:
+  
+  AuxinROPModel(std::vector<double> &paraValue, 
+		    std::vector< std::vector<size_t> > 
+		    &indValue );
+  
+  void derivs(Tissue &T,
+	      std::vector< std::vector<double> > &cellData,
+	      std::vector< std::vector<double> > &wallData,
+	      std::vector< std::vector<double> > &vertexData,
+	      std::vector< std::vector<double> > &cellDerivs,
+	      std::vector< std::vector<double> > &wallDerivs,
+	      std::vector< std::vector<double> > &vertexDerivs );
+};
+
 #endif

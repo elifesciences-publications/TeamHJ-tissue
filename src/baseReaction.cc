@@ -179,6 +179,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new AuxinModel7(paraValue,indValue); 
   else if(idValue=="AuxinTransportCellCellNoGeometry")
     return new AuxinTransportCellCellNoGeometry(paraValue,indValue); 
+  else if(idValue=="AuxinROPModel")
+    return new AuxinROPModel(paraValue,indValue); 
 
   //directionReaction.h, directionUpdate.cc
   else if (idValue == "ContinousMTDirection")
