@@ -1671,7 +1671,7 @@ derivs(Tissue &T,
     size_t numWalls = T.cell(i).numWall();
     for (size_t k=0; k<numWalls; ++k) {
       size_t j = T.cell(i).wall(k)->index();
-      if( T.cell(i).wall(k)->cell1()->index() == i ) {
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
 	// cell-wall transport
 	double fac = parameter(3)*cellData[i][aI] - parameter(2)*wallData[j][awI] +
 	  parameter(4)*cellData[i][aI]*wallData[j][pwI];
@@ -1679,6 +1679,7 @@ derivs(Tissue &T,
 	wallDerivs[j][awI] += fac;
 	cellDerivs[i][aI] -= fac;
 	wallDerivs[j][awI] -= parameter(5)*wallData[j][awI];
+	wallDerivs[j][awI+1] += parameter(5)*wallData[j][awI];
 	
 	//PIN cycling
 	fac = parameter(8)*wallData[j][pwI] - parameter(9)*cellData[i][pI]*wallData[j][rwI];
@@ -1691,7 +1692,7 @@ derivs(Tissue &T,
 	cellDerivs[i][rI] += fac;
 
       }
-      else if( T.cell(i).wall(k)->cell2()->index() == i ) {
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
 	// cell-wall transport
 	double fac = parameter(3)*cellData[i][aI] - parameter(2)*wallData[j][awI+1] +
 	  parameter(4)*cellData[i][aI]*wallData[j][pwI+1];
@@ -1699,6 +1700,7 @@ derivs(Tissue &T,
 	wallDerivs[j][awI+1] += fac;
 	cellDerivs[i][aI] -= fac;
 	wallDerivs[j][awI+1] -= parameter(5)*wallData[j][awI+1];
+	wallDerivs[j][awI] += parameter(5)*wallData[j][awI+1];
 
 	//PIN cycling
 	fac = parameter(8)*wallData[j][pwI+1] - parameter(9)*cellData[i][pI]*wallData[j][rwI+1];
@@ -1711,11 +1713,11 @@ derivs(Tissue &T,
 	cellDerivs[i][rI] += fac;
 
       }
-      else {
-	std::cerr << "AuxinROPModel::derivs() Cell-wall neighborhood wrong." 
-		  << std::endl;
-	exit(-1);
-      }
+      //else {
+      //std::cerr << "AuxinROPModel::derivs() Cell-wall neighborhood wrong." 
+      //	  << std::endl;
+      //exit(-1);
+      //}
     }
   }
 }
