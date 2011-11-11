@@ -117,9 +117,11 @@ public:
   {
     return m_os->width(wide);
   }
-
+  /// @brief Write cells using geometry directly from tissue without making room for the walls display
   void write_cells(Tissue const& t);
+  /// @brief Write cells with shrinked geometry leaving space for walls display
   void write_cells2(Tissue const& t);
+  /// @brief Write walls using lines for 
   void write_walls(Tissue const& t);
   void write_walls2(Tissue const& t);
   
