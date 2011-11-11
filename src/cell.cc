@@ -38,6 +38,17 @@ Cell::Cell(size_t indexVal,std::string idVal) {
 
 Cell::~Cell() {}
 
+void Cell::setVariable( std::vector<double> &val ) 
+{
+  if (numVariable() != val.size()) {
+    std::cerr << "Cell::setVariable(vector) Not the same number of variables in the cell as in the given vector."
+	      << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  for (size_t i=0; i<val.size(); ++i)
+    variable_[i]=val[i];
+}
+
 void Cell::sortWallAndVertexOld(Tissue &T) {
 	
 	assert( numWall()==numVertex() );

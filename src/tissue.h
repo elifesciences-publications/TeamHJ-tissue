@@ -297,6 +297,15 @@ class Tissue {
 			       std::vector< std::vector<size_t> > &cellVertex,
 			       int verbose=0);
   ///
+  /// @brief Sets all cell, wall, and vertex values to their updated values
+  ///
+  /// This function is used to update the Tissue variables (cell, wall, and vertex variables)
+  /// to the state given. This is used to refresh the state since while updating, only
+  /// the state matrix variables are updated. At the same time the number of elements in
+  /// T is checked.
+  ///
+  void copyState(DataMatrix &cellData, DataMatrix &wallData, DataMatrix &vertexData);
+  ///
   /// @brief The tissue name
   ///
   inline std::string id() const;

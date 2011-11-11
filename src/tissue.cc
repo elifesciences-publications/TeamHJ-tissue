@@ -391,8 +391,8 @@ void Tissue::readInit(std::istream &IN,int verbose) {
 	  wall(i).setLength(length);
 	  std::vector<double> variable;
 	  for (size_t j = 0; j < numVar; ++j) {
-		  IN >> value;
-		  variable.push_back(value);
+	    IN >> value;
+	    variable.push_back(value);
 	  }
 	  wall(i).setVariable(variable);
   }
@@ -1524,26 +1524,55 @@ void Tissue::createTissueFromVoronoi(DataMatrix &vertexPos,
 	
 	std::cerr << "Checking tissue" << std::endl;
 	checkConnectivity(verbose);
-	std::cerr << "Tisue created" << std::endl;
+	std::cerr << "Tissue created" << std::endl;
 	DataMatrix cellData( numCell() ),
 		cellDeriv( numCell() ),wallData( numWall() ),wallDeriv( numWall() ),
 		vertexData( numVertex() ),vertexDeriv( numVertex() );
 	removeEpidermalCells(cellData,wallData,vertexData,cellDeriv,wallDeriv,
-											 vertexDeriv);
+			     vertexDeriv);
 	std::cerr << "Checking tissue after first removal" << std::endl;
 	checkConnectivity(verbose);
 	std::cerr << "Tisue created" << std::endl;
 	removeEpidermalCells(cellData,wallData,vertexData,cellDeriv,wallDeriv,
-											 vertexDeriv);
+			     vertexDeriv);
 	std::cerr << "Checking tissue after second removal" << std::endl;
 	checkConnectivity(verbose);
 	std::cerr << "Tisue created" << std::endl;
 	removeEpidermalCells(cellData,wallData,vertexData,cellDeriv,wallDeriv,
-											 vertexDeriv);
+			     vertexDeriv);
 	std::cerr << "Checking tissue after third removal" << std::endl;
 	checkConnectivity(verbose);
 	std::cerr << "Tisue created" << std::endl;
 
+}
+
+void Tissue::copyState(DataMatrix &cellData, DataMatrix &wallData, DataMatrix &vertexData)
+{
+  if (cellData.size()!=numCell()) {
+    std::cerr << "Tissue::copyState() Not the same number of cells in Tissue as in data." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (wallData.size()!=numWall()) {
+    std::cerr << "Tissue::copyState() Not the same number of walls in Tissue as in data." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (vertexData.size()!=numVertex()) {
+    std::cerr << "Tissue::copyState() Not the same number of vertices in Tissue as in data." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  for (size_t i=0; i<numCell(); ++i) {
+    assert( cell(i).numVariable()==cellData[i].size() );
+    cell(i).setVariable(cellData[i]);
+  }
+  for (size_t i=0; i<numWall(); ++i) {
+    wall(i).setLength(wallData[i][0]);
+    assert( wall(i).numVariable()==wallData[i].size()-1 ); //wallData also stores length
+    for (size_t j=0; j<wall(i).numVariable(); ++j)
+      wall(i).setVariable(j,wallData[i][j+1]);
+  }  
+  for (size_t i=0; i<numVertex(); ++i) {
+    vertex(i).setPosition(vertexData[i]);
+  }
 }
 
 void Tissue::derivs( DataMatrix &cellData,
@@ -3573,29 +3602,29 @@ findPeaksGradientAscent( DataMatrix &cellData,
 
 void Tissue::printInit(std::ostream &os) {
   
-	// Increase resolution to max for doubles
-	unsigned int oldPrecision = os.precision(); 
-	os.precision(15);
-	//std::cerr << "Tissue::prinitInit(): old precision: " << oldPrecision << " new " 
-	//				<< os.precision() << std::endl;
-	
+  // Increase resolution to max for doubles
+  unsigned int oldPrecision = os.precision(); 
+  os.precision(15);
+  //std::cerr << "Tissue::prinitInit(): old precision: " << oldPrecision << " new " 
+  //				<< os.precision() << std::endl;
+  
   os << numCell() << " " << numWall() << " " << numVertex() << std::endl;
-
+  
   //Print the connectivity from walls
   for( size_t i=0 ; i<numWall() ; ++i ) {
     os << i << " ";
-		if( wall(i).cell1()->index()<numCell() )
-			os << wall(i).cell1()->index() << " " ;
-		else
-			os << "-1 ";
-		if( wall(i).cell2()->index()<numCell() )
-			os << wall(i).cell2()->index() << " ";
-		else
-			os << "-1 ";
-		os << wall(i).vertex1()->index() 
-			 << " " << wall(i).vertex2()->index() << std::endl;
-	}
-	os << std::endl;
+    if( wall(i).cell1()->index()<numCell() )
+      os << wall(i).cell1()->index() << " " ;
+    else
+      os << "-1 ";
+    if( wall(i).cell2()->index()<numCell() )
+      os << wall(i).cell2()->index() << " ";
+    else
+      os << "-1 ";
+    os << wall(i).vertex1()->index() 
+       << " " << wall(i).vertex2()->index() << std::endl;
+  }
+  os << std::endl;
   
   //Print the vertex positions
   os << numVertex() << " " << vertex(0).numPosition() << std::endl;
@@ -3615,57 +3644,57 @@ void Tissue::printInit(std::ostream &os) {
     os << std::endl;
   }
   os << std::endl;
-
+  
   //Print cell data
   os << numCell() << " " << cell(0).numVariable() << std::endl;
   if( cell(0).numVariable() ) {
     for( size_t i=0 ; i<numCell() ; ++i ) {
       for( size_t j=0 ; j<cell(i).numVariable() ; ++j )
-				os << cell(i).variable(j) << " ";
+	os << cell(i).variable(j) << " ";
       os << std::endl;
     }
     os << std::endl;
   }  
-	os.precision(oldPrecision);		
+  os.precision(oldPrecision);		
 }
 
 void Tissue::printInit(DataMatrix &cellData,
-											 DataMatrix &wallData,
-											 DataMatrix &vertexData,
-											 std::ostream &os) {
+		       DataMatrix &wallData,
+		       DataMatrix &vertexData,
+		       std::ostream &os) {
   
-	assert( numCell()==cellData.size() && 
-					numWall()==wallData.size() &&
-					numVertex()==vertexData.size() );
-	
-	// Increase resolution to max for doubles
-	unsigned int oldPrecision = os.precision(); 
-	os.precision(15);
-	//std::cerr << "Tissue::prinitInit(): old precision: " << oldPrecision << " new " 
-	//				<< os.precision() << std::endl;
-	
+  assert( numCell()==cellData.size() && 
+	  numWall()==wallData.size() &&
+	  numVertex()==vertexData.size() );
+  
+  // Increase resolution to max for doubles
+  unsigned int oldPrecision = os.precision(); 
+  os.precision(15);
+  //std::cerr << "Tissue::prinitInit(): old precision: " << oldPrecision << " new " 
+  //				<< os.precision() << std::endl;
+  
   os << numCell() << " " << numWall() << " " << numVertex() << std::endl;
-	
+  
   // Print the connectivity from walls
   for( size_t i=0 ; i<numWall() ; ++i ) {
     os << i << " ";
-		if( wall(i).cell1()->index()<numCell() )
-			os << wall(i).cell1()->index() << " " ;
-		else
-			os << "-1 ";
-		if( wall(i).cell2()->index()<numCell() )
-			os << wall(i).cell2()->index() << " ";
-		else
-			os << "-1 ";
-		os << wall(i).vertex1()->index() 
-			 << " " << wall(i).vertex2()->index() << std::endl;
-	}
+    if( wall(i).cell1()->index()<numCell() )
+      os << wall(i).cell1()->index() << " " ;
+    else
+      os << "-1 ";
+    if( wall(i).cell2()->index()<numCell() )
+      os << wall(i).cell2()->index() << " ";
+    else
+      os << "-1 ";
+    os << wall(i).vertex1()->index() 
+       << " " << wall(i).vertex2()->index() << std::endl;
+  }
   os << std::endl;
   
   //Print the vertex positions
   os << numVertex() << " " << vertex(0).numPosition() << std::endl;
   for( size_t i=0 ; i<numVertex() ; ++i ) {
-		assert( vertex(i).numPosition()==vertexData[i].size() );
+    assert( vertex(i).numPosition()==vertexData[i].size() );
     for( size_t j=0 ; j<vertex(i).numPosition() ; ++j )
       os << vertexData[i][j] << " ";
     os << std::endl;
@@ -3675,25 +3704,25 @@ void Tissue::printInit(DataMatrix &cellData,
   //Print wall data
   os << numWall() << " 1 " << wall(0).numVariable() << std::endl;
   for( size_t i=0 ; i<numWall() ; ++i ) {
-		assert( wallData[i].size() );
+    assert( wallData[i].size() );
     for( size_t j=0 ; j<wallData[i].size() ; ++j )
       os << wallData[i][j] << " ";
     os << std::endl;
   }
   os << std::endl;
-
+  
   //Print cell data
   os << numCell() << " " << cell(0).numVariable() << std::endl;
   if( cell(0).numVariable() ) {
     for( size_t i=0 ; i<numCell() ; ++i ) {
-			assert( cellData[i].size() );
-			for( size_t j=0 ; j<cellData[i].size() ; ++j )
-				os << cellData[i][j] << " ";
+      assert( cellData[i].size() );
+      for( size_t j=0 ; j<cellData[i].size() ; ++j )
+	os << cellData[i][j] << " ";
       os << std::endl;
     }
     os << std::endl;
   }  
-	os.precision(oldPrecision);	
+  os.precision(oldPrecision);	
 }
 
 void Tissue::printVertex(std::ostream &os) {
@@ -3747,14 +3776,14 @@ void Tissue::printVertexAndCell(std::ostream &os) {
     for( size_t k=0 ; k<Ncv ; ++k )
       os << cell(i).vertex(k)->index() << " ";
     os << i << " " << randomIndex[i] << " " << cell(i).volume() 
-			 << std::endl;
+       << std::endl;
   }
 }
 
 void Tissue::
 printVertexAndCell(DataMatrix &cellData,
-									 DataMatrix &vertexData,
-									 std::ostream &os) {
+		   DataMatrix &vertexData,
+		   std::ostream &os) {
   
   size_t Nv = vertexData.size(); 
   if( !Nv ) {
@@ -3772,219 +3801,219 @@ printVertexAndCell(DataMatrix &cellData,
   os << std::endl;
   //Print the cells, first connected vertecis and then variables
   size_t Nc = cellData.size();
-	//For normal printing
-	//
-	int numPrintVar=cell(0).numVariable()+3;
-	os << Nc << " " << numPrintVar << std::endl;
+  //For normal printing
+  //
+  int numPrintVar=cell(0).numVariable()+3;
+  os << Nc << " " << numPrintVar << std::endl;
   for( size_t i=0 ; i<Nc ; ++i ) {
-		size_t Ncv = cell(i).numVertex(); 
-		os << Ncv << " ";
-		for( size_t k=0 ; k<Ncv ; ++k )
-			os << cell(i).vertex(k)->index() << " ";
-	
-		for( size_t k=0 ; k<cellData[i].size() ; ++k )
-			os << cellData[i][k] << " ";
-		os << i << " " << cell(i).calculateVolume(vertexData) << " " 
-			 << cell(i).numWall() << std::endl;
+    size_t Ncv = cell(i).numVertex(); 
+    os << Ncv << " ";
+    for( size_t k=0 ; k<Ncv ; ++k )
+      os << cell(i).vertex(k)->index() << " ";
+    
+    for( size_t k=0 ; k<cellData[i].size() ; ++k )
+      os << cellData[i][k] << " ";
+    os << i << " " << cell(i).calculateVolume(vertexData) << " " 
+       << cell(i).numWall() << std::endl;
   }
   //
-	//End, normal printing
-	
-	//For membrane-PIN printing (version1)
-	//
-// 	os << Nc << std::endl;
-// 	size_t aI=0,pI=1;
-//   for( size_t i=0 ; i<Nc ; ++i ) {
-//     size_t Ncv = cell(i).numVertex(); 
-//     os << Ncv << " ";
-//     for( size_t k=0 ; k<Ncv ; ++k )
-//       os << cell(i).vertex(k)->index() << " ";
-
-// 		double p3=0.01;
-// 		double sum=p3;
-// 		for( size_t n=0 ; n<Ncv ; ++n ) {
-// 			if( !cell(i).isNeighbor(background()) ) { 
-// 				if( cell(i).wall(n)->cell1()->index()==i )
-// 					sum += cellData[ cell(i).wall(n)->cell2()->index() ][ aI ];
-// 				else
-// 					sum += cellData[ cell(i).wall(n)->cell1()->index() ][ aI ];
-// 			}
-// 		}
+  //End, normal printing
+  
+  //For membrane-PIN printing (version1)
+  //
+  // 	os << Nc << std::endl;
+  // 	size_t aI=0,pI=1;
+  //   for( size_t i=0 ; i<Nc ; ++i ) {
+  //     size_t Ncv = cell(i).numVertex(); 
+  //     os << Ncv << " ";
+  //     for( size_t k=0 ; k<Ncv ; ++k )
+  //       os << cell(i).vertex(k)->index() << " ";
+  
+  // 		double p3=0.01;
+  // 		double sum=p3;
+  // 		for( size_t n=0 ; n<Ncv ; ++n ) {
+  // 			if( !cell(i).isNeighbor(background()) ) { 
+  // 				if( cell(i).wall(n)->cell1()->index()==i )
+  // 					sum += cellData[ cell(i).wall(n)->cell2()->index() ][ aI ];
+  // 				else
+  // 					sum += cellData[ cell(i).wall(n)->cell1()->index() ][ aI ];
+  // 			}
+  // 		}
+  
+  // 		os << p3*cellData[i][pI]/sum << " ";		
 		
-// 		os << p3*cellData[i][pI]/sum << " ";		
-		
-// 		for( size_t k=0 ; k<Ncv ; ++k ) {
-// 			if( !cell(i).isNeighbor(background()) ) { 
-// 				size_t neighIndex; 
-// 				if( cell(i).wall(k)->cell1()->index()==i )
-// 					neighIndex = cell(i).wall(k)->cell2()->index();				
-// 				else
-// 					neighIndex = cell(i).wall(k)->cell1()->index();				
-// 				os << cellData[i][pI] * cellData[neighIndex][aI] / sum << " ";
-// 			}
-// 			else
-// 				os << 0.0 << " ";
-// 		}
-// 		os << std::endl;
-//   }	
-
-//   //For membrane PIN1 printing (version3)
-//   //
-//  	os << Nc << std::endl;
-// 	size_t auxinI=1,pinI=2,auxI=3,pidI=4,xI=5;
-//  	std::vector<double> parameter(8);
-// 	parameter[0]=0.1;
-// 	parameter[1]=1.0;
-// 	parameter[2]=0.9;
-// 	parameter[3]=0.1;
-// 	parameter[4]=1.0;
-// 	parameter[5]=1.0;
-// 	parameter[6]=0.0001;
-// 	parameter[7]=4;
-	
-// 	for( size_t i=0 ; i<Nc ; ++i ) {
-// 		size_t Ncv = cell(i).numVertex(); 
-// 		os << Ncv << " ";
-// 		for( size_t k=0 ; k<Ncv ; ++k )
-// 			os << cell(i).vertex(k)->index() << " ";
-		
-// 		//Transport
-// 		//
-// 		size_t numWalls=cell(i).numWall();
-// 		//PID factor
-// 		double tmpPow = std::pow(cellData[i][pidI],parameter[7]);
-// 		double Ci = tmpPow/(tmpPow+std::pow(parameter[6],parameter[7]));
-		
-// 		//Polarization coefficient normalization constant
-// 		double sum=0.0;
-// 		std::vector<double> Pij(numWalls);
-// 		for( size_t n=0 ; n<numWalls ; ++n ) {
-// 			if( cell(i).wall(n)->cell1() != background() &&
-// 					cell(i).wall(n)->cell2() != background() ) { 
-// 				size_t neighI;
-// 				if( cell(i).wall(n)->cell1()->index()==i )
-// 					neighI = cell(i).wall(n)->cell2()->index();
-// 				else
-// 					neighI = cell(i).wall(n)->cell1()->index();
-// 				//double powX = std::pow(cellData[ neighI ][ xI ],parameter[5));
-// 				//double Cij = powX/(std::pow(parameter[4),parameter[5))+powX);
-// 				double Cij = cellData[ neighI ][ xI ];
-// 				sum += Pij[n] = (1.0-parameter[2]) + 
-// 					parameter[2]*(Ci*Cij+(1.0-Ci)*(1.0-Cij));
-// 				//sum += Pij[n] = (1.0-parameter[2]) + 
-// 				//parameter[2]*cellData[ neighI ][xI];
-// 			}
-// 			else 
-// 				sum += Pij[n] = (1.0-parameter[2]);
-// 		}
-// 		//sum /= numWalls;//For adjusting for different num neigh
-// 		sum += parameter[3];
-		
-// 		if( sum >= 0.0 )
-// 			std::cout << parameter[3]*cellData[i][pinI] / sum << " ";
-// 		else
-// 			std::cout << "0.0 ";
-		
-// 		for( size_t n=0 ; n<numWalls ; ++n ) {
-// 			double pol=0.0;
-// 			if( sum != 0.0 )
-// 				pol = cellData[i][pinI] * Pij[n] / sum;
-// 			std::cout << pol << " ";
-// 		}
-// 		std::cout << std::endl;
-// 	}
-//
-//End Pij printing version3
-	
-// 	//Transport
-// 	//
-// 	size_t numWalls=T.cell(i).numWall();
-// 	//PID factor
-// 	double tmpPow = std::pow(cellData[i][pidI],parameter(7));
-// 	double Ci = tmpPow/(tmpPow+std::pow(parameter(29),parameter(30)));
-//     //Polarization coefficient normalization constant
-//     double sum=0.0;
-//     std::vector<double> Pij(numWalls);
-//     for( size_t n=0 ; n<numWalls ; ++n ) {
-//       if( T.cell(i).wall(n)->cell1() != T.background() &&
-// 					T.cell(i).wall(n)->cell2() != T.background() ) { 
-// 				size_t neighI;
-// 				if( T.cell(i).wall(n)->cell1()->index()==i )
-// 					neighI = T.cell(i).wall(n)->cell2()->index();
-// 				else
-// 					neighI = T.cell(i).wall(n)->cell1()->index();
-// 				double powX = std::pow(cellData[ neighI ][ xI ],parameter(28));
-// 				double Cij = powX/(std::pow(parameter(27),parameter(28))+powX);
-// 				sum += Pij[n] = (1.0-parameter(25)) + 
-// 					parameter(25)*(Ci*Cij+(1.0-Ci)*(1.0-Ci));
-//       }
-//       else 
-// 				sum += Pij[n] = (1.0-parameter(25));
-//     }
-//     //sum /= numWalls;//For adjusting for different num neigh
-//     sum += parameter(26);
-    
-//     for( size_t n=0 ; n<numWalls ; ++n ) {
-//       //if( !T.cell(i).isNeighbor(T.background()) ) { 
-//       if( T.cell(i).wall(n)->cell1() != T.background() &&
-// 					T.cell(i).wall(n)->cell2() != T.background() ) { 
-// 				size_t neighI; 
-// 				if( T.cell(i).wall(n)->cell1()->index()==i )
-// 					neighI = T.cell(i).wall(n)->cell2()->index();				
-// 				else
-// 					neighI = T.cell(i).wall(n)->cell1()->index();				
-// 				double pol=0.0;
-// 				if( sum != 0.0 )
-// 					pol = cellData[i][pinI] * Pij[n] / sum;
-// 				double transportRate = parameter(23)*cellData[neighI][auxI]*
-// 					pol*cellData[i][auxinI] /
-// 					( (parameter(24)+cellData[i][auxinI])*
-// 						(cellData[i][auxI]+cellData[neighI][auxI]) );
-// 				cellDerivs[i][auxinI] -= transportRate + 
-// 					parameter(31)*cellData[i][auxinI];
-// 				cellDerivs[neighI][auxinI] += transportRate +
-// 					parameter(31)*cellData[i][auxinI];
-//       }
-//     }
-
-//
-//End Pij printing version2
-
-
-//   for( size_t i=0 ; i<Nc ; ++i ) {
-//     size_t Ncv = cell(i).numVertex(); 
-//     os << Ncv << " ";
-//     for( size_t k=0 ; k<Ncv ; ++k )
-//       os << cell(i).vertex(k)->index() << " ";
-
-// 		double p3=0.01;
-// 		double sum=p3;
-// 		for( size_t n=0 ; n<Ncv ; ++n ) {
-// 			if( !cell(i).isNeighbor(background()) ) { 
-// 				if( cell(i).wall(n)->cell1()->index()==i )
-// 					sum += cellData[ cell(i).wall(n)->cell2()->index() ][ aI ];
-// 				else
-// 					sum += cellData[ cell(i).wall(n)->cell1()->index() ][ aI ];
-// 			}
-// 		}
-		
-// 		os << p3*cellData[i][pI]/sum << " ";		
-		
-// 		for( size_t k=0 ; k<Ncv ; ++k ) {
-// 			if( !cell(i).isNeighbor(background()) ) { 
-// 				size_t neighIndex; 
-// 				if( cell(i).wall(k)->cell1()->index()==i )
-// 					neighIndex = cell(i).wall(k)->cell2()->index();				
-// 				else
-// 					neighIndex = cell(i).wall(k)->cell1()->index();				
-// 				os << cellData[i][pI] * cellData[neighIndex][aI] / sum << " ";
-// 			}
-// 			else
-// 				os << 0.0 << " ";
-// 		}
-// 		os << std::endl;
-//   }	
-
+  // 		for( size_t k=0 ; k<Ncv ; ++k ) {
+  // 			if( !cell(i).isNeighbor(background()) ) { 
+  // 				size_t neighIndex; 
+  // 				if( cell(i).wall(k)->cell1()->index()==i )
+  // 					neighIndex = cell(i).wall(k)->cell2()->index();				
+  // 				else
+  // 					neighIndex = cell(i).wall(k)->cell1()->index();				
+  // 				os << cellData[i][pI] * cellData[neighIndex][aI] / sum << " ";
+  // 			}
+  // 			else
+  // 				os << 0.0 << " ";
+  // 		}
+  // 		os << std::endl;
+  //   }	
+  
+  //   //For membrane PIN1 printing (version3)
+  //   //
+  //  	os << Nc << std::endl;
+  // 	size_t auxinI=1,pinI=2,auxI=3,pidI=4,xI=5;
+  //  	std::vector<double> parameter(8);
+  // 	parameter[0]=0.1;
+  // 	parameter[1]=1.0;
+  // 	parameter[2]=0.9;
+  // 	parameter[3]=0.1;
+  // 	parameter[4]=1.0;
+  // 	parameter[5]=1.0;
+  // 	parameter[6]=0.0001;
+  // 	parameter[7]=4;
+  
+  // 	for( size_t i=0 ; i<Nc ; ++i ) {
+  // 		size_t Ncv = cell(i).numVertex(); 
+  // 		os << Ncv << " ";
+  // 		for( size_t k=0 ; k<Ncv ; ++k )
+  // 			os << cell(i).vertex(k)->index() << " ";
+  
+  // 		//Transport
+  // 		//
+  // 		size_t numWalls=cell(i).numWall();
+  // 		//PID factor
+  // 		double tmpPow = std::pow(cellData[i][pidI],parameter[7]);
+  // 		double Ci = tmpPow/(tmpPow+std::pow(parameter[6],parameter[7]));
+  
+  // 		//Polarization coefficient normalization constant
+  // 		double sum=0.0;
+  // 		std::vector<double> Pij(numWalls);
+  // 		for( size_t n=0 ; n<numWalls ; ++n ) {
+  // 			if( cell(i).wall(n)->cell1() != background() &&
+  // 					cell(i).wall(n)->cell2() != background() ) { 
+  // 				size_t neighI;
+  // 				if( cell(i).wall(n)->cell1()->index()==i )
+  // 					neighI = cell(i).wall(n)->cell2()->index();
+  // 				else
+  // 					neighI = cell(i).wall(n)->cell1()->index();
+  // 				//double powX = std::pow(cellData[ neighI ][ xI ],parameter[5));
+  // 				//double Cij = powX/(std::pow(parameter[4),parameter[5))+powX);
+  // 				double Cij = cellData[ neighI ][ xI ];
+  // 				sum += Pij[n] = (1.0-parameter[2]) + 
+  // 					parameter[2]*(Ci*Cij+(1.0-Ci)*(1.0-Cij));
+  // 				//sum += Pij[n] = (1.0-parameter[2]) + 
+  // 				//parameter[2]*cellData[ neighI ][xI];
+  // 			}
+  // 			else 
+  // 				sum += Pij[n] = (1.0-parameter[2]);
+  // 		}
+  // 		//sum /= numWalls;//For adjusting for different num neigh
+  // 		sum += parameter[3];
+  
+  // 		if( sum >= 0.0 )
+  // 			std::cout << parameter[3]*cellData[i][pinI] / sum << " ";
+  // 		else
+  // 			std::cout << "0.0 ";
+  
+  // 		for( size_t n=0 ; n<numWalls ; ++n ) {
+  // 			double pol=0.0;
+  // 			if( sum != 0.0 )
+  // 				pol = cellData[i][pinI] * Pij[n] / sum;
+  // 			std::cout << pol << " ";
+  // 		}
+  // 		std::cout << std::endl;
+  // 	}
+  //
+  //End Pij printing version3
+  
+  // 	//Transport
+  // 	//
+  // 	size_t numWalls=T.cell(i).numWall();
+  // 	//PID factor
+  // 	double tmpPow = std::pow(cellData[i][pidI],parameter(7));
+  // 	double Ci = tmpPow/(tmpPow+std::pow(parameter(29),parameter(30)));
+  //     //Polarization coefficient normalization constant
+  //     double sum=0.0;
+  //     std::vector<double> Pij(numWalls);
+  //     for( size_t n=0 ; n<numWalls ; ++n ) {
+  //       if( T.cell(i).wall(n)->cell1() != T.background() &&
+  // 					T.cell(i).wall(n)->cell2() != T.background() ) { 
+  // 				size_t neighI;
+  // 				if( T.cell(i).wall(n)->cell1()->index()==i )
+  // 					neighI = T.cell(i).wall(n)->cell2()->index();
+  // 				else
+  // 					neighI = T.cell(i).wall(n)->cell1()->index();
+  // 				double powX = std::pow(cellData[ neighI ][ xI ],parameter(28));
+  // 				double Cij = powX/(std::pow(parameter(27),parameter(28))+powX);
+  // 				sum += Pij[n] = (1.0-parameter(25)) + 
+  // 					parameter(25)*(Ci*Cij+(1.0-Ci)*(1.0-Ci));
+  //       }
+  //       else 
+  // 				sum += Pij[n] = (1.0-parameter(25));
+  //     }
+  //     //sum /= numWalls;//For adjusting for different num neigh
+  //     sum += parameter(26);
+  
+  //     for( size_t n=0 ; n<numWalls ; ++n ) {
+  //       //if( !T.cell(i).isNeighbor(T.background()) ) { 
+  //       if( T.cell(i).wall(n)->cell1() != T.background() &&
+  // 					T.cell(i).wall(n)->cell2() != T.background() ) { 
+  // 				size_t neighI; 
+  // 				if( T.cell(i).wall(n)->cell1()->index()==i )
+  // 					neighI = T.cell(i).wall(n)->cell2()->index();				
+  // 				else
+  // 					neighI = T.cell(i).wall(n)->cell1()->index();				
+  // 				double pol=0.0;
+  // 				if( sum != 0.0 )
+  // 					pol = cellData[i][pinI] * Pij[n] / sum;
+  // 				double transportRate = parameter(23)*cellData[neighI][auxI]*
+  // 					pol*cellData[i][auxinI] /
+  // 					( (parameter(24)+cellData[i][auxinI])*
+  // 						(cellData[i][auxI]+cellData[neighI][auxI]) );
+  // 				cellDerivs[i][auxinI] -= transportRate + 
+  // 					parameter(31)*cellData[i][auxinI];
+  // 				cellDerivs[neighI][auxinI] += transportRate +
+  // 					parameter(31)*cellData[i][auxinI];
+  //       }
+  //     }
+  
+  //
+  //End Pij printing version2
+  
+  
+  //   for( size_t i=0 ; i<Nc ; ++i ) {
+  //     size_t Ncv = cell(i).numVertex(); 
+  //     os << Ncv << " ";
+  //     for( size_t k=0 ; k<Ncv ; ++k )
+  //       os << cell(i).vertex(k)->index() << " ";
+  
+  // 		double p3=0.01;
+  // 		double sum=p3;
+  // 		for( size_t n=0 ; n<Ncv ; ++n ) {
+  // 			if( !cell(i).isNeighbor(background()) ) { 
+  // 				if( cell(i).wall(n)->cell1()->index()==i )
+  // 					sum += cellData[ cell(i).wall(n)->cell2()->index() ][ aI ];
+  // 				else
+  // 					sum += cellData[ cell(i).wall(n)->cell1()->index() ][ aI ];
+  // 			}
+  // 		}
+  
+  // 		os << p3*cellData[i][pI]/sum << " ";		
+  
+  // 		for( size_t k=0 ; k<Ncv ; ++k ) {
+  // 			if( !cell(i).isNeighbor(background()) ) { 
+  // 				size_t neighIndex; 
+  // 				if( cell(i).wall(k)->cell1()->index()==i )
+  // 					neighIndex = cell(i).wall(k)->cell2()->index();				
+  // 				else
+  // 					neighIndex = cell(i).wall(k)->cell1()->index();				
+  // 				os << cellData[i][pI] * cellData[neighIndex][aI] / sum << " ";
+  // 			}
+  // 			else
+  // 				os << 0.0 << " ";
+  // 		}
+  // 		os << std::endl;
+  //   }	
+  
 }
 
 void Tissue::

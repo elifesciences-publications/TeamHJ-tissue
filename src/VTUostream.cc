@@ -213,7 +213,7 @@ void VTUostream::write_cell_geometry(Tissue const& t)
   *m_os << "\n"
   << "</DataArray>\n"
   << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
-  for (int i = 0; i < t.numCell(); ++i)
+  for (size_t i = 0; i < t.numCell(); ++i)
   {
     *m_os << 7 << " ";
   }
@@ -379,8 +379,25 @@ void VTUostream::write_wall_data(Tissue const& t)
   std::vector<Cell> const& cells = t.cell();
   CellIter cit = cells.begin(), cend;
   Cell &c = const_cast<Cell&>(*cit);
-  int nvars = c.wall(0)->numVariable();
+  //Printing wall lengths
+    *m_os << "<DataArray type=\"Float64\" Name=\"wall length\" format=\"ascii\">\n";
+    for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
+    {
+      Cell &c = const_cast<Cell&>(*cit);
+      typedef std::vector<Wall*>::const_iterator WallIter;
+      std::vector<Wall*> const& walls = c.wall();
+      WallIter wit, wend;
+      for (wit = walls.begin(), wend = walls.end(); wit != wend; ++wit)
+      {
+        Wall &w = const_cast<Wall&>(**wit);
+        *m_os << w.length() << " ";
+      }
+    }
+    *m_os << "\n"
+    << "</DataArray>\n";
 
+  //Printing wall variables
+  int nvars = c.wall(0)->numVariable();
   for(int i = 0; i < nvars; ++i)
   {
     *m_os << "<DataArray type=\"Float64\" Name=\"wall variable " << i << "\" format=\"ascii\">\n";
@@ -413,7 +430,7 @@ void VTUostream::write_cell_point_geometry2(Tissue const& t)
   {
     Cell &c = const_cast<Cell&>(*cit);
     typedef std::vector<Wall*>::const_iterator WallIter;
-    std::vector<Wall*> const& walls = c.wall();
+    //std::vector<Wall*> const& walls = c.wall();
     
     std::vector<double> cent(3);
     cent = c.positionFromVertex();
@@ -463,7 +480,7 @@ void VTUostream::write_cell_geometry2(Tissue const& t)
   
   << "</DataArray>\n"
   << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
-  for (int i = 0; i < t.numCell(); ++i)
+  for (size_t i = 0; i < t.numCell(); ++i)
   {
     *m_os << 7 << " ";
   }

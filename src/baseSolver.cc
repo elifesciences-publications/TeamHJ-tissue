@@ -144,9 +144,11 @@ void BaseSolver::setTissueVariables()
   
   for (size_t i=0; i<T_->numWall(); ++i) {
     T_->wall(i).setLength(wallData_[i][0]);
-    T_->wall(i).setVariable(wallData_[i]);
-  }
-  
+    assert( T_->wall(i).numVariable()==wallData_[i].size()-1 ); //wallData also stores length
+    for (size_t j=0; j<T_->wall(i).numVariable(); ++j)
+      T_->wall(i).setVariable(j,wallData_[i][j+1]);
+  }  
+
   for (size_t i=0; i<T_->numVertex(); ++i) {
     T_->vertex(i).setPosition(vertexData_[i]);
   }
@@ -242,7 +244,7 @@ void BaseSolver::print(std::ostream &os)
     std::string pvdFile = "tmp/tissue.pvd";
     std::string cellFile = "tmp/VTK_cells.vtu";
     std::string wallFile = "tmp/VTK_walls.vtu";
-    //T_->copyState(cellData,wallData,vertexData);
+    setTissueVariables();
     if( tCount==0 ) {
       PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
     }
@@ -258,7 +260,7 @@ void BaseSolver::print(std::ostream &os)
     if( tCount==0 ) {
       PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
     }
-    //PVD_file::writeTwoWall(cellFile,wallFile,T_,tCount);
+    //PVD_file::writeTwoWallCompartment(*T_,cellFile,wallFile,tCount);
   }
   //
   // Print vertex and cell variables
