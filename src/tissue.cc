@@ -726,62 +726,62 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 void Tissue::readModel(std::ifstream &IN,int verbose) {
   
   unsigned int numReactionVal,numCompartmentChangeVal,numDirection;
-
-	if( verbose )
-		std::cerr << "Reading model file:\n";
+  
+  if( verbose )
+    std::cerr << "Reading model file:\n";
   IN >> numReactionVal;
   IN >> numCompartmentChangeVal;
-	IN >> numDirection;
-	assert(numDirection==0 || numDirection==1);
-
+  IN >> numDirection;
+  assert(numDirection==0 || numDirection==1);
+  
   //Read Reactions
   //
   //Remove any present reactions before adding
   if( numReaction() ) 
     reaction_.resize(0);
   
-	if( verbose )
-		std::cerr << "reactions...\n"; 
+  if( verbose )
+    std::cerr << "reactions...\n"; 
   for( size_t i=0 ; i<numReactionVal ; i++ ) {
     if( addReaction(IN) )
       std::cerr << "Tissue::ReadModel(ifstream) "
-								<< "Warning Adding reaction failed for "
-								<< "tissue " << id() << " (index " << i << ")\n";
-		else if( verbose )
-			std::cerr << reaction(numReaction()-1)->id() << std::endl;
-	}
+		<< "Warning Adding reaction failed for "
+		<< "tissue " << id() << " (index " << i << ")\n";
+    else if( verbose )
+      std::cerr << reaction(numReaction()-1)->id() << std::endl;
+  }
   //Read compartmentChanges
   //
   //Remove any present compartmentChanges before adding
   if( numCompartmentChange() ) 
     compartmentChange_.resize(0);
   
-	if( verbose )
-		std::cerr << "compartment changes...\n";
+  if( verbose )
+    std::cerr << "compartment changes...\n";
   for( size_t i=0 ; i<numCompartmentChangeVal ; i++ ) {
     if( addCompartmentChange(IN) ) 
       std::cerr << "Tissue::ReadModel(ifstream) "
-								<< "Warning Adding compartmentChange failed for "
-								<< "tissue " << id() << " (index " << i << ")\n";  
-		else if( verbose )
-			std::cerr << compartmentChange(numCompartmentChange()-1)->id() 
-								<< std::endl;
-	}
-	// Read direction if applicable
-	if( verbose )
-		std::cerr << "direction...\n";
-	if( numDirection ) {
-		if( direction()->readDirection(IN) ) {
+		<< "Warning Adding compartmentChange failed for "
+		<< "tissue " << id() << " (index " << i << ")\n";  
+    else if( verbose )
+      std::cerr << compartmentChange(numCompartmentChange()-1)->id() 
+		<< std::endl;
+  }
+  // Read direction if applicable
+  if( verbose )
+    std::cerr << "direction...\n";
+  if( numDirection ) {
+    if( direction()->readDirection(IN) ) {
       std::cerr << "Tissue::ReadModel(ifstream) "
-								<< "Adding direction failed." << std::endl;
-			exit(-1);
-		}
-		else if( verbose )
-			std::cerr << direction()->directionUpdate()->id() << std::endl
-								<< direction()->directionDivision()->id() << std::endl;
-	}			
-	if( verbose )
-		std::cerr << "Done\n\n";
+		<< "Adding direction failed." << std::endl;
+      exit(-1);
+    }
+    else if( verbose )
+      std::cerr << direction()->directionUpdate()->id() << std::endl
+		<< direction()->directionDivision()->id() << std::endl;
+  }			
+  if( verbose )
+    std::cerr << "Done\n\n";
 }
 
 void Tissue::readModel(const char *fileName, int verbose) 
@@ -796,15 +796,15 @@ void Tissue::readModel(std::string fileName, int verbose)
   std::istream *IN = myFiles::openFile(fName);
   if( !IN ) {
     std::cerr << "Tissue::readModel(std::string) - "
-							<< "Cannot open file " << fileName << "\n\n\7";
-		exit(-1);
-	}
+	      << "Cannot open file " << fileName << "\n\n\7";
+    exit(-1);
+  }
   readModel((std::ifstream &) *IN,verbose);
 }
 
 size_t wallFromCellPair(std::vector< std::pair<size_t,size_t> > &wallCell,
 			size_t c1,size_t c2) {
-
+  
   for( size_t i=0 ; i<wallCell.size() ; ++i )
     if( (wallCell[i].first==c1 && wallCell[i].second==c2) ||
 	(wallCell[i].first==c2 && wallCell[i].second==c1) )
