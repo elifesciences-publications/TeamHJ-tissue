@@ -13,7 +13,7 @@
 #include "myConfig.h"
 #include "myFiles.h"
 #include "myTimes.h"
-#include "VTUostream.h"
+#include "pvd_file.h"
 
 BaseSolver::BaseSolver()
 {
@@ -239,21 +239,26 @@ void BaseSolver::print(std::ostream &os)
   // Print in vtu format assuming a single wall component for variables
   //
   else if( printFlag_==1 ) {
-    if( tCount==0 )
-      os << numPrint_ << "\n";
-    size_t Nv = vertexData_.size(); 
-    if( !Nv ) {
-      os << "0 0" << std::endl << "0 0" << std::endl;
-      return;
+    std::string pvdFile = "tissue.pvd";
+    std::string cellFile = "VTK_cells.vtu";
+    std::string wallFile = "VTK_walls.vtu";
+    if( tCount==0 ) {
+      //PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
     }
-    //Print the vertex positions
-    size_t dimension = T_->vertex(0).numPosition(); // was vertexData_[0].size();
-    os << Nv << " " << dimension << std::endl;
-    for( size_t i=0 ; i<Nv ; ++i ) {
-      for( size_t d=0 ; d<dimension ; ++d )
-	os << vertexData_[i][d] << " ";
-      os << std::endl;
+    //PVD_file::write(cellFile,wallFile,T_,tCount);
+  }
+  //
+  // Print in vtu format assuming two wall components for wall variables (except for length)
+  //
+  else if( printFlag_==2 ) {
+    std::string pvdFile = "tissue.pvd";
+    std::string cellFile = "VTK_cells.vtu";
+    std::string wallFile = "VTK_walls.vtu";
+    if( tCount==0 ) {
+      //PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
     }
+    //PVD_file::writeTwoWall(cellFile,wallFile,T_,tCount);
+  }
   //
   // Print vertex and cell variables
   //
