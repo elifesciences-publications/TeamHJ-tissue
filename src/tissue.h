@@ -18,6 +18,7 @@
 #include "baseCompartmentChange.h"
 #include "cell.h"
 #include "direction.h"
+#include "myTypedefs.h"
 #include "vertex.h"
 #include "wall.h"
 
@@ -44,7 +45,7 @@ class Tissue {
   Direction direction_;
   std::vector<BaseReaction*> reaction_;
   std::vector<BaseCompartmentChange*> compartmentChange_;
-  //std::vector< std::vector<double> > tmpCellData_;
+  //DataMatrix tmpCellData_;
   
   std::vector<size_t> directionalWall_;
 	
@@ -103,9 +104,9 @@ class Tissue {
   ///
   /// @see Tissue::checkConnectivity()
   ///
-  Tissue( std::vector< std::vector<double> > &cellData,
-	  std::vector< std::vector<double> > &wallData,
-	  std::vector< std::vector<double> > &vertexData,
+  Tissue( DataMatrix &cellData,
+	  DataMatrix &wallData,
+	  DataMatrix &vertexData,
 	  std::vector< std::vector<size_t> > &cellVertex,
 	  std::vector< std::vector<size_t> > &wallVertex,
 	  int verbose=0);
@@ -285,14 +286,14 @@ class Tissue {
   ///
   /// Caveat: not fully tested.
   ///
-  void createTissueFromSpheres(std::vector< std::vector<double> > &y,
+  void createTissueFromSpheres(DataMatrix &y,
 			       double rFac=1.0, int verbose=0);
   ///
   /// @brief Creates a tissue from Voronoi data
   ///
   /// Caveat: not fully tested.
   ///
-  void createTissueFromVoronoi(std::vector< std::vector<double> > &vertexPos,
+  void createTissueFromVoronoi(DataMatrix &vertexPos,
 			       std::vector< std::vector<size_t> > &cellVertex,
 			       int verbose=0);
   ///
@@ -459,8 +460,8 @@ class Tissue {
   ///
   inline void setNumDirectionalWall(size_t val);
   
-  //inline const std::vector< std::vector<double> > & tmpCellData() const;
-  //inline void setTmpCellData(std::vector< std::vector<double> > &val);
+  //inline const DataMatrix & tmpCellData() const;
+  //inline void setTmpCellData(DataMatrix &val);
   ///
   /// @brief Sets all wall length variables from the two vertices positions
   ///
@@ -510,12 +511,12 @@ class Tissue {
   ///
   /// @see BaseReaction::derivs()
   ///
-  void derivs( std::vector< std::vector<double> > &cellData,
-	       std::vector< std::vector<double> > &wallData,
-	       std::vector< std::vector<double> > &vertexData,
-	       std::vector< std::vector<double> > &cellDeriv,
-	       std::vector< std::vector<double> > &wallDeriv,
-	       std::vector< std::vector<double> > &vertexDeriv );
+  void derivs( DataMatrix &cellData,
+	       DataMatrix &wallData,
+	       DataMatrix &vertexData,
+	       DataMatrix &cellDeriv,
+	       DataMatrix &wallDeriv,
+	       DataMatrix &vertexDeriv );
   ///
   /// @brief Initiates the variables via reactions
   ///
@@ -525,12 +526,12 @@ class Tissue {
   ///
   /// @see BaseReaction::initiate()
   ///
-  void initiateReactions(std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDeriv,
-			 std::vector< std::vector<double> > &wallDeriv,
-			 std::vector< std::vector<double> > &vertexDeriv );
+  void initiateReactions(DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDeriv,
+			 DataMatrix &wallDeriv,
+			 DataMatrix &vertexDeriv );
   ///
   /// @brief Takes care of 'discrete' updates during simulations
   ///
@@ -540,86 +541,86 @@ class Tissue {
   /// 
   /// @see BaseReaction::update()
   ///
-  void updateReactions(std::vector< std::vector<double> > &cellData,
-		       std::vector< std::vector<double> > &wallData,
-		       std::vector< std::vector<double> > &vertexData,
+  void updateReactions(DataMatrix &cellData,
+		       DataMatrix &wallData,
+		       DataMatrix &vertexData,
 		       double step);
   ///
   /// @brief Initiates direction variables before simulation
   ///
   /// @see Direction::initiate()
   ///
-  void initiateDirection(std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs );
+  void initiateDirection(DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs );
   ///
   /// @brief Updates the directions during simulations according to defined rules.
   ///
   /// @see Direction::update()
   ///
   void updateDirection(double step,							
-		       std::vector< std::vector<double> > &cellData,
-		       std::vector< std::vector<double> > &wallData,
-		       std::vector< std::vector<double> > &vertexData,
-		       std::vector< std::vector<double> > &cellDerivs,
-		       std::vector< std::vector<double> > &wallDerivs,
-		       std::vector< std::vector<double> > &vertexDerivs );
+		       DataMatrix &cellData,
+		       DataMatrix &wallData,
+		       DataMatrix &vertexData,
+		       DataMatrix &cellDerivs,
+		       DataMatrix &wallDerivs,
+		       DataMatrix &vertexDerivs );
   ///
   /// @brief Updates cell directions at cell divisions
   ///
   /// @see Direction::divide()
   ///
   void updateDirectionDivision(size_t cellI,
-			       std::vector< std::vector<double> > &cellData,
-			       std::vector< std::vector<double> > &wallData,
-			       std::vector< std::vector<double> > &vertexData,
-			       std::vector< std::vector<double> > &cellDerivs,
-			       std::vector< std::vector<double> > &wallDerivs,
-			       std::vector< std::vector<double> > &vertexDerivs);
+			       DataMatrix &cellData,
+			       DataMatrix &wallData,
+			       DataMatrix &vertexData,
+			       DataMatrix &cellDerivs,
+			       DataMatrix &wallDerivs,
+			       DataMatrix &vertexDerivs);
   ///
   /// @brief Checks for and updates the tissue according to CompartmentChange rules 
   ///
   /// @see BaseCompartmentChange
   ///
-  void checkCompartmentChange(std::vector< std::vector<double> > &cellData,
-			      std::vector< std::vector<double> > &wallData,
-			      std::vector< std::vector<double> > &vertexData,
-			      std::vector< std::vector<double> > &cellDeriv,
-			      std::vector< std::vector<double> > &wallDeriv,
-			      std::vector< std::vector<double> > &vertexDeriv );
+  void checkCompartmentChange(DataMatrix &cellData,
+			      DataMatrix &wallData,
+			      DataMatrix &vertexData,
+			      DataMatrix &cellDeriv,
+			      DataMatrix &wallDeriv,
+			      DataMatrix &vertexDeriv );
   ///
   /// @brief Updates topology and variables for a cell removal
   ///
   void removeCell(size_t cellIndex,
-		  std::vector< std::vector<double> > &cellData,
-		  std::vector< std::vector<double> > &wallData,
-		  std::vector< std::vector<double> > &vertexData,
-		  std::vector< std::vector<double> > &cellDeriv,
-		  std::vector< std::vector<double> > &wallDeriv,
-		  std::vector< std::vector<double> > &vertexDeriv );			
+		  DataMatrix &cellData,
+		  DataMatrix &wallData,
+		  DataMatrix &vertexData,
+		  DataMatrix &cellDeriv,
+		  DataMatrix &wallDeriv,
+		  DataMatrix &vertexDeriv );			
   ///
   /// @brief Calls removeCell(index,...) for all indices given in the vector
   ///
   void removeCells(std::vector<size_t> &cellIndex,
-		   std::vector< std::vector<double> > &cellData,
-		   std::vector< std::vector<double> > &wallData,
-		   std::vector< std::vector<double> > &vertexData,
-		   std::vector< std::vector<double> > &cellDeriv,
-		   std::vector< std::vector<double> > &wallDeriv,
-		   std::vector< std::vector<double> > &vertexDeriv );			
+		   DataMatrix &cellData,
+		   DataMatrix &wallData,
+		   DataMatrix &vertexData,
+		   DataMatrix &cellDeriv,
+		   DataMatrix &wallDeriv,
+		   DataMatrix &vertexDeriv );			
   ///
   /// @brief Calls removeCell(index,...) for all cells that are at 
   /// boundary and outside a radial threshold
   ///
-  void removeEpidermalCells(std::vector< std::vector<double> > &cellData,
-			    std::vector< std::vector<double> > &wallData,
-			    std::vector< std::vector<double> > &vertexData,
-			    std::vector< std::vector<double> > &cellDeriv,
-			    std::vector< std::vector<double> > &wallDeriv,
-			    std::vector< std::vector<double> > &vertexDeriv,
+  void removeEpidermalCells(DataMatrix &cellData,
+			    DataMatrix &wallData,
+			    DataMatrix &vertexData,
+			    DataMatrix &cellDeriv,
+			    DataMatrix &wallDeriv,
+			    DataMatrix &vertexDeriv,
 			    double radialThreshold = 0.0,
 			    const bool checkBackground = true);
   
@@ -627,23 +628,23 @@ class Tissue {
   /// @brief Calls removeCell(index,...) for all cells that are at 
   /// boundary and outside (all vertices) a radial threshold
   ///
-  void removeEpidermalCellsMk2(std::vector< std::vector<double> > &cellData,
-			       std::vector< std::vector<double> > &wallData,
-			       std::vector< std::vector<double> > &vertexData,
-			       std::vector< std::vector<double> > &cellDeriv,
-			       std::vector< std::vector<double> > &wallDeriv,
-			       std::vector< std::vector<double> > &vertexDeriv,
+  void removeEpidermalCellsMk2(DataMatrix &cellData,
+			       DataMatrix &wallData,
+			       DataMatrix &vertexData,
+			       DataMatrix &cellDeriv,
+			       DataMatrix &wallDeriv,
+			       DataMatrix &vertexDeriv,
 			       double radialThreshold = 0.0);
   
   ///
   /// @brief Calls removeCell(index,...) for all cells that are at the boundary and away from the max
   ///
-  void removeEpidermalCellsAtDistance(std::vector< std::vector<double> > &cellData,
-				      std::vector< std::vector<double> > &wallData,
-				      std::vector< std::vector<double> > &vertexData,
-				      std::vector< std::vector<double> > &cellDeriv,
-				      std::vector< std::vector<double> > &wallDeriv,
-				      std::vector< std::vector<double> > &vertexDeriv,
+  void removeEpidermalCellsAtDistance(DataMatrix &cellData,
+				      DataMatrix &wallData,
+				      DataMatrix &vertexData,
+				      DataMatrix &cellDeriv,
+				      DataMatrix &wallDeriv,
+				      DataMatrix &vertexDeriv,
 				      double radialThreshold,double max,
 				      size_t direction);
   ///
@@ -652,12 +653,12 @@ class Tissue {
   void divideCell( Cell *divCell, size_t w1, size_t w2, 
 		   std::vector<double> &v1Pos,
 		   std::vector<double> &v2Pos,
-		   std::vector< std::vector<double> > &cellData,
-		   std::vector< std::vector<double> > &wallData,
-		   std::vector< std::vector<double> > &vertexData,
-		   std::vector< std::vector<double> > &cellDeriv,
-		   std::vector< std::vector<double> > &wallDeriv,
-		   std::vector< std::vector<double> > &vertexDeriv,
+		   DataMatrix &cellData,
+		   DataMatrix &wallData,
+		   DataMatrix &vertexData,
+		   DataMatrix &cellDeriv,
+		   DataMatrix &wallDeriv,
+		   DataMatrix &vertexDeriv,
 		   std::vector<size_t> &volumeChangeList,
 		   double threshold=0.0);
 
@@ -670,12 +671,12 @@ class Tissue {
   /// @note Requires that the cell is triangulated with the center position stored in the celldata
   ///
   void divideCellCenterTriangulation( Cell *divCell, size_t v1, size_t v2, size_t centerIndex,
-				      std::vector< std::vector<double> > &cellData,
-				      std::vector< std::vector<double> > &wallData,
-				      std::vector< std::vector<double> > &vertexData,
-				      std::vector< std::vector<double> > &cellDeriv,
-				      std::vector< std::vector<double> > &wallDeriv,
-				      std::vector< std::vector<double> > &vertexDeriv,
+				      DataMatrix &cellData,
+				      DataMatrix &wallData,
+				      DataMatrix &vertexData,
+				      DataMatrix &cellDeriv,
+				      DataMatrix &wallDeriv,
+				      DataMatrix &vertexDeriv,
 				      std::vector<size_t> &volumeChangeList );
   
   ///
@@ -696,24 +697,24 @@ class Tissue {
   /// Finds maxima in cells for a specific variable via a local search, and stores
   /// infomration on which cells 'belong' to the different maxima in flag.
   ///
-  unsigned int findPeaksGradientAscent( std::vector< std::vector<double> > &cellData, 
+  unsigned int findPeaksGradientAscent( DataMatrix &cellData, 
 					size_t col, std::vector<size_t> &cellMax,
 					std::vector<size_t> &flag );
   
   //Print functions
   void printInit(std::ostream &os=std::cout);
-  void printInit(std::vector< std::vector<double> > &cellData,
-		 std::vector< std::vector<double> > &wallData,
-		 std::vector< std::vector<double> > &vertexData,
+  void printInit(DataMatrix &cellData,
+		 DataMatrix &wallData,
+		 DataMatrix &vertexData,
 		 std::ostream &os);
   void printVertex(std::ostream &os=std::cout);
   void printWall(std::ostream &os=std::cout);
   void printVertexAndCell(std::ostream &os=std::cout);
-  void printVertexAndCell(std::vector< std::vector<double> > &cellData,
-			  std::vector< std::vector<double> > &vertexData,
+  void printVertexAndCell(DataMatrix &cellData,
+			  DataMatrix &vertexData,
 			  std::ostream &os=std::cout);  
-  void printVertexAndWall(std::vector< std::vector<double> > &wallData,
-			  std::vector< std::vector<double> > &vertexData,
+  void printVertexAndWall(DataMatrix &wallData,
+			  DataMatrix &vertexData,
 			  std::ostream &os=std::cout);  
 };
 
@@ -895,14 +896,14 @@ inline void Tissue::setDirectionalWall(size_t i,size_t val)
   directionalWall_[i]=val;
 }
 
-//inline const std::vector< std::vector<double> > & Tissue::
+//inline const DataMatrix & Tissue::
 //tmpCellData() const 
 //{
 //	return tmpCellData_;
 //}
 
 //inline void Tissue::
-//setTmpCellData(std::vector< std::vector<double> > &val)
+//setTmpCellData(DataMatrix &val)
 //{
 //	tmpCellData_ = val;
 //}

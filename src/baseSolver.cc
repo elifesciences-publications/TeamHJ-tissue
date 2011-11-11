@@ -242,6 +242,7 @@ void BaseSolver::print(std::ostream &os)
     std::string pvdFile = "tmp/tissue.pvd";
     std::string cellFile = "tmp/VTK_cells.vtu";
     std::string wallFile = "tmp/VTK_walls.vtu";
+    //T_->copyState(cellData,wallData,vertexData);
     if( tCount==0 ) {
       PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
     }

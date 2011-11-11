@@ -27,19 +27,19 @@ class StaticDirection : public BaseDirectionUpdate {
 		  &indValue );
   
   void initiate(Tissue &T,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs );
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
   void update(Tissue &T, double h,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
 };
 
 ///
@@ -54,19 +54,19 @@ class WallDirection : public BaseDirectionUpdate {
 		&indValue );
   
   void initiate(Tissue &T,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs );
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
   void update(Tissue &T, double h,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
 };
 
 ///
@@ -84,19 +84,19 @@ class StrainDirection : public BaseDirectionUpdate {
 		  &indValue );
   
   void initiate(Tissue &T,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs );
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
   void update(Tissue &T, double h,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
 };
 
 ///
@@ -111,20 +111,20 @@ class StrainDirectionWall : public BaseDirectionUpdate
   StrainDirectionWall(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue );
   
   void initiate(Tissue &T,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs);
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);
   
   void update(Tissue &T, double h,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs);
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);
 };
 
 ///
@@ -139,19 +139,19 @@ class GradientDirection : public BaseDirectionUpdate {
 		    &indValue );
   
   void initiate(Tissue &T,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs );
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
   void update(Tissue &T, double h,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
 };
 
 class WallStressDirection : public BaseDirectionUpdate
@@ -160,20 +160,20 @@ class WallStressDirection : public BaseDirectionUpdate
   WallStressDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue );
   
   void initiate(Tissue &T,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs);
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);
   
   void update(Tissue &T, double h,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs);
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);
 };
 
 class DoubleWallStressDirection : public BaseDirectionUpdate
@@ -182,20 +182,20 @@ class DoubleWallStressDirection : public BaseDirectionUpdate
   DoubleWallStressDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue );
   
   void initiate(Tissue &T,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs);
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);
   
   void update(Tissue &T, double h,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs);
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);
 };
 
 class StretchDirection : public BaseDirectionUpdate
@@ -204,20 +204,20 @@ class StretchDirection : public BaseDirectionUpdate
   StretchDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue );
   
   void initiate(Tissue &T,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs);
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);
   
   void update(Tissue &T, double h,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs);
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);
 };
 
 class PCAPlaneDirection : public BaseDirectionUpdate
@@ -226,20 +226,20 @@ class PCAPlaneDirection : public BaseDirectionUpdate
   PCAPlaneDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue );
   
   void initiate(Tissue &T,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs);
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);
   
   void update(Tissue &T, double h,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs);
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);
 };
 
 class VertexStressDirection : public BaseDirectionUpdate
@@ -248,20 +248,20 @@ class VertexStressDirection : public BaseDirectionUpdate
   VertexStressDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
   
   void initiate(Tissue &T,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs);
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);
   
   void update(Tissue &T, double h,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs);
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);
 };
 
 #endif

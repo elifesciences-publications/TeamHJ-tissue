@@ -25,12 +25,12 @@ class BaseSolver {
 
 protected:
   Tissue *T_;
-  std::vector< std::vector<double> > cellData_;
-  std::vector< std::vector<double> > wallData_;
-  std::vector< std::vector<double> > vertexData_;
-  std::vector< std::vector<double> > cellDerivs_; 
-  std::vector< std::vector<double> > wallDerivs_; 
-  std::vector< std::vector<double> > vertexDerivs_; 
+  DataMatrix cellData_;
+  DataMatrix wallData_;
+  DataMatrix vertexData_;
+  DataMatrix cellDerivs_; 
+  DataMatrix wallDerivs_; 
+  DataMatrix vertexDerivs_; 
   std::vector< std::vector<std::vector<double> > > cellDataCopy_;
   double t_;
   double startTime_;

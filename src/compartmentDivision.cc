@@ -1,10 +1,10 @@
-/**
- * Filename     : compartmentDivision.cc
- * Description  : Classes describing compartmentDivision updates
- * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
- * Created      : July 2006
- * Revision     : $Id:$
- */
+//
+// Filename     : compartmentDivision.cc
+// Description  : Classes describing compartmentDivision updates
+// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+// Created      : July 2006
+// Revision     : $Id:$
+//
 #include<limits>
 
 #include "baseCompartmentChange.h"
@@ -53,12 +53,12 @@ DivisionVolumeViaLongestWall(std::vector<double> &paraValue,
 
 int DivisionVolumeViaLongestWall::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) {
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) {
   
   if( T->cell(i).calculateVolume(vertexData) > parameter(0) ) {
     std::cerr << "Cell " << i << " marked for division with volume " 
@@ -70,12 +70,12 @@ flag(Tissue *T,size_t i,
 
 void DivisionVolumeViaLongestWall::
 update(Tissue *T,size_t i,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
   Cell *divCell = &(T->cell(i));
   size_t dimension = vertexData[0].size();
@@ -182,12 +182,12 @@ DivisionVolumeViaLongestWallSpatial(std::vector<double> &paraValue,
 
 int DivisionVolumeViaLongestWallSpatial::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) {
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) {
 	
 	size_t sI=variableIndex(0,0);
 	assert( sI<vertexData[0].size());
@@ -212,12 +212,12 @@ flag(Tissue *T,size_t i,
 
 void DivisionVolumeViaLongestWallSpatial::
 update(Tissue *T,size_t i,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
   Cell *divCell = &(T->cell(i));
   size_t dimension = vertexData[0].size();
@@ -324,12 +324,12 @@ DivisionVolumeViaLongestWall3D(std::vector<double> &paraValue,
  */
 int DivisionVolumeViaLongestWall3D::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) {
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) {
   
   if( T->cell(i).calculateVolume(vertexData) > parameter(0) ) {
     std::cerr << "Cell " << i << " marked for division with volume " 
@@ -344,12 +344,12 @@ flag(Tissue *T,size_t i,
  */
 void DivisionVolumeViaLongestWall3D::
 update(Tissue *T,size_t i,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
   Cell *divCell = &(T->cell(i));
   size_t dimension = vertexData[0].size();
@@ -563,12 +563,12 @@ DivisionVolumeViaLongestWall3DSpatial(std::vector<double> &paraValue,
 
 int DivisionVolumeViaLongestWall3DSpatial::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) {
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) {
 	
 	size_t sI=variableIndex(0,0);
 	assert( sI<vertexData[0].size());
@@ -593,12 +593,12 @@ flag(Tissue *T,size_t i,
 
 void DivisionVolumeViaLongestWall3DSpatial::
 update(Tissue *T,size_t i,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
   Cell *divCell = &(T->cell(i));
   size_t dimension = vertexData[0].size();
@@ -816,12 +816,12 @@ DivisionVolumeViaStrain(std::vector<double> &paraValue,
  */
 int DivisionVolumeViaStrain::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) {
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) {
 	
   if( T->cell(i).calculateVolume(vertexData) > parameter(0) ) {
     std::cerr << "Cell " << i << " marked for division with volume " 
@@ -836,12 +836,12 @@ flag(Tissue *T,size_t i,
  */
 void DivisionVolumeViaStrain::
 update(Tissue *T,size_t cellI,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
   Cell *divCell = &(T->cell(cellI));
   size_t dimension = vertexData[0].size();
@@ -857,7 +857,7 @@ update(Tissue *T,size_t cellI,
 	
 	//Create temporary x,y,dx positions
 	size_t numV = divCell->numVertex(); 
-	std::vector< std::vector<double> > x(numV),y(numV),dx(numV),
+	DataMatrix x(numV),y(numV),dx(numV),
 		xM(numV),yM(numV),dxM(numV);
 	
 	double dt=1.0;
@@ -1152,12 +1152,12 @@ DivisionVolumeViaDirection(std::vector<double> &paraValue,
  */
 int DivisionVolumeViaDirection::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) {
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) {
 	
   if( T->cell(i).calculateVolume(vertexData) > parameter(0) ) {
     std::cerr << "Cell " << i << " marked for division with volume " 
@@ -1172,12 +1172,12 @@ flag(Tissue *T,size_t i,
  */
 void DivisionVolumeViaDirection::
 update(Tissue *T,size_t cellI,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
   Cell *divCell = &(T->cell(cellI));
   size_t dimension = vertexData[0].size();
@@ -1321,12 +1321,12 @@ DivisionVolumeRandomDirection(std::vector<double> &paraValue,
 
 int DivisionVolumeRandomDirection::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) {
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) {
   
   if( T->cell(i).calculateVolume(vertexData) > parameter(0) ) {
     std::cerr << "Cell " << i << " marked for division with volume " 
@@ -1338,12 +1338,12 @@ flag(Tissue *T,size_t i,
 
 void DivisionVolumeRandomDirection::
 update(Tissue *T,size_t cellI,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
   Cell *divCell = &(T->cell(cellI));
   size_t dimension = vertexData[0].size();
@@ -1553,12 +1553,12 @@ DivisionVolumeRandomDirectionCenterTriangulation(std::vector<double> &paraValue,
 
 int DivisionVolumeRandomDirectionCenterTriangulation::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) {
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) {
   
   if( T->cell(i).calculateVolumeCenterTriangulation(vertexData,cellData,variableIndex(0,0)) > 
       parameter(0) ) {
@@ -1571,12 +1571,12 @@ flag(Tissue *T,size_t i,
 
 void DivisionVolumeRandomDirectionCenterTriangulation::
 update(Tissue *T,size_t cellI,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
   Cell *divCell = &(T->cell(cellI));
   size_t cellIndex = divCell->index();
@@ -1669,12 +1669,12 @@ DivisionForceDirection::DivisionForceDirection(std::vector<double> &paraValue,
 }
 
 int DivisionForceDirection::flag(Tissue *T, size_t i,
-						   std::vector< std::vector<double> > &cellData,
-						   std::vector< std::vector<double> > &wallData,
-						   std::vector< std::vector<double> > &vertexData,
-						   std::vector< std::vector<double> > &cellDerivs,
-						   std::vector< std::vector<double> > &wallDerivs,
-						   std::vector< std::vector<double> > &vertexDerivs)
+						   DataMatrix &cellData,
+						   DataMatrix &wallData,
+						   DataMatrix &vertexData,
+						   DataMatrix &cellDerivs,
+						   DataMatrix &wallDerivs,
+						   DataMatrix &vertexDerivs)
 {
 	if (T->cell(i).calculateVolume(vertexData) > parameter(0)) {
 		std::cerr << "Cell " << i << " marked for division with volume " 
@@ -1685,12 +1685,12 @@ int DivisionForceDirection::flag(Tissue *T, size_t i,
 }
 
 void DivisionForceDirection::update(Tissue* T, size_t i,
-							 std::vector< std::vector<double> > &cellData,
-							 std::vector< std::vector<double> > &wallData,
-							 std::vector< std::vector<double> > &vertexData,
-							 std::vector< std::vector<double> > &cellDerivs,
-							 std::vector< std::vector<double> > &wallDerivs,
-							 std::vector< std::vector<double> > &vertexDerivs)
+							 DataMatrix &cellData,
+							 DataMatrix &wallData,
+							 DataMatrix &vertexData,
+							 DataMatrix &cellDerivs,
+							 DataMatrix &wallDerivs,
+							 DataMatrix &vertexDerivs)
 {
 	Cell cell = T->cell(i);
 	assert(cell.numWall() > 1);
@@ -1751,7 +1751,7 @@ void DivisionForceDirection::update(Tissue* T, size_t i,
 
 	// Find candidate walls for division (Patrik: See RR014)
 	std::vector<size_t> candidateWalls;
-	std::vector< std::vector<double> > verticesPosition;
+	DataMatrix verticesPosition;
 
 	for (size_t i = 0; i < cell.numWall(); ++i) {
 		Wall *wall = cell.wall(i);
@@ -1839,12 +1839,12 @@ DivisionVolumeViaShortestPath(std::vector<double> &paraValue,
  */
 int DivisionVolumeViaShortestPath::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) 
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) 
 {	
   if( T->cell(i).calculateVolume(vertexData) > parameter(0) ) {
     std::cerr << "Cell " << i << " marked for division with volume " 
@@ -1859,12 +1859,12 @@ flag(Tissue *T,size_t i,
  */
 void DivisionVolumeViaShortestPath::
 update(Tissue *T,size_t i,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) 
 {  
   Cell *divCell = &(T->cell(i));
   size_t dimension = vertexData[0].size();
@@ -2153,12 +2153,12 @@ DivisionShortestPath::DivisionShortestPath(std::vector<double> &paraValue,
 }
 
 int DivisionShortestPath::flag(Tissue *T, size_t i,
-						 std::vector< std::vector<double> > &cellData,
-						 std::vector< std::vector<double> > &wallData,
-						 std::vector< std::vector<double> > &vertexData,
-						 std::vector< std::vector<double> > &cellDerivs,
-						 std::vector< std::vector<double> > &wallDerivs,
-						 std::vector< std::vector<double> > &vertexDerivs)
+						 DataMatrix &cellData,
+						 DataMatrix &wallData,
+						 DataMatrix &vertexData,
+						 DataMatrix &cellDerivs,
+						 DataMatrix &wallDerivs,
+						 DataMatrix &vertexDerivs)
 {
 	if (T->cell(i).calculateVolume(vertexData) > parameter(0))
 	{
@@ -2171,12 +2171,12 @@ int DivisionShortestPath::flag(Tissue *T, size_t i,
 }
 
 void DivisionShortestPath::update(Tissue* T, size_t i,
-						    std::vector< std::vector<double> > &cellData,
-						    std::vector< std::vector<double> > &wallData,
-						    std::vector< std::vector<double> > &vertexData,
-						    std::vector< std::vector<double> > &cellDerivs,
-						    std::vector< std::vector<double> > &wallDerivs,
-						    std::vector< std::vector<double> > &vertexDerivs)
+						    DataMatrix &cellData,
+						    DataMatrix &wallData,
+						    DataMatrix &vertexData,
+						    DataMatrix &cellDerivs,
+						    DataMatrix &wallDerivs,
+						    DataMatrix &vertexDerivs)
 {
 	Cell &cell = T->cell(i);
 	
@@ -2239,12 +2239,12 @@ void DivisionShortestPath::update(Tissue* T, size_t i,
 }
 
 std::vector<DivisionShortestPath::Candidate> DivisionShortestPath::getCandidates(Tissue* T, size_t i,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
 {
 	Cell cell = T->cell(i);
 
@@ -2511,12 +2511,12 @@ DivisionRandom::DivisionRandom(std::vector<double> &paraValue, std::vector< std:
 }
 
 int DivisionRandom::flag(Tissue *T, size_t i,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
 {
 	if (T->cell(i).calculateVolume(vertexData) > parameter(0)) {
 		std::cerr << "Cell " << i << " marked for division with volume " 
@@ -2527,12 +2527,12 @@ int DivisionRandom::flag(Tissue *T, size_t i,
 }
 
 void DivisionRandom::update(Tissue* T, size_t i,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
 {
 	Cell cell = T->cell(i);
 
@@ -2642,12 +2642,12 @@ DivisionMainAxis::DivisionMainAxis(std::vector<double> &paraValue,
 }
 
 int DivisionMainAxis::flag(Tissue *T, size_t i,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
 {
 	if (T->cell(i).calculateVolume(vertexData) > parameter(0)) {
 		std::cerr << "Cell " << i << " marked for division with volume " << T->cell(i).volume() << std::endl;
@@ -2658,12 +2658,12 @@ int DivisionMainAxis::flag(Tissue *T, size_t i,
 }
 
 void DivisionMainAxis::update(Tissue *T, size_t cellI,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDeriv,
-	std::vector< std::vector<double> > &wallDeriv,
-	std::vector< std::vector<double> > &vertexDeriv)
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDeriv,
+	DataMatrix &wallDeriv,
+	DataMatrix &vertexDeriv)
 {
 	
 	Cell &cell = T->cell(cellI);
@@ -2746,14 +2746,14 @@ void DivisionMainAxis::update(Tissue *T, size_t cellI,
 	wallData[numWallTmp][0] *= parameter(1);
 }
 
-std::vector<double> DivisionMainAxis::getMainAxis(Cell &cell, std::vector< std::vector<double> > &vertexData)
+std::vector<double> DivisionMainAxis::getMainAxis(Cell &cell, DataMatrix &vertexData)
 {
 	size_t dimensions = vertexData[0].size();
 	size_t numberOfVertices = cell.numVertex();
 	
 	// Copy vertex data to temporary container and calculate mean values.
 	
-	std::vector< std::vector<double> > vertices(numberOfVertices);
+	DataMatrix vertices(numberOfVertices);
 	for (size_t i = 0; i < numberOfVertices; ++i) {
 	  vertices[i].resize(dimensions);
 	}
@@ -2781,7 +2781,7 @@ std::vector<double> DivisionMainAxis::getMainAxis(Cell &cell, std::vector< std::
 	
 	// Calculate the correlation matrix.
 	
-	std::vector< std::vector<double> > R(dimensions);
+	DataMatrix R(dimensions);
 	
 	for (size_t i = 0; i < dimensions; ++i) {
 	  R[i].resize(dimensions);
@@ -2801,9 +2801,9 @@ std::vector<double> DivisionMainAxis::getMainAxis(Cell &cell, std::vector< std::
 	
 	// Find the eigenvectors with the two greatests corresponding eigenvalues.
 	
-	std::vector< std::vector<double> > candidates;
+	DataMatrix candidates;
 	
-	std::vector< std::vector<double> > V;
+	DataMatrix V;
 	std::vector<double> d;
 	
 	myMath::jacobiTransformation(R , V, d);
@@ -2858,12 +2858,12 @@ DivisionVolumeRandomDirectionGiantCells::DivisionVolumeRandomDirectionGiantCells
 }
 
 int DivisionVolumeRandomDirectionGiantCells::flag(Tissue *T, size_t i,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
 {
 	if (cellData[i][variableIndex(1, 0)] && T->cell(i).calculateVolume(vertexData) > parameter(0) * parameter(4))
 	{
@@ -2882,12 +2882,12 @@ int DivisionVolumeRandomDirectionGiantCells::flag(Tissue *T, size_t i,
 
 void DivisionVolumeRandomDirectionGiantCells::
 update(Tissue *T,size_t cellI,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
   Cell *divCell = &(T->cell(cellI));
   size_t dimension = vertexData[0].size();
@@ -3102,12 +3102,12 @@ DivisionShortestPathGiantCells::DivisionShortestPathGiantCells(std::vector<doubl
 }
 
 int DivisionShortestPathGiantCells::flag(Tissue *T, size_t i,
-						 std::vector< std::vector<double> > &cellData,
-						 std::vector< std::vector<double> > &wallData,
-						 std::vector< std::vector<double> > &vertexData,
-						 std::vector< std::vector<double> > &cellDerivs,
-						 std::vector< std::vector<double> > &wallDerivs,
-						 std::vector< std::vector<double> > &vertexDerivs)
+						 DataMatrix &cellData,
+						 DataMatrix &wallData,
+						 DataMatrix &vertexData,
+						 DataMatrix &cellDerivs,
+						 DataMatrix &wallDerivs,
+						 DataMatrix &vertexDerivs)
 {
 	if (cellData[i][variableIndex(1, 0)] && T->cell(i).calculateVolume(vertexData) > parameter(0) * parameter(4))
 	{
@@ -3124,12 +3124,12 @@ int DivisionShortestPathGiantCells::flag(Tissue *T, size_t i,
 }
 
 void DivisionShortestPathGiantCells::update(Tissue* T, size_t i,
-						    std::vector< std::vector<double> > &cellData,
-						    std::vector< std::vector<double> > &wallData,
-						    std::vector< std::vector<double> > &vertexData,
-						    std::vector< std::vector<double> > &cellDerivs,
-						    std::vector< std::vector<double> > &wallDerivs,
-						    std::vector< std::vector<double> > &vertexDerivs)
+						    DataMatrix &cellData,
+						    DataMatrix &wallData,
+						    DataMatrix &vertexData,
+						    DataMatrix &cellDerivs,
+						    DataMatrix &wallDerivs,
+						    DataMatrix &vertexDerivs)
 {
 	Cell &cell = T->cell(i);
 	
@@ -3191,206 +3191,207 @@ void DivisionShortestPathGiantCells::update(Tissue* T, size_t i,
 	//T->checkConnectivity(1);
 }
 
-std::vector<DivisionShortestPathGiantCells::Candidate> DivisionShortestPathGiantCells::getCandidates(Tissue* T, size_t i,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+std::vector<DivisionShortestPathGiantCells::Candidate> 
+DivisionShortestPathGiantCells::getCandidates(Tissue* T, size_t i,
+					      DataMatrix &cellData,
+					      DataMatrix &wallData,
+					      DataMatrix &vertexData,
+					      DataMatrix &cellDerivs,
+					      DataMatrix &wallDerivs,
+					      DataMatrix &vertexDerivs)
 {
-	Cell cell = T->cell(i);
-
-	assert(cell.numWall() > 1);
-
-	std::vector<double> o;
+  Cell cell = T->cell(i);
+  
+  assert(cell.numWall() > 1);
+  
+  std::vector<double> o;
+  
+  if (parameter(3) == 1)
+    {
+      o = cell.positionFromVertex(vertexData);
+    }
+  else
+    {
+      try
+	{
+	  o = cell.randomPositionInCell(vertexData);
+	}
+      catch (Cell::FailedToFindRandomPositionInCellException)
+	{
+	  return std::vector<Candidate>();
+	}
+    }
+  
+  double ox = o[0];
+  double oy = o[1];
+  
+  std::vector<Candidate> candidates;
+  
+  for (size_t i = 0; i < cell.numWall() - 1; ++i) {
+    for (size_t j = i + 1; j < cell.numWall(); ++j) {
+      Wall *wall1 = cell.wall(i);
+      Wall *wall2 = cell.wall(j);
+      size_t wall1Index = i;
+      size_t wall2Index = j;
+      
+      // 			std::cerr << "i = " << wall1->index() << " : j = " << wall2->index() << std::endl;
+      //  			std::cerr << "o = (" << ox << ", " << oy << ")" << std::endl;
+      
+      double x1x;
+      double x1y;
+      double x2x;
+      double x2y;
+      
+      double vx;
+      double vy;
+      
+      double x1px;
+      double x1py;
+      double x2px;
+      double x2py;
+      
+      double ux;
+      double uy;
+      
+      bool flippedVectors;
+      
+      do {
+	flippedVectors = false;
 	
-	if (parameter(3) == 1)
-	{
-		o = cell.positionFromVertex(vertexData);
+	x1x = vertexData[wall1->vertex1()->index()][0];
+	x1y = vertexData[wall1->vertex1()->index()][1];
+	x2x = vertexData[wall1->vertex2()->index()][0];
+	x2y = vertexData[wall1->vertex2()->index()][1];
+	
+	vx = x2x - x1x;
+	vy = x2y - x1y;
+	
+	if (vx * (oy - x1y) - vy * (ox - x1x) > 0) {
+	  //  					std::cerr << "Change v" << std::endl;
+	  double tmpx = x1x;
+	  double tmpy = x1y;
+	  x1x = x2x;
+	  x1y = x2y;
+	  x2x = tmpx;
+	  x2y = tmpy;
+	  vx = -vx;
+	  vy = -vy;
 	}
-	else
-	{
-		try
-		{
-			o = cell.randomPositionInCell(vertexData);
-		}
-		catch (Cell::FailedToFindRandomPositionInCellException)
-		{
-			return std::vector<Candidate>();
-		}
+	
+	
+	x1px = vertexData[wall2->vertex1()->index()][0];
+	x1py = vertexData[wall2->vertex1()->index()][1];
+	x2px = vertexData[wall2->vertex2()->index()][0];
+	x2py = vertexData[wall2->vertex2()->index()][1];
+	
+	ux = x2px - x1px;
+	uy = x2py - x1py;
+	
+	if (ux * (oy - x1py) - uy * (ox - x1px) < 0) {
+	  //  					std::cerr << "Change u" << std::endl;
+	  double tmpx = x1px;
+	  double tmpy = x1py;
+	  x1px = x2px;
+	  x1py = x2py;
+	  x2px = tmpx;
+	  x2py = tmpy;
+	  ux = -ux;
+	  uy = -uy;
 	}
-
-	double ox = o[0];
-	double oy = o[1];
-
-	std::vector<Candidate> candidates;
-
-	for (size_t i = 0; i < cell.numWall() - 1; ++i) {
-		for (size_t j = i + 1; j < cell.numWall(); ++j) {
-			Wall *wall1 = cell.wall(i);
-			Wall *wall2 = cell.wall(j);
-			size_t wall1Index = i;
-			size_t wall2Index = j;
-
-// 			std::cerr << "i = " << wall1->index() << " : j = " << wall2->index() << std::endl;
-//  			std::cerr << "o = (" << ox << ", " << oy << ")" << std::endl;
-
-			double x1x;
-			double x1y;
-			double x2x;
-			double x2y;
-			
-			double vx;
-			double vy;
-
-			double x1px;
-			double x1py;
-			double x2px;
-			double x2py;
-			
-			double ux;
-			double uy;
-
-			bool flippedVectors;
-
-			do {
-				flippedVectors = false;
-
-				x1x = vertexData[wall1->vertex1()->index()][0];
-				x1y = vertexData[wall1->vertex1()->index()][1];
-				x2x = vertexData[wall1->vertex2()->index()][0];
-				x2y = vertexData[wall1->vertex2()->index()][1];
-				
-				vx = x2x - x1x;
-				vy = x2y - x1y;
-				
-				if (vx * (oy - x1y) - vy * (ox - x1x) > 0) {
-//  					std::cerr << "Change v" << std::endl;
-					double tmpx = x1x;
-					double tmpy = x1y;
-					x1x = x2x;
-					x1y = x2y;
-					x2x = tmpx;
-					x2y = tmpy;
-					vx = -vx;
-					vy = -vy;
-				}
-
-
-				x1px = vertexData[wall2->vertex1()->index()][0];
-				x1py = vertexData[wall2->vertex1()->index()][1];
-				x2px = vertexData[wall2->vertex2()->index()][0];
-				x2py = vertexData[wall2->vertex2()->index()][1];
-				
-				ux = x2px - x1px;
-				uy = x2py - x1py;
-				
-				if (ux * (oy - x1py) - uy * (ox - x1px) < 0) {
-//  					std::cerr << "Change u" << std::endl;
-					double tmpx = x1px;
-					double tmpy = x1py;
-					x1px = x2px;
-					x1py = x2py;
-					x2px = tmpx;
-					x2py = tmpy;
-					ux = -ux;
-					uy = -uy;
-				}
-
-				if (vx * uy - vy * ux > 0) {
-//  					std::cerr << "Flipped walls" << std::endl;
-					Wall *tmp = wall1;
-					wall1 = wall2;
-					wall2 = tmp;
-					size_t tmpIndex = wall1Index;
-					wall1Index = wall2Index;
-					wall2Index = tmpIndex;
-					flippedVectors = true;
-				}
-			} while (flippedVectors == true);
-
-			double wx = ox - x1x;
-			double wy = oy - x1y;
-			double wpx = ox - x1px;
-			double wpy = oy - x1py;
-			
-			double dvx = wx - ((vx * wx + vy * wy) / (vx * vx + vy * vy)) * vx;
-			double dvy = wy - ((vx * wx + vy * wy) / (vx * vx + vy * vy)) * vy;
-			double dux = wpx - ((ux * wpx + uy * wpy) / (ux * ux + uy * uy)) * ux;
-			double duy = wpy - ((ux * wpx + uy * wpy) / (ux * ux + uy * uy)) * uy;
-
-
-// 			std::cerr << " x1 = (" << x1x << ", " << x1y << ")" << std::endl;
-// 			std::cerr << " x2 = (" << x2x << ", " << x2y << ")" << std::endl;
-// 			std::cerr << " x1p = (" << x1px << ", " << x1py << ")" << std::endl;
-// 			std::cerr << " x2p = (" << x2px << ", " << x2py << ")" << std::endl;
-
-// 			std::cerr << " v = (" << vx << ", " << vy << ")" << std::endl;
-// 			std::cerr << " u = (" << ux << ", " << uy << ")" << std::endl;
-// 			std::cerr << " w = (" << wx << ", " << wy << ")" << std::endl;
-// 			std::cerr << " wp = (" << wpx << ", " << wpy << ")" << std::endl;
-// 			std::cerr << " dv = (" << dvx << ", " << dvy << ")" << std::endl;
-// 			std::cerr << " du = (" << dux << ", " << duy << ")" << std::endl;
-
-
-			double A = std::sqrt(dvx * dvx + dvy * dvy);
-			double B = std::sqrt(dux * dux + duy * duy);
-
-			double sigma = std::acos((vx * ux + vy * uy) / (std::sqrt(vx * vx + vy * vy) * std::sqrt(ux * ux + uy * uy)));
-
-			double alpha = astar(sigma, A, B);
-			double beta = M_PI + sigma - alpha;
-
-			double t = (vx * wx + vy * wy) / (vx * vx + vy * vy);
-			double tp = t + (1.0 / std::sqrt(vx * vx + vy * vy)) * A * std::sin(alpha - 0.50 * M_PI) / std::sin(alpha);
-
-			double s = (ux * wpx + uy * wpy) / (ux * ux + uy * uy);
-			double sp = s + (1.0 / std::sqrt(ux * ux + uy * uy)) * B * std::sin(beta - 0.50 * M_PI) / std::sin(beta);
-
-			double px = x1x + tp * vx;
-			double py = x1y + tp * vy;
-		    
-			double qx = x1px + sp * ux;
-			double qy = x1py + sp * uy;
-
-// 			std::cerr << " sigma = " << sigma << std::endl
-// 				  << " alpha = " << alpha << std::endl
-// 				  << " beta = " << beta << std::endl
-// 				  << " A = " << A << std::endl
-// 				  << " B = " << B << std::endl
-// 				  << " px = " << px << std::endl
-// 				  << " py = " << py << std::endl
-// 				  << " qx = " << qx << std::endl
-// 				  << " qy = " << qy << std::endl
-// 				  << " tp = " << tp << std::endl
-// 				  << " sp = " << sp << std::endl;
-
-
-			double distance = std::sqrt((qx - px) * (qx - px) + (qy - py) * (qy - py));
-
-//   			std::cerr << " distance = " << distance << std::endl;
-
-			if (tp <= 0.0 || tp >= 1.0 || sp <= 0.0 || sp >= 1.0) {
-//   				std::cerr << "Discard" << std::endl;
-				continue;
-			} else {
-//  				std::cerr << "Keep" << std::endl;
-				Candidate candidate;
-				candidate.distance = distance;
-				candidate.px = px;
-				candidate.py = py;
-				candidate.qx = qx;
-				candidate.qy = qy;
-				candidate.wall1 = wall1Index;
-				candidate.wall2 = wall2Index;
-
-				candidates.push_back(candidate);
-			}
-		}
-	}	
-
-	return candidates;
+	
+	if (vx * uy - vy * ux > 0) {
+	  //  					std::cerr << "Flipped walls" << std::endl;
+	  Wall *tmp = wall1;
+	  wall1 = wall2;
+	  wall2 = tmp;
+	  size_t tmpIndex = wall1Index;
+	  wall1Index = wall2Index;
+	  wall2Index = tmpIndex;
+	  flippedVectors = true;
+	}
+      } while (flippedVectors == true);
+      
+      double wx = ox - x1x;
+      double wy = oy - x1y;
+      double wpx = ox - x1px;
+      double wpy = oy - x1py;
+      
+      double dvx = wx - ((vx * wx + vy * wy) / (vx * vx + vy * vy)) * vx;
+      double dvy = wy - ((vx * wx + vy * wy) / (vx * vx + vy * vy)) * vy;
+      double dux = wpx - ((ux * wpx + uy * wpy) / (ux * ux + uy * uy)) * ux;
+      double duy = wpy - ((ux * wpx + uy * wpy) / (ux * ux + uy * uy)) * uy;
+      
+      
+      // 			std::cerr << " x1 = (" << x1x << ", " << x1y << ")" << std::endl;
+      // 			std::cerr << " x2 = (" << x2x << ", " << x2y << ")" << std::endl;
+      // 			std::cerr << " x1p = (" << x1px << ", " << x1py << ")" << std::endl;
+      // 			std::cerr << " x2p = (" << x2px << ", " << x2py << ")" << std::endl;
+      
+      // 			std::cerr << " v = (" << vx << ", " << vy << ")" << std::endl;
+      // 			std::cerr << " u = (" << ux << ", " << uy << ")" << std::endl;
+      // 			std::cerr << " w = (" << wx << ", " << wy << ")" << std::endl;
+      // 			std::cerr << " wp = (" << wpx << ", " << wpy << ")" << std::endl;
+      // 			std::cerr << " dv = (" << dvx << ", " << dvy << ")" << std::endl;
+      // 			std::cerr << " du = (" << dux << ", " << duy << ")" << std::endl;
+      
+      
+      double A = std::sqrt(dvx * dvx + dvy * dvy);
+      double B = std::sqrt(dux * dux + duy * duy);
+      
+      double sigma = std::acos((vx * ux + vy * uy) / (std::sqrt(vx * vx + vy * vy) * std::sqrt(ux * ux + uy * uy)));
+      
+      double alpha = astar(sigma, A, B);
+      double beta = M_PI + sigma - alpha;
+      
+      double t = (vx * wx + vy * wy) / (vx * vx + vy * vy);
+      double tp = t + (1.0 / std::sqrt(vx * vx + vy * vy)) * A * std::sin(alpha - 0.50 * M_PI) / std::sin(alpha);
+      
+      double s = (ux * wpx + uy * wpy) / (ux * ux + uy * uy);
+      double sp = s + (1.0 / std::sqrt(ux * ux + uy * uy)) * B * std::sin(beta - 0.50 * M_PI) / std::sin(beta);
+      
+      double px = x1x + tp * vx;
+      double py = x1y + tp * vy;
+      
+      double qx = x1px + sp * ux;
+      double qy = x1py + sp * uy;
+      
+      // 			std::cerr << " sigma = " << sigma << std::endl
+      // 				  << " alpha = " << alpha << std::endl
+      // 				  << " beta = " << beta << std::endl
+      // 				  << " A = " << A << std::endl
+      // 				  << " B = " << B << std::endl
+      // 				  << " px = " << px << std::endl
+      // 				  << " py = " << py << std::endl
+      // 				  << " qx = " << qx << std::endl
+      // 				  << " qy = " << qy << std::endl
+      // 				  << " tp = " << tp << std::endl
+      // 				  << " sp = " << sp << std::endl;
+      
+      
+      double distance = std::sqrt((qx - px) * (qx - px) + (qy - py) * (qy - py));
+      
+      //   			std::cerr << " distance = " << distance << std::endl;
+      
+      if (tp <= 0.0 || tp >= 1.0 || sp <= 0.0 || sp >= 1.0) {
+	//   				std::cerr << "Discard" << std::endl;
+	continue;
+      } else {
+	//  				std::cerr << "Keep" << std::endl;
+	Candidate candidate;
+	candidate.distance = distance;
+	candidate.px = px;
+	candidate.py = py;
+	candidate.qx = qx;
+	candidate.qy = qy;
+	candidate.wall1 = wall1Index;
+	candidate.wall2 = wall2Index;
+	
+	candidates.push_back(candidate);
+      }
+    }
+  }	
+  
+  return candidates;
 }
 
 double DivisionShortestPathGiantCells::astar(double sigma, double A, double B)

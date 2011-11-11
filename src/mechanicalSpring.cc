@@ -47,12 +47,12 @@ VertexFromWallSpring(std::vector<double> &paraValue,
 
 void VertexFromWallSpring::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Do the update for each wall
   size_t numWalls = T.numWall();
@@ -129,12 +129,12 @@ VertexFromDoubleWallSpring(std::vector<double> &paraValue,
 
 void VertexFromDoubleWallSpring::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   //Do the update for each wall
   size_t numWalls = T.numWall();
@@ -215,12 +215,12 @@ VertexFromWallSpringSpatial(std::vector<double> &paraValue,
 
 void VertexFromWallSpringSpatial::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   // Do the update for each wall
   size_t numWalls = T.numWall();
@@ -324,12 +324,12 @@ VertexFromWallSpringMT(std::vector<double> &paraValue,
 
 void VertexFromWallSpringMT::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   //Do the update for each wall
   size_t numWalls = T.numWall();
@@ -408,9 +408,9 @@ derivs(Tissue &T,
 
 void VertexFromWallSpringMT::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData )
+				 DataMatrix &cellData,
+				 DataMatrix &wallData,
+				 DataMatrix &vertexData )
 {
 }
 
@@ -457,12 +457,12 @@ VertexFromWallSpringMTSpatial(std::vector<double> &paraValue,
 
 void VertexFromWallSpringMTSpatial::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   // Do the update for each wall
   size_t numWalls = T.numWall();
@@ -608,12 +608,12 @@ VertexFromWallSpringMTHistory(std::vector<double> &paraValue,
 
 void VertexFromWallSpringMTHistory::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   //Do the update for each wall
   size_t numWalls = T.numWall();
@@ -692,9 +692,9 @@ derivs(Tissue &T,
 
 void VertexFromWallSpringMTHistory::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData)
+				 DataMatrix &cellData,
+				 DataMatrix &wallData,
+				 DataMatrix &vertexData)
 {
   //Do the initiation for each wall
   size_t numWalls = T.numWall();
@@ -790,12 +790,12 @@ VertexFromEpidermalWallSpring(std::vector<double> &paraValue,
 */
 void VertexFromEpidermalWallSpring::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Do the update for each wall
   size_t numWalls = T.numWall();
@@ -877,12 +877,12 @@ VertexFromEpidermalCellWallSpring(std::vector<double> &paraValue,
 
 void VertexFromEpidermalCellWallSpring::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {
   
   //Do the update for each wall
@@ -962,12 +962,12 @@ VertexFromWallSpringExperimental(std::vector<double> &paraValue,
 
 void VertexFromWallSpringExperimental::
 derivs(Tissue &T,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs)
 {
 	for (size_t i = 0; i < T.numWall(); ++i) {
 		size_t vertex1Index = T.wall(i).vertex1()->index();
@@ -1037,12 +1037,12 @@ VertexFromWallSpringConcentrationHill(std::vector<double> &paraValue,
 */
 void VertexFromWallSpringConcentrationHill::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Do the update for each wall
   size_t numWalls = T.numWall();
@@ -1137,12 +1137,12 @@ VertexFromWallSpringMTConcentrationHill(std::vector<double> &paraValue,
 
 void VertexFromWallSpringMTConcentrationHill::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   //Do the update for each wall
   size_t numWalls = T.numWall();
@@ -1267,12 +1267,12 @@ VertexFromDoubleWallSpringMTConcentrationHill(std::vector<double> &paraValue,
 
 void VertexFromDoubleWallSpringMTConcentrationHill::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   //Do the update for each wall
   size_t numWalls = T.numWall();

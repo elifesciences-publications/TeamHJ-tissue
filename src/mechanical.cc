@@ -46,12 +46,12 @@ VertexFromCellPressure(std::vector<double> &paraValue,
 
 void VertexFromCellPressure::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Do the update for each vertex via each wall in each cell
   size_t numCells = T.numCell();
@@ -119,12 +119,12 @@ VertexFromCellPressureVolumeNormalized(std::vector<double> &paraValue,
 
 void VertexFromCellPressureVolumeNormalized::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Do the update for each vertex via each wall in each cell
   size_t numCells = T.numCell();
@@ -227,12 +227,12 @@ VertexFromCellPressureThresholdFromMaxPos(std::vector<double> &paraValue,
 
 void VertexFromCellPressureThresholdFromMaxPos::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Do the update for each vertex via each wall in each cell
   size_t numCells = T.numCell();
@@ -350,12 +350,12 @@ VertexFromCellPowerdiagram(std::vector<double> &paraValue,
 
 void VertexFromCellPowerdiagram::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Do the update for each vertex
   //size_t numCells = T.numCell();
@@ -368,7 +368,7 @@ derivs(Tissue &T,
     size_t numCellForVertex = T.vertex(i).numCell();
     if(  numCellForVertex == 3 ) {
       //Calculate position for all three cells
-      std::vector< std::vector<double> > cellPos(numCellForVertex);
+      DataMatrix cellPos(numCellForVertex);
       std::vector<double> cellR(numCellForVertex);
       for( size_t cellI=0 ; cellI<numCellForVertex ; ++cellI ) {
 	cellR[cellI] = cellData[ T.vertex(i).cell(cellI)->index() ][ cellRIndex ];
@@ -448,12 +448,12 @@ VertexFromCellInternalPressure(std::vector<double> &paraValue,
 
 void VertexFromCellInternalPressure::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Do the update for each vertex via each wall in each cell
   size_t numCells = T.numCell();
@@ -571,12 +571,12 @@ VertexForceOrigoFromIndex(std::vector<double> &paraValue,
 
 void VertexForceOrigoFromIndex::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   size_t dimension = vertexData[variableIndex(0,0)].size();
   double coeff = parameter(0)*parameter(1);
@@ -631,12 +631,12 @@ CellForceOrigoFromIndex(std::vector<double> &paraValue,
 
 void CellForceOrigoFromIndex::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   double coeff = parameter(0)*parameter(1);
   size_t dimension = vertexData[0].size();
@@ -694,12 +694,12 @@ CylinderForce(std::vector<double> &paraValue,
 
 void CylinderForce::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   double coeff = parameter(0)*parameter(1);
   size_t dimension = vertexData[0].size();
@@ -761,12 +761,12 @@ SphereCylinderForce(std::vector<double> &paraValue,
 
 void SphereCylinderForce::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   double coeff = parameter(0)*parameter(1);
   size_t dimension = vertexData[0].size();
@@ -841,12 +841,12 @@ SphereCylinderForceFromRadius(std::vector<double> &paraValue,
 
 void SphereCylinderForceFromRadius::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   size_t dimension = vertexData[0].size();
   size_t lastPosIndex = dimension-1;
@@ -937,12 +937,12 @@ InfiniteWallForce(std::vector<double> &paraValue,
 
 void InfiniteWallForce::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Check the cancelation for every vertex
   size_t numVertices = T.numVertex();
@@ -1006,12 +1006,12 @@ EpidermalVertexForce(std::vector<double> &paraValue,
 
 void EpidermalVertexForce::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Check the cancelation for every vertex
   size_t numVertices = T.numVertex();
@@ -1060,12 +1060,12 @@ VertexFromPressureExperimental::VertexFromPressureExperimental(std::vector<doubl
 
 void VertexFromPressureExperimental::
 derivs(Tissue &T,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs)
 {
 	// ATTENTION! This function assume two dimensions (x, y) and that
 	// the vertices are sorted in a clock-wise order.
@@ -1161,12 +1161,12 @@ CellVolumeExperimental(std::vector<double> &paraValue,
 
 void CellVolumeExperimental::
 derivs(Tissue &T,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs)
 {
 	for (size_t n = 0; n < T.numCell(); ++n) {
 		Cell cell = T.cell(n);
@@ -1226,12 +1226,12 @@ EpidermalRadialForce::EpidermalRadialForce(std::vector<double> &paraValue,
 }
 
 void EpidermalRadialForce::derivs(Tissue &T,
-						    std::vector< std::vector<double> > &cellData,
-						    std::vector< std::vector<double> > &wallData,
-						    std::vector< std::vector<double> > &vertexData,
-						    std::vector< std::vector<double> > &cellDerivs,
-						    std::vector< std::vector<double> > &wallDerivs,
-						    std::vector< std::vector<double> > &vertexDerivs)
+						    DataMatrix &cellData,
+						    DataMatrix &wallData,
+						    DataMatrix &vertexData,
+						    DataMatrix &cellDerivs,
+						    DataMatrix &wallDerivs,
+						    DataMatrix &vertexDerivs)
 {
 	for (size_t n = 0; n < T.numVertex(); ++n) {
 		Vertex vertex = T.vertex(n);
@@ -1293,12 +1293,12 @@ PerpendicularWallPressure::PerpendicularWallPressure(std::vector<double> &paraVa
 }
 
 void PerpendicularWallPressure::derivs(Tissue &T,
-							    std::vector< std::vector<double> > &cellData,
-							    std::vector< std::vector<double> > &wallData,
-							    std::vector< std::vector<double> > &vertexData,
-							    std::vector< std::vector<double> > &cellDerivs,
-							    std::vector< std::vector<double> > &wallDerivs,
-							    std::vector< std::vector<double> > &vertexDerivs)
+							    DataMatrix &cellData,
+							    DataMatrix &wallData,
+							    DataMatrix &vertexData,
+							    DataMatrix &cellDerivs,
+							    DataMatrix &wallDerivs,
+							    DataMatrix &vertexDerivs)
 {
 	size_t dimension = vertexData[0].size();
 	if (dimension==2) {
@@ -1483,12 +1483,12 @@ VertexFromCellPlane(std::vector<double> &paraValue,
 
 void VertexFromCellPlane::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs)
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs)
 {
   size_t dimension = vertexData[0].size();
   if (dimension!=3) {
@@ -1667,12 +1667,12 @@ VertexFromCellPlaneSpatial(std::vector<double> &paraValue,
 
 void VertexFromCellPlaneSpatial::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs)
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs)
 {
   size_t dimension = vertexData[0].size();
   if (dimension!=3) {
@@ -1874,12 +1874,12 @@ VertexFromCellPlaneConcentrationHill(std::vector<double> &paraValue,
 
 void VertexFromCellPlaneConcentrationHill::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs)
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs)
 {
   size_t dimension = vertexData[0].size();
   if (dimension!=3) {
@@ -2056,12 +2056,12 @@ VertexFromCellPlaneNormalized(std::vector<double> &paraValue,
 
 void VertexFromCellPlaneNormalized::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs)
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs)
 {
   size_t dimension = vertexData[0].size();
   if (dimension!=3) {
@@ -2070,7 +2070,7 @@ derivs(Tissue &T,
     exit(EXIT_FAILURE);
   }
   std::vector<double> tmpD(dimension);
-  std::vector< std::vector<double> > vertexDerivsTmp(vertexDerivs.size(),tmpD);
+  DataMatrix vertexDerivsTmp(vertexDerivs.size(),tmpD);
   unsigned int numFlipNormal=0;
   for (size_t n = 0; n < T.numCell(); ++n) {
     Cell cell = T.cell(n);
@@ -2249,12 +2249,12 @@ VertexFromCellPlaneNormalizedSpatial(std::vector<double> &paraValue,
 
 void VertexFromCellPlaneNormalizedSpatial::
 derivs(Tissue &T,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs)
 {
 	size_t dimension = vertexData[0].size();
 	if (dimension!=3) {
@@ -2280,7 +2280,7 @@ derivs(Tissue &T,
 
 
 	std::vector<double> tmpD(dimension);
-	std::vector< std::vector<double> > vertexDerivsTmp(vertexDerivs.size(),tmpD);
+	DataMatrix vertexDerivsTmp(vertexDerivs.size(),tmpD);
 	unsigned int numFlipNormal=0;
 	size_t numCells=T.numCell();
 	for (size_t n=0; n<numCells; ++n) {
@@ -2463,12 +2463,12 @@ VertexFromCellPlaneSphereCylinder(std::vector<double> &paraValue,
 
 void VertexFromCellPlaneSphereCylinder::
 derivs(Tissue &T,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs)
 {
 	size_t dimension = vertexData[0].size();
 	if (dimension!=3) {
@@ -2564,12 +2564,12 @@ VertexFromCellPlaneSphereCylinderConcentrationHill(std::vector<double> &paraValu
 
 void VertexFromCellPlaneSphereCylinderConcentrationHill::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs)
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs)
 {
   size_t dimension = vertexData[0].size();
   if (dimension!=3) {
@@ -2658,12 +2658,12 @@ VertexFromCellPlaneTriangular(std::vector<double> &paraValue,
 
 void VertexFromCellPlaneTriangular::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs)
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs)
 {
   size_t dimension = vertexData[0].size();
   if (dimension!=3) {
@@ -2718,12 +2718,12 @@ DebugReaction::DebugReaction(std::vector<double> &paraValue,
 }
 
 void DebugReaction::derivs(Tissue &T,
-			   std::vector< std::vector<double> > &cellData,
-			   std::vector< std::vector<double> > &wallData,
-			   std::vector< std::vector<double> > &vertexData,
-			   std::vector< std::vector<double> > &cellDerivs,
-			   std::vector< std::vector<double> > &wallDerivs,
-			   std::vector< std::vector<double> > &vertexDerivs)
+			   DataMatrix &cellData,
+			   DataMatrix &wallData,
+			   DataMatrix &vertexData,
+			   DataMatrix &cellDerivs,
+			   DataMatrix &wallDerivs,
+			   DataMatrix &vertexDerivs)
 {
 	for (size_t i = 0; i < T.numCell(); ++i) {
 		Cell cell = T.cell(i);

@@ -12,7 +12,7 @@
 #include<string>
 #include<iostream>
 #include<fstream>
-//#include"tissue.h"
+#include"myTypedefs.h"
 
 class Tissue;
 
@@ -66,19 +66,19 @@ class BaseDirectionUpdate {
   inline void setVariableIndex(std::vector< std::vector<size_t> > &value);
   
   virtual void initiate(Tissue &T,
-			std::vector< std::vector<double> > &cellData,
-			std::vector< std::vector<double> > &wallData,
-			std::vector< std::vector<double> > &vertexData,
-			std::vector< std::vector<double> > &cellDerivs,
-			std::vector< std::vector<double> > &wallDerivs,
-			std::vector< std::vector<double> > &vertexDerivs );
+			DataMatrix &cellData,
+			DataMatrix &wallData,
+			DataMatrix &vertexData,
+			DataMatrix &cellDerivs,
+			DataMatrix &wallDerivs,
+			DataMatrix &vertexDerivs );
   virtual void update(Tissue &T, double h,
-		      std::vector< std::vector<double> > &cellData,
-		      std::vector< std::vector<double> > &wallData,
-		      std::vector< std::vector<double> > &vertexData,
-		      std::vector< std::vector<double> > &cellDerivs,
-		      std::vector< std::vector<double> > &wallDerivs,
-		      std::vector< std::vector<double> > &vertexDerivs );
+		      DataMatrix &cellData,
+		      DataMatrix &wallData,
+		      DataMatrix &vertexData,
+		      DataMatrix &cellDerivs,
+		      DataMatrix &wallDerivs,
+		      DataMatrix &vertexDerivs );
   virtual void print( std::ofstream &os );
 };
 

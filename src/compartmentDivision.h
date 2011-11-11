@@ -1,10 +1,10 @@
-/**
- * Filename     : compartmentDivision.h
- * Description  : Classes describing compartmentDivision updates
- * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
- * Created      : July 2006
- * Revision     : $Id:$
- */
+//
+// Filename     : compartmentDivision.h
+// Description  : Classes describing compartmentDivision updates
+// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+// Created      : July 2006
+// Revision     : $Id:$
+//
 #ifndef COMPARTMENTDIVISION_H
 #define COMPARTMENTDIVISION_H
 
@@ -27,19 +27,19 @@ class DivisionVolumeViaLongestWall : public BaseCompartmentChange {
 			       std::vector< std::vector<size_t> > 
 			       &indValue );
   int flag(Tissue *T,size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs );
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs );
   void update(Tissue* T,size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );  
 };
 
 ///
@@ -61,19 +61,19 @@ class DivisionVolumeViaLongestWallSpatial : public BaseCompartmentChange {
 				      &indValue );
   
   int flag(Tissue *T,size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs );
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs );
   void update(Tissue* T,size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );  
 };
 
 //!Divides a cell when volume above a threshold in 3D
@@ -89,19 +89,19 @@ class DivisionVolumeViaLongestWall3D : public BaseCompartmentChange {
 				 &indValue );
   
   int flag(Tissue *T,size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs );
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs );
   void update(Tissue* T,size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );  
 };
 
 ///
@@ -123,19 +123,19 @@ class DivisionVolumeViaLongestWall3DSpatial : public BaseCompartmentChange {
 					&indValue );
   
   int flag(Tissue *T,size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs );
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs );
   void update(Tissue* T,size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );  
 };
 
 //!Divides a cell when volume above a threshold
@@ -151,19 +151,19 @@ class DivisionVolumeViaStrain : public BaseCompartmentChange {
 			  &indValue );
   
   int flag(Tissue *T,size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs );
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs );
   void update(Tissue* T,size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );  
 };
 
 //!Divides a cell when volume above a threshold
@@ -179,19 +179,19 @@ class DivisionVolumeViaDirection : public BaseCompartmentChange {
 			     &indValue );
   
   int flag(Tissue *T,size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs );
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs );
   void update(Tissue* T,size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );  
 };
 
 //!Divides a cell when volume above a threshold
@@ -207,19 +207,19 @@ class DivisionVolumeRandomDirection : public BaseCompartmentChange {
 				&indValue );
   
   int flag(Tissue *T,size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs );
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs );
   void update(Tissue* T,size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );  
 };
 
 ///
@@ -241,19 +241,19 @@ class DivisionVolumeRandomDirectionCenterTriangulation : public BaseCompartmentC
 						   &indValue );
   
   int flag(Tissue *T,size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs );
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs );
   void update(Tissue* T,size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );  
 };
 
 class DivisionForceDirection : public BaseCompartmentChange
@@ -263,19 +263,19 @@ class DivisionForceDirection : public BaseCompartmentChange
 			 std::vector< std::vector<size_t> > &indValue);
 	
   int flag(Tissue *T, size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs);
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs);
   void update(Tissue* T, size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs);  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);  
 };
 
 //!Divides a cell when volume above a threshold
@@ -291,19 +291,19 @@ class DivisionVolumeViaShortestPath : public BaseCompartmentChange {
 				&indValue );
   
   int flag(Tissue *T,size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs );
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs );
   void update(Tissue* T,size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );  
 };
 
 class DivisionShortestPath : public BaseCompartmentChange
@@ -321,28 +321,28 @@ class DivisionShortestPath : public BaseCompartmentChange
 		       std::vector< std::vector<size_t> > &indValue);
   
   int flag(Tissue *T, size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs);
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs);
   void update(Tissue* T, size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs);  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);  
   
   std::vector<DivisionShortestPath::Candidate> 
     getCandidates(Tissue* T, size_t i,
-		  std::vector< std::vector<double> > &cellData,
-		  std::vector< std::vector<double> > &wallData,
-		  std::vector< std::vector<double> > &vertexData,
-		  std::vector< std::vector<double> > &cellDerivs,
-		  std::vector< std::vector<double> > &wallDerivs,
-		  std::vector< std::vector<double> > &vertexDerivs);
+		  DataMatrix &cellData,
+		  DataMatrix &wallData,
+		  DataMatrix &vertexData,
+		  DataMatrix &cellDerivs,
+		  DataMatrix &wallDerivs,
+		  DataMatrix &vertexDerivs);
   
   double astar(double sigma, double A, double B);
   double f(double a, double sigma, double A, double B);
@@ -364,29 +364,29 @@ class DivisionShortestPathGiantCells : public BaseCompartmentChange
 				 std::vector< std::vector<size_t> > &indValue);
   
   int flag(Tissue *T, size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs);
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs);
   
   void update(Tissue* T, size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs);  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);  
   
   std::vector<DivisionShortestPathGiantCells::Candidate> 
     getCandidates(Tissue* T, size_t i,
-		  std::vector< std::vector<double> > &cellData,
-		  std::vector< std::vector<double> > &wallData,
-		  std::vector< std::vector<double> > &vertexData,
-		  std::vector< std::vector<double> > &cellDerivs,
-		  std::vector< std::vector<double> > &wallDerivs,
-		  std::vector< std::vector<double> > &vertexDerivs);
+		  DataMatrix &cellData,
+		  DataMatrix &wallData,
+		  DataMatrix &vertexData,
+		  DataMatrix &cellDerivs,
+		  DataMatrix &wallDerivs,
+		  DataMatrix &vertexDerivs);
   
   double astar(double sigma, double A, double B);
   double f(double a, double sigma, double A, double B);
@@ -399,20 +399,20 @@ class DivisionRandom : public BaseCompartmentChange
   DivisionRandom(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
   
   int flag(Tissue *T, size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs);
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs);
   
   void update(Tissue* T, size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs);  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);  
   
   /** Returns an integer between 0 and n - 1. */
   int random(int n);
@@ -426,20 +426,20 @@ class DivisionVolumeRandomDirectionGiantCells : public BaseCompartmentChange
 					  std::vector< std::vector<size_t> > &indValue);
   
   int flag(Tissue *T, size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs);
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs);
   
   void update(Tissue* T, size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs);  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);  
 };
 
 class DivisionMainAxis : public BaseCompartmentChange
@@ -450,22 +450,22 @@ class DivisionMainAxis : public BaseCompartmentChange
 		   std::vector< std::vector<size_t> > &indValue);
   
   int flag(Tissue *T, size_t i,
-	   std::vector< std::vector<double> > &cellData,
-	   std::vector< std::vector<double> > &wallData,
-	   std::vector< std::vector<double> > &vertexData,
-	   std::vector< std::vector<double> > &cellDerivs,
-	   std::vector< std::vector<double> > &wallDerivs,
-	   std::vector< std::vector<double> > &vertexDerivs);
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs);
   
   void update(Tissue* T, size_t i,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs);  
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);  
   
-  std::vector<double> getMainAxis(Cell &cell, std::vector< std::vector<double> > &vertexData);
+  std::vector<double> getMainAxis(Cell &cell, DataMatrix &vertexData);
   
  private:
   struct Candidate

@@ -12,7 +12,7 @@
 #include<string>
 #include<iostream>
 #include<fstream>
-//#include"tissue.h"
+#include"myTypedefs.h"
 
 class Tissue;
 
@@ -215,12 +215,12 @@ class BaseReaction {
   /// @note This is typically only included for quite specific reactions.
   ///  
   virtual void initiate(Tissue &T,
-			std::vector< std::vector<double> > &cellData,
-			std::vector< std::vector<double> > &wallData,
-			std::vector< std::vector<double> > &vertexData,
-			std::vector< std::vector<double> > &cellDerivs,
-			std::vector< std::vector<double> > &wallDerivs,
-			std::vector< std::vector<double> > &vertexDerivs );
+			DataMatrix &cellData,
+			DataMatrix &wallData,
+			DataMatrix &vertexData,
+			DataMatrix &cellDerivs,
+			DataMatrix &wallDerivs,
+			DataMatrix &vertexDerivs );
   ///
   /// @brief Calculates the derivative given the state in
   /// cell[wall,vertex]Data and adds it to cell[wall,vertex]Derivs.
@@ -250,12 +250,12 @@ class BaseReaction {
   /// @param vertexDerivs The vertex derivs to which the output of the reaction is added.
   ///
   virtual void derivs(Tissue &T,
-		      std::vector< std::vector<double> > &cellData,
-		      std::vector< std::vector<double> > &wallData,
-		      std::vector< std::vector<double> > &vertexData,
-		      std::vector< std::vector<double> > &cellDerivs,
-		      std::vector< std::vector<double> > &wallDerivs,
-		      std::vector< std::vector<double> > &vertexDerivs );
+		      DataMatrix &cellData,
+		      DataMatrix &wallData,
+		      DataMatrix &vertexData,
+		      DataMatrix &cellDerivs,
+		      DataMatrix &wallDerivs,
+		      DataMatrix &vertexDerivs );
   ///
   /// @brief For reactions that need to update its parameters (state) during
   /// the simulation
@@ -280,9 +280,9 @@ class BaseReaction {
   /// @note This is typically only included for very specific reactions.
   ///
   virtual void update(Tissue &T,
-		      std::vector< std::vector<double> > &cellData,
-		      std::vector< std::vector<double> > &wallData,
-		      std::vector< std::vector<double> > &vertexData,
+		      DataMatrix &cellData,
+		      DataMatrix &wallData,
+		      DataMatrix &vertexData,
 		      double h);
   ///
   /// @brief Prints the data structure of a reaction.

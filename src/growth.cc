@@ -44,12 +44,12 @@ WallGrowthExponentialTruncated(std::vector<double> &paraValue,
 
 void WallGrowthExponentialTruncated::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   size_t numWalls = T.numWall();
   size_t lengthIndex = variableIndex(0,0);
@@ -95,12 +95,12 @@ WallGrowthExponentialStressTruncated(std::vector<double> &paraValue,
 
 void WallGrowthExponentialStressTruncated::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   size_t numWalls = T.numWall();
   size_t lengthIndex = variableIndex(0,0);
@@ -177,12 +177,12 @@ WallGrowthStress(std::vector<double> &paraValue,
 
 void WallGrowthStress::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   size_t numWalls = T.numWall();
   size_t lengthIndex = variableIndex(0,0);
@@ -273,12 +273,12 @@ WallGrowthStressSpatial(std::vector<double> &paraValue,
 
 void WallGrowthStressSpatial::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   size_t numWalls = T.numWall();
   size_t lengthIndex = variableIndex(0,0);
@@ -396,12 +396,12 @@ WallGrowthStressSpatialSingle(std::vector<double> &paraValue,
 
 void WallGrowthStressSpatialSingle::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   size_t numWalls = T.numWall();
   size_t lengthIndex = variableIndex(0,0);
@@ -506,12 +506,12 @@ WallGrowthStressConcentrationHill(std::vector<double> &paraValue,
 
 void WallGrowthStressConcentrationHill::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   size_t numWalls = T.numWall();
   size_t lengthIndex = variableIndex(0,0);
@@ -590,12 +590,12 @@ WallGrowthConstantStressEpidermalAsymmetric(std::vector<double> &paraValue,
 
 void WallGrowthConstantStressEpidermalAsymmetric::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   size_t numWalls = T.numWall();
   size_t lengthIndex = variableIndex(0,0);
@@ -654,12 +654,12 @@ MoveVertexRadially(std::vector<double> &paraValue,
 
 void MoveVertexRadially::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   size_t numVertices = T.numVertex();
   size_t dimension=vertexData[0].size();
@@ -718,12 +718,12 @@ MoveVertexSphereCylinder(std::vector<double> &paraValue,
 
 void MoveVertexSphereCylinder::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   size_t numVertices = T.numVertex();
   if (vertexData[0].size()!=3) {
@@ -793,12 +793,12 @@ WallLengthGrowExperimental::WallLengthGrowExperimental(std::vector<double> &para
 
 void WallLengthGrowExperimental::
 derivs(Tissue &T,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs)
 {
 	for (size_t i = 0; i < T.numWall(); ++i) {
 		size_t vertex1Index = T.wall(i).vertex1()->index();
@@ -861,12 +861,12 @@ WaterVolumeFromTurgor(std::vector<double> &paraValue,
 
 void WaterVolumeFromTurgor::
 derivs(Tissue &T,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs)
 {
 	for (size_t n = 0; n < T.numCell(); ++n) {
 		Cell cell = T.cell(n);
@@ -936,12 +936,12 @@ DilutionFromVertexDerivs(std::vector<double> &paraValue,
 
 void DilutionFromVertexDerivs::
 derivs(Tissue &T,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs)
 {
 	size_t dimension;
 	dimension = vertexData[0].size();

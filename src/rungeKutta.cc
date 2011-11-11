@@ -84,12 +84,12 @@ void RK5Adaptive::simulate(size_t verbose)
   //
   size_t Nc=T_->numCell(),Nw=T_->numWall(),Nv=T_->numVertex();
   //Used here
-  std::vector< std::vector<double> > yScalC(Nc),yScalW(Nw),yScalV(Nv);
+  DataMatrix yScalC(Nc),yScalW(Nw),yScalV(Nv);
   //Used by rkqs
-  std::vector< std::vector<double> > yTempC(Nc),yTempW(Nw),yTempV(Nv),
+  DataMatrix yTempC(Nc),yTempW(Nw),yTempV(Nv),
     yErrC(Nc),yErrW(Nw),yErrV(Nv);
   //used by rkck
-  std::vector< std::vector<double> > ak2C(Nc),ak2W(Nw),ak2V(Nv),
+  DataMatrix ak2C(Nc),ak2W(Nw),ak2V(Nv),
     ak3C(Nc),ak3W(Nw),ak3V(Nv),
     ak4C(Nc),ak4W(Nw),ak4V(Nv),
     ak5C(Nc),ak5W(Nw),ak5V(Nv),
@@ -277,33 +277,33 @@ void RK5Adaptive::simulate(size_t verbose)
 #define PSHRNK -0.25
 #define ERRCON 1.89e-4
 void RK5Adaptive::rkqs(double hTry, double &hDid, double &hNext,
-		       std::vector< std::vector<double> > &yScalC,
-		       std::vector< std::vector<double> > &yScalW,
-		       std::vector< std::vector<double> > &yScalV,
-		       std::vector< std::vector<double> > &yTempC,
-		       std::vector< std::vector<double> > &yTempW,
-		       std::vector< std::vector<double> > &yTempV,
-		       std::vector< std::vector<double> > &yErrC,
-		       std::vector< std::vector<double> > &yErrW,
-		       std::vector< std::vector<double> > &yErrV,
-		       std::vector< std::vector<double> > &ak2C,
-		       std::vector< std::vector<double> > &ak2W,
-		       std::vector< std::vector<double> > &ak2V,
-		       std::vector< std::vector<double> > &ak3C,
-		       std::vector< std::vector<double> > &ak3W,
-		       std::vector< std::vector<double> > &ak3V,
-		       std::vector< std::vector<double> > &ak4C,
-		       std::vector< std::vector<double> > &ak4W,
-		       std::vector< std::vector<double> > &ak4V,
-		       std::vector< std::vector<double> > &ak5C,
-		       std::vector< std::vector<double> > &ak5W,
-		       std::vector< std::vector<double> > &ak5V,
-		       std::vector< std::vector<double> > &ak6C,
-		       std::vector< std::vector<double> > &ak6W,
-		       std::vector< std::vector<double> > &ak6V,
-		       std::vector< std::vector<double> > &yTempRkckC,
-		       std::vector< std::vector<double> > &yTempRkckW,
-		       std::vector< std::vector<double> > &yTempRkckV)
+		       DataMatrix &yScalC,
+		       DataMatrix &yScalW,
+		       DataMatrix &yScalV,
+		       DataMatrix &yTempC,
+		       DataMatrix &yTempW,
+		       DataMatrix &yTempV,
+		       DataMatrix &yErrC,
+		       DataMatrix &yErrW,
+		       DataMatrix &yErrV,
+		       DataMatrix &ak2C,
+		       DataMatrix &ak2W,
+		       DataMatrix &ak2V,
+		       DataMatrix &ak3C,
+		       DataMatrix &ak3W,
+		       DataMatrix &ak3V,
+		       DataMatrix &ak4C,
+		       DataMatrix &ak4W,
+		       DataMatrix &ak4V,
+		       DataMatrix &ak5C,
+		       DataMatrix &ak5W,
+		       DataMatrix &ak5V,
+		       DataMatrix &ak6C,
+		       DataMatrix &ak6W,
+		       DataMatrix &ak6V,
+		       DataMatrix &yTempRkckC,
+		       DataMatrix &yTempRkckW,
+		       DataMatrix &yTempRkckV)
 {
   double errMax, h, hTemp, tNew, aux;
   h = hTry;
@@ -382,30 +382,30 @@ void RK5Adaptive::rkqs(double hTry, double &hDid, double &hNext,
 
 void RK5Adaptive::
 rkck(double h,
-     std::vector< std::vector<double> > &yOutC,
-     std::vector< std::vector<double> > &yOutW,
-     std::vector< std::vector<double> > &yOutV,
-     std::vector< std::vector<double> > &yErrC,
-     std::vector< std::vector<double> > &yErrW,
-     std::vector< std::vector<double> > &yErrV,
-     std::vector< std::vector<double> > &ak2C,
-     std::vector< std::vector<double> > &ak2W,
-     std::vector< std::vector<double> > &ak2V,
-     std::vector< std::vector<double> > &ak3C,
-     std::vector< std::vector<double> > &ak3W,
-     std::vector< std::vector<double> > &ak3V,
-     std::vector< std::vector<double> > &ak4C,
-     std::vector< std::vector<double> > &ak4W,
-     std::vector< std::vector<double> > &ak4V,
-     std::vector< std::vector<double> > &ak5C,
-     std::vector< std::vector<double> > &ak5W,
-     std::vector< std::vector<double> > &ak5V,
-     std::vector< std::vector<double> > &ak6C,
-     std::vector< std::vector<double> > &ak6W,
-     std::vector< std::vector<double> > &ak6V,
-     std::vector< std::vector<double> > &yTempRkckC, 
-     std::vector< std::vector<double> > &yTempRkckW, 
-     std::vector< std::vector<double> > &yTempRkckV ) 
+     DataMatrix &yOutC,
+     DataMatrix &yOutW,
+     DataMatrix &yOutV,
+     DataMatrix &yErrC,
+     DataMatrix &yErrW,
+     DataMatrix &yErrV,
+     DataMatrix &ak2C,
+     DataMatrix &ak2W,
+     DataMatrix &ak2V,
+     DataMatrix &ak3C,
+     DataMatrix &ak3W,
+     DataMatrix &ak3V,
+     DataMatrix &ak4C,
+     DataMatrix &ak4W,
+     DataMatrix &ak4V,
+     DataMatrix &ak5C,
+     DataMatrix &ak5W,
+     DataMatrix &ak5V,
+     DataMatrix &ak6C,
+     DataMatrix &ak6W,
+     DataMatrix &ak6V,
+     DataMatrix &yTempRkckC, 
+     DataMatrix &yTempRkckW, 
+     DataMatrix &yTempRkckV ) 
 {  
   //static double a2=0.2,a3=0.3,a4=0.6,a5=1.0,a6=0.875;
   static double b21=0.2,
@@ -614,7 +614,7 @@ void RK4::simulate(size_t verbose)
   // Create all vectors that will be needed by rk4()!
   //
   size_t Nc=T_->numCell(),Nw=T_->numWall(),Nv=T_->numVertex();
-  std::vector< std::vector<double> > ytCell(Nc),dytCell(Nc),dymCell(Nv),
+  DataMatrix ytCell(Nc),dytCell(Nc),dymCell(Nv),
     ytWall(Nw),dytWall(Nw),dymWall(Nw),
     ytVertex(Nw),dytVertex(Nw),dymVertex(Nw);
   //Resize each vector
@@ -725,15 +725,15 @@ void RK4::simulate(size_t verbose)
   return;
 }
 
-void RK4::rk4(std::vector< std::vector<double> > &ytCell,
-	      std::vector< std::vector<double> > &ytWall,
-	      std::vector< std::vector<double> > &ytVertex,
-	      std::vector< std::vector<double> > &dytCell,
-	      std::vector< std::vector<double> > &dytWall,
-	      std::vector< std::vector<double> > &dytVertex,
-	      std::vector< std::vector<double> > &dymCell,
-	      std::vector< std::vector<double> > &dymWall,
-	      std::vector< std::vector<double> > &dymVertex )
+void RK4::rk4(DataMatrix &ytCell,
+	      DataMatrix &ytWall,
+	      DataMatrix &ytVertex,
+	      DataMatrix &dytCell,
+	      DataMatrix &dytWall,
+	      DataMatrix &dytVertex,
+	      DataMatrix &dymCell,
+	      DataMatrix &dymWall,
+	      DataMatrix &dymVertex )
 {  
   double hh=0.5*h_;
   double h6=h_/6.0;

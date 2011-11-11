@@ -115,31 +115,31 @@ BaseCompartmentChange::createCompartmentChange(std::istream &IN ) {
 }
 
 int BaseCompartmentChange::
-flag(Tissue *T,size_t i,std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &walldata,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellderivs, 
-     std::vector< std::vector<double> > &wallderivs,
-     std::vector< std::vector<double> > &vertexDerivs ) {
+flag(Tissue *T,size_t i,DataMatrix &cellData,
+     DataMatrix &walldata,
+     DataMatrix &vertexData,
+     DataMatrix &cellderivs, 
+     DataMatrix &wallderivs,
+     DataMatrix &vertexDerivs ) {
   std::cerr << "BaseCompartmentChange::flag() should not be used. "
 						<< "Should always be mapped onto one of the real types.\n";
   exit(0);
 }  
 
 void BaseCompartmentChange::
-update(Tissue *T,size_t i,std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &walldata,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellderivs, 
-       std::vector< std::vector<double> > &wallderivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+update(Tissue *T,size_t i,DataMatrix &cellData,
+       DataMatrix &walldata,
+       DataMatrix &vertexData,
+       DataMatrix &cellderivs, 
+       DataMatrix &wallderivs,
+       DataMatrix &vertexDerivs ) {
   std::cerr << "BaseCompartmentChange::update() should not be used. "
 						<< "Should always be mapped onto one of the real types.\n";
   exit(0);
 }  
 
 void BaseCompartmentChange::
-printCellWallError(std::vector< std::vector<double> > &vertexData,
+printCellWallError(DataMatrix &vertexData,
 									 Cell *divCell, 
 									 std::vector<size_t> &w3Tmp, 
 									 size_t &wI, 
@@ -210,7 +210,7 @@ printCellWallError(std::vector< std::vector<double> > &vertexData,
 }
 
 int BaseCompartmentChange::
-findTwoDivisionWalls(std::vector< std::vector<double> > &vertexData, 
+findTwoDivisionWalls(DataMatrix &vertexData, 
 										 Cell *divCell, std::vector<size_t> &wI,
 										 std::vector<double> &point, 
 										 std::vector<double> &n, 
@@ -326,7 +326,7 @@ findTwoDivisionWalls(std::vector< std::vector<double> > &vertexData,
 }
 
 int BaseCompartmentChange::
-findSecondDivisionWall(std::vector< std::vector<double> > &vertexData, 
+findSecondDivisionWall(DataMatrix &vertexData, 
 		       Cell *divCell, size_t &wI, size_t &w3I, 
 		       std::vector<double> &v1Pos, 
 		       std::vector<double> &n, 

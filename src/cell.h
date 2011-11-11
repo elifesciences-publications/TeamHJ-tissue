@@ -17,6 +17,7 @@
 #include<string>
 #include<vector>
 
+#include"myTypedefs.h"
 #include"wall.h"
 
 //class Wall;
@@ -46,7 +47,7 @@ class Cell {
   Wall* directionWall_;
 
   // The vectors obtained from PCA.
-  std::vector< std::vector<double> > E_;
+  DataMatrix E_;
   
  public:
   
@@ -88,10 +89,10 @@ class Cell {
   ///
   /// Returns the volume variable from the cell that should hold the cell volume(area).
   /// Note that if the tissue has changed (i.e. the vertex positions have moved) this value
-  /// can be obsolete. If not sure use calculateVolume(std::vector< std::vector<double> >&,size_t)
+  /// can be obsolete. If not sure use calculateVolume(DataMatrix&,size_t)
   /// to calculate it directly.
   ///
-  /// @see calculateVolume(std::vector< std::vector<double> >&,size_t)
+  /// @see calculateVolume(DataMatrix&,size_t)
   ///
   inline double volume() const;
   ///
@@ -221,11 +222,11 @@ class Cell {
   ///
   /// @brief Returns TRUE if the cell has any 'concave' wall pairs
   ///
-  bool isConcave(std::vector< std::vector<double> > &vertexData, const double tolerance = 0.01);
+  bool isConcave(DataMatrix &vertexData, const double tolerance = 0.01);
   ///
   /// @brief Returns TRUE if any of the cell walls cross each other
   ///
-  bool isFolded(std::vector< std::vector<double> > &vertexData);
+  bool isFolded(DataMatrix &vertexData);
   ///
   /// @brief Calculates the cell volume(area) from the vertex positions.
   ///
@@ -234,7 +235,7 @@ class Cell {
   /// positions used are taken from the vertices directly (and hence might be obselete
   /// if the vertex positions have been moved.
   ///
-  /// @see calculateVolume(std::vector< std::vector<double> >&,size_t)
+  /// @see calculateVolume(DataMatrix&,size_t)
   /// 
   double calculateVolume( size_t signFlag=0 );
   ///
@@ -261,7 +262,7 @@ class Cell {
   /// 
   /// @see volume()
   ///
-  double calculateVolume( std::vector< std::vector<double> > 
+  double calculateVolume( DataMatrix 
 			  &vertexData, size_t signFlag=0 );
   ///
   /// @brief Calculates the cell volume(area) from the vertex positions using triangles.
@@ -270,9 +271,9 @@ class Cell {
   ///
   /// @see volume()
   ///
-  double calculateVolumeCenterTriangulation( std::vector< std::vector<double> > 
+  double calculateVolumeCenterTriangulation( DataMatrix 
 					     &vertexData,
-					     std::vector< std::vector<double> > &cellData,
+					     DataMatrix &cellData,
 					     size_t centerIndex);
   ///
   /// @brief Calculates the cell center-of-mass position.
@@ -292,13 +293,13 @@ class Cell {
   /// only if the cell vertices are sorted/cyclic. The vertex
   /// positions used are taken from the provided matrix.
   ///
-  std::vector<double> positionFromVertex( std::vector< std::vector<double> > &vertexData );	
+  std::vector<double> positionFromVertex( DataMatrix &vertexData );	
   
   class FailedToFindRandomPositionInCellException
   {  
   };
   
-  std::vector<double> randomPositionInCell(const std::vector< std::vector<double> > &vertexData, const int numberOfTries = 10000);
+  std::vector<double> randomPositionInCell(const DataMatrix &vertexData, const int numberOfTries = 10000);
   
   // These functions handles projection to a PCAPlane. Important: Make
   // sure you call calculatePCAPlane() before any of the other
@@ -314,7 +315,7 @@ class Cell {
   /// although the calculations do not require it (but otherwise estimates of)
   /// e.g. cell volume(area) would have errors).
   /// 
-  void calculatePCAPlane(std::vector< std::vector<double> > &vertexData);
+  void calculatePCAPlane(DataMatrix &vertexData);
   ///
   /// @brief Returns the (two) vectors spanning the PCA plane defined by the cell vertex positions
   ///
@@ -324,7 +325,7 @@ class Cell {
   ///
   /// @see calculatePCAPlane()
   ///
-  std::vector< std::vector<double> > getPCAPlane(void) const;
+  DataMatrix getPCAPlane(void) const;
   ///
   /// @brief Returns the vertex positions on the PCA plane defined by the cell vertex positions
   ///
@@ -334,7 +335,7 @@ class Cell {
   ///
   /// @see calculatePCAPlane()
   ///
-  std::vector< std::pair<double, double> > projectVerticesOnPCAPlane(std::vector< std::vector<double> > &vertexData);
+  std::vector< std::pair<double, double> > projectVerticesOnPCAPlane(DataMatrix &vertexData);
   ///
   /// @brief Returns the normal to the PCA plane defined by the cell vertex positions
   ///
@@ -346,7 +347,7 @@ class Cell {
   ///
   std::vector<double> getNormalToPCAPlane(void);
   int vectorSignFromSort(std::vector<double> &n,
-			 std::vector< std::vector<double> > &vertexData);
+			 DataMatrix &vertexData);
   ///
   /// @brief Returns the normal to the cell plane for triangular cells
   ///
@@ -354,7 +355,7 @@ class Cell {
   /// calculated from the cell vertex poitions (in 3D). It relies on that
   /// the vertices are sorted (cyclic) for the cell.
   ///
-  std::vector<double> getNormalTriangular(std::vector< std::vector<double> > &vertexData);
+  std::vector<double> getNormalTriangular(DataMatrix &vertexData);
 };
 
 inline size_t Cell::index() const 

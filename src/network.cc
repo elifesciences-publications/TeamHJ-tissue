@@ -1,10 +1,10 @@
-///
-/// Filename     : network.cc
-/// Description  : Classes describing complete models
-/// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
-/// Created      : November 2006
-/// Revision     : $Id:$
-///
+//
+// Filename     : network.cc
+// Description  : Classes describing complete models
+// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+// Created      : November 2006
+// Revision     : $Id:$
+//
 #include "network.h"
 #include "baseReaction.h"
 
@@ -61,12 +61,12 @@ AuxinModelSimple1(std::vector<double> &paraValue,
 
 void AuxinModelSimple1::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);
@@ -191,12 +191,12 @@ AuxinModelStress(std::vector<double> &paraValue,
 
 void AuxinModelStress::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);
@@ -341,12 +341,12 @@ AuxinModelSimpleStress(std::vector<double> &paraValue,
 
 void AuxinModelSimpleStress::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);
@@ -472,12 +472,12 @@ AuxinModelSimple1Wall(std::vector<double> &paraValue,
 
 void AuxinModelSimple1Wall::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   size_t numCells = T.numCell();
 	size_t aI = variableIndex(0,0);
@@ -606,12 +606,12 @@ AuxinModelSimple2(std::vector<double> &paraValue,
 */
 void AuxinModelSimple2::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   size_t numCells = T.numCell();
   //Setting the indices
@@ -792,12 +792,12 @@ AuxinModelSimple3(std::vector<double> &paraValue,
 */
 void AuxinModelSimple3::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   size_t numCells = T.numCell();
   //Setting the indices
@@ -989,12 +989,12 @@ AuxinModel4(std::vector<double> &paraValue,
 */
 void AuxinModel4::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   size_t numCells = T.numCell();
   //Setting the indices
@@ -1181,12 +1181,12 @@ AuxinModel5(std::vector<double> &paraValue,
 
 void AuxinModel5::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);
@@ -1322,12 +1322,12 @@ AuxinModel6(std::vector<double> &paraValue,
 
 void AuxinModel6::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   size_t numCells = T.numCell();
 	size_t aI = variableIndex(0,0);//auxin
@@ -1427,12 +1427,12 @@ AuxinModel7(std::vector<double> &paraValue,
 
 void AuxinModel7::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   size_t numCells = T.numCell();
 	size_t aI = variableIndex(0,0);//auxin
@@ -1530,12 +1530,12 @@ AuxinTransportCellCellNoGeometry(std::vector<double> &paraValue,
 
 void AuxinTransportCellCellNoGeometry::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   size_t aI = variableIndex(0,0);
   size_t PI = variableIndex(0,1);
@@ -1638,12 +1638,12 @@ AuxinROPModel(std::vector<double> &paraValue,
 
 void AuxinROPModel::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);//auxin

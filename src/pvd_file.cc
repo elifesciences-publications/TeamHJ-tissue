@@ -1,8 +1,8 @@
-/**
- * File:    VTUostream.h
- * Author:  pkrupinski
- * Created: September 15, 2011, 3:20 PM
- */
+//
+// File:    VTUostream.h
+// Author:  pkrupinski
+// Created: September 15, 2011, 3:20 PM
+//
 #include "pvd_file.h"
 #include "VTUostream.h"
 #include <fstream>
@@ -30,8 +30,6 @@ PVD_file::PVD_file(const std::string filename, const std::string vtu_filename1, 
 {
     vtu_basenames[0] = vtu_filename1;
     vtu_basenames[1] = vtu_filename2;
-    pvdFileWriteFull(n);
-
 }
 //----------------------------------------------------------------------------
 
@@ -130,8 +128,6 @@ void PVD_file::pvdFileWriteFull(size_t num)
     size_t n_files = vtu_basenames.size();
     std::vector<std::string> filestart(n_files), extension(n_files), fname(n_files);
 
-
-
     for (int i = 0; i < n_files; ++i)
     {
         std::string fname = vtu_basenames[i];
@@ -145,27 +141,25 @@ void PVD_file::pvdFileWriteFull(size_t num)
     pvdFile << "<VTKFile type=\"Collection\" version=\"0.1\" > " << std::endl;
     pvdFile << "<Collection> " << std::endl;
 
-
     for (int i = 0; i < num; ++i)
     {
         std::ostringstream fileid;
         fileid.fill('0');
         fileid.width(6);
-        fileid << num;
+        fileid << i;
         for (int j = 0; j < n_files; ++j)
         {
             std::string fname = filestart[j] + fileid.str() + extension[j];
             // Data file name
             pvdFile << "<DataSet timestep=\"" << i << "\" part=\"" << j << "\" file=\"" << fname << "\"/>" << std::endl;
         }
-
-        // Close headers
-        pvdFile << "</Collection> " << std::endl;
-        pvdFile << "</VTKFile> " << std::endl;
-
-        // Close file
-        pvdFile.close();
     }
+    // Close headers
+    pvdFile << "</Collection> " << std::endl;
+    pvdFile << "</VTKFile> " << std::endl;
+    
+    // Close file
+    pvdFile.close();
 }
 //----------------------------------------------------------------------------
 void PVD_file::vtuNameUpdate(const int m_counter, std::vector<std::string>const& basenames, std::vector<std::string>& filenames)

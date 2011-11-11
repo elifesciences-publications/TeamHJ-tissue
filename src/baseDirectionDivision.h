@@ -12,7 +12,7 @@
 #include<string>
 #include<iostream>
 #include<fstream>
-//#include"tissue.h"
+#include"myTypedefs.h"
 
 class Tissue;
 
@@ -65,13 +65,13 @@ class BaseDirectionDivision {
   inline void setVariableIndex(size_t i, std::vector<size_t> &value);
   inline void setVariableIndex(std::vector< std::vector<size_t> > &value);
   
-	virtual void update(Tissue &T,size_t cellI,
-											std::vector< std::vector<double> > &cellData,
-											std::vector< std::vector<double> > &wallData,
-											std::vector< std::vector<double> > &vertexData,
-											std::vector< std::vector<double> > &cellDerivs,
-											std::vector< std::vector<double> > &wallDerivs,
-											std::vector< std::vector<double> > &vertexDerivs );
+  virtual void update(Tissue &T,size_t cellI,
+		      DataMatrix &cellData,
+		      DataMatrix &wallData,
+		      DataMatrix &vertexData,
+		      DataMatrix &cellDerivs,
+		      DataMatrix &wallDerivs,
+		      DataMatrix &vertexDerivs );
   virtual void print( std::ofstream &os );
 };
 

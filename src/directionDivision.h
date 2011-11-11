@@ -21,16 +21,16 @@ class ParallellDirection : public BaseDirectionDivision {
  public:
   
   ParallellDirection(std::vector<double> &paraValue, 
-									std::vector< std::vector<size_t> > 
-									&indValue );
+		     std::vector< std::vector<size_t> > 
+		     &indValue );
   
   void update(Tissue &T,size_t cellI,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
 };
 
 ///
@@ -41,30 +41,30 @@ class PerpendicularDirection : public BaseDirectionDivision {
  public:
   
   PerpendicularDirection(std::vector<double> &paraValue, 
-												 std::vector< std::vector<size_t> > 
-												 &indValue );
+			 std::vector< std::vector<size_t> > 
+			 &indValue );
   
   void update(Tissue &T,size_t cellI,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
 };
 
 class RandomDirection : public BaseDirectionDivision
 {
-public:
-	RandomDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
+ public:
+  RandomDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
   
 	void update(Tissue &T, size_t cellI,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs);
+		    DataMatrix &cellData,
+		    DataMatrix &wallData,
+		    DataMatrix &vertexData,
+		    DataMatrix &cellDerivs,
+		    DataMatrix &wallDerivs,
+		    DataMatrix &vertexDerivs);
 };
 
 #endif

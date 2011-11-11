@@ -545,7 +545,7 @@ double Cell::calculateVolume( size_t signFlag )
 	}
 }
 
-double Cell::calculateVolume( std::vector< std::vector<double> > 				                                  &vertexData, size_t signFlag ) 
+double Cell::calculateVolume( DataMatrix 				                                  &vertexData, size_t signFlag ) 
 {	
   assert( numVertex() );
   size_t dimension = vertex(0)->numPosition();
@@ -603,9 +603,9 @@ double Cell::calculateVolume( std::vector< std::vector<double> > 				           
 }
 
 double Cell::
-calculateVolumeCenterTriangulation( std::vector< std::vector<double> > 
+calculateVolumeCenterTriangulation( DataMatrix 
 				    &vertexData,
-				    std::vector< std::vector<double> > &cellData,
+				    DataMatrix &cellData,
 				    size_t centerIndex)
 {
   double area = 0.0;
@@ -665,7 +665,7 @@ std::vector<double> Cell::positionFromVertex()
 }
 
 std::vector<double> Cell::
-positionFromVertex(std::vector< std::vector<double> > &vertexData) 
+positionFromVertex(DataMatrix &vertexData) 
 {  
 	assert( numVertex() );
 	size_t dimension=vertexData[0].size();
@@ -715,7 +715,7 @@ positionFromVertex(std::vector< std::vector<double> > &vertexData)
 	return pos;
 }
 
-std::vector<double> Cell::randomPositionInCell(const std::vector< std::vector<double> > &vertexData, const int numberOfTries) 
+std::vector<double> Cell::randomPositionInCell(const DataMatrix &vertexData, const int numberOfTries) 
 {
 	typedef std::vector<double> Vector;
 
@@ -815,14 +815,14 @@ std::vector<double> Cell::randomPositionInCell(const std::vector< std::vector<do
 	throw FailedToFindRandomPositionInCellException();
 }
 
-void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
+void Cell::calculatePCAPlane(DataMatrix &vertexData)
 {
 	size_t dimensions = vertexData[0].size();
 	size_t numberOfVertices = vertex_.size();
 
 	// Copy vertex data to temporary container and calculate mean values.
  
-	std::vector< std::vector<double> > vertices(numberOfVertices);
+	DataMatrix vertices(numberOfVertices);
 	std::vector<double> mean(dimensions, 0.0);
 
 	for (size_t i = 0; i < numberOfVertices; ++i) {
@@ -848,7 +848,7 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 
 	// Calculate the correlation matrix.
 	
-	std::vector< std::vector<double> > R(dimensions);
+	DataMatrix R(dimensions);
 
 	for (size_t i = 0; i < dimensions; ++i) {
 	  R[i].resize(dimensions);
@@ -868,9 +868,9 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 
 	// Find the eigenvectors with the two greatests corresponding eigenvalues.
 
-	std::vector< std::vector<double> > candidates;
+	DataMatrix candidates;
 
-	std::vector< std::vector<double> > V;
+	DataMatrix V;
 	std::vector<double> d;
 
 	myMath::jacobiTransformation(R , V, d);
@@ -940,13 +940,13 @@ void Cell::calculatePCAPlane(std::vector< std::vector<double> > &vertexData)
 	}	
 }
 
-std::vector< std::vector<double> > Cell::getPCAPlane(void) const
+DataMatrix Cell::getPCAPlane(void) const
 {
 	return E_;
 }
 
 std::vector< std::pair<double, double> > Cell::
-projectVerticesOnPCAPlane(std::vector< std::vector<double> > &vertexData)
+projectVerticesOnPCAPlane(DataMatrix &vertexData)
 {
 	if (E_.size()!=2 || E_[0].size() != 3) {
 		std::cerr << "Cell::projectVerticesOnPCAPlane(): "
@@ -958,7 +958,7 @@ projectVerticesOnPCAPlane(std::vector< std::vector<double> > &vertexData)
 
 	// Copy vertex data to temporary container and calculate mean values.
  
-	std::vector< std::vector<double> > vertices(numberOfVertices);
+	DataMatrix vertices(numberOfVertices);
 	std::vector<double> mean(dimensions, 0.0);
 	
 	for (size_t i = 0; i < numberOfVertices; ++i) {
@@ -1014,7 +1014,7 @@ std::vector<double> Cell::getNormalToPCAPlane(void)
   return N;
 }
 
-std::vector<double> Cell::getNormalTriangular(std::vector< std::vector<double> > &vertexData)
+std::vector<double> Cell::getNormalTriangular(DataMatrix &vertexData)
 {
   size_t dimension = vertexData[0].size();
   if (numVertex()!=3 || dimension!=3) {
@@ -1024,7 +1024,7 @@ std::vector<double> Cell::getNormalTriangular(std::vector< std::vector<double> >
   }
   
   std::vector<double> N(dimension);
-  std::vector< std::vector<double> > E(2);
+  DataMatrix E(2);
   E[0].resize(dimension);
   E[1].resize(dimension);
   size_t v_0 = vertex(0)->index();
@@ -1043,7 +1043,7 @@ std::vector<double> Cell::getNormalTriangular(std::vector< std::vector<double> >
 
 int Cell::
 vectorSignFromSort(std::vector<double> &n,
-		   std::vector< std::vector<double> > &vertexData) 
+		   DataMatrix &vertexData) 
 {
   size_t numV=numVertex();
   size_t dimension=vertexData[0].size();
@@ -1101,7 +1101,7 @@ vectorSignFromSort(std::vector<double> &n,
 }
 
 
-bool Cell::isConcave(std::vector< std::vector<double> > &vertexData, const double tolerance)
+bool Cell::isConcave(DataMatrix &vertexData, const double tolerance)
 {
   signed int s = 0;
   
@@ -1148,7 +1148,7 @@ bool Cell::isConcave(std::vector< std::vector<double> > &vertexData, const doubl
   return false;
 }
 
-bool Cell::isFolded(std::vector< std::vector<double> > &vertexData)
+bool Cell::isFolded(DataMatrix &vertexData)
 {
   for (size_t k = 0; k < numWall(); ++k)
     {

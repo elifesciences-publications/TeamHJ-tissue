@@ -1,10 +1,10 @@
-/**
- * Filename     : compartmentRemoval.cc
- * Description  : Classes describing compartment removal updates
- * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
- * Created      : November 2006
- * Revision     : $Id:$
- */
+//
+// Filename     : compartmentRemoval.cc
+// Description  : Classes describing compartment removal updates
+// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+// Created      : November 2006
+// Revision     : $Id:$
+//
 #include"compartmentRemoval.h"
 #include"baseCompartmentChange.h"
 
@@ -42,12 +42,12 @@ RemovalIndex(std::vector<double> &paraValue,
 
 int RemovalIndex::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) 
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) 
 {	
 	// Should only be done once!
 	static int updateFlag=1;
@@ -60,12 +60,12 @@ flag(Tissue *T,size_t i,
 
 void RemovalIndex::
 update(Tissue *T,size_t i,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
 	//Remove all cells listed and adjust its neighboring walls and vertices
 	T->removeCells(variableIndex(0),cellData,wallData,vertexData,cellDeriv,wallDeriv,
@@ -111,12 +111,12 @@ RemovalOutsideRadius(std::vector<double> &paraValue,
  */
 int RemovalOutsideRadius::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) {
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) {
 	
 	//Calculate cell center from vertices positions
 	std::vector<double> cellCenter;
@@ -140,12 +140,12 @@ flag(Tissue *T,size_t i,
  */
 void RemovalOutsideRadius::
 update(Tissue *T,size_t i,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
 	//Remove cell and adjust its neighboring walls and vertices
 	T->removeCell(i,cellData,wallData,vertexData,cellDeriv,wallDeriv,
@@ -196,12 +196,12 @@ RemovalOutsideRadiusEpidermis(std::vector<double> &paraValue,
  */
 int RemovalOutsideRadiusEpidermis::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) {
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) {
 	
 	//Calculate cell center from vertices positions
 	std::vector<double> cellCenter;
@@ -225,12 +225,12 @@ flag(Tissue *T,size_t i,
  */
 void RemovalOutsideRadiusEpidermis::
 update(Tissue *T,size_t i,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
 	//Remove cell and adjust its neighboring walls and vertices
 	T->removeEpidermalCells(cellData,wallData,vertexData,cellDeriv,
@@ -281,12 +281,12 @@ RemovalOutsideMaxDistanceEpidermis(std::vector<double> &paraValue,
  */
 int RemovalOutsideMaxDistanceEpidermis::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) 
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) 
 {	
 	size_t d = variableIndex(0,0);
 	assert( d<vertexData[0].size() );
@@ -316,12 +316,12 @@ flag(Tissue *T,size_t i,
  */
 void RemovalOutsideMaxDistanceEpidermis::
 update(Tissue *T,size_t i,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
 	//Remove cell and adjust its neighboring walls and vertices
 	T->removeEpidermalCellsAtDistance(cellData,wallData,vertexData,
@@ -378,12 +378,12 @@ RemovalOutsidePosition(std::vector<double> &paraValue,
 
 int RemovalOutsidePosition::
 flag(Tissue *T,size_t i,
-     std::vector< std::vector<double> > &cellData,
-     std::vector< std::vector<double> > &wallData,
-     std::vector< std::vector<double> > &vertexData,
-     std::vector< std::vector<double> > &cellDerivs,
-     std::vector< std::vector<double> > &wallDerivs,
-     std::vector< std::vector<double> > &vertexDerivs ) 
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) 
 {	
 	size_t d = variableIndex(0,0);
 	assert( d<vertexData[0].size() );
@@ -401,12 +401,12 @@ flag(Tissue *T,size_t i,
 
 void RemovalOutsidePosition::
 update(Tissue *T,size_t i,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDeriv,
-       std::vector< std::vector<double> > &wallDeriv,
-       std::vector< std::vector<double> > &vertexDeriv ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
   
 	//Remove cell and adjust its neighboring walls and vertices
 	//Remove cell and adjust its neighboring walls and vertices
@@ -453,12 +453,12 @@ RemovalOutsideRadiusEpidermisMk2::RemovalOutsideRadiusEpidermisMk2(std::vector<d
 }
 
 int RemovalOutsideRadiusEpidermisMk2::flag(Tissue *T, size_t i,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
 {
 	//Calculate cell center from vertices positions
 	std::vector<double> cellCenter;
@@ -480,12 +480,12 @@ int RemovalOutsideRadiusEpidermisMk2::flag(Tissue *T, size_t i,
 }
 
 void RemovalOutsideRadiusEpidermisMk2::update(Tissue *T, size_t i,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDeriv,
-	std::vector< std::vector<double> > &wallDeriv,
-	std::vector< std::vector<double> > &vertexDeriv)
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDeriv,
+	DataMatrix &wallDeriv,
+	DataMatrix &vertexDeriv)
 {
 	//Remove cell and adjust its neighboring walls and vertices
 	T->removeEpidermalCellsMk2(cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv, parameter(1));
@@ -526,12 +526,12 @@ RemovalWholeCellOutsideRadiusEpidermis::RemovalWholeCellOutsideRadiusEpidermis(s
 	setParameterId( tmp );
 }
 
-int RemovalWholeCellOutsideRadiusEpidermis::flag(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+int RemovalWholeCellOutsideRadiusEpidermis::flag(Tissue *T, size_t i, DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
 {
 	Cell &cell = T->cell(i);
 
@@ -545,18 +545,18 @@ int RemovalWholeCellOutsideRadiusEpidermis::flag(Tissue *T, size_t i, std::vecto
 	}
 }
 
-void RemovalWholeCellOutsideRadiusEpidermis::update(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDeriv,
-	std::vector< std::vector<double> > &wallDeriv,
-	std::vector< std::vector<double> > &vertexDeriv)
+void RemovalWholeCellOutsideRadiusEpidermis::update(Tissue *T, size_t i, DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDeriv,
+	DataMatrix &wallDeriv,
+	DataMatrix &vertexDeriv)
 {
 	T->removeEpidermalCells(cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv, parameter(1), false);
 }
 
 
-bool RemovalWholeCellOutsideRadiusEpidermis::checkIfCellIsOutside(Cell &cell, std::vector< std::vector<double> > &vertexData, const double radius) const
+bool RemovalWholeCellOutsideRadiusEpidermis::checkIfCellIsOutside(Cell &cell, DataMatrix &vertexData, const double radius) const
 {	
 	const size_t dimensions = vertexData[0].size();
 	const double radius2 = std::pow(radius, 2.0);
@@ -608,12 +608,12 @@ RemovalConcaveCellsAtEpidermis::RemovalConcaveCellsAtEpidermis(std::vector<doubl
 	setParameterId(tmp);
 }
 
-int RemovalConcaveCellsAtEpidermis::flag(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+int RemovalConcaveCellsAtEpidermis::flag(Tissue *T, size_t i, DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
 {
 	Cell &cell = T->cell(i);
 
@@ -628,12 +628,12 @@ int RemovalConcaveCellsAtEpidermis::flag(Tissue *T, size_t i, std::vector< std::
 	return 0;
 }
 
-void RemovalConcaveCellsAtEpidermis::update(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDeriv,
-	std::vector< std::vector<double> > &wallDeriv,
-	std::vector< std::vector<double> > &vertexDeriv)
+void RemovalConcaveCellsAtEpidermis::update(Tissue *T, size_t i, DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDeriv,
+	DataMatrix &wallDeriv,
+	DataMatrix &vertexDeriv)
 {
 	std::cerr << "Removing concave cell " << i << " at boundary.\n";
 	T->removeCell(i, cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);	
@@ -664,12 +664,12 @@ RemoveIsolatedCells::RemoveIsolatedCells(std::vector<double> &paraValue, std::ve
 	setParameterId(tmp);
 }
 
-int RemoveIsolatedCells::flag(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+int RemoveIsolatedCells::flag(Tissue *T, size_t i, DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
 {
 	if (T->numCell() < 3)
 	{
@@ -715,12 +715,12 @@ int RemoveIsolatedCells::flag(Tissue *T, size_t i, std::vector< std::vector<doub
 	return 1;
 }
 
-void RemoveIsolatedCells::update(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDeriv,
-	std::vector< std::vector<double> > &wallDeriv,
-	std::vector< std::vector<double> > &vertexDeriv)
+void RemoveIsolatedCells::update(Tissue *T, size_t i, DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDeriv,
+	DataMatrix &wallDeriv,
+	DataMatrix &vertexDeriv)
 {
 	std::cerr << "Removing isolated cell " << i << " at boundary.\n";
 	T->removeCell(i, cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);	
@@ -753,12 +753,12 @@ RemoveFoldedCells::RemoveFoldedCells(std::vector<double> &paraValue, std::vector
 	setParameterId(tmp);
 }
 
-int RemoveFoldedCells::flag(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+int RemoveFoldedCells::flag(Tissue *T, size_t i, DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
 {
 	Cell &cell = T->cell(i);
 
@@ -777,12 +777,12 @@ int RemoveFoldedCells::flag(Tissue *T, size_t i, std::vector< std::vector<double
 	}
 }
 
-void RemoveFoldedCells::update(Tissue *T, size_t i, std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDeriv,
-	std::vector< std::vector<double> > &wallDeriv,
-	std::vector< std::vector<double> > &vertexDeriv)
+void RemoveFoldedCells::update(Tissue *T, size_t i, DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDeriv,
+	DataMatrix &wallDeriv,
+	DataMatrix &vertexDeriv)
 {
 	Cell &cell = T->cell(i);
 

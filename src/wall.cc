@@ -46,8 +46,8 @@ double Wall::setLengthFromVertexPosition() {
 }
 
 double Wall::
-setLengthFromVertexPosition( std::vector< std::vector<double> > 
-			     &vertexData) {
+setLengthFromVertexPosition( DataMatrix &vertexData) 
+{
   size_t dimension = vertex1()->numPosition();
   size_t v1I=vertex1()->index();
   size_t v2I=vertex2()->index();
@@ -71,8 +71,7 @@ lengthFromVertexPosition()
 }
 
 double Wall::
-lengthFromVertexPosition( std::vector< std::vector<double> > 
-			  &vertexData)
+lengthFromVertexPosition( DataMatrix &vertexData)
 {
   size_t dimension = vertex1()->numPosition();
   size_t v1I=vertex1()->index();

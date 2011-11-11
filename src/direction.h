@@ -63,28 +63,28 @@ class Direction {
   int addUpdate( std::istream &IN );
   int addDivision( std::istream &IN );
   void initiate(Tissue &T,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs );
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
   
   void update(Tissue &T,double step,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
   
   void divide(Tissue &T,size_t cellI,
-	      std::vector< std::vector<double> > &cellData,
-	      std::vector< std::vector<double> > &wallData,
-	      std::vector< std::vector<double> > &vertexData,
-	      std::vector< std::vector<double> > &cellDerivs,
-	      std::vector< std::vector<double> > &wallDerivs,
-	      std::vector< std::vector<double> > &vertexDerivs );
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
 };
 
 //!Returns the id string

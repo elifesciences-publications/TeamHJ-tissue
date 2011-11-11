@@ -41,23 +41,23 @@ StaticDirection(std::vector<double> &paraValue,
 
 void StaticDirection::
 initiate(Tissue &T,
-	 std::vector< std::vector<double> > &cellData,
-	 std::vector< std::vector<double> > &wallData,
-	 std::vector< std::vector<double> > &vertexData,
-	 std::vector< std::vector<double> > &cellDerivs,
-	 std::vector< std::vector<double> > &wallDerivs,
-	 std::vector< std::vector<double> > &vertexDerivs ) {
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs ) {
   
 }
 
 void StaticDirection::
 update(Tissue &T, double h,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
 }
 
@@ -95,12 +95,12 @@ WallDirection(std::vector<double> &paraValue,
 
 void WallDirection::
 initiate(Tissue &T,
-	 std::vector< std::vector<double> > &cellData,
-	 std::vector< std::vector<double> > &wallData,
-	 std::vector< std::vector<double> > &vertexData,
-	 std::vector< std::vector<double> > &cellDerivs,
-	 std::vector< std::vector<double> > &wallDerivs,
-	 std::vector< std::vector<double> > &vertexDerivs ) {
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs ) {
   
   // Find walls with direction closest to given direction
   size_t dimension = T.numDimension();
@@ -165,12 +165,12 @@ initiate(Tissue &T,
 
 void WallDirection::
 update(Tissue &T, double h,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   size_t dimension=vertexData[0].size(); 
   for (size_t i=0; i<T.numDirectionalWall(); ++i) {
@@ -235,23 +235,23 @@ StrainDirection(std::vector<double> &paraValue,
 
 void StrainDirection::
 initiate(Tissue &T,
-	 std::vector< std::vector<double> > &cellData,
-	 std::vector< std::vector<double> > &wallData,
-	 std::vector< std::vector<double> > &vertexData,
-	 std::vector< std::vector<double> > &cellDerivs,
-	 std::vector< std::vector<double> > &wallDerivs,
-	 std::vector< std::vector<double> > &vertexDerivs ) {
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs ) {
   
 }
 
 void StrainDirection::
 update(Tissue &T, double h,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {
   size_t dimension = vertexData[0].size();
   assert( dimension==2 );
@@ -269,7 +269,7 @@ update(Tissue &T, double h,
   for (size_t cellI=0; cellI<T.numCell(); ++cellI) {
     //Create temporary x,y,dx positions
     size_t numV = T.cell(cellI).numVertex(); 
-    std::vector< std::vector<double> > x(numV),y(numV),dx(numV),
+    DataMatrix x(numV),y(numV),dx(numV),
       xM(numV),yM(numV),dxM(numV);
     
     double dt=1.0;
@@ -424,23 +424,23 @@ GradientDirection(std::vector<double> &paraValue,
 
 void GradientDirection::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData,
-				 std::vector< std::vector<double> > &cellDerivs,
-				 std::vector< std::vector<double> > &wallDerivs,
-				 std::vector< std::vector<double> > &vertexDerivs ) {
+				 DataMatrix &cellData,
+				 DataMatrix &wallData,
+				 DataMatrix &vertexData,
+				 DataMatrix &cellDerivs,
+				 DataMatrix &wallDerivs,
+				 DataMatrix &vertexDerivs ) {
   
 }
 
 void GradientDirection::
 update(Tissue &T, double h,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs ) {
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs ) {
   
 }
 
@@ -472,23 +472,23 @@ WallStressDirection(std::vector<double> &paraValue, std::vector< std::vector<siz
 }
   
 void WallStressDirection::initiate(Tissue &T,
-						std::vector< std::vector<double> > &cellData,
-						std::vector< std::vector<double> > &wallData,
-						std::vector< std::vector<double> > &vertexData,
-						std::vector< std::vector<double> > &cellDerivs,
-						std::vector< std::vector<double> > &wallDerivs,
-						std::vector< std::vector<double> > &vertexDerivs)
+						DataMatrix &cellData,
+						DataMatrix &wallData,
+						DataMatrix &vertexData,
+						DataMatrix &cellDerivs,
+						DataMatrix &wallDerivs,
+						DataMatrix &vertexDerivs)
 {
 	// No initialization
 }
 
 void WallStressDirection::update(Tissue &T, double h,
-					   std::vector< std::vector<double> > &cellData,
-					   std::vector< std::vector<double> > &wallData,
-					   std::vector< std::vector<double> > &vertexData,
-					   std::vector< std::vector<double> > &cellDerivs,
-					   std::vector< std::vector<double> > &wallDerivs,
-					   std::vector< std::vector<double> > &vertexDerivs)
+					   DataMatrix &cellData,
+					   DataMatrix &wallData,
+					   DataMatrix &vertexData,
+					   DataMatrix &cellDerivs,
+					   DataMatrix &wallDerivs,
+					   DataMatrix &vertexDerivs)
 {
 	size_t dimension = vertexData[0].size();
 	if (dimension==2) { 
@@ -551,7 +551,7 @@ void WallStressDirection::update(Tissue &T, double h,
 			
 			// This calculation should now be done in reaction CalculatePCAPlane
 			//cell.calculatePCAPlane(vertexData);
-			std::vector< std::vector<double> > axes = cell.getPCAPlane();
+			DataMatrix axes = cell.getPCAPlane();
 			std::vector< std::pair<double, double> > vertices = cell.projectVerticesOnPCAPlane(vertexData);
 			
 			double enumerator = 0.0;
@@ -637,24 +637,24 @@ DoubleWallStressDirection(std::vector<double> &paraValue, std::vector< std::vect
 
 void DoubleWallStressDirection::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData,
-				 std::vector< std::vector<double> > &cellDerivs,
-				 std::vector< std::vector<double> > &wallDerivs,
-				 std::vector< std::vector<double> > &vertexDerivs)
+				 DataMatrix &cellData,
+				 DataMatrix &wallData,
+				 DataMatrix &vertexData,
+				 DataMatrix &cellDerivs,
+				 DataMatrix &wallDerivs,
+				 DataMatrix &vertexDerivs)
 {
 	// No initialization
 }
 
 void DoubleWallStressDirection::
 update(Tissue &T, double h,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs)
 {
 	size_t dimension = vertexData[0].size();
 	if (dimension==2) { 
@@ -722,7 +722,7 @@ update(Tissue &T, double h,
 			
 			// This calculation should now be done in reaction CalculatePCAPlane
 			//cell.calculatePCAPlane(vertexData);
-			std::vector< std::vector<double> > axes = cell.getPCAPlane();
+			DataMatrix axes = cell.getPCAPlane();
 			std::vector< std::pair<double, double> > vertices = cell.projectVerticesOnPCAPlane(vertexData);
 			
 			double enumerator = 0.0;
@@ -813,24 +813,24 @@ StretchDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t
 
 void StretchDirection::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData,
-				 std::vector< std::vector<double> > &cellDerivs,
-				 std::vector< std::vector<double> > &wallDerivs,
-				 std::vector< std::vector<double> > &vertexDerivs)
+				 DataMatrix &cellData,
+				 DataMatrix &wallData,
+				 DataMatrix &vertexData,
+				 DataMatrix &cellDerivs,
+				 DataMatrix &wallDerivs,
+				 DataMatrix &vertexDerivs)
 {
 	// No initialization
 }
 
 void StretchDirection::
 update(Tissue &T, double h,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs)
 {
 	size_t dimension = vertexData[0].size();
 	if (dimension==2) { 
@@ -899,7 +899,7 @@ update(Tissue &T, double h,
 			}
 			// This calculation should now be done in reaction CalculatePCAPlane
 			//cell.calculatePCAPlane(vertexData);
-			std::vector< std::vector<double> > axes = cell.getPCAPlane();
+			DataMatrix axes = cell.getPCAPlane();
 			std::vector< std::pair<double, double> > vertices = cell.projectVerticesOnPCAPlane(vertexData);
 			
 			double enumerator = 0.0;
@@ -989,24 +989,24 @@ StrainDirectionWall(std::vector<double> &paraValue, std::vector< std::vector<siz
 
 void StrainDirectionWall::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData,
-				 std::vector< std::vector<double> > &cellDerivs,
-				 std::vector< std::vector<double> > &wallDerivs,
-				 std::vector< std::vector<double> > &vertexDerivs)
+				 DataMatrix &cellData,
+				 DataMatrix &wallData,
+				 DataMatrix &vertexData,
+				 DataMatrix &cellDerivs,
+				 DataMatrix &wallDerivs,
+				 DataMatrix &vertexDerivs)
 {
 	// No initialization
 }
 
 void StrainDirectionWall::
 update(Tissue &T, double h,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs)
 {
 	T.derivs(cellData,wallData,vertexData,cellDerivs,wallDerivs,vertexDerivs);
 	size_t dimension = vertexData[0].size();
@@ -1078,7 +1078,7 @@ update(Tissue &T, double h,
 			}
 			// This calculation should now be done in reaction CalculatePCAPlane
 			//cell.calculatePCAPlane(vertexData);
-			std::vector< std::vector<double> > axes = cell.getPCAPlane();
+			DataMatrix axes = cell.getPCAPlane();
 			std::vector< std::pair<double, double> > vertices = cell.projectVerticesOnPCAPlane(vertexData);
 			
 			double enumerator = 0.0;
@@ -1174,24 +1174,24 @@ PCAPlaneDirection(std::vector<double> &paraValue, std::vector< std::vector<size_
 
 void PCAPlaneDirection::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData,
-				 std::vector< std::vector<double> > &cellDerivs,
-				 std::vector< std::vector<double> > &wallDerivs,
-				 std::vector< std::vector<double> > &vertexDerivs)
+				 DataMatrix &cellData,
+				 DataMatrix &wallData,
+				 DataMatrix &vertexData,
+				 DataMatrix &cellDerivs,
+				 DataMatrix &wallDerivs,
+				 DataMatrix &vertexDerivs)
 {
 	// No initialization
 }
 
 void PCAPlaneDirection::
 update(Tissue &T, double h,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs)
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs)
 {
 	size_t dimension = vertexData[0].size();
 	if (dimension==3) {
@@ -1204,7 +1204,7 @@ update(Tissue &T, double h,
 			
 			// This calculation should now be done in reaction CalculatePCAPlane
 			//cell.calculatePCAPlane(vertexData);
-			std::vector< std::vector<double> > axes = cell.getPCAPlane();
+			DataMatrix axes = cell.getPCAPlane();
 			std::vector<double> normal = cell.getNormalToPCAPlane();
 			
 			double axesNorm=0.0,normalNorm=0.0;
@@ -1264,23 +1264,23 @@ VertexStressDirection(std::vector<double> &paraValue, std::vector< std::vector<s
 }
   
 void VertexStressDirection::initiate(Tissue &T,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
 {
 	// No initialization
 }
 
 void VertexStressDirection::update(Tissue &T, double h,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
 {
  	size_t dimensions = vertexData[0].size();
 
@@ -1295,7 +1295,7 @@ void VertexStressDirection::update(Tissue &T, double h,
 			continue;
 		}
 
-		std::vector< std::vector<double> > E = cell.getPCAPlane();
+		DataMatrix E = cell.getPCAPlane();
 		
 		for (size_t i = 0; i < cell.numVertex(); ++i) {
 			Vertex *vertex = cell.vertex(i);

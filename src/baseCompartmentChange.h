@@ -12,6 +12,7 @@
 #include<string>
 #include<iostream>
 #include<fstream>
+#include "myTypedefs.h"
 
 class Tissue;
 class Cell;
@@ -85,28 +86,28 @@ class BaseCompartmentChange {
   /// @brief Defines a rule for when an update will take place.
   ///
   virtual int flag(Tissue* T,size_t i,
-		   std::vector< std::vector<double> > &cellData,
-		   std::vector< std::vector<double> > &wallData,
-		   std::vector< std::vector<double> > &vertexData,
-		   std::vector< std::vector<double> > &cellDerivs,
-		   std::vector< std::vector<double> > &wallDerivs,
-		   std::vector< std::vector<double> > &vertexDerivs );
+		   DataMatrix &cellData,
+		   DataMatrix &wallData,
+		   DataMatrix &vertexData,
+		   DataMatrix &cellDerivs,
+		   DataMatrix &wallDerivs,
+		   DataMatrix &vertexDerivs );
   ///
   /// @brief Defines a rule for how an update will update the Tissue
   ///
   virtual void update(Tissue* T,size_t i,
-		      std::vector< std::vector<double> > &cellData,
-		      std::vector< std::vector<double> > &wallData,
-		      std::vector< std::vector<double> > &vertexData,
-		      std::vector< std::vector<double> > &cellDerivs,
-		      std::vector< std::vector<double> > &wallDerivs,
-		      std::vector< std::vector<double> > &vertexDerivs );
+		      DataMatrix &cellData,
+		      DataMatrix &wallData,
+		      DataMatrix &vertexData,
+		      DataMatrix &cellDerivs,
+		      DataMatrix &wallDerivs,
+		      DataMatrix &vertexDerivs );
   
   ///
   /// @brief Prints the wall positions and different other stuff for
   /// error checking in gnuplot.
   ///
-  void printCellWallError(std::vector< std::vector<double> > &vertexData,
+  void printCellWallError(DataMatrix &vertexData,
 			  Cell *divCell, 
 			  std::vector<size_t> &w3Tmp, 
 			  size_t &wI, 
@@ -121,7 +122,7 @@ class BaseCompartmentChange {
   /// It uses a position and a direction to find two walls
   /// vertex positions for a division.
   ///
-  int findTwoDivisionWalls(std::vector< std::vector<double> > &vertexData, 
+  int findTwoDivisionWalls(DataMatrix &vertexData, 
 			   Cell *divCell, std::vector<size_t> &wI,
 			   std::vector<double> &point, 
 			   std::vector<double> &direction, 
@@ -134,7 +135,7 @@ class BaseCompartmentChange {
   /// It uses a position on a wall and a direction to find a second
   /// vertex position for a division.
   ///
-  int findSecondDivisionWall(std::vector< std::vector<double> > &vertexData, 
+  int findSecondDivisionWall(DataMatrix &vertexData, 
 			     Cell *divCell, size_t &wI, size_t &w3I, 
 			     std::vector<double> &v1Pos, 
 			     std::vector<double> &nW2, 

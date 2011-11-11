@@ -13,6 +13,7 @@
 #include<string>
 #include<iostream>
 #include<fstream>
+#include"myTypedefs.h"
 
 class Cell;
 class Wall;
@@ -209,8 +210,8 @@ class Vertex {
   /// connected to the vertex. The calculation is based on Dumains and Kwiatkowska,
   /// Plan Journal (2002) !HJ: have to be checked if this ref is correct!
   ///
-  void calculateStressDirection(std::vector< std::vector<double> > &vertexData, 
-				std::vector< std::vector<double> > &wallData, 
+  void calculateStressDirection(DataMatrix &vertexData, 
+				DataMatrix &wallData, 
 				std::vector<size_t> &wallForceIndexes);  
   ///
   /// @brief Returns a stress direction vector (stored) for the vertex.
@@ -218,7 +219,7 @@ class Vertex {
   /// Note: the value in the stored vector may be obselete if the tissue has been updated 
   /// since the last calculation.
   ///
-  /// @see calculateStressDirection(std::vector< std::vector<double> >&,std::vector< std::vector<double> >&, std::vector<size_t>&); 
+  /// @see calculateStressDirection(DataMatrix&,DataMatrix&, std::vector<size_t>&); 
   std::vector<double> stressDirection(void) const;
 };
 

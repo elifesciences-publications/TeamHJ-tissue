@@ -72,8 +72,8 @@ int Vertex::isBoundary(Cell *background) const
   return 0;
 }
 
-void Vertex::calculateStressDirection(std::vector< std::vector<double> > &vertexData,
-				      std::vector< std::vector<double> > &wallData, 
+void Vertex::calculateStressDirection(DataMatrix &vertexData,
+				      DataMatrix &wallData, 
 				      std::vector<size_t> &wallForceIndexes)
 {
   size_t dimensions = vertexData[0].size();

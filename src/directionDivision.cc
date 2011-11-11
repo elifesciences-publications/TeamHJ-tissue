@@ -46,12 +46,12 @@ ParallellDirection(std::vector<double> &paraValue,
 
 void ParallellDirection::
 update(Tissue &T,size_t cellI,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs ) {
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs ) {
   
 	// Nothing to do with the direction, but if direction connected to wall
 	// the directionalWall vector needs to be extended and updated
@@ -167,12 +167,12 @@ PerpendicularDirection(std::vector<double> &paraValue,
 
 void PerpendicularDirection::
 update(Tissue &T,size_t cellI,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDerivs,
-			 std::vector< std::vector<double> > &wallDerivs,
-			 std::vector< std::vector<double> > &vertexDerivs ) {
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs ) {
 
 	// Extract the perpendicular direction
 	size_t cellNI=cellData.size()-1;
@@ -292,12 +292,12 @@ RandomDirection::RandomDirection(std::vector<double> &paraValue, std::vector< st
 }
 
 void RandomDirection::update(Tissue &T, size_t cellIndex,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs)
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
 {
 	size_t dimension = vertexData[0].size();
 

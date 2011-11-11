@@ -65,19 +65,19 @@ BaseDirectionDivision::createDirectionDivision(std::istream &IN ) {
 
 void BaseDirectionDivision::
 update(Tissue &T,size_t cellI,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &walldata,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellderivs, 
-			 std::vector< std::vector<double> > &wallderivs,
-			 std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &walldata,
+       DataMatrix &vertexData,
+       DataMatrix &cellderivs, 
+       DataMatrix &wallderivs,
+       DataMatrix &vertexDerivs ) {
   std::cerr << "BaseDirectionDivision::derivs() should not be used. "
-						<< "Should always be mapped onto one of the real types.\n";
+	    << "Should always be mapped onto one of the real types.\n";
   exit(0);
 }  
 
 void BaseDirectionDivision::print( std::ofstream &os ) {
   std::cerr << "BaseDirectionDivision::print(ofstream) should not be used. "
-						<< "Should always be mapped onto one of the real types.\n";
+	    << "Should always be mapped onto one of the real types.\n";
   exit(0);
 }

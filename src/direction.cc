@@ -84,39 +84,39 @@ int Direction::addDivision( std::istream &IN ) {
 
 //!Calls directionUpdate for initiation of the direction
 void Direction::initiate(Tissue &T, 
-												 std::vector< std::vector<double> > &cellData,
-												 std::vector< std::vector<double> > &wallData,
-												 std::vector< std::vector<double> > &vertexData,
-												 std::vector< std::vector<double> > &cellDerivs,
-												 std::vector< std::vector<double> > &wallDerivs,
-												 std::vector< std::vector<double> > &vertexDerivs )
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs )
 {
-	directionUpdate()->initiate(T,cellData,wallData,vertexData,cellDerivs,
-															wallDerivs,vertexDerivs);
+  directionUpdate()->initiate(T,cellData,wallData,vertexData,cellDerivs,
+			      wallDerivs,vertexDerivs);
 }
 
 //!Calls directionUpdate for update of the direction (during simulation)
 void Direction::update(Tissue &T,double step,
-											 std::vector< std::vector<double> > &cellData,
-											 std::vector< std::vector<double> > &wallData,
-											 std::vector< std::vector<double> > &vertexData,
-											 std::vector< std::vector<double> > &cellDerivs,
-											 std::vector< std::vector<double> > &wallDerivs,
-											 std::vector< std::vector<double> > &vertexDerivs )
+		       DataMatrix &cellData,
+		       DataMatrix &wallData,
+		       DataMatrix &vertexData,
+		       DataMatrix &cellDerivs,
+		       DataMatrix &wallDerivs,
+		       DataMatrix &vertexDerivs )
 {
-	directionUpdate()->update(T,step,cellData,wallData,vertexData,cellDerivs,
-														wallDerivs,vertexDerivs);
+  directionUpdate()->update(T,step,cellData,wallData,vertexData,cellDerivs,
+			    wallDerivs,vertexDerivs);
 }
 
 //!Calls directionDivision for direction division rule
 void Direction::divide(Tissue &T,size_t cellI,
-											 std::vector< std::vector<double> > &cellData,
-											 std::vector< std::vector<double> > &wallData,
-											 std::vector< std::vector<double> > &vertexData,
-											 std::vector< std::vector<double> > &cellDerivs,
-											 std::vector< std::vector<double> > &wallDerivs,
-											 std::vector< std::vector<double> > &vertexDerivs ) 
+		       DataMatrix &cellData,
+		       DataMatrix &wallData,
+		       DataMatrix &vertexData,
+		       DataMatrix &cellDerivs,
+		       DataMatrix &wallDerivs,
+											 DataMatrix &vertexDerivs ) 
 {
 	directionDivision()->update(T,cellI,cellData,wallData,vertexData,
-															cellDerivs,wallDerivs,vertexDerivs);
+				    cellDerivs,wallDerivs,vertexDerivs);
 }

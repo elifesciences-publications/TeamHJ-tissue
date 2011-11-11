@@ -133,13 +133,13 @@ class Wall {
   ///
   /// Note that if the vertex positions are updated this value might be obsolete.
   ///
-  /// @see lengthFromVertexPosition( std::vector< std::vector<double> >&)
+  /// @see lengthFromVertexPosition( DataMatrix&)
   /// 
   double lengthFromVertexPosition();
   ///
   /// @brief Returns the wall length calculated from the vertex positions in vertexData
   ///
-  double lengthFromVertexPosition( std::vector< std::vector<double> > 
+  double lengthFromVertexPosition( DataMatrix 
 				   &vertexData);
   ///
   /// @brief Returns the number of variables stored by the Wall.
@@ -230,7 +230,7 @@ class Wall {
   ///
   /// @see vertex1()
   /// @see Tissue
-  /// @see setLengthFromVertexPosition( std::vector< std::vector<double> >&) 
+  /// @see setLengthFromVertexPosition( DataMatrix&) 
   ///
   double setLengthFromVertexPosition();
   ///
@@ -241,7 +241,7 @@ class Wall {
   /// @see vertex1()
   /// @see Tissue
   ///
-  double setLengthFromVertexPosition( std::vector< std::vector<double> > 
+  double setLengthFromVertexPosition( DataMatrix 
 				      &vertexData);
   
 };

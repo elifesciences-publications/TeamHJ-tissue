@@ -71,9 +71,9 @@ Tissue::Tissue( std::string initFile, int verbose )
   readInit(initFile,verbose);
 }
 
-Tissue::Tissue( std::vector< std::vector<double> > &cellData,
-								std::vector< std::vector<double> > &wallData,
-								std::vector< std::vector<double> > &vertexData,
+Tissue::Tissue( DataMatrix &cellData,
+								DataMatrix &wallData,
+								DataMatrix &vertexData,
 								std::vector< std::vector<size_t> > &cellVertex,
 								std::vector< std::vector<size_t> > &wallVertex,
 								int verbose)
@@ -813,7 +813,7 @@ size_t wallFromCellPair(std::vector< std::pair<size_t,size_t> > &wallCell,
 }
 
 void Tissue::
-createTissueFromSpheres(std::vector< std::vector<double> > &y,
+createTissueFromSpheres(DataMatrix &y,
 												double rFac, int verbose) 
 {  
   size_t N = y.size();
@@ -1214,7 +1214,7 @@ createTissueFromSpheres(std::vector< std::vector<double> > &y,
   //}  
 }
 
-void Tissue::createTissueFromVoronoi(std::vector< std::vector<double> > &vertexPos,
+void Tissue::createTissueFromVoronoi(DataMatrix &vertexPos,
 																		 std::vector< std::vector<size_t> > &cellVertexTmp,
 																		 int verbose) 
 {
@@ -1525,7 +1525,7 @@ void Tissue::createTissueFromVoronoi(std::vector< std::vector<double> > &vertexP
 	std::cerr << "Checking tissue" << std::endl;
 	checkConnectivity(verbose);
 	std::cerr << "Tisue created" << std::endl;
-	std::vector< std::vector<double> > cellData( numCell() ),
+	DataMatrix cellData( numCell() ),
 		cellDeriv( numCell() ),wallData( numWall() ),wallDeriv( numWall() ),
 		vertexData( numVertex() ),vertexDeriv( numVertex() );
 	removeEpidermalCells(cellData,wallData,vertexData,cellDeriv,wallDeriv,
@@ -1546,12 +1546,12 @@ void Tissue::createTissueFromVoronoi(std::vector< std::vector<double> > &vertexP
 
 }
 
-void Tissue::derivs( std::vector< std::vector<double> > &cellData,
-		     std::vector< std::vector<double> > &wallData,
-		     std::vector< std::vector<double> > &vertexData,
-		     std::vector< std::vector<double> > &cellDeriv,
-		     std::vector< std::vector<double> > &wallDeriv,
-		     std::vector< std::vector<double> > &vertexDeriv ) 
+void Tissue::derivs( DataMatrix &cellData,
+		     DataMatrix &wallData,
+		     DataMatrix &vertexData,
+		     DataMatrix &cellDeriv,
+		     DataMatrix &wallDeriv,
+		     DataMatrix &vertexDeriv ) 
 {  
   //Set all derivatives to zero
   for( size_t i=0 ; i<cellDeriv.size() ; ++i )
@@ -1567,20 +1567,20 @@ void Tissue::derivs( std::vector< std::vector<double> > &cellData,
 			cellDeriv,wallDeriv,vertexDeriv);
 }
 
-void::Tissue::initiateReactions(std::vector< std::vector<double> > &cellData,
-				std::vector< std::vector<double> > &wallData,
-				std::vector< std::vector<double> > &vertexData,
-				std::vector< std::vector<double> > &cellDeriv,
-				std::vector< std::vector<double> > &wallDeriv,
-				std::vector< std::vector<double> > &vertexDeriv ) 
+void::Tissue::initiateReactions(DataMatrix &cellData,
+				DataMatrix &wallData,
+				DataMatrix &vertexData,
+				DataMatrix &cellDeriv,
+				DataMatrix &wallDeriv,
+				DataMatrix &vertexDeriv ) 
 {
   for (size_t i=0; i<numReaction(); ++i)
     reaction(i)->initiate(*this,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv);
 }
 
-void::Tissue::updateReactions(std::vector< std::vector<double> > &cellData,
-			      std::vector< std::vector<double> > &wallData,
-			      std::vector< std::vector<double> > &vertexData,
+void::Tissue::updateReactions(DataMatrix &cellData,
+			      DataMatrix &wallData,
+			      DataMatrix &vertexData,
 			      double step) 
 {
   for (size_t i=0; i<numReaction(); ++i)
@@ -1588,12 +1588,12 @@ void::Tissue::updateReactions(std::vector< std::vector<double> > &cellData,
 }
 
 void::Tissue::
-initiateDirection(std::vector< std::vector<double> > &cellData,
-		  std::vector< std::vector<double> > &wallData,
-		  std::vector< std::vector<double> > &vertexData,
-		  std::vector< std::vector<double> > &cellDerivs,
-		  std::vector< std::vector<double> > &wallDerivs,
-		  std::vector< std::vector<double> > &vertexDerivs ) 
+initiateDirection(DataMatrix &cellData,
+		  DataMatrix &wallData,
+		  DataMatrix &vertexData,
+		  DataMatrix &cellDerivs,
+		  DataMatrix &wallDerivs,
+		  DataMatrix &vertexDerivs ) 
 {
   direction()->initiate(*this,cellData,wallData,vertexData,cellDerivs,
 			wallDerivs,vertexDerivs);
@@ -1601,12 +1601,12 @@ initiateDirection(std::vector< std::vector<double> > &cellData,
 
 void::Tissue::
 updateDirection(double step,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs) 
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs) 
 {
   direction()->update(*this,step,cellData,wallData,vertexData,cellDerivs,
 		      wallDerivs,vertexDerivs);	
@@ -1614,24 +1614,24 @@ updateDirection(double step,
 
 void::Tissue::
 updateDirectionDivision(size_t cellI,
-			std::vector< std::vector<double> > &cellData,
-			std::vector< std::vector<double> > &wallData,
-			std::vector< std::vector<double> > &vertexData,
-			std::vector< std::vector<double> > &cellDerivs,
-			std::vector< std::vector<double> > &wallDerivs,
-			std::vector< std::vector<double> > &vertexDerivs) 
+			DataMatrix &cellData,
+			DataMatrix &wallData,
+			DataMatrix &vertexData,
+			DataMatrix &cellDerivs,
+			DataMatrix &wallDerivs,
+			DataMatrix &vertexDerivs) 
 {
   direction()->divide(*this,cellI,cellData,wallData,vertexData,
 		      cellDerivs,wallDerivs,vertexDerivs);	
 }
 
 void Tissue::
-checkCompartmentChange( std::vector< std::vector<double> > &cellData,
-			std::vector< std::vector<double> > &wallData,
-			std::vector< std::vector<double> > &vertexData,
-			std::vector< std::vector<double> > &cellDeriv,
-			std::vector< std::vector<double> > &wallDeriv,
-			std::vector< std::vector<double> > &vertexDeriv ) {
+checkCompartmentChange( DataMatrix &cellData,
+			DataMatrix &wallData,
+			DataMatrix &vertexData,
+			DataMatrix &cellDeriv,
+			DataMatrix &wallDeriv,
+			DataMatrix &vertexDeriv ) {
   
   unsigned int uglyHackCounter = 0;
   
@@ -1730,12 +1730,12 @@ checkCompartmentChange( std::vector< std::vector<double> > &cellData,
 }
 
 void Tissue::removeCell(size_t cellIndex,
-												std::vector< std::vector<double> > &cellData,
-												std::vector< std::vector<double> > &wallData,
-												std::vector< std::vector<double> > &vertexData,
-												std::vector< std::vector<double> > &cellDeriv,
-												std::vector< std::vector<double> > &wallDeriv,
-												std::vector< std::vector<double> > &vertexDeriv ) 
+												DataMatrix &cellData,
+												DataMatrix &wallData,
+												DataMatrix &vertexData,
+												DataMatrix &cellDeriv,
+												DataMatrix &wallDeriv,
+												DataMatrix &vertexDeriv ) 
 {
 	assert(cellIndex<numCell());
 	std::vector<size_t> wallRemove;
@@ -1892,12 +1892,12 @@ void Tissue::removeCell(size_t cellIndex,
 
 void Tissue::
 removeCells(std::vector<size_t> &cellIndex,
-						std::vector< std::vector<double> > &cellData,
-						std::vector< std::vector<double> > &wallData,
-						std::vector< std::vector<double> > &vertexData,
-						std::vector< std::vector<double> > &cellDeriv,
-						std::vector< std::vector<double> > &wallDeriv,
-						std::vector< std::vector<double> > &vertexDeriv ) 
+						DataMatrix &cellData,
+						DataMatrix &wallData,
+						DataMatrix &vertexData,
+						DataMatrix &cellDeriv,
+						DataMatrix &wallDeriv,
+						DataMatrix &vertexDeriv ) 
 {
 	// Sort the indices to make sure highest indices are removed first 
 	// (since removed index is occupied with the last one)
@@ -1912,12 +1912,12 @@ removeCells(std::vector<size_t> &cellIndex,
 }
 
 void Tissue::
-removeEpidermalCells(std::vector< std::vector<double> > &cellData,
-										 std::vector< std::vector<double> > &wallData,
-										 std::vector< std::vector<double> > &vertexData,
-										 std::vector< std::vector<double> > &cellDeriv,
-										 std::vector< std::vector<double> > &wallDeriv,
-										 std::vector< std::vector<double> > &vertexDeriv,
+removeEpidermalCells(DataMatrix &cellData,
+										 DataMatrix &wallData,
+										 DataMatrix &vertexData,
+										 DataMatrix &cellDeriv,
+										 DataMatrix &wallDeriv,
+										 DataMatrix &vertexDeriv,
 	double radialThreshold,
 	const bool checkBackground) 
 {
@@ -1960,12 +1960,12 @@ removeEpidermalCells(std::vector< std::vector<double> > &cellData,
 	}
 }
 
-void Tissue::removeEpidermalCellsMk2(std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDeriv,
-	std::vector< std::vector<double> > &wallDeriv,
-	std::vector< std::vector<double> > &vertexDeriv,
+void Tissue::removeEpidermalCellsMk2(DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDeriv,
+	DataMatrix &wallDeriv,
+	DataMatrix &vertexDeriv,
 	double radialThreshold) 
 {
 	size_t dimensions = vertexData[0].size();
@@ -2024,12 +2024,12 @@ void Tissue::removeEpidermalCellsMk2(std::vector< std::vector<double> > &cellDat
 }
 
 void Tissue::
-removeEpidermalCellsAtDistance(std::vector< std::vector<double> > &cellData,
-															 std::vector< std::vector<double> > &wallData,
-															 std::vector< std::vector<double> > &vertexData,
-															 std::vector< std::vector<double> > &cellDeriv,
-															 std::vector< std::vector<double> > &wallDeriv,
-															 std::vector< std::vector<double> > &vertexDeriv,
+removeEpidermalCellsAtDistance(DataMatrix &cellData,
+															 DataMatrix &wallData,
+															 DataMatrix &vertexData,
+															 DataMatrix &cellDeriv,
+															 DataMatrix &wallDeriv,
+															 DataMatrix &vertexDeriv,
 															 double distanceThreshold,double max,
 															 size_t direction ) 
 {
@@ -2069,12 +2069,12 @@ removeEpidermalCellsAtDistance(std::vector< std::vector<double> > &cellData,
 void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I, 
 			 std::vector<double> &v1Pos,
 			 std::vector<double> &v2Pos,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &wallData,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellDeriv,
-			 std::vector< std::vector<double> > &wallDeriv,
-			 std::vector< std::vector<double> > &vertexDeriv,
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDeriv,
+			 DataMatrix &wallDeriv,
+			 DataMatrix &vertexDeriv,
 			 std::vector<size_t> &volumeChangeList,
 			 double threshold) 
   
@@ -2649,12 +2649,12 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
 
 void Tissue::
 divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerIndex,
-			       std::vector< std::vector<double> > &cellData,
-			       std::vector< std::vector<double> > &wallData,
-			       std::vector< std::vector<double> > &vertexData,
-			       std::vector< std::vector<double> > &cellDeriv,
-			       std::vector< std::vector<double> > &wallDeriv,
-			       std::vector< std::vector<double> > &vertexDeriv,
+			       DataMatrix &cellData,
+			       DataMatrix &wallData,
+			       DataMatrix &vertexData,
+			       DataMatrix &cellDeriv,
+			       DataMatrix &wallDeriv,
+			       DataMatrix &vertexDeriv,
 			       std::vector<size_t> &volumeChangeList )
 {
   // size_t dimension=vertexData[0].size();
@@ -3488,7 +3488,7 @@ void Tissue::checkConnectivity(size_t verbose)
 }
 
 unsigned int Tissue::
-findPeaksGradientAscent( std::vector< std::vector<double> > &cellData, 
+findPeaksGradientAscent( DataMatrix &cellData, 
 												 size_t col, std::vector<size_t> &cellMax,
 												 std::vector<size_t> &flag )
 {
@@ -3629,9 +3629,9 @@ void Tissue::printInit(std::ostream &os) {
 	os.precision(oldPrecision);		
 }
 
-void Tissue::printInit(std::vector< std::vector<double> > &cellData,
-											 std::vector< std::vector<double> > &wallData,
-											 std::vector< std::vector<double> > &vertexData,
+void Tissue::printInit(DataMatrix &cellData,
+											 DataMatrix &wallData,
+											 DataMatrix &vertexData,
 											 std::ostream &os) {
   
 	assert( numCell()==cellData.size() && 
@@ -3752,8 +3752,8 @@ void Tissue::printVertexAndCell(std::ostream &os) {
 }
 
 void Tissue::
-printVertexAndCell(std::vector< std::vector<double> > &cellData,
-									 std::vector< std::vector<double> > &vertexData,
+printVertexAndCell(DataMatrix &cellData,
+									 DataMatrix &vertexData,
 									 std::ostream &os) {
   
   size_t Nv = vertexData.size(); 
@@ -3988,9 +3988,9 @@ printVertexAndCell(std::vector< std::vector<double> > &cellData,
 }
 
 void Tissue::
-printVertexAndWall(std::vector< std::vector<double> > &wallData,
-									 std::vector< std::vector<double> > &vertexData,
-									 std::ostream &os) {
+printVertexAndWall(DataMatrix &wallData,
+		   DataMatrix &vertexData,
+		   std::ostream &os) {
   
   size_t Nv = vertexData.size(); 
   if( !Nv ) {
@@ -4008,18 +4008,18 @@ printVertexAndWall(std::vector< std::vector<double> > &wallData,
   os << std::endl;
   // Print the walls, first connected vertecis and then variables
   size_t Nw = wallData.size();
-	//
-	// Print wall variables
-	//
-	int numPrintVar=wallData[0].size()+2;
-	os << Nw << " " << numPrintVar << std::endl;
+  //
+  // Print wall variables
+  //
+  int numPrintVar=wallData[0].size()+2;
+  os << Nw << " " << numPrintVar << std::endl;
   for( size_t i=0 ; i<Nw ; ++i ) {
-		os << "2 ";
-		os << wall(i).vertex1()->index() << " " 
-			 << wall(i).vertex2()->index() << " ";
-		for( size_t k=0 ; k<wallData[i].size() ; ++k )
-			os << wallData[i][k] << " ";
-		os << i << " " << wall(i).lengthFromVertexPosition(vertexData)
-			 << std::endl;
+    os << "2 ";
+    os << wall(i).vertex1()->index() << " " 
+       << wall(i).vertex2()->index() << " ";
+    for( size_t k=0 ; k<wallData[i].size() ; ++k )
+      os << wallData[i][k] << " ";
+    os << i << " " << wall(i).lengthFromVertexPosition(vertexData)
+       << std::endl;
   }
 }	

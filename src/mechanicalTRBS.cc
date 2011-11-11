@@ -45,12 +45,12 @@ VertexFromTRBS(std::vector<double> &paraValue,
 
 void VertexFromTRBS::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Do the update for each cell
   size_t numCells = T.numCell();
@@ -78,7 +78,7 @@ derivs(Tissue &T,
     restingLength[1] = wallData[w2][wallLengthIndex];
     restingLength[2] = wallData[w3][wallLengthIndex];
 
-    std::vector< std::vector<double> > position(3,vertexData[v1]);
+    DataMatrix position(3,vertexData[v1]);
     position[1] = vertexData[v2];
     position[2] = vertexData[v3];
     //position[0][2] z for vertex 1 (of the cell)
@@ -201,12 +201,12 @@ VertexFromTRBScenterTriangulation(std::vector<double> &paraValue,
 
 void VertexFromTRBScenterTriangulation::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Do the update for each cell
   size_t dimension = 3;
@@ -242,7 +242,7 @@ derivs(Tissue &T,
       //size_t w3 = internal k+1
 
       // Position matrix holds in rows positions for com, vertex(k), vertex(k+1)
-      std::vector< std::vector<double> > position(3,vertexData[v2]);
+      DataMatrix position(3,vertexData[v2]);
       for (size_t d=0; d<dimension; ++d)
 	position[0][d] = cellData[i][comIndex+d]; // com position
       //position[1] = vertexData[v2]; // given by initiation
@@ -345,12 +345,12 @@ derivs(Tissue &T,
 
 void VertexFromTRBScenterTriangulation::
 initiate(Tissue &T,
-	 std::vector< std::vector<double> > &cellData,
-	 std::vector< std::vector<double> > &wallData,
-	 std::vector< std::vector<double> > &vertexData,
-	 std::vector< std::vector<double> > &cellDerivs,
-	 std::vector< std::vector<double> > &wallDerivs,
-	 std::vector< std::vector<double> > &vertexDerivs)
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs)
 {
   size_t dimension=3; //Only implemented for 3D models
   assert (dimension==vertexData[0].size());
@@ -427,12 +427,12 @@ VertexFromTRBScenterTriangulationConcentrationHill(std::vector<double> &paraValu
 
 void VertexFromTRBScenterTriangulationConcentrationHill::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Do the update for each cell
   size_t dimension = 3;
@@ -471,7 +471,7 @@ derivs(Tissue &T,
       //size_t w3 = internal k+1
       
       // Position matrix holds in rows positions for com, vertex(k), vertex(k+1)
-      std::vector< std::vector<double> > position(3,vertexData[v2]);
+      DataMatrix position(3,vertexData[v2]);
       for (size_t d=0; d<dimension; ++d)
 	position[0][d] = cellData[i][comIndex+d]; // com position
       //position[1] = vertexData[v2]; // given by initiation
@@ -578,12 +578,12 @@ derivs(Tissue &T,
 
 void VertexFromTRBScenterTriangulationConcentrationHill::
 initiate(Tissue &T,
-	 std::vector< std::vector<double> > &cellData,
-	 std::vector< std::vector<double> > &wallData,
-	 std::vector< std::vector<double> > &vertexData,
-	 std::vector< std::vector<double> > &cellDerivs,
-	 std::vector< std::vector<double> > &wallDerivs,
-	 std::vector< std::vector<double> > &vertexDerivs)
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs)
 {
   size_t dimension=3; //Only implemented for 3D models
   assert (dimension==vertexData[0].size());
@@ -661,12 +661,12 @@ VertexFromTRBSMT(std::vector<double> &paraValue,
 
 void VertexFromTRBSMT::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Do the update for each cell
   size_t numCells = T.numCell();
@@ -697,7 +697,7 @@ derivs(Tissue &T,
     restingLength[1] = wallData[w2][wallLengthIndex];
     restingLength[2] = wallData[w3][wallLengthIndex];
 
-    std::vector< std::vector<double> > position(3,vertexData[v1]);
+    DataMatrix position(3,vertexData[v1]);
     position[1] = vertexData[v2];
     position[2] = vertexData[v3];
     //position[0][2] z for vertex 1 (of the cell)

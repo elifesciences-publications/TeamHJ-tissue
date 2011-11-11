@@ -55,12 +55,12 @@ VertexNoUpdateFromPosition(std::vector<double> &paraValue,
 
 void VertexNoUpdateFromPosition::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) {
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
   
   //Check the cancelation for every vertex
   size_t numVertices = T.numVertex();
@@ -110,12 +110,12 @@ VertexNoUpdateBoundary(std::vector<double> &paraValue,
 
 void VertexNoUpdateBoundary::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {  
   //Check the cancelation for every vertex
   size_t numVertices = T.numVertex();
@@ -170,9 +170,9 @@ VertexTranslateToMax(std::vector<double> &paraValue,
 
 void VertexTranslateToMax::
 initiate(Tissue &T,
-	 std::vector< std::vector<double> > &cellData,
-	 std::vector< std::vector<double> > &wallData,
-	 std::vector< std::vector<double> > &vertexData)
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData)
 {
   size_t numVertices = T.numVertex();
   size_t posIndex = variableIndex(0,0);
@@ -189,20 +189,20 @@ initiate(Tissue &T,
 
 void VertexTranslateToMax::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {
 }
 
 void VertexTranslateToMax::
 update(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
 			 double h)
 {
   size_t numVertices = T.numVertex();
@@ -244,28 +244,28 @@ CenterCOM::CenterCOM(std::vector<double> &paraValue, std::vector< std::vector<si
 }
 
 void CenterCOM::initiate(Tissue &T,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData)
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData)
 {
 	update(T, cellData, wallData, vertexData, 0.0);
 }
 
 void CenterCOM::derivs(Tissue &T,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs) 
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs) 
 {
 
 }
 
 void CenterCOM::update(Tissue &T,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
 	double h)
 {
 	size_t dimension = vertexData[0].size();
@@ -326,9 +326,9 @@ CalculatePCAPlane(std::vector<double> &paraValue,
 
 void CalculatePCAPlane::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData)
+				 DataMatrix &cellData,
+				 DataMatrix &wallData,
+				 DataMatrix &vertexData)
 {
 	if (parameter(0)==1.0) {
 		size_t numCell = T.numCell();
@@ -339,12 +339,12 @@ initiate(Tissue &T,
 
 void CalculatePCAPlane::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {
 	if (parameter(0)!=1.0) {
 		size_t numCell = T.numCell();
@@ -355,9 +355,9 @@ derivs(Tissue &T,
 
 void CalculatePCAPlane::
 update(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
 			 double h)
 {
 	if (parameter(0)==1.0) {
@@ -402,9 +402,9 @@ InitiateWallLength(std::vector<double> &paraValue,
 
 void InitiateWallLength::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData)
+				 DataMatrix &cellData,
+				 DataMatrix &wallData,
+				 DataMatrix &vertexData)
 {
 	size_t dimension = vertexData[0].size();
   size_t numWall = T.numWall();
@@ -422,12 +422,12 @@ initiate(Tissue &T,
 
 void InitiateWallLength::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {
 }
 
@@ -466,9 +466,9 @@ InitiateWallMesh(std::vector<double> &paraValue,
 
 void InitiateWallMesh::
 initiate(Tissue &T,
-	 std::vector< std::vector<double> > &cellData,
-	 std::vector< std::vector<double> > &wallData,
-	 std::vector< std::vector<double> > &vertexData)
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData)
 {
   size_t dimension = vertexData[0].size();
   size_t numWallOld = T.numWall();
@@ -547,35 +547,35 @@ initiate(Tissue &T,
 
 void InitiateWallMesh::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {
 }
 
 StrainTest::
 StrainTest(std::vector<double> &paraValue, 
-								 std::vector< std::vector<size_t> > 
-								 &indValue ) 
+	   std::vector< std::vector<size_t> > 
+	   &indValue ) 
 {
   //
   //Do some checks on the parameters and variable indeces
   //
   if( paraValue.size()<2 ) {
     std::cerr << "StrainTest::StrainTest() "
-							<< "Uses at least two parameters, version, angle and optional parameters." << std::endl;
+	      << "Uses at least two parameters, version, angle and optional parameters." << std::endl;
     exit(0);
   }
   if( indValue.size() != 0 ) {
     std::cerr << "StrainTest::"
-							<< "StrainTest() "
-							<< "No variable indices used." << std::endl;
+	      << "StrainTest() "
+	      << "No variable indices used." << std::endl;
     exit(0);
   }
-	//
+  //
   //Set the variable values
   //
   setId("StrainTest");
@@ -585,128 +585,128 @@ StrainTest(std::vector<double> &paraValue,
   //Set the parameter identities
   //
   std::vector<std::string> tmp( numParameter() );
-	tmp[0] = "version";
-	tmp[1] = "angle";
+  tmp[0] = "version";
+  tmp[1] = "angle";
   setParameterId( tmp );
 }
 
 void StrainTest::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &wallData,
-				 std::vector< std::vector<double> > &vertexData)
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData)
 {
 }
 
 void StrainTest::
 derivs(Tissue &T,
-       std::vector< std::vector<double> > &cellData,
-       std::vector< std::vector<double> > &wallData,
-       std::vector< std::vector<double> > &vertexData,
-       std::vector< std::vector<double> > &cellDerivs,
-       std::vector< std::vector<double> > &wallDerivs,
-       std::vector< std::vector<double> > &vertexDerivs ) 
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {
-	size_t dimension=vertexData[0].size();
-	double angleRad = 2*3.14159*parameter(1)/360;
-	assert(dimension==2);
-	std::vector<double> n(dimension);
-	n[0] = std::cos(angleRad);
-	n[1] = std::sin(angleRad);
-	if (parameter(0)==0.0) {
-		if (numParameter()!=2) {
-			std::cerr << "StrainTest::derivs() version " << parameter(0) << " requires " << 2
-								<< " parameters." << std::endl;
-			exit(-1);
-		}
-		for (size_t d=0; d<dimension; ++d) {
-			double sign = vertexData[3][d]>0.0 ? 1.0 : -1.0;
-			vertexDerivs[3][d] = n[d]*sign;
-		}
-	}
-	else if (parameter(0)==1.0) {
-		if (numParameter()!=2) {
-			std::cerr << "StrainTest::derivs() version " << parameter(0) << " requires " << 2
-								<< " parameters." << std::endl;
-			exit(-1);
-		}
-		for (size_t vI=0; vI<vertexData.size(); ++vI) {
-			for (size_t d=0; d<dimension; ++d) {
-				double sign = vertexData[vI][d]>0.0 ? 1.0 : -1.0;
-				vertexDerivs[vI][d] = n[d]*sign;
-			}
-		}
-	}	
+  size_t dimension=vertexData[0].size();
+  double angleRad = 2*3.14159*parameter(1)/360;
+  assert(dimension==2);
+  std::vector<double> n(dimension);
+  n[0] = std::cos(angleRad);
+  n[1] = std::sin(angleRad);
+  if (parameter(0)==0.0) {
+    if (numParameter()!=2) {
+      std::cerr << "StrainTest::derivs() version " << parameter(0) << " requires " << 2
+		<< " parameters." << std::endl;
+      exit(-1);
+    }
+    for (size_t d=0; d<dimension; ++d) {
+      double sign = vertexData[3][d]>0.0 ? 1.0 : -1.0;
+      vertexDerivs[3][d] = n[d]*sign;
+    }
+  }
+  else if (parameter(0)==1.0) {
+    if (numParameter()!=2) {
+      std::cerr << "StrainTest::derivs() version " << parameter(0) << " requires " << 2
+		<< " parameters." << std::endl;
+      exit(-1);
+    }
+    for (size_t vI=0; vI<vertexData.size(); ++vI) {
+      for (size_t d=0; d<dimension; ++d) {
+	double sign = vertexData[vI][d]>0.0 ? 1.0 : -1.0;
+	vertexDerivs[vI][d] = n[d]*sign;
+      }
+    }
+  }	
 }
 
 CalculateVertexStressDirection::CalculateVertexStressDirection(std::vector<double> &paraValue, 
-	std::vector< std::vector<size_t> > &indValue)
+							       std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 1) {
-		std::cerr << "CalculateVertexStressDirection::CalculateVertexStressDirection() "
-		<< "Uses one parameter: onlyInUpdateFlag\n";
-		exit(0);
-	}
+  if (paraValue.size() != 1) {
+    std::cerr << "CalculateVertexStressDirection::CalculateVertexStressDirection() "
+	      << "Uses one parameter: onlyInUpdateFlag\n";
+    exit(0);
+  }
+  
+  if (indValue.size() != 1) {
+    std::cerr << "CalculateVertexStressDirection::CalculateVertexStressDirection() "
+	      << "Wall force indexes.\n";
+    exit(0);
+  }
 	
-	if (indValue.size() != 1) {
-		std::cerr << "CalculateVertexStressDirection::CalculateVertexStressDirection() "
-		<< "Wall force indexes.\n";
-		exit(0);
-	}
-	
-	setId("CalculateVertexStressDirection");
-	setParameter(paraValue);  
-	setVariableIndex(indValue);
-	
-	std::vector<std::string> tmp(numParameter());
-	tmp[0] = "onlyInUpdateFlag";
-	setParameterId(tmp);
-
-	for (size_t i = 0; i < indValue[0].size(); ++i) {
-		wallForceIndexes_.push_back(indValue[0][i]);
-	}
+  setId("CalculateVertexStressDirection");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "onlyInUpdateFlag";
+  setParameterId(tmp);
+  
+  for (size_t i = 0; i < indValue[0].size(); ++i) {
+    wallForceIndexes_.push_back(indValue[0][i]);
+  }
 }
 
 void CalculateVertexStressDirection::initiate(Tissue &T,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData)
+					      DataMatrix &cellData,
+					      DataMatrix &wallData,
+					      DataMatrix &vertexData)
 {
-	if (parameter(0) == 1.0) {
-		size_t numVertex = T.numVertex();
-		
-		for (size_t i = 0; i < numVertex; ++i) {
-			T.vertex(i).calculateStressDirection(vertexData, wallData, wallForceIndexes_);
-		}
-	}
+  if (parameter(0) == 1.0) {
+    size_t numVertex = T.numVertex();
+    
+    for (size_t i = 0; i < numVertex; ++i) {
+      T.vertex(i).calculateStressDirection(vertexData, wallData, wallForceIndexes_);
+    }
+  }
 }
 
 void CalculateVertexStressDirection::derivs(Tissue &T,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	std::vector< std::vector<double> > &cellDerivs,
-	std::vector< std::vector<double> > &wallDerivs,
-	std::vector< std::vector<double> > &vertexDerivs) 
+					    DataMatrix &cellData,
+					    DataMatrix &wallData,
+					    DataMatrix &vertexData,
+					    DataMatrix &cellDerivs,
+					    DataMatrix &wallDerivs,
+					    DataMatrix &vertexDerivs) 
 {
-	if (parameter(0) != 1.0) {
-		size_t numVertex = T.numVertex();
-		for (size_t i=0; i<numVertex; ++i) {
-			T.vertex(i).calculateStressDirection(vertexData, wallData, wallForceIndexes_);
-		}
-	}
+  if (parameter(0) != 1.0) {
+    size_t numVertex = T.numVertex();
+    for (size_t i=0; i<numVertex; ++i) {
+      T.vertex(i).calculateStressDirection(vertexData, wallData, wallForceIndexes_);
+    }
+  }
 }
 
 void CalculateVertexStressDirection::update(Tissue &T,
-	std::vector< std::vector<double> > &cellData,
-	std::vector< std::vector<double> > &wallData,
-	std::vector< std::vector<double> > &vertexData,
-	double h)
+					    DataMatrix &cellData,
+					    DataMatrix &wallData,
+					    DataMatrix &vertexData,
+					    double h)
 {
-	if (parameter(0) == 1.0) {
-		size_t numVertex = T.numVertex();
-		for (size_t i=0; i<numVertex; ++i) {
-			T.vertex(i).calculateStressDirection(vertexData, wallData, wallForceIndexes_);
-		}
-	}
+  if (parameter(0) == 1.0) {
+    size_t numVertex = T.numVertex();
+    for (size_t i=0; i<numVertex; ++i) {
+      T.vertex(i).calculateStressDirection(vertexData, wallData, wallForceIndexes_);
+    }
+  }
 }

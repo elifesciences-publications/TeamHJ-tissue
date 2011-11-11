@@ -1,10 +1,10 @@
-/**
- * Filename     : directionReaction.h
- * Description  : Classes describing some reaction updates related to directions
- * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
- * Created      : May 2008
- * Revision     : $Id:$
- */
+//
+// Filename     : directionReaction.h
+// Description  : Classes describing some reaction updates related to directions
+// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+// Created      : May 2008
+// Revision     : $Id:$
+//
 #ifndef DIRECTIONREACTION_H
 #define DIRECTIONREACTION_H
 
@@ -22,16 +22,16 @@
 class ContinousMTDirection : public BaseReaction
 {
 public:
-	ContinousMTDirection(std::vector<double> &paraValue,
-											 std::vector< std::vector<size_t> > &indValue);
-	
-	void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs);
+  ContinousMTDirection(std::vector<double> &paraValue,
+		       std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);
 };
 
 ///
@@ -43,41 +43,41 @@ public:
 ///
 class UpdateMTDirection : public BaseReaction
 {
-public:
-	UpdateMTDirection(std::vector<double> &paraValue,
-										std::vector< std::vector<size_t> > &indValue);
-	
+ public:
+  UpdateMTDirection(std::vector<double> &paraValue,
+		    std::vector< std::vector<size_t> > &indValue);
+  
 	void initiate(Tissue &T,
-								std::vector< std::vector<double> > &cellData,
-								std::vector< std::vector<double> > &wallData,
-								std::vector< std::vector<double> > &vertexData);
-  void derivs(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							std::vector< std::vector<double> > &cellDerivs,
-							std::vector< std::vector<double> > &wallDerivs,
-							std::vector< std::vector<double> > &vertexDerivs );
-  void update(Tissue &T,
-							std::vector< std::vector<double> > &cellData,
-							std::vector< std::vector<double> > &wallData,
-							std::vector< std::vector<double> > &vertexData,
-							double h);
+		      DataMatrix &cellData,
+		      DataMatrix &wallData,
+		      DataMatrix &vertexData);
+	void derivs(Tissue &T,
+		    DataMatrix &cellData,
+		    DataMatrix &wallData,
+		    DataMatrix &vertexData,
+		    DataMatrix &cellDerivs,
+		    DataMatrix &wallDerivs,
+		    DataMatrix &vertexDerivs );
+	void update(Tissue &T,
+		    DataMatrix &cellData,
+		    DataMatrix &wallData,
+		    DataMatrix &vertexData,
+		    double h);
 };
 
 class RotatingDirection : public BaseReaction
 {
-public:
-	RotatingDirection(std::vector<double> &paraValue,
-		std::vector< std::vector<size_t> > &indValue);
-	
-	void derivs(Tissue &T,
-		std::vector< std::vector<double> > &cellData,
-		std::vector< std::vector<double> > &wallData,
-		std::vector< std::vector<double> > &vertexData,
-		std::vector< std::vector<double> > &cellDerivs,
-		std::vector< std::vector<double> > &wallDerivs,
-		std::vector< std::vector<double> > &vertexDerivs);
+ public:
+  RotatingDirection(std::vector<double> &paraValue,
+		    std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);
 };
 
 #endif //DIRECTIONREACTION_H

@@ -83,12 +83,12 @@ BaseDirectionUpdate::createDirectionUpdate(std::istream &IN) {
 
 void BaseDirectionUpdate::
 initiate(Tissue &T,
-				 std::vector< std::vector<double> > &cellData,
-				 std::vector< std::vector<double> > &walldata,
-				 std::vector< std::vector<double> > &vertexData,
-				 std::vector< std::vector<double> > &cellderivs, 
-				 std::vector< std::vector<double> > &wallderivs,
-				 std::vector< std::vector<double> > &vertexDerivs ) {
+				 DataMatrix &cellData,
+				 DataMatrix &walldata,
+				 DataMatrix &vertexData,
+				 DataMatrix &cellderivs, 
+				 DataMatrix &wallderivs,
+				 DataMatrix &vertexDerivs ) {
   std::cerr << "BaseDirectionUpdate::derivs() should not be used. "
 						<< "Should always be mapped onto one of the real types.\n";
   exit(0);
@@ -96,12 +96,12 @@ initiate(Tissue &T,
 
 void BaseDirectionUpdate::
 update(Tissue &T, double h,
-			 std::vector< std::vector<double> > &cellData,
-			 std::vector< std::vector<double> > &walldata,
-			 std::vector< std::vector<double> > &vertexData,
-			 std::vector< std::vector<double> > &cellderivs, 
-			 std::vector< std::vector<double> > &wallderivs,
-			 std::vector< std::vector<double> > &vertexDerivs ) {
+			 DataMatrix &cellData,
+			 DataMatrix &walldata,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellderivs, 
+			 DataMatrix &wallderivs,
+			 DataMatrix &vertexDerivs ) {
   std::cerr << "BaseDirectionUpdate::derivs() should not be used. "
 						<< "Should always be mapped onto one of the real types.\n";
   exit(0);
