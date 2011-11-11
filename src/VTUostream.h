@@ -1,9 +1,8 @@
-/**
- * File:    VTUostream.h
- * Author:  pkrupinski
- * Created: September 15, 2011, 3:20 PM
- */
-
+//
+// File:    VTUostream.h
+// Author:  pkrupinski
+// Created: September 15, 2011, 3:20 PM
+//
 #ifndef _VTUOSTREAM_H_
 #define	_VTUOSTREAM_H_
 

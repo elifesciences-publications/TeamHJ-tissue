@@ -1,8 +1,8 @@
-/**
- * File:    VTUostream.h
- * Author:  pkrupinski
- * Created: September 15, 2011, 3:20 PM
- */
+//
+// File:    VTUostream.h
+// Author:  pkrupinski
+// Created: September 15, 2011, 3:20 PM
+//
 #include "VTUostream.h"
 #include "tissue.h"
 #include "vertex.h"

@@ -92,9 +92,11 @@ protected:
   /// points to print):
   /// @verbatim
   /// 0) Standard output for openGL developed plotting of cell and wall variables 
-  /// 1) Standard output for openGL developed plotting of cell variables 
-  /// 2) Standard output for openGL developed plotting of wall variables
-  /// 3) Output that can be used for plotting in gnuplot.
+  /// 1) Standard vtu output assuming single wall compartment for wall variables
+  /// 2) Standard vtu output assuming two wall compartment for wall variables (except for initial length)
+  /// 3) Standard output for openGL developed plotting of cell variables 
+  /// 4) Standard output for openGL developed plotting of wall variables
+  /// 5) Output that can be used for plotting in gnuplot.
   ///
   /// In addition there are several methods for plotting also membrane data (e.g. PIN1),
   /// as well as specific methods.

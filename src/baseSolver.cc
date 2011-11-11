@@ -13,6 +13,7 @@
 #include "myConfig.h"
 #include "myFiles.h"
 #include "myTimes.h"
+#include "VTUostream.h"
 
 BaseSolver::BaseSolver()
 {
@@ -180,9 +181,9 @@ void BaseSolver::print(std::ostream &os)
   NOld = cellData_.size();
   okOld = numOk_;
   badOld = numBad_;
-  ///
-  /// Print vertex, cell, and wall variables
-  ///
+  //
+  // Print vertex, cell, and wall variables
+  //
   if( printFlag_==0 ) {
     if( tCount==0 )
       os << numPrint_ << "\n";
@@ -234,10 +235,29 @@ void BaseSolver::print(std::ostream &os)
     }		
     os << std::endl;
   }
-  ///
-  /// Print vertex and cell variables
-  ///
+  //
+  // Print in vtu format assuming a single wall component for variables
+  //
   else if( printFlag_==1 ) {
+    if( tCount==0 )
+      os << numPrint_ << "\n";
+    size_t Nv = vertexData_.size(); 
+    if( !Nv ) {
+      os << "0 0" << std::endl << "0 0" << std::endl;
+      return;
+    }
+    //Print the vertex positions
+    size_t dimension = T_->vertex(0).numPosition(); // was vertexData_[0].size();
+    os << Nv << " " << dimension << std::endl;
+    for( size_t i=0 ; i<Nv ; ++i ) {
+      for( size_t d=0 ; d<dimension ; ++d )
+	os << vertexData_[i][d] << " ";
+      os << std::endl;
+    }
+  //
+  // Print vertex and cell variables
+  //
+  else if( printFlag_==3 ) {
     if( tCount==0 )
       os << numPrint_ << "\n";
     size_t Nv = vertexData_.size(); 
@@ -271,10 +291,10 @@ void BaseSolver::print(std::ostream &os)
     }		
     os << std::endl;
   }
-  ///
-  /// Print vertex and wall variables
-  ///
-  else if( printFlag_==2 ) {
+  //
+  // Print vertex and wall variables
+  //
+  else if( printFlag_==4 ) {
     if( tCount==0 )
       os << numPrint_ << "\n";
     size_t Nv = vertexData_.size(); 
@@ -308,10 +328,10 @@ void BaseSolver::print(std::ostream &os)
     }		
     os << std::endl;
   }
-  ///
-  /// Print cell variables for gnuplot
-  ///
-  else if( printFlag_==3 ) {
+  //
+  // Print cell variables for gnuplot
+  //
+  else if( printFlag_==5 ) {
     //Print the cells, first connected vertecis and then variables
     size_t Nc = cellData_.size();
     //os << Nc << " " << numPrintVar << std::endl;
@@ -333,7 +353,9 @@ void BaseSolver::print(std::ostream &os)
     }				
     os << std::endl;
   }
-  
+  //
+  // Ad hoc and temporary printing functions
+  //
   else if (printFlag_ == 96) {
     size_t dimensions = vertexData_[0].size();
     
@@ -393,7 +415,6 @@ void BaseSolver::print(std::ostream &os)
       std::cout << max / min << "\n";
     }
   }
-  
   else if (printFlag_ == 97) {
     for (size_t i = 0; i < T_->numCell(); ++i) {
       Cell &cell = T_->cell(i);
