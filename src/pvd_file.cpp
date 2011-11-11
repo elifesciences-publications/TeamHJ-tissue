@@ -30,6 +30,8 @@ PVD_file::PVD_file(const std::string filename, const std::string vtu_filename1, 
 {
     vtu_basenames[0] = vtu_filename1;
     vtu_basenames[1] = vtu_filename2;
+    pvdFileWriteFull(n);
+
 }
 //----------------------------------------------------------------------------
 

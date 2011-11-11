@@ -239,13 +239,13 @@ void BaseSolver::print(std::ostream &os)
   // Print in vtu format assuming a single wall component for variables
   //
   else if( printFlag_==1 ) {
-    std::string pvdFile = "tissue.pvd";
-    std::string cellFile = "VTK_cells.vtu";
-    std::string wallFile = "VTK_walls.vtu";
+    std::string pvdFile = "tmp/tissue.pvd";
+    std::string cellFile = "tmp/VTK_cells.vtu";
+    std::string wallFile = "tmp/VTK_walls.vtu";
     if( tCount==0 ) {
-      //PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
+      PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
     }
-    //PVD_file::write(cellFile,wallFile,T_,tCount);
+    PVD_file::write(*T_,cellFile,wallFile,tCount);
   }
   //
   // Print in vtu format assuming two wall components for wall variables (except for length)
@@ -255,7 +255,7 @@ void BaseSolver::print(std::ostream &os)
     std::string cellFile = "VTK_cells.vtu";
     std::string wallFile = "VTK_walls.vtu";
     if( tCount==0 ) {
-      //PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
+      PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
     }
     //PVD_file::writeTwoWall(cellFile,wallFile,T_,tCount);
   }

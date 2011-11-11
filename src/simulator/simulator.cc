@@ -60,7 +60,6 @@ int main(int argc,char *argv[]) {
     std::cerr << "-init_output_format format - Sets format for output of"
 	      << " final state in specified init file format." << std::endl
 	      << "Available formats are tissue (default), and fem." << std::endl;
-    
     std::cerr << "-verbose flag - Set flag for verbose (flag=1) or "
 	      << "silent (0) output mode to stderr." << std::endl; 
     std::cerr << "-debug_output file - Saves the last ten variable"
