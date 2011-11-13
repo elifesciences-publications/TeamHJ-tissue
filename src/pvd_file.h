@@ -1,8 +1,8 @@
-/**
- * File:    VTUostream.h
- * Author:  pkrupinski
- * Created: September 15, 2011, 3:20 PM
- */
+//
+// File:    pvd_file.h
+// Author:  pkrupinski
+// Created: September 15, 2011, 3:20 PM
+//
 #ifndef _PVD_FILE_H_
 #define _PVD_FILE_H_
 #include <fstream>
@@ -27,20 +27,27 @@ public:
   /// @brief Opens a pvd file for writing both cell and wall geometry and data as a multiblock
   PVD_file(const std::string filename, const std::string vtu_filename1, const std::string vtu_filename2);
   /// @brief Open a pvd file and write it completely at once with supplied number of steps
-  PVD_file(const std::string filename, const std::string vtu_filename1, const std::string vtu_filename2, size_t n);
+//  PVD_file(const std::string filename, const std::string vtu_filename1, const std::string vtu_filename2, size_t n);
   /// @brief Destructor
   ~PVD_file();
+  /// @brief open
+  PVD_file& open(const std::string filename, const std::string vtu_filename1, const std::string vtu_filename2);
   /// @brief Outputs current Tissue  
   void operator<<(Tissue const& t);
   /// @brief Outputs current Tissue with a timestamp
   void write(Tissue const& t, double time);
+  /// @brief write pvd file in full for 'n' steps
+  void static write_full_pvd(const std::string filename, const std::string vtu_filename1, const std::string vtu_filename2, size_t n);
   /// @brief Write just VTU_files for a supplied counter without touching PVD file
   void static write(Tissue const& t, const std::string vtu_filename1, const std::string vtu_filename2, size_t count);
+  /// @brief Write just VTU_files for a supplied counter without touching PVD file assuming two walls between cells
+  void static writeTwoWall(Tissue const& t, const std::string vtu_filename1, const std::string vtu_filename2, size_t count);
   /// @brief Get the filename of an i'th vtu file associated with this pvd
   std::string const& get_vtu_filename(int i = 0) const { return vtu_filenames[i]; }
   /// @brief Get current counter of time steps already written
   size_t counter() const { return m_counter; }
-
+  /// @brief Close the file 
+  void close();
 private:
   typedef void (VTUostream::*CellOutFunPtr)(Tissue const& t);
   /// @brief Append pvd file with new time step vtu members

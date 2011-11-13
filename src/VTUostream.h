@@ -121,16 +121,19 @@ public:
   void write_cells(Tissue const& t);
   /// @brief Write cells with shrinked geometry leaving space for walls display
   void write_cells2(Tissue const& t);
-  /// @brief Write walls using lines for 
+  /// @brief Write walls using lines
   void write_walls(Tissue const& t);
+  /// @brief Write walls using 2D elements and assuming single wall between cells
   void write_walls2(Tissue const& t);
-  
+  /// @brief Write walls using 2D elements and assuming double wall between cells
+  void write_walls3(Tissue const& t);
 protected:
+  // cell and wall geometry for walls as line segments
   void write_cell_point_geometry(Tissue const& t);
   void write_cell_geometry(Tissue const& t);
   void write_wall_point_geometry(Tissue const& t);
   void write_wall_geometry(Tissue const& t);
-
+  // cell and wall geometry for 2D walls
   void write_cell_point_geometry2(Tissue const& t);
   void write_cell_geometry2(Tissue const& t);
   void write_wall_point_geometry2(Tissue const& t, std::vector<Vertex*> & verts);
@@ -149,7 +152,10 @@ protected:
 
   void write_wall_data_header(std::string s){ *m_os << "<CellData " << s << ">\n"; }
   void write_wall_data_footer(){ *m_os << "</CellData>\n"; }
+  // wall data for single wall between cells
   void write_wall_data(Tissue const& t);
+  // wall data for composite double wall between cells
+  void write_wall_data2(Tissue const& t);
 
   void header()
   {

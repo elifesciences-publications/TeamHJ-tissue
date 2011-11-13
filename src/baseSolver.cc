@@ -246,7 +246,8 @@ void BaseSolver::print(std::ostream &os)
     std::string wallFile = "tmp/VTK_walls.vtu";
     setTissueVariables();
     if( tCount==0 ) {
-      PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
+//      PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
+      PVD_file::write_full_pvd(pvdFile,cellFile,wallFile,numPrint_);
     }
     PVD_file::write(*T_,cellFile,wallFile,tCount);
   }
@@ -258,9 +259,10 @@ void BaseSolver::print(std::ostream &os)
     std::string cellFile = "VTK_cells.vtu";
     std::string wallFile = "VTK_walls.vtu";
     if( tCount==0 ) {
-      PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
+//      PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
+        PVD_file::write_full_pvd(pvdFile,cellFile,wallFile,numPrint_);
     }
-    //PVD_file::writeTwoWallCompartment(*T_,cellFile,wallFile,tCount);
+    PVD_file::writeTwoWall(*T_,cellFile,wallFile,tCount);
   }
   //
   // Print vertex and cell variables
