@@ -64,7 +64,8 @@ void PVD_file::write(Tissue const& t, double time)
     pvdFileWrite(m_counter, time);
     std::ofstream co(vtu_filenames[0].c_str());
     VTUostream out(co);
-    //call approporiate cell output function depending on the mode defined by the choice of constructor
+    //call approporiate cell output function depending on the 
+		//mode defined by the choice of constructor
     (out.*cell_out_fun_ptr)(t);
     out.close();
     if (vtu_filenames.size() > 1)
@@ -79,7 +80,8 @@ void PVD_file::write(Tissue const& t, double time)
 }
 //----------------------------------------------------------------------------
 
-void PVD_file::write(Tissue const& t, const std::string vtu_filename1, const std::string vtu_filename2, size_t count)
+void PVD_file::write(Tissue const& t, const std::string vtu_filename1, 
+										 const std::string vtu_filename2, size_t count)
 {
     std::vector<std::string> basenames(2), filenames(2);
     basenames[0] = vtu_filename1;
@@ -92,7 +94,7 @@ void PVD_file::write(Tissue const& t, const std::string vtu_filename1, const std
     out.close();
     std::ofstream wo(filenames[1].c_str());
     out.open(wo);
-    out.write_walls2(t);
+    out.write_walls2(t,pairedWallData);
     out.close();
 }
 //----------------------------------------------------------------------------

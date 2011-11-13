@@ -100,26 +100,25 @@ void VTUostream::write_walls(Tissue const& t)
     write_piece_footer();
 }
 //-----------------------------------------------------------------------------
-
 void VTUostream::write_walls2(Tissue const& t)
 {
-    typedef std::vector<Cell>::const_iterator CellIter;
-    std::vector<Cell> const& cells = t.cell();
-    int ncell = 0;
-    CellIter cit, cend;
-    for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
-        ncell += cit->numWall();
-    ;
-    std::vector<Vertex*> verts;
-    verts.reserve(t.numWall()*2);
-
-    write_piece_header(t.numVertex() + ncell, ncell);
-    write_wall_point_geometry2(t, verts);
-    write_wall_geometry2(t, verts);
-    write_wall_data_header("Scalars=\"wall variable 0\"");
-    write_wall_data(t);
-    write_wall_data_footer();
-    write_piece_footer();
+	typedef std::vector<Cell>::const_iterator CellIter;
+	std::vector<Cell> const& cells = t.cell();
+	int ncell = 0;
+	CellIter cit, cend;
+	for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
+		ncell += cit->numWall();
+	;
+	std::vector<Vertex*> verts;
+	verts.reserve(t.numWall()*2);
+	
+	write_piece_header(t.numVertex() + ncell, ncell);
+	write_wall_point_geometry2(t, verts);
+	write_wall_geometry2(t, verts);
+	write_wall_data_header("Scalars=\"wall variable 0\"");
+	write_wall_data(t);
+	write_wall_data_footer();
+	write_piece_footer();
 }
 //-----------------------------------------------------------------------------
 
@@ -419,8 +418,26 @@ void VTUostream::write_wall_data(Tissue const& t)
     std::vector<Cell> const& cells = t.cell();
     CellIter cit = cells.begin(), cend;
     Cell &c = const_cast<Cell&> (*cit);
-    int nvars = c.wall(0)->numVariable();
 
+		//Print wall lengths
+    *m_os << "<DataArray type=\"Float64\" Name=\"wall length\" format=\"ascii\">\n";
+    for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
+			{
+				Cell &c = const_cast<Cell&>(*cit);
+				typedef std::vector<Wall*>::const_iterator WallIter;
+				std::vector<Wall*> const& walls = c.wall();
+				WallIter wit, wend;
+				for (wit = walls.begin(), wend = walls.end(); wit != wend; ++wit)
+					{
+						Wall &w = const_cast<Wall&>(**wit);
+						*m_os << w.length() << " ";
+					}
+			}
+    *m_os << "\n"
+					<< "</DataArray>\n";
+
+		// Print wall variables
+    int nvars = c.wall(0)->numVariable();
     for (int i = 0; i < nvars; ++i)
     {
         *m_os << "<DataArray type=\"Float64\" Name=\"wall variable " << i << "\" format=\"ascii\">\n";
@@ -448,6 +465,25 @@ void VTUostream::write_wall_data2(Tissue const& t)
     std::vector<Cell> const& cells = t.cell();
     CellIter cit = cells.begin(), cend;
     Cell &c = const_cast<Cell&> (*cit);
+
+		//Print wall lengths
+    *m_os << "<DataArray type=\"Float64\" Name=\"wall length\" format=\"ascii\">\n";
+    for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
+			{
+				Cell &c = const_cast<Cell&>(*cit);
+				typedef std::vector<Wall*>::const_iterator WallIter;
+				std::vector<Wall*> const& walls = c.wall();
+				WallIter wit, wend;
+				for (wit = walls.begin(), wend = walls.end(); wit != wend; ++wit)
+					{
+						Wall &w = const_cast<Wall&>(**wit);
+						*m_os << w.length() << " ";
+					}
+			}
+    *m_os << "\n"
+					<< "</DataArray>\n";
+		
+		// Print wall variables assuming paired structure
     //total number of variables in the wall
     int nvars = c.wall(0)->numVariable();
     //check if nvars is odd so it can be of the form (length, v1c1, v1c2, v2c1, v2c2, ...)
@@ -456,49 +492,40 @@ void VTUostream::write_wall_data2(Tissue const& t)
 //        std::cerr << "VTUostream::write_wall_data2(Tissue const& t); number of wall variables does not fit requested format\n";
 //        exit(EXIT_FAILURE);
 //    }
-    for (int i = 0; 2 * i - 1 < nvars; ++i)
-    {
-        if (i == 0)
-            *m_os << "<DataArray type=\"Float64\" Name=\"wall length\" format=\"ascii\">\n";
-        else
-            *m_os << "<DataArray type=\"Float64\" Name=\"wall variable " << i << "\" format=\"ascii\">\n";
-        for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
-        {
+    for (int i = 0; i < nvars; i+=2)
+			{
+				*m_os << "<DataArray type=\"Float64\" Name=\"wall variable " << i << "\" format=\"ascii\">\n";
+				for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
+					{
             Cell &c = const_cast<Cell&> (*cit);
             size_t c_id = c.index();
             typedef std::vector<Wall*>::const_iterator WallIter;
             std::vector<Wall*> const& walls = c.wall();
             WallIter wit, wend;
             for (wit = walls.begin(), wend = walls.end(); wit != wend; ++wit)
-            {
+							{
                 Wall &w = const_cast<Wall&> (**wit);
                 size_t c1id = w.cell1()->index();
                 size_t c2id = w.cell2()->index();
                 int j = -1;
-                if (i == 0)
-                    j = 0;
-                else
-                {
-                    if (c_id == c1id)
-                        j = 2*i-1;
-                    else if (c_id == c2id)
-                        j = 2*i;
-                    else
-                    {
-                        std::cerr << "VTUostream::write_wall_data2(Tissue const& t); Wall does not report connection to the cell which was accessed through\n";
-                        exit(EXIT_FAILURE);
-                    }
-                }
-                *m_os << w.variable(j) << " ";
-            }
-        }
-        *m_os << "\n"
-                << "</DataArray>\n";
-    }
+								if (c_id == c1id)
+									j = i;
+								else if (c_id == c2id)
+									j = i+1;
+								else
+									{
+										std::cerr << "VTUostream::write_wall_data2(Tissue const& t); Wall does not report connection to the cell which was accessed through\n";
+										exit(EXIT_FAILURE);
+									}
+							}
+						*m_os << w.variable(j) << " ";
+					}
+			}
+		*m_os << "\n"
+					<< "</DataArray>\n";
 }
 
 //-----------------------------------------------------------------------------
-
 void VTUostream::write_cell_point_geometry2(Tissue const& t)
 {
     typedef std::vector<Cell>::const_iterator CellIter;

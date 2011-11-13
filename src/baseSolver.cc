@@ -255,9 +255,11 @@ void BaseSolver::print(std::ostream &os)
   // Print in vtu format assuming two wall components for wall variables (except for length)
   //
   else if( printFlag_==2 ) {
-    std::string pvdFile = "tissue.pvd";
-    std::string cellFile = "VTK_cells.vtu";
-    std::string wallFile = "VTK_walls.vtu";
+    std::string pvdFile = "tmp/tissue.pvd";
+    std::string cellFile = "tmp/VTK_cells.vtu";
+    std::string wallFile = "tmp/VTK_walls.vtu";
+		int pairedWallData = 1;
+    setTissueVariables();
     if( tCount==0 ) {
 //      PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
         PVD_file::write_full_pvd(pvdFile,cellFile,wallFile,numPrint_);

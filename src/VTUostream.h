@@ -154,7 +154,9 @@ protected:
   void write_wall_data_footer(){ *m_os << "</CellData>\n"; }
   // wall data for single wall between cells
   void write_wall_data(Tissue const& t);
-  // wall data for composite double wall between cells
+	///
+	/// @brief Writes the data from the wall variables assuming paired structure of composite double wall between cells
+	///
   void write_wall_data2(Tissue const& t);
 
   void header()
