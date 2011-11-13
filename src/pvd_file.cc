@@ -81,7 +81,7 @@ void PVD_file::write(Tissue const& t, double time)
 //----------------------------------------------------------------------------
 
 void PVD_file::write(Tissue const& t, const std::string vtu_filename1, 
-										 const std::string vtu_filename2, size_t count)
+		     const std::string vtu_filename2, size_t count)
 {
     std::vector<std::string> basenames(2), filenames(2);
     basenames[0] = vtu_filename1;
@@ -94,7 +94,7 @@ void PVD_file::write(Tissue const& t, const std::string vtu_filename1,
     out.close();
     std::ofstream wo(filenames[1].c_str());
     out.open(wo);
-    out.write_walls2(t,pairedWallData);
+    out.write_walls2(t);
     out.close();
 }
 //----------------------------------------------------------------------------
@@ -138,7 +138,7 @@ void PVD_file::pvdFileWrite(size_t num, double time)
     }
     if (time < 0.0)
         time = num;
-    for (int i = 0; i < vtu_filenames.size(); ++i)
+    for (size_t i = 0; i < vtu_filenames.size(); ++i)
     {
         // Remove directory path from name for pvd file
         std::string fname;
@@ -165,7 +165,7 @@ void PVD_file::write_full_pvd(const std::string filename, const std::string vtu_
     size_t n_files = basenames.size();
     std::vector<std::string> filestart(n_files), extension(n_files), fname(n_files);
 
-    for (int i = 0; i < n_files; ++i)
+    for (size_t i = 0; i < n_files; ++i)
     {
         std::string fname = basenames[i];
         filestart[i].assign(fname, 0, fname.find("."));
@@ -180,14 +180,14 @@ void PVD_file::write_full_pvd(const std::string filename, const std::string vtu_
     pvdFile << "<Collection> " << std::endl;
 
 //    std::cout << "num = " << num << "\n";
-    for (int i = 0; i < n; ++i)
+    for (size_t i = 0; i < n; ++i)
     {
 //        std::cout << "i = " << i << "\n";
         std::ostringstream fileid;
         fileid.fill('0');
         fileid.width(6);
         fileid << i;
-        for (int j = 0; j < n_files; ++j)
+        for (size_t j = 0; j < n_files; ++j)
         {
             std::string fname = filestart[j] + fileid.str() + extension[j];
 //            std::cout << "j = " << j << "; fname = \'" << fname << "\'\n";
@@ -209,7 +209,7 @@ void PVD_file::pvdFileWriteFull(size_t num)
     size_t n_files = vtu_basenames.size();
     std::vector<std::string> filestart(n_files), extension(n_files), fname(n_files);
 
-    for (int i = 0; i < n_files; ++i)
+    for (size_t i = 0; i < n_files; ++i)
     {
         std::string fname = vtu_basenames[i];
         filestart[i].assign(fname, 0, fname.find("."));
@@ -224,14 +224,14 @@ void PVD_file::pvdFileWriteFull(size_t num)
     pvdFile << "<Collection> " << std::endl;
 
 //    std::cout << "num = " << num << "\n";
-    for (int i = 0; i < num; ++i)
+    for (size_t i = 0; i < num; ++i)
     {
 //        std::cout << "i = " << i << "\n";
         std::ostringstream fileid;
         fileid.fill('0');
         fileid.width(6);
         fileid << i;
-        for (int j = 0; j < n_files; ++j)
+        for (size_t j = 0; j < n_files; ++j)
         {
             std::string fname = filestart[j] + fileid.str() + extension[j];
 //            std::cout << "j = " << j << "; fname = \'" << fname << "\'\n";
@@ -256,7 +256,7 @@ void PVD_file::vtuNameUpdate(const int m_counter, std::vector<std::string>const&
     fileid.width(6);
     fileid << m_counter;
 
-    for (int i = 0; i < basenames.size(); ++i)
+    for (size_t i = 0; i < basenames.size(); ++i)
     {
         std::ostringstream newfilename;
         std::string fname = basenames[i];
