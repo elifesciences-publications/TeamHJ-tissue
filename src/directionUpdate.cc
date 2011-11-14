@@ -7,6 +7,7 @@
 //
 #include"directionUpdate.h"
 #include"baseDirectionUpdate.h"
+#include"myMath.h"
 
 StaticDirection::
 StaticDirection(std::vector<double> &paraValue, 
@@ -366,7 +367,7 @@ update(Tissue &T, double h,
     std::vector<double> n(dimension);
     double v = theta;
     if( parameter(0)==1.0 )		
-      v = v - 0.5 * M_PI;
+      v = v - 0.5 * myMath::pi();
     
     // 		double a = A[0][0];
     // 		double b = A[0][1];
@@ -1321,7 +1322,7 @@ void VertexStressDirection::update(Tissue &T, double h,
 		double direction = 0.5 * std::atan2(S, C);
 
 		if (parameter(0) == 1) {
-			direction += 0.5 * M_PI;
+			direction += 0.5 * myMath::pi();
 		}
 
 		for (size_t i = 0; i < dimensions; ++i) {

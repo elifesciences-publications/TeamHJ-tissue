@@ -2387,13 +2387,13 @@ std::vector<DivisionShortestPath::Candidate> DivisionShortestPath::getCandidates
 			double sigma = std::acos((vx * ux + vy * uy) / (std::sqrt(vx * vx + vy * vy) * std::sqrt(ux * ux + uy * uy)));
 
 			double alpha = astar(sigma, A, B);
-			double beta = M_PI + sigma - alpha;
+			double beta = myMath::pi() + sigma - alpha;
 
 			double t = (vx * wx + vy * wy) / (vx * vx + vy * vy);
-			double tp = t + (1.0 / std::sqrt(vx * vx + vy * vy)) * A * std::sin(alpha - 0.50 * M_PI) / std::sin(alpha);
+			double tp = t + (1.0 / std::sqrt(vx * vx + vy * vy)) * A * std::sin(alpha - 0.50 * myMath::pi()) / std::sin(alpha);
 
 			double s = (ux * wpx + uy * wpy) / (ux * ux + uy * uy);
-			double sp = s + (1.0 / std::sqrt(ux * ux + uy * uy)) * B * std::sin(beta - 0.50 * M_PI) / std::sin(beta);
+			double sp = s + (1.0 / std::sqrt(ux * ux + uy * uy)) * B * std::sin(beta - 0.50 * myMath::pi()) / std::sin(beta);
 
 			double px = x1x + tp * vx;
 			double py = x1y + tp * vy;
@@ -2443,7 +2443,7 @@ std::vector<DivisionShortestPath::Candidate> DivisionShortestPath::getCandidates
 double DivisionShortestPath::astar(double sigma, double A, double B)
 {
      double a = 0;
-     double b = M_PI;
+     double b = myMath::pi();
      double e = b - a;
      double u = f(a, sigma, A, B);
      double v = f(b, sigma, A, B);
@@ -2472,7 +2472,7 @@ double DivisionShortestPath::astar(double sigma, double A, double B)
 double DivisionShortestPath::f(double a, double sigma, double A, double B)
 {
      double tmp = - A * std::cos(a) / (std::sin(a) * std::sin(a));
-     tmp += B * std::cos(M_PI + sigma - a) / (std::sin(sigma - a) * std::sin(sigma - a));
+     tmp += B * std::cos(myMath::pi() + sigma - a) / (std::sin(sigma - a) * std::sin(sigma - a));
      return tmp;
 }
 
@@ -3341,13 +3341,13 @@ DivisionShortestPathGiantCells::getCandidates(Tissue* T, size_t i,
       double sigma = std::acos((vx * ux + vy * uy) / (std::sqrt(vx * vx + vy * vy) * std::sqrt(ux * ux + uy * uy)));
       
       double alpha = astar(sigma, A, B);
-      double beta = M_PI + sigma - alpha;
+      double beta = myMath::pi() + sigma - alpha;
       
       double t = (vx * wx + vy * wy) / (vx * vx + vy * vy);
-      double tp = t + (1.0 / std::sqrt(vx * vx + vy * vy)) * A * std::sin(alpha - 0.50 * M_PI) / std::sin(alpha);
+      double tp = t + (1.0 / std::sqrt(vx * vx + vy * vy)) * A * std::sin(alpha - 0.50 * myMath::pi()) / std::sin(alpha);
       
       double s = (ux * wpx + uy * wpy) / (ux * ux + uy * uy);
-      double sp = s + (1.0 / std::sqrt(ux * ux + uy * uy)) * B * std::sin(beta - 0.50 * M_PI) / std::sin(beta);
+      double sp = s + (1.0 / std::sqrt(ux * ux + uy * uy)) * B * std::sin(beta - 0.50 * myMath::pi()) / std::sin(beta);
       
       double px = x1x + tp * vx;
       double py = x1y + tp * vy;
@@ -3397,7 +3397,7 @@ DivisionShortestPathGiantCells::getCandidates(Tissue* T, size_t i,
 double DivisionShortestPathGiantCells::astar(double sigma, double A, double B)
 {
      double a = 0;
-     double b = M_PI;
+     double b = myMath::pi();
      double e = b - a;
      double u = f(a, sigma, A, B);
      double v = f(b, sigma, A, B);
@@ -3426,7 +3426,7 @@ double DivisionShortestPathGiantCells::astar(double sigma, double A, double B)
 double DivisionShortestPathGiantCells::f(double a, double sigma, double A, double B)
 {
      double tmp = - A * std::cos(a) / (std::sin(a) * std::sin(a));
-     tmp += B * std::cos(M_PI + sigma - a) / (std::sin(sigma - a) * std::sin(sigma - a));
+     tmp += B * std::cos(myMath::pi() + sigma - a) / (std::sin(sigma - a) * std::sin(sigma - a));
      return tmp;
 }
 

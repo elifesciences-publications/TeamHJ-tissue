@@ -9,7 +9,9 @@
 #include"directionReaction.h"
 #include"tissue.h"
 #include"baseReaction.h"
+#include"myMath.h"
 #include<cmath>
+
 
 ContinousMTDirection::ContinousMTDirection(std::vector<double> &paraValue,
 					   std::vector< std::vector<size_t> > &indValue)
@@ -64,12 +66,12 @@ void ContinousMTDirection::derivs(Tissue &T,
     
     double sigma = std::atan2(y, x);
     
-    while (sigma > 0.5 * M_PI || sigma <= -0.5 * M_PI) {
-      if (sigma > 0.5 * M_PI) {
-	sigma -= M_PI;
+    while (sigma > 0.5 * myMath::pi() || sigma <= -0.5 * myMath::pi()) {
+      if (sigma > 0.5 * myMath::pi()) {
+	sigma -= myMath::pi();
       }
-      if (sigma <= -0.5 * M_PI) {
-	sigma += M_PI;
+      if (sigma <= -0.5 * myMath::pi()) {
+	sigma += myMath::pi();
       }
     }
     
@@ -78,27 +80,27 @@ void ContinousMTDirection::derivs(Tissue &T,
     
     double dsigma = std::atan2(dy, dx);
     
-    while (dsigma > 0.5 * M_PI || dsigma <= -0.5 * M_PI) {
-      if (dsigma > 0.5 * M_PI) {
-	dsigma -= M_PI;
+    while (dsigma > 0.5 * myMath::pi() || dsigma <= -0.5 * myMath::pi()) {
+      if (dsigma > 0.5 * myMath::pi()) {
+	dsigma -= myMath::pi();
       }
-      if (dsigma <= -0.5 * M_PI) {
-	dsigma += M_PI;
+      if (dsigma <= -0.5 * myMath::pi()) {
+	dsigma += myMath::pi();
       }
     }
     
     double angle = dsigma - sigma;
     
-    while (angle > M_PI || angle <= -M_PI) {
-      if (angle > M_PI) {
-	angle -= 2.0 * M_PI;
+    while (angle > myMath::pi() || angle <= -myMath::pi()) {
+      if (angle > myMath::pi()) {
+	angle -= 2.0 * myMath::pi();
       }
-      if (angle <= -M_PI) {
-	angle += 2.0 * M_PI;
+      if (angle <= -myMath::pi()) {
+	angle += 2.0 * myMath::pi();
       }
     }
     
-    double speed = k_rate * std::abs(angle) / (0.25 * M_PI + std::abs(angle));
+    double speed = k_rate * std::abs(angle) / (0.25 * myMath::pi() + std::abs(angle));
     
     speed *= (angle >= 0) ? +1 : -1;
     

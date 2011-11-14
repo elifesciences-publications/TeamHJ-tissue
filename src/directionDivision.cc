@@ -8,6 +8,7 @@
 #include"directionDivision.h"
 #include"baseDirectionDivision.h"
 #include "myRandom.h"
+#include "myMath.h"
 
 //!Constructor
 ParallellDirection::
@@ -309,7 +310,7 @@ void RandomDirection::update(Tissue &T, size_t cellIndex,
 	const size_t xIndex = variableIndex(0, 0) + 0;
 	const size_t yIndex = variableIndex(0, 0) + 1;
 
-	const double angle = 2.0 * M_PI * myRandom::Rnd();
+	const double angle = 2.0 * myMath::pi() * myRandom::Rnd();
 
 	const double x = std::cos(angle);
 	const double y = std::sin(angle);

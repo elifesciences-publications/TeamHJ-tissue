@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include "myRandom.h"
+#include "myMath.h"
 
 namespace myRandom {
 
@@ -21,7 +22,7 @@ namespace myRandom {
 	
 	double Grand( void )
 	{
-		return sqrt( -2 * log(Rnd())) * cos( M_PI * Rnd() );
+		return sqrt( -2 * log(Rnd())) * cos( myMath::pi() * Rnd() );
 	}
 		
 	double Rndstep(int step)
