@@ -15,6 +15,7 @@
 #include "../tissue.h"
 #include "../vertex.h"
 #include "../wall.h"
+#include "../pvd_file.h"
 
 int main(int argc,char *argv[]) {
   

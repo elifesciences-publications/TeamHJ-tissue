@@ -21,7 +21,7 @@ PVD_file::PVD_file(const std::string filename) : filename(filename), vtu_basenam
 }
 //----------------------------------------------------------------------------
 
-PVD_file::PVD_file(const std::string filename, const std::string vtu_filename1, const std::string vtu_filename2) : filename(filename), m_counter(0), vtu_basenames(2), vtu_filenames(2), cell_out_fun_ptr(&VTUostream::write_cells2)
+PVD_file::PVD_file(const std::string filename, const std::string vtu_filename1, const std::string vtu_filename2) : filename(filename), vtu_basenames(2), vtu_filenames(2), m_counter(0), cell_out_fun_ptr(&VTUostream::write_cells2)
 {
     vtu_basenames[0] = vtu_filename1;
     vtu_basenames[1] = vtu_filename2;
@@ -43,11 +43,13 @@ PVD_file::~PVD_file()
 PVD_file& PVD_file::open(const std::string filename, const std::string vtu_filename1, const std::string vtu_filename2)
 {
     this->filename = filename;
-    m_counter = 0;
     vtu_basenames.resize(2);
     vtu_filenames.resize(2);
     vtu_basenames[0] = vtu_filename1;
-    vtu_basenames[1] = vtu_filename2;   
+    vtu_basenames[1] = vtu_filename2;
+    m_counter = 0;
+    
+    return *this;
 }
 //----------------------------------------------------------------------------
 void PVD_file::operator<<(Tissue const& t)
@@ -156,18 +158,20 @@ void PVD_file::pvdFileWrite(size_t num, double time)
     pvdFile.close();
 }
 //----------------------------------------------------------------------------
-void PVD_file::write_full_pvd(const std::string filename, const std::string vtu_filename1, const std::string vtu_filename2, size_t n)
+void PVD_file::writeFullPvd(const std::string filename, const std::string vtu_filename1, const std::string vtu_filename2, size_t n)
 {
     std::vector<std::string> basenames(2);
+    
     basenames[0] = vtu_filename1;
     basenames[1] = vtu_filename2;
     std::fstream pvdFile;
     size_t n_files = basenames.size();
-    std::vector<std::string> filestart(n_files), extension(n_files), fname(n_files);
+    std::vector<std::string> filestart(n_files), extension(n_files);
 
     for (size_t i = 0; i < n_files; ++i)
     {
-        std::string fname = basenames[i];
+        std::string fname;
+        fname.assign(basenames[i], basenames[i].find_last_of("/") + 1, basenames[i].size());
         filestart[i].assign(fname, 0, fname.find("."));
         extension[i].assign(fname, fname.find("."), fname.size());
     }
@@ -179,10 +183,8 @@ void PVD_file::write_full_pvd(const std::string filename, const std::string vtu_
     pvdFile << "<VTKFile type=\"Collection\" version=\"0.1\" > " << std::endl;
     pvdFile << "<Collection> " << std::endl;
 
-//    std::cout << "num = " << num << "\n";
     for (size_t i = 0; i < n; ++i)
     {
-//        std::cout << "i = " << i << "\n";
         std::ostringstream fileid;
         fileid.fill('0');
         fileid.width(6);
@@ -190,7 +192,6 @@ void PVD_file::write_full_pvd(const std::string filename, const std::string vtu_
         for (size_t j = 0; j < n_files; ++j)
         {
             std::string fname = filestart[j] + fileid.str() + extension[j];
-//            std::cout << "j = " << j << "; fname = \'" << fname << "\'\n";
             // Data file name
             pvdFile << "<DataSet timestep=\"" << i << "\" part=\"" << j << "\" file=\"" << fname << "\"/>" << std::endl;
         }
@@ -202,50 +203,46 @@ void PVD_file::write_full_pvd(const std::string filename, const std::string vtu_
     // Close file
     pvdFile.close();
 }
-
-void PVD_file::pvdFileWriteFull(size_t num)
-{
-    std::fstream pvdFile;
-    size_t n_files = vtu_basenames.size();
-    std::vector<std::string> filestart(n_files), extension(n_files), fname(n_files);
-
-    for (size_t i = 0; i < n_files; ++i)
-    {
-        std::string fname = vtu_basenames[i];
-        filestart[i].assign(fname, 0, fname.find("."));
-        extension[i].assign(fname, fname.find("."), fname.size());
-    }
-    // Open pvd file
-    //    pvdFile.open(filename.c_str(), std::ios::out | std::ios::trunc);
-    pvdFile.open(filename.c_str(), std::ios::out);
-    // Write header
-    pvdFile << "<?xml version=\"1.0\"?> " << std::endl;
-    pvdFile << "<VTKFile type=\"Collection\" version=\"0.1\" > " << std::endl;
-    pvdFile << "<Collection> " << std::endl;
-
-//    std::cout << "num = " << num << "\n";
-    for (size_t i = 0; i < num; ++i)
-    {
-//        std::cout << "i = " << i << "\n";
-        std::ostringstream fileid;
-        fileid.fill('0');
-        fileid.width(6);
-        fileid << i;
-        for (size_t j = 0; j < n_files; ++j)
-        {
-            std::string fname = filestart[j] + fileid.str() + extension[j];
-//            std::cout << "j = " << j << "; fname = \'" << fname << "\'\n";
-            // Data file name
-            pvdFile << "<DataSet timestep=\"" << i << "\" part=\"" << j << "\" file=\"" << fname << "\"/>" << std::endl;
-        }
-    }
-    // Close headers
-    pvdFile << "</Collection> " << std::endl;
-    pvdFile << "</VTKFile> " << std::endl;
-
-    // Close file
-    pvdFile.close();
-}
+//----------------------------------------------------------------------------
+// void PVD_file::pvdFileWriteFull(size_t num)
+// {
+//     std::fstream pvdFile;
+//     size_t n_files = vtu_basenames.size();
+//     std::vector<std::string> filestart(n_files), extension(n_files), fname(n_files);
+// 
+//     for (size_t i = 0; i < n_files; ++i)
+//     {
+//         std::string fname = vtu_basenames[i];
+//         filestart[i].assign(fname, 0, fname.find("."));
+//         extension[i].assign(fname, fname.find("."), fname.size());
+//     }
+//     // Open pvd file
+//     pvdFile.open(filename.c_str(), std::ios::out);
+//     // Write header
+//     pvdFile << "<?xml version=\"1.0\"?> " << std::endl;
+//     pvdFile << "<VTKFile type=\"Collection\" version=\"0.1\" > " << std::endl;
+//     pvdFile << "<Collection> " << std::endl;
+// 
+//     for (size_t i = 0; i < num; ++i)
+//     {
+//         std::ostringstream fileid;
+//         fileid.fill('0');
+//         fileid.width(6);
+//         fileid << i;
+//         for (size_t j = 0; j < n_files; ++j)
+//         {
+//             std::string fname = filestart[j] + fileid.str() + extension[j];
+//             // Data file name
+//             pvdFile << "<DataSet timestep=\"" << i << "\" part=\"" << j << "\" file=\"" << fname << "\"/>" << std::endl;
+//         }
+//     }
+//     // Close headers
+//     pvdFile << "</Collection> " << std::endl;
+//     pvdFile << "</VTKFile> " << std::endl;
+// 
+//     // Close file
+//     pvdFile.close();
+// }
 //----------------------------------------------------------------------------
 
 void PVD_file::vtuNameUpdate(const int m_counter, std::vector<std::string>const& basenames, std::vector<std::string>& filenames)

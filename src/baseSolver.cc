@@ -168,7 +168,8 @@ void BaseSolver::simulate(size_t verbose)
 }
 
 void BaseSolver::print(std::ostream &os) 
-{  
+{
+  
   static int tCount=0;
   static int NOld=0,okOld=0,badOld=0;
   static double tOld=0.0;
@@ -246,8 +247,7 @@ void BaseSolver::print(std::ostream &os)
     std::string wallFile = "tmp/VTK_walls.vtu";
     setTissueVariables();
     if( tCount==0 ) {
-//      PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
-      PVD_file::write_full_pvd(pvdFile,cellFile,wallFile,numPrint_);
+      PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
     }
     PVD_file::write(*T_,cellFile,wallFile,tCount);
   }
@@ -260,8 +260,7 @@ void BaseSolver::print(std::ostream &os)
     std::string wallFile = "tmp/VTK_walls.vtu";
     setTissueVariables();
     if( tCount==0 ) {
-//      PVD_file pvdfile(pvdFile,cellFile,wallFile,numPrint_);
-        PVD_file::write_full_pvd(pvdFile,cellFile,wallFile,numPrint_);
+        PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
     }
     PVD_file::writeTwoWall(*T_,cellFile,wallFile,tCount);
   }
