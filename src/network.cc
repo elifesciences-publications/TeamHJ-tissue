@@ -1583,7 +1583,7 @@ AuxinROPModel(std::vector<double> &paraValue,
   
   //Do some checks on the parameters and variable indeces
   //
-  if( paraValue.size()!=14 ) {
+  if( paraValue.size()!=16 ) {
     std::cerr << "AuxinROPModel::"
 	      << "AuxinROPModel() "
 	      << "14 parameters used (see network.h)\n";
@@ -1620,6 +1620,8 @@ AuxinROPModel(std::vector<double> &paraValue,
   tmp[11] = "d_ROP";
   tmp[12] = "endo_ROP";
   tmp[13] = "exo_ROP";
+  tmp[14] = "K_hill";
+  tmp[15] = "n_hill";
 	
   setParameterId( tmp );
 }
@@ -1675,7 +1677,11 @@ derivs(Tissue &T,
 	cellDerivs[i][pI] += fac;
 
 	//ROP cycling
-	fac = parameter(12)*wallData[j][rwI] - parameter(13)*cellData[i][rI]*wallData[j][awI];
+	//fac = parameter(12)*wallData[j][rwI] - parameter(13)*cellData[i][rI]*wallData[j][awI];
+	fac = parameter(12)*wallData[j][rwI]
+	  *std::pow(wallData[j][rwI+1],parameter(15))/
+	  ( std::pow(parameter(14),parameter(15)) + std::pow(wallData[j][rwI+1],parameter(15)) ) -
+	  parameter(13)*cellData[i][rI]*wallData[j][awI];
 	wallDerivs[j][rwI] -= fac;
 	cellDerivs[i][rI] += fac;
 
@@ -1696,7 +1702,11 @@ derivs(Tissue &T,
 	cellDerivs[i][pI] += fac;
 
 	//ROP cycling
-	fac = parameter(12)*wallData[j][rwI+1] - parameter(13)*cellData[i][rI]*wallData[j][awI+1];
+	//fac = parameter(12)*wallData[j][rwI+1] - parameter(13)*cellData[i][rI]*wallData[j][awI+1];
+	fac = parameter(12)*wallData[j][rwI+1]
+	  *std::pow(wallData[j][rwI],parameter(15))/
+	  ( std::pow(parameter(14),parameter(15)) + std::pow(wallData[j][rwI],parameter(15)) ) -
+	  parameter(13)*cellData[i][rI]*wallData[j][awI+1];
 	wallDerivs[j][rwI+1] -= fac;
 	cellDerivs[i][rI] += fac;
 
@@ -1817,8 +1827,8 @@ derivs(Tissue &T,
         cellDerivs[i][pI] += fac;
 	
         //ROP cycling                                                      
-        fac = parameter(15)*wallData[j][rwI] * std::pow(wallData[i][rwI],parameter(17))/   
-	  ( std::pow(parameter(16),parameter(17)) + std::pow(wallData[i][rwI],parameter(17)) ) - 
+        fac = parameter(15)*wallData[j][rwI] * std::pow(wallData[j][rwI+1],parameter(17))/   
+	  ( std::pow(parameter(16),parameter(17)) + std::pow(wallData[j][rwI+1],parameter(17)) ) - 
 	  parameter(18)*cellData[i][rI]*wallData[j][awI];
 	wallDerivs[j][rwI] -= fac;
 	cellDerivs[i][rI] += fac;	
@@ -1844,8 +1854,8 @@ derivs(Tissue &T,
 	
 	//ROP cycling                                                                          
 	fac = parameter(15)*wallData[j][rwI+1]
-	  *std::pow(wallData[i][rwI+1],parameter(17))/
-	  ( std::pow(parameter(16),parameter(17)) + std::pow(wallData[i][rwI+1],parameter(17)) ) -
+	  *std::pow(wallData[j][rwI],parameter(17))/
+	  ( std::pow(parameter(16),parameter(17)) + std::pow(wallData[j][rwI],parameter(17)) ) -
 	  parameter(18)*cellData[i][rI]*wallData[j][awI+1];
 	wallDerivs[j][rwI+1] -= fac;
 	cellDerivs[i][rI] += fac;
