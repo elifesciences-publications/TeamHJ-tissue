@@ -1668,6 +1668,7 @@ derivs(Tissue &T,
 	
 	wallDerivs[j][awI] += fac;
 	cellDerivs[i][aI] -= fac;
+	// wall-wall diffusion
 	wallDerivs[j][awI] -= parameter(5)*wallData[j][awI];
 	wallDerivs[j][awI+1] += parameter(5)*wallData[j][awI];
 	
@@ -1693,6 +1694,7 @@ derivs(Tissue &T,
 	
 	wallDerivs[j][awI+1] += fac;
 	cellDerivs[i][aI] -= fac;
+	// wall-wall diffusion
 	wallDerivs[j][awI+1] -= parameter(5)*wallData[j][awI+1];
 	wallDerivs[j][awI] += parameter(5)*wallData[j][awI+1];
 
@@ -1726,8 +1728,8 @@ AuxinROPModel2(std::vector<double> &paraValue,
                std::vector< std::vector<size_t> >
                &indValue ) {
 
-  //Do some checks on the parameters and variable indeces                                                                            
-  //                                                                                                                                 
+  //Do some checks on the parameters and variable indeces
+  //       
   if( paraValue.size()!=19 ) {
     std::cerr << "AuxinROPModel2::"
               << "AuxinROPModel2() "
@@ -1741,14 +1743,14 @@ AuxinROPModel2(std::vector<double> &paraValue,
               << " indices are used (auxin,PIN,ROP)." << std::endl;
     exit(0);
   }
-  //Set the variable values                                                                                                          
-  //////////////////////////////////////////////////////////////////////                                                             
+  //Set the variable values
+  //
   setId("AuxinROPModel2");
   setParameter(paraValue);
   setVariableIndex(indValue);
 
-  //Set the parameter identities                                                                                                     
-  //////////////////////////////////////////////////////////////////////                                                             
+  //Set the parameter identities
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "c_IAA";
@@ -1816,6 +1818,7 @@ derivs(Tissue &T,
 
         wallDerivs[j][awI] += fac;
         cellDerivs[i][aI] -= fac;
+	// wall-wall diffusion
         wallDerivs[j][awI] -= parameter(6)*wallData[j][awI];
         wallDerivs[j][awI+1] += parameter(6)*wallData[j][awI];
 
@@ -1837,11 +1840,12 @@ derivs(Tissue &T,
 	       != T.background() ) {
 	// cell-wall transport                                                                 
 	double fac = parameter(3)*cellData[i][aI] - parameter(2)*wallData[j][awI+1] +
-          parameter(4)*wallData[j][pwI]*cellData[i][aI]/
+          parameter(4)*wallData[j][pwI+1]*cellData[i][aI]/
 	  ( parameter(5) + cellData[i][aI] );
 	
 	wallDerivs[j][awI+1] += fac;
 	cellDerivs[i][aI] -= fac;
+	// wall-wall diffusion
 	wallDerivs[j][awI+1] -= parameter(6)*wallData[j][awI+1];
 	wallDerivs[j][awI] += parameter(6)*wallData[j][awI+1];
 	
