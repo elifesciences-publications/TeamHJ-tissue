@@ -13,7 +13,9 @@
 #include"tissue.h"
 #include"baseReaction.h"
 
-//!A stress-based PIN1 and MT polarization model
+/// @brief A stress-based PIN1 and MT polarization model
+///
+///
 class AuxinModelStress : public BaseReaction {
   
  public:
@@ -336,6 +338,46 @@ class AuxinROPModel : public BaseReaction {
 	      DataMatrix &cellDerivs,
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
+};
+
+///
+/// A cell-wall based auxin transport model including PINs and ROPs.
+///
+/* Auxin model based on cell and wall compartments. It uses two compartments for  
+   each wall and a single for the cells. It contains several updates to the  
+   AuxinROPModel above; most notably using MM and Hill terms. Auxin, PIN and ROP 
+   molecules are updated according to:
+
+   @f[ \frac{A_i}{dt} = p_0 - p_1 A_i + p_2 \sum_{j} (A_{ij}) – p_3 \sum_{j}  
+   (A_i) – p_4 \sum_{j} (P_{ij} (A_i / (p_5 + A_i))) @f]
+
+   @f[ \frac{dA_{ij}}{dt} = (from above) + p_6 (A_{ji} – A_{ij}) @f]
+
+   @f[ \frac{dP_i}{dt} = p_7 – p_8 P_i + \sum_j (p_9 P_{ij} – p_{10} P_i    
+   ((R_{ij})^(p_{12]))/((p_{11})^(p_{12}) + (R_{ij})^(p_{12}))) @f]
+
+   @f[ \frac{dP_{ij}}{dt} = (from above) @f]
+
+   @f[ \frac{dR_{i}}{dt} = p_{13} – p_{14} R_i + \sum_j (p_{15} R_{ij} 
+   ((R_{ji})^(p_{17}))/((p_{16})^(p_{17}) + (R_{ji})^(p_{17}))) – p_{18} R_i A_{ij} @f]
+
+   @f[ \frac{dR_{ij}}{dt} = (from above) @f]
+   */
+ class AuxinROPModel2 : public BaseReaction {
+
+  public:
+
+  AuxinROPModel2(std::vector<double> &paraValue,
+                    std::vector< std::vector<size_t> >
+                    &indValue );
+
+  void derivs(Tissue &T,
+              DataMatrix &cellData,
+	        DataMatrix &wallData,
+		  DataMatrix &vertexData,
+ 		  DataMatrix &cellDerivs,
+		  DataMatrix &wallDerivs,
+		  DataMatrix &vertexDerivs );
 };
 
 #endif

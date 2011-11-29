@@ -14,7 +14,7 @@ AuxinModelSimple1(std::vector<double> &paraValue,
 		  &indValue ) {
   
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( paraValue.size()!=12 ) {
     std::cerr << "AuxinModelSimple1::"
 	      << "AuxinModelSimple1() "
@@ -34,13 +34,13 @@ AuxinModelSimple1(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("AuxinModelSimple1");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "p_auxin(M)";
@@ -162,13 +162,13 @@ AuxinModelStress(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("AuxinModelStress");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "p_auxin";
@@ -314,13 +314,13 @@ AuxinModelSimpleStress(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("AuxinModelSimpleStress");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "p_auxin";
@@ -433,7 +433,7 @@ AuxinModelSimple1Wall(std::vector<double> &paraValue,
 		      &indValue ) {
   
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( paraValue.size()!=7 ) {
     std::cerr << "AuxinModelSimple1::"
 	      << "AuxinModelSimple1() "
@@ -451,13 +451,13 @@ AuxinModelSimple1Wall(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("AuxinModelSimple1Wall");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "p_auxin";
@@ -540,7 +540,7 @@ AuxinModelSimple2(std::vector<double> &paraValue,
 									&indValue ) 
 { 
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( paraValue.size()!=32 ) {
     std::cerr << "AuxinModelSimple2::"
 							<< "AuxinModelSimple2() "
@@ -555,13 +555,13 @@ AuxinModelSimple2(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("AuxinModelSimple2");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "p_auxin(M)";
@@ -600,10 +600,6 @@ AuxinModelSimple2(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Derivative contribution for the growth
-/*! Deriving the time derivative contribution for the growth for all
-  walls in the tissue.
-*/
 void AuxinModelSimple2::
 derivs(Tissue &T,
        DataMatrix &cellData,
@@ -666,7 +662,7 @@ derivs(Tissue &T,
     //cellDerivs[i][mI] +=...;
     
     //Transport
-		//////////////////////////////////////////////////////////////////////
+    //
     size_t numWalls=T.cell(i).numWall();
     //PID factor
     double tmpPow = std::pow(cellData[i][pidI],parameter(30));
@@ -726,7 +722,7 @@ AuxinModelSimple3(std::vector<double> &paraValue,
 									&indValue ) 
 { 
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( paraValue.size()!=32 ) {
     std::cerr << "AuxinModelSimple3::"
 							<< "AuxinModelSimple3() "
@@ -741,13 +737,13 @@ AuxinModelSimple3(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("AuxinModelSimple3");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "p_auxin(M)";
@@ -786,10 +782,6 @@ AuxinModelSimple3(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-//! Derivative contribution for the growth
-/*! Deriving the time derivative contribution for the growth for all
-  walls in the tissue.
-*/
 void AuxinModelSimple3::
 derivs(Tissue &T,
        DataMatrix &cellData,
@@ -853,7 +845,7 @@ derivs(Tissue &T,
     //cellDerivs[i][mI] +=...;
     
     //Transport
-		//////////////////////////////////////////////////////////////////////
+    //
     size_t numWalls=T.cell(i).numWall();
     //PID factor
     double tmpPow = std::pow(cellData[i][pidI],parameter(30));
@@ -913,14 +905,14 @@ derivs(Tissue &T,
   }
 }
 
-//!Constructor
+
 AuxinModel4::
 AuxinModel4(std::vector<double> &paraValue, 
 	    std::vector< std::vector<size_t> > 
 	    &indValue ) 
 { 
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( paraValue.size()!=37 ) {
     std::cerr << "AuxinModel4::"
 	      << "AuxinModel4() "
@@ -935,13 +927,13 @@ AuxinModel4(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("AuxinModel4");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "p_auxin(M)";
@@ -983,10 +975,6 @@ AuxinModel4(std::vector<double> &paraValue,
   tmp[36] = "D_A";
 }
 
-//! Derivative contribution for the growth
-/*! Deriving the time derivative contribution for the growth for all
-  walls in the tissue.
-*/
 void AuxinModel4::
 derivs(Tissue &T,
        DataMatrix &cellData,
@@ -1056,7 +1044,7 @@ derivs(Tissue &T,
     //cellDerivs[i][mI] +=...;
     
     //Transport
-    //////////////////////////////////////////////////////////////////////
+    //
     size_t numWalls=T.cell(i).numWall();
     //PID factor
     tmpPow = std::pow(cellData[i][pidI],parameter(35));
@@ -1136,7 +1124,7 @@ AuxinModel5(std::vector<double> &paraValue,
 	    &indValue ) {
   
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( paraValue.size()!=16 ) {
     std::cerr << "AuxinModel5::"
 	      << "AuxinModel5() "
@@ -1150,13 +1138,13 @@ AuxinModel5(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("AuxinModel5");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "p_auxin(M)";
@@ -1277,7 +1265,7 @@ AuxinModel6(std::vector<double> &paraValue,
 						&indValue ) {
   
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( paraValue.size()!=16 ) {
     std::cerr << "AuxinModel6::"
 							<< "AuxinModel6() "
@@ -1291,13 +1279,13 @@ AuxinModel6(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("AuxinModel6");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "p_auxin(M)";
@@ -1376,7 +1364,7 @@ AuxinModel7(std::vector<double> &paraValue,
 						&indValue ) {
   
   //Do some checks on the parameters and variable indeces
-  //////////////////////////////////////////////////////////////////////
+  //
   if( paraValue.size()!=22 ) {
     std::cerr << "AuxinModel7::"
 							<< "AuxinModel7() "
@@ -1390,27 +1378,27 @@ AuxinModel7(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("AuxinModel7");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "p_auxin(M)";
   tmp[1] = "p0_auxin";
   tmp[2] = "d_auxin";
   tmp[3] = "p0_pin";
-	tmp[4] = "f_Pauxin";
-	tmp[5] = "K_P";
-	tmp[6] = "n_P";
+  tmp[4] = "f_Pauxin";
+  tmp[5] = "K_P";
+  tmp[6] = "n_P";
   tmp[7] = "d_pin";
   tmp[8] = "p0_aux";
-	tmp[9] = "f_Aauxin";
-	tmp[10] = "K_A";
-	tmp[11] = "n_A";
+  tmp[9] = "f_Aauxin";
+  tmp[10] = "K_A";
+  tmp[11] = "n_A";
   tmp[12] = "d_aux";
   tmp[13] = "p0_X";
   tmp[14] = "p_X(auxin)";
@@ -1483,49 +1471,49 @@ derivs(Tissue &T,
 
 AuxinTransportCellCellNoGeometry::
 AuxinTransportCellCellNoGeometry(std::vector<double> &paraValue, 
-																 std::vector< std::vector<size_t> > &indValue )
+				 std::vector< std::vector<size_t> > &indValue )
 {
-	if (paraValue.size() != 7) {
-		std::cerr << "AuxinTransportCellCellNoGeometry::AuxinTransportCellCellNoGeometry"
-							<< "Uses seven parameters: " << std::endl
-							<< "d, "             // 0
-							<< "T, "             // 1
-							<< "k1, "            // 2
-							<< "k2, "            // 3
-							<< "K_H, "           // 4
-							<< "n and "          // 5
-							<< "K_M."            // 6
-							<< std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	if (indValue.size() != 1 || indValue[0].size() != 4) {
-		std::cerr << "AuxinTransportCellCellNoGeometry::AuxinTransportCellCellNoGeometry "
-							<< "Four variable indices are needed: " << std::endl
-							<< "Auxin, "      // 0
-							<< "PIN1, "       // 1
-							<< "AUX1, and "   // 2
-							<< "X(feedback)." // 3
-							<< std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	setId("AuxinTransportCellCellNoGeometry");
-	setParameter(paraValue);  
-	setVariableIndex(indValue);
-	
-	std::vector<std::string> tmp(numParameter());
-	tmp.resize(numParameter());
-	
-	tmp[0] = "d";
-	tmp[1] = "T";
-	tmp[2] = "k1";
-	tmp[3] = "k2";
-	tmp[4] = "K_H";
-	tmp[5] = "n";
-	tmp[6] = "K_M";
-	
-	setParameterId( tmp );
+  if (paraValue.size() != 7) {
+    std::cerr << "AuxinTransportCellCellNoGeometry::AuxinTransportCellCellNoGeometry"
+	      << "Uses seven parameters: " << std::endl
+	      << "d, "             // 0
+	      << "T, "             // 1
+	      << "k1, "            // 2
+	      << "k2, "            // 3
+	      << "K_H, "           // 4
+	      << "n and "          // 5
+	      << "K_M."            // 6
+	      << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  if (indValue.size() != 1 || indValue[0].size() != 4) {
+    std::cerr << "AuxinTransportCellCellNoGeometry::AuxinTransportCellCellNoGeometry "
+	      << "Four variable indices are needed: " << std::endl
+	      << "Auxin, "      // 0
+	      << "PIN1, "       // 1
+	      << "AUX1, and "   // 2
+	      << "X(feedback)." // 3
+	      << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("AuxinTransportCellCellNoGeometry");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp.resize(numParameter());
+  
+  tmp[0] = "d";
+  tmp[1] = "T";
+  tmp[2] = "k1";
+  tmp[3] = "k2";
+  tmp[4] = "K_H";
+  tmp[5] = "n";
+  tmp[6] = "K_M";
+  
+  setParameterId( tmp );
 }
 
 void AuxinTransportCellCellNoGeometry::
@@ -1609,13 +1597,13 @@ AuxinROPModel(std::vector<double> &paraValue,
     exit(0);
   }
   //Set the variable values
-  //////////////////////////////////////////////////////////////////////
+  //
   setId("AuxinROPModel");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
   //Set the parameter identities
-  //////////////////////////////////////////////////////////////////////
+  //
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "c_IAA";
@@ -1718,6 +1706,150 @@ derivs(Tissue &T,
       //	  << std::endl;
       //exit(-1);
       //}
+    }
+  }
+}
+
+
+AuxinROPModel2::
+AuxinROPModel2(std::vector<double> &paraValue,
+               std::vector< std::vector<size_t> >
+               &indValue ) {
+
+  //Do some checks on the parameters and variable indeces                                                                            
+  //                                                                                                                                 
+  if( paraValue.size()!=19 ) {
+    std::cerr << "AuxinROPModel2::"
+              << "AuxinROPModel2() "
+              << "19 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 3 || indValue[0].size() != 3 ) {
+    std::cerr << "AuxinROPModel2::"
+              << "AuxinROPModel2() "
+              << "Three cell variable indices (first row) and three wall variable"
+              << " indices are used (auxin,PIN,ROP)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values                                                                                                          
+  //////////////////////////////////////////////////////////////////////                                                             
+  setId("AuxinROPModel2");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+
+  //Set the parameter identities                                                                                                     
+  //////////////////////////////////////////////////////////////////////                                                             
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "c_IAA";
+  tmp[1] = "d_IAA";
+  tmp[2] = "p_IAAH(in)";
+  tmp[3] = "p_IAAH(out)";
+  tmp[4] = "p_IAA-";
+  tmp[5] = "K_A";
+  tmp[6] = "D_IAA";
+  tmp[7] = "c_PIN";
+  tmp[8] = "d_PIN";
+  tmp[9] = "endo_PIN";
+  tmp[10] = "exo_PIN";
+  tmp[11] = "K_RP";
+  tmp[12] = "m";
+  tmp[13] = "c_ROP";
+  tmp[14] = "d_ROP";
+  tmp[15] = "endo_ROP";
+  tmp[16] = "K_RR";
+  tmp[17] = "n";
+  tmp[18] = "exo_ROP";
+  setParameterId( tmp );
+}
+
+void AuxinROPModel2::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs )
+{
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);//auxin                                                                                             
+  size_t pI = variableIndex(0,1);//pin                                                                                               
+  size_t rI = variableIndex(0,2);//rop                                                                                               
+  size_t awI = variableIndex(1,0);//auxin (wall)                                                                                     
+  size_t pwI = variableIndex(1,1);//pin (membrane/wall)                                                                              
+  size_t rwI = variableIndex(1,2);//rop (membrane/wall)                                                                              
+
+  assert( aI<cellData[0].size() &&
+          pI<cellData[0].size() &&
+          rI<cellData[0].size() &&
+          awI<wallData[0].size() &&
+          pwI<wallData[0].size() &&
+          rwI<wallData[0].size() );
+
+  for (size_t i=0; i<numCells; ++i) {
+
+    //Production and degradation                                                               
+    cellDerivs[i][aI] += parameter(0) - parameter(1)*cellData[i][aI];
+    cellDerivs[i][pI] += parameter(7) - parameter(8)*cellData[i][pI];
+    cellDerivs[i][rI] += parameter(13) - parameter(14)*cellData[i][rI];
+
+    //Auxin transport and protein cycling                                                      
+    size_t numWalls = T.cell(i).numWall();
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() !=   
+	  T.background() ) {
+        // cell-wall transport                                                                 
+        double fac = parameter(3)*cellData[i][aI] - parameter(2)*wallData[j][awI] +
+          parameter(4)*wallData[j][pwI]*cellData[i][aI]/(parameter(5) + cellData[i][aI]);
+
+        wallDerivs[j][awI] += fac;
+        cellDerivs[i][aI] -= fac;
+        wallDerivs[j][awI] -= parameter(6)*wallData[j][awI];
+        wallDerivs[j][awI+1] += parameter(6)*wallData[j][awI];
+
+        //PIN cycling                                                                          
+        fac = parameter(9)*wallData[j][pwI]-
+	  parameter(10)*cellData[i][pI]*std::pow(wallData[j][rwI],parameter(12))/
+	  ( std::pow(parameter(11),parameter(12)) + std::pow(wallData[j][rwI],parameter(12)) );
+        wallDerivs[j][pwI] -= fac;
+        cellDerivs[i][pI] += fac;
+	
+        //ROP cycling                                                      
+        fac = parameter(15)*wallData[j][rwI] * std::pow(wallData[i][rwI],parameter(17))/   
+	  ( std::pow(parameter(16),parameter(17)) + std::pow(wallData[i][rwI],parameter(17)) ) - 
+	  parameter(18)*cellData[i][rI]*wallData[j][awI];
+	wallDerivs[j][rwI] -= fac;
+	cellDerivs[i][rI] += fac;	
+      }
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1()
+	       != T.background() ) {
+	// cell-wall transport                                                                 
+	double fac = parameter(3)*cellData[i][aI] - parameter(2)*wallData[j][awI+1] +
+          parameter(4)*wallData[j][pwI]*cellData[i][aI]/
+	  ( parameter(5) + cellData[i][aI] );
+	
+	wallDerivs[j][awI+1] += fac;
+	cellDerivs[i][aI] -= fac;
+	wallDerivs[j][awI+1] -= parameter(6)*wallData[j][awI+1];
+	wallDerivs[j][awI] += parameter(6)*wallData[j][awI+1];
+	
+	//PIN cycling                                                                          
+	fac = parameter(9)*wallData[j][pwI+1]-
+	  parameter(10)*cellData[i][pI]*std::pow(wallData[j][rwI+1],parameter(12))/
+	  ( std::pow(parameter(11),parameter(12)) + std::pow(wallData[j][rwI+1],parameter(12)) );
+	wallDerivs[j][pwI+1] -= fac;
+	cellDerivs[i][pI] += fac;
+	
+	//ROP cycling                                                                          
+	fac = parameter(15)*wallData[j][rwI+1]
+	  *std::pow(wallData[i][rwI+1],parameter(17))/
+	  ( std::pow(parameter(16),parameter(17)) + std::pow(wallData[i][rwI+1],parameter(17)) ) -
+	  parameter(18)*cellData[i][rI]*wallData[j][awI+1];
+	wallDerivs[j][rwI+1] -= fac;
+	cellDerivs[i][rI] += fac;
+      }
     }
   }
 }
