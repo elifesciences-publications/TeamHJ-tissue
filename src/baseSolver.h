@@ -100,8 +100,9 @@ protected:
   ///
   /// In addition there are several methods for plotting also membrane data (e.g. PIN1),
   /// as well as specific methods.
-  /// @endverbatime 
-  /// Caveat: Not yet general, but will be...?
+  /// @endverbatim 
+  ///
+  /// @note Caveat: Not yet general, but will be...?
   ///
   void print(std::ostream &os=std::cout);
   ///
@@ -167,4 +168,3 @@ inline void BaseSolver::setTissue(Tissue *T)
 }
 
 #endif /* SOLVER_H */
-

@@ -300,7 +300,7 @@ void Tissue::readInit(std::istream &IN,int verbose) {
     v1 = static_cast<size_t>(v1I);
     v2 = static_cast<size_t>(v2I);
     //Assert all data is ok
-    if( verbose>1 ) {
+    if( verbose>=1 ) {
       std::cerr << wI << " " << c1I << " " << c2I << " " << v1I 
 		<< " " << v2I << std::endl;    
       std::cerr << w << " " << c1 << " " << c2 << " " << v1 << " " << v2 
@@ -360,12 +360,16 @@ void Tissue::readInit(std::istream &IN,int verbose) {
   //
   if( verbose )
     std::cerr << "Tissue::readInit(IN) - reading vertex positions" 
-							<< std::endl;
+	      << std::endl;
   size_t numVertexTmp,dimension;
   IN >> numVertexTmp;
   IN >> dimension;
   assert( numVertexTmp==numVertex() );
   assert( dimension==2 || dimension==3 );
+  if (verbose) {
+    std::cerr << numVertexTmp << "(" << numVertex() << ") vertices in " << dimension << " dimensions." << std::endl;
+  }
+
   std::vector<double> pos(dimension);
   for( size_t i=0 ; i<numVertex() ; ++i ) {
     for( size_t j=0 ; j<dimension ; ++j )
@@ -384,6 +388,9 @@ void Tissue::readInit(std::istream &IN,int verbose) {
   IN >> numVar;
   assert( numWallTmp==numWall() );
   assert( numLength==1 );
+  if (verbose) {
+    std::cerr << numWallTmp << "(" << numWall() << ") walls." << std::endl;
+  }
   double length;
   double value;
   for (size_t i = 0; i < numWall(); ++i) {

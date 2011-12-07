@@ -1576,6 +1576,126 @@ derivs(Tissue &T,
   }
 }	
 
+AuxinWallModel::
+AuxinWallModel(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=12 ) {
+    std::cerr << "AuxinWallModel::"
+	      << "AuxinWallModel() "
+	      << "11 parameters used (see documentation or network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 3 || indValue[1].size() != 2 ) {
+    std::cerr << "AuxinWallModel::"
+	      << "AuxinWallModel() "
+	      << "Three cell variable indices (auxin, PIN, AUX; first row) and two wall variable"
+	      << " indices (paired) are used (auxin, PIN)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("AuxinWallModel");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "c_IAA";
+  tmp[1] = "d_IAA";
+  tmp[2] = "p_IAAH(in)";
+  tmp[3] = "p_IAA-(in,AUX)";
+  tmp[4] = "p_IAAH(out)";
+  tmp[5] = "p_IAA-(out,PIN)";
+  tmp[6] = "D_IAA";
+  tmp[7] = "c_PIN";
+  tmp[8] = "d_PIN";
+  tmp[9] = "endo_PIN";
+  tmp[10] = "exo_PIN_const";
+  tmp[11] = "exo_PIN_auxin";
+  setParameterId( tmp );
+}
+
+void AuxinWallModel::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);//auxin
+  size_t pI = variableIndex(0,1);//PIN
+  size_t auxI = variableIndex(0,2);//AUX
+  size_t awI = variableIndex(1,0);//auxin (wall)
+  size_t pwI = variableIndex(1,1);//PIN (membrane/wall)
+
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  auxI<cellData[0].size() &&
+	  awI<wallData[0].size() &&
+	  pwI<wallData[0].size() );
+
+  for (size_t i=0; i<numCells; ++i) {
+    
+    //Production and degradation
+    cellDerivs[i][aI] += parameter(0) - parameter(1)*cellData[i][aI];
+    cellDerivs[i][pI] += parameter(7) - parameter(8)*cellData[i][pI];
+    
+    //Auxin transport and protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
+	size_t cellNeigh = T.cell(i).wall(k)->cell2()->index();
+	// cell-wall transport
+	double fac = (parameter(4)+parameter(5)*wallData[j][pwI]) * cellData[i][aI] 
+	  - (parameter(2)+parameter(3)*cellData[i][auxI]) * wallData[j][awI];
+	wallDerivs[j][awI] += fac;
+	cellDerivs[i][aI] -= fac;
+	// wall-wall diffusion
+	fac = parameter(6)*wallData[j][awI];
+	wallDerivs[j][awI] -= fac;
+	wallDerivs[j][awI+1] += fac;
+	
+	//PIN cycling
+	fac = parameter(9)*wallData[j][pwI] - (parameter(10)+parameter(11)*cellData[cellNeigh][aI])*cellData[i][pI];
+	wallDerivs[j][pwI] -= fac;
+	cellDerivs[i][pI] += fac;
+      }
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
+	size_t cellNeigh = T.cell(i).wall(k)->cell1()->index();
+	// cell-wall transport
+	double fac = (parameter(4)+parameter(5)*wallData[j][pwI+1]) * cellData[i][aI] 
+	  - (parameter(2) + parameter(3)*cellData[i][auxI]) * wallData[j][awI+1];
+		
+	wallDerivs[j][awI+1] += fac;
+	cellDerivs[i][aI] -= fac;
+	// wall-wall diffusion
+	wallDerivs[j][awI+1] -= parameter(6)*wallData[j][awI+1];
+	wallDerivs[j][awI] += parameter(6)*wallData[j][awI+1];
+
+	//PIN cycling
+	fac = parameter(9)*wallData[j][pwI+1] - (parameter(10)+parameter(11)*cellData[cellNeigh][aI])*cellData[i][pI];
+	wallDerivs[j][pwI+1] -= fac;
+	cellDerivs[i][pI] += fac;
+      }
+      //else {
+      //std::cerr << "AuxinWallModel::derivs() Cell-wall neighborhood wrong." 
+      //	  << std::endl;
+      //exit(-1);
+      //}
+    }
+  }
+}
+
 AuxinROPModel::
 AuxinROPModel(std::vector<double> &paraValue, 
 	      std::vector< std::vector<size_t> > 
@@ -1589,7 +1709,7 @@ AuxinROPModel(std::vector<double> &paraValue,
 	      << "14 parameters used (see network.h)\n";
     exit(0);
   }
-  if( indValue.size() != 2 || indValue[0].size() != 3 || indValue[0].size() != 3 ) {
+  if( indValue.size() != 2 || indValue[0].size() != 3 || indValue[1].size() != 3 ) {
     std::cerr << "AuxinROPModel::"
 	      << "AuxinROPModel() "
 	      << "Three cell variable indices (first row) and three wall variable"
@@ -1736,7 +1856,7 @@ AuxinROPModel2(std::vector<double> &paraValue,
               << "19 parameters used (see network.h)\n";
     exit(0);
   }
-  if( indValue.size() != 2 || indValue[0].size() != 3 || indValue[0].size() != 3 ) {
+  if( indValue.size() != 2 || indValue[0].size() != 3 || indValue[1].size() != 3 ) {
     std::cerr << "AuxinROPModel2::"
               << "AuxinROPModel2() "
               << "Three cell variable indices (first row) and three wall variable"
@@ -1864,6 +1984,154 @@ derivs(Tissue &T,
 	wallDerivs[j][rwI+1] -= fac;
 	cellDerivs[i][rI] += fac;
       }
+    }
+  }
+}
+
+AuxinROPModel3::
+AuxinROPModel3(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=17 ) {
+    std::cerr << "AuxinROPModel3::"
+	      << "AuxinROPModel3() "
+	      << "17 parameters used (see documentation or network.h)" << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 4 || indValue[1].size() != 3 ) {
+    std::cerr << "AuxinROPModel3::"
+	      << "AuxinROPModel3() "
+	      << "Four cell variable indices (auxin, PIN, ROP, AUX, first row) and three wall variable"
+	      << " indices (paired) are used (auxin,PIN,ROP)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("AuxinROPModel3");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "c_IAA";
+  tmp[1] = "d_IAA";
+  tmp[2] = "p_IAAH(in)";
+  tmp[3] = "p_IAAH(out)";
+  tmp[4] = "p_IAA-";
+  tmp[5] = "D_IAA";
+  tmp[6] = "c_PIN";
+  tmp[7] = "d_PIN";
+  tmp[8] = "endo_PIN";
+  tmp[9] = "exo_PIN";
+  tmp[10] = "c_ROP";
+  tmp[11] = "d_ROP";
+  tmp[12] = "endo_ROP";
+  tmp[13] = "exo_ROP";
+  tmp[14] = "K_hill";
+  tmp[15] = "n_hill";
+  tmp[16] = "d_IAA^AUX";
+	
+  setParameterId( tmp );
+}
+
+void AuxinROPModel3::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);//auxin
+  size_t pI = variableIndex(0,1);//pin
+  size_t rI = variableIndex(0,2);//rop
+  size_t auxI = variableIndex(0,3);//aux
+  size_t awI = variableIndex(1,0);//auxin (wall)
+  size_t pwI = variableIndex(1,1);//pin (membrane/wall)
+  size_t rwI = variableIndex(1,2);//rop (membrane/wall)
+
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  rI<cellData[0].size() &&
+	  awI<wallData[0].size() &&
+	  pwI<wallData[0].size() &&
+	  rwI<wallData[0].size() );
+
+  for (size_t i=0; i<numCells; ++i) {
+	  
+    //Production and degradation
+    cellDerivs[i][aI] += parameter(0) - parameter(1)*cellData[i][aI];
+    cellDerivs[i][pI] += parameter(6) - parameter(7)*cellData[i][pI];
+    cellDerivs[i][rI] += parameter(10) - parameter(11)*cellData[i][rI];
+    
+    //Auxin transport and protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
+	// cell-wall transport
+	double fac = (parameter(3)+parameter(4)*wallData[j][pwI])*cellData[i][aI] 
+	  - (parameter(2)+parameter(16)*cellData[i][auxI])*wallData[j][awI];
+	  	
+	wallDerivs[j][awI] += fac;
+	cellDerivs[i][aI] -= fac;
+	// wall-wall diffusion
+	wallDerivs[j][awI] -= parameter(5)*wallData[j][awI];
+	wallDerivs[j][awI+1] += parameter(5)*wallData[j][awI];
+	
+	//PIN cycling
+	fac = parameter(8)*wallData[j][pwI] - parameter(9)*cellData[i][pI]*wallData[j][rwI];
+	wallDerivs[j][pwI] -= fac;
+	cellDerivs[i][pI] += fac;
+
+	//ROP cycling
+	//fac = parameter(12)*wallData[j][rwI] - parameter(13)*cellData[i][rI]*wallData[j][awI];
+	fac = parameter(12)*wallData[j][rwI]
+	  *std::pow(wallData[j][rwI+1],parameter(15))/
+	  ( std::pow(parameter(14),parameter(15)) + std::pow(wallData[j][rwI+1],parameter(15)) ) -
+	  parameter(13)*cellData[i][rI]*wallData[j][awI];
+	wallDerivs[j][rwI] -= fac;
+	cellDerivs[i][rI] += fac;
+
+      }
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
+	// cell-wall transport
+	double fac = parameter(3)*cellData[i][aI] - parameter(2)*wallData[j][awI+1] +
+	  parameter(4)*cellData[i][aI]*wallData[j][pwI+1];
+	
+	wallDerivs[j][awI+1] += fac;
+	cellDerivs[i][aI] -= fac;
+	// wall-wall diffusion
+	wallDerivs[j][awI+1] -= parameter(5)*wallData[j][awI+1];
+	wallDerivs[j][awI] += parameter(5)*wallData[j][awI+1];
+
+	//PIN cycling
+	fac = parameter(8)*wallData[j][pwI+1] - parameter(9)*cellData[i][pI]*wallData[j][rwI+1];
+	wallDerivs[j][pwI+1] -= fac;
+	cellDerivs[i][pI] += fac;
+
+	//ROP cycling
+	//fac = parameter(12)*wallData[j][rwI+1] - parameter(13)*cellData[i][rI]*wallData[j][awI+1];
+	fac = parameter(12)*wallData[j][rwI+1]
+	  *std::pow(wallData[j][rwI],parameter(15))/
+	  ( std::pow(parameter(14),parameter(15)) + std::pow(wallData[j][rwI],parameter(15)) ) -
+	  parameter(13)*cellData[i][rI]*wallData[j][awI+1];
+	wallDerivs[j][rwI+1] -= fac;
+	cellDerivs[i][rI] += fac;
+
+      }
+      //else {
+      //std::cerr << "AuxinROPModel::derivs() Cell-wall neighborhood wrong." 
+      //	  << std::endl;
+      //exit(-1);
+      //}
     }
   }
 }

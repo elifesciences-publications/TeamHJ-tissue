@@ -169,7 +169,6 @@ void BaseSolver::simulate(size_t verbose)
 
 void BaseSolver::print(std::ostream &os) 
 {
-  
   static int tCount=0;
   static int NOld=0,okOld=0,badOld=0;
   static double tOld=0.0;

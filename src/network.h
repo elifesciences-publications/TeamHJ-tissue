@@ -301,28 +301,77 @@ class AuxinTransportCellCellNoGeometry : public BaseReaction {
 };
 
 ///
-/// A cell-wall based auxin transport model including PINs and ROPs
+/// @brief A cell-wall based auxin transport model including PINs and ROPs
 ///
-/*!A complete (hopefully) pattern generating auxin model based on cell and wall
-  compartments. It uses two compartments for each wall and a single for the cells.
-  Auxin PIN and ROP molecules are updated according to:
+/// A complete pattern generating auxin model based on cell and wall
+/// compartments. It uses two compartments for each wall and a single for the cells.
+/// Auxin and PIN molecules are updated according to:
+///  
+/// @f[ \frac{A_i}{dt} = p_0 - p_1 A_i + \sum_{j} ( (p_2+p_3 [AUX]_i) A_{ij} ) 
+/// - \sum_{j} (p_4+ p_5 P_{ij}) A_i @f]
+///  
+/// @f[ \frac{dA_{ij}}{dt} = (from above) + p_6 (A_{ji}-A_{ij}) @f]
+///
+/// @f[ \frac{dP_i}{dt} = p_7 - p_8 P_i + \sum_j (p_9 P_{ij} - (p_{10} + p_{11} A_{j}) P_i @f] 
+///  
+/// @f[ \frac{dP_{ij}}{dt} = (from above) @f]
+///
+/// The (here static) symmetric AUX contribution is applied via AUX in the cells.
+///   
+/// In the model file the reaction is given by:
+/// @verbatim
+/// AuxinWallModel 12 2 3 2
+/// p_0 ... p_11
+/// ci_auxin ci_PIN ci_AUX
+/// wi_auxin wi_PIN
+/// @endverbatim
+///
+class AuxinWallModel : public BaseReaction {
   
-  @f[ \frac{A_i}{dt} = p_0 - p_1 A_i + p_2 \sum_{j} (A_{ij}) - p_3 \sum_{j} (A_i) - 
-  p_4 \sum_{j} (P_{ij} A_i) @f]
+ public:
   
-  @f[ \frac{dA_{ij}}{dt} = (from above) + p_5 (A_{ji}-A_{ij}) @f]
+  AuxinWallModel(std::vector<double> &paraValue, 
+		    std::vector< std::vector<size_t> > 
+		    &indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
 
-  @f[ \frac{dP_i}{dt} = p_6 - p_7 P_i + \sum_j (p_8 P_{ij} - p_9 P_i R_{ij} @f] 
-  
-  @f[ \frac{dP_{ij}}{dt} = (from above) @f]
-
-  @f[ \frac{dR_i}{dt} = p_{10} - p_{11} R_i + \sum_j ( p_{12} R_{ij} - p_{13} R_i A_{ij}) @f]
-  
-  @f[ \frac{dR_{ij}}{dt} = (from above) @f]
-  
-  In addition, the column index for auxin, PIN, AUX1, PID, X, 
-  and M should be given.
-*/
+///
+/// @brief A cell-wall based auxin transport model including PINs and ROPs
+///
+/// A complete (hopefully) pattern generating auxin model based on cell and wall
+/// compartments. It uses two compartments for each wall and a single for the cells.
+/// Auxin PIN and ROP molecules are updated according to:
+///  
+/// @f[ \frac{A_i}{dt} = p_0 - p_1 A_i + p_2 \sum_{j} (A_{ij}) - p_3 \sum_{j} (A_i) - 
+///  p_4 \sum_{j} (P_{ij} A_i) @f]
+///  
+/// @f[ \frac{dA_{ij}}{dt} = (from above) + p_5 (A_{ji}-A_{ij}) @f]
+///
+/// @f[ \frac{dP_i}{dt} = p_6 - p_7 P_i + \sum_j (p_8 P_{ij} - p_9 P_i R_{ij} @f] 
+///  
+/// @f[ \frac{dP_{ij}}{dt} = (from above) @f]
+///
+/// @f[ \frac{dR_{i}}{dt} = p_{10} – p_{11} R_i + \sum_j (p_{12} R_{ij} 
+/// ((R_{ji})^(p_{15}))/((p_{14})^(p_{15}) + (R_{ji})^(p_{15}))) – p_{13} R_i A_{ij} @f]
+///  
+/// @f[ \frac{dR_{ij}}{dt} = (from above) @f]
+///  
+/// In the model file the reaction is given by:
+/// @verbatim
+/// AuxinROPModel 16 2 3 3
+/// p_0 ... p_15
+/// ci_auxin ci_PIN ci_ROP
+/// wi_auxin wi_PIN wi_ROP
+/// @endverbatim
+///
 class AuxinROPModel : public BaseReaction {
   
  public:
@@ -343,27 +392,35 @@ class AuxinROPModel : public BaseReaction {
 ///
 /// A cell-wall based auxin transport model including PINs and ROPs.
 ///
-/* Auxin model based on cell and wall compartments. It uses two compartments for  
-   each wall and a single for the cells. It contains several updates to the  
-   AuxinROPModel above; most notably using MM and Hill terms. Auxin, PIN and ROP 
-   molecules are updated according to:
-
-   @f[ \frac{A_i}{dt} = p_0 - p_1 A_i + p_2 \sum_{j} (A_{ij}) – p_3 \sum_{j}  
-   (A_i) – p_4 \sum_{j} (P_{ij} (A_i / (p_5 + A_i))) @f]
-
-   @f[ \frac{dA_{ij}}{dt} = (from above) + p_6 (A_{ji} – A_{ij}) @f]
-
-   @f[ \frac{dP_i}{dt} = p_7 – p_8 P_i + \sum_j (p_9 P_{ij} – p_{10} P_i    
-   ((R_{ij})^(p_{12]))/((p_{11})^(p_{12}) + (R_{ij})^(p_{12}))) @f]
-
-   @f[ \frac{dP_{ij}}{dt} = (from above) @f]
-
-   @f[ \frac{dR_{i}}{dt} = p_{13} – p_{14} R_i + \sum_j (p_{15} R_{ij} 
-   ((R_{ji})^(p_{17}))/((p_{16})^(p_{17}) + (R_{ji})^(p_{17}))) – p_{18} R_i A_{ij} @f]
-
-   @f[ \frac{dR_{ij}}{dt} = (from above) @f]
-   */
- class AuxinROPModel2 : public BaseReaction {
+/// Auxin model based on cell and wall compartments. It uses two compartments for  
+/// each wall and a single for the cells. It contains several updates to the  
+/// AuxinROPModel above; most notably using MM and Hill terms. Auxin, PIN and ROP 
+/// molecules are updated according to:
+///
+/// @f[ \frac{A_i}{dt} = p_0 - p_1 A_i + p_2 \sum_{j} (A_{ij}) – p_3 \sum_{j}  
+/// (A_i) – p_4 \sum_{j} (P_{ij} (A_i / (p_5 + A_i))) @f]
+///
+/// @f[ \frac{dA_{ij}}{dt} = (from above) + p_6 (A_{ji} – A_{ij}) @f]
+///
+/// @f[ \frac{dP_i}{dt} = p_7 – p_8 P_i + \sum_j (p_9 P_{ij} – p_{10} P_i    
+/// (R_{ij})^{p_{12}}/(p_{11}^{p_{12}} + R_{ij}^{p_{12}}) @f]
+///
+/// @f[ \frac{dP_{ij}}{dt} = (from above) @f]
+///
+/// @f[ \frac{dR_{i}}{dt} = p_{13} – p_{14} R_i + \sum_j (p_{15} R_{ij} 
+/// ((R_{ji})^(p_{17}))/((p_{16})^(p_{17}) + (R_{ji})^(p_{17}))) – p_{18} R_i A_{ij} @f]
+///
+/// @f[ \frac{dR_{ij}}{dt} = (from above) @f]
+///
+/// In the model file the reaction is given by:
+/// @verbatim
+/// AuxinROPModel2 19 2 3 3
+/// p_0 ... p_18
+/// ci_auxin ci_PIN ci_ROP
+/// wi_auxin wi_PIN wi_ROP
+/// @endverbatim
+///
+class AuxinROPModel2 : public BaseReaction {
 
   public:
 
@@ -378,6 +435,54 @@ class AuxinROPModel : public BaseReaction {
  		  DataMatrix &cellDerivs,
 		  DataMatrix &wallDerivs,
 		  DataMatrix &vertexDerivs );
+};
+
+///
+/// A cell-wall based auxin transport model including PINs and ROPs
+///
+/// A complete (hopefully) pattern generating auxin model based on cell and wall
+/// compartments. It uses two compartments for each wall and a single for the cells.
+/// Auxin PIN and ROP molecules are updated according to:
+///  
+/// @f[ \frac{A_i}{dt} = p_0 - p_1 A_i + p_2 \sum_{j} (A_{ij}) - p_3 \sum_{j} (A_i) - 
+/// p_4 \sum_{j} (P_{ij} A_i) + p_{16} \sum_{j} (AUX_i A_{ij})@f]
+///  
+/// @f[ \frac{dA_{ij}}{dt} = (from above) + p_5 (A_{ji}-A_{ij}) @f]
+///
+/// @f[ \frac{dP_i}{dt} = p_6 - p_7 P_i + \sum_j (p_8 P_{ij} - p_9 P_i R_{ij} @f] 
+///
+/// @f[ \frac{dP_{ij}}{dt} = (from above) @f]
+///
+/// @f[ \frac{dR_i}{dt} = p_{10} - p_{11} R_i + \sum_j ( p_{12} R_{ij} - p_{13} R_i A_{ij}) @f]
+///  
+/// @f[ \frac{dR_{ij}}{dt} = (from above) @f]
+///
+/// The (here static) and symmetric AUX dependence is the only difference from AuxinROPModel, and is
+/// via parameter p_16.  
+///
+/// In the model file the reaction is given by:
+/// @verbatim
+/// AuxinROPModel3 17 2 4 3
+/// p_0 ... p_16
+/// ci_auxin ci_PIN ci_ROP ci_AUX
+/// wi_auxin wi_PIN wi_ROP
+/// @endverbatim
+///
+class AuxinROPModel3 : public BaseReaction {
+  
+ public:
+  
+  AuxinROPModel3(std::vector<double> &paraValue, 
+		    std::vector< std::vector<size_t> > 
+		    &indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
 };
 
 #endif

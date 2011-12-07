@@ -34,9 +34,9 @@ int main(int argc,char *argv[]) {
   verboseString = myConfig::getValue("verbose", 0);
   if( !verboseString.empty() ) {
     verboseFlag = atoi( verboseString.c_str() );
-    if( verboseFlag != 0 || verboseFlag !=1 ) {
+    if( verboseFlag != 0 || verboseFlag !=1 || verboseFlag !=2) {
       verboseFlag=0;
-      std::cerr << "Flag given to -verbose not recognized (0, 1 allowed)."
+      std::cerr << "Flag given to -verbose not recognized (0, 1, 2 allowed)."
 		<< " Setting it to zero (silent)." << std::endl;
     }
   }
