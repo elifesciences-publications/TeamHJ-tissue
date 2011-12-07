@@ -300,7 +300,7 @@ void Tissue::readInit(std::istream &IN,int verbose) {
     v1 = static_cast<size_t>(v1I);
     v2 = static_cast<size_t>(v2I);
     //Assert all data is ok
-    if( verbose>=1 ) {
+    if( verbose>1 ) {
       std::cerr << wI << " " << c1I << " " << c2I << " " << v1I 
 		<< " " << v2I << std::endl;    
       std::cerr << w << " " << c1 << " " << c2 << " " << v1 << " " << v2 
