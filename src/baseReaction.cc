@@ -205,6 +205,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexTranslateToMax(paraValue,indValue); 
   else if(idValue=="CenterCOM")
     return new CenterCOM(paraValue,indValue); 
+  else if(idValue=="CenterCOMcenterTriangulation")
+    return new CenterCOMcenterTriangulation(paraValue,indValue); 
   else if(idValue=="CalculatePCAPlane")
     return new CalculatePCAPlane(paraValue,indValue); 
   else if(idValue=="InitiateWallLength")

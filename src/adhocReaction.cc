@@ -220,7 +220,7 @@ update(Tissue &T,
 
 CenterCOM::CenterCOM(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue) {
 	//Do some checks on the parameters and variable indeces
-	//////////////////////////////////////////////////////////////////////
+	//
 	if (paraValue.size() != 0) {
 		std::cerr << "CenterCOM::CenterCOM() Uses no parameters.\n";
 		std::exit(EXIT_FAILURE);
@@ -232,13 +232,13 @@ CenterCOM::CenterCOM(std::vector<double> &paraValue, std::vector< std::vector<si
 	}
 
 	//Set the variable values
-	//////////////////////////////////////////////////////////////////////
+	//
 	setId("CenterCOM");
 	setParameter(paraValue);  
 	setVariableIndex(indValue);
 	
 	//Set the parameter identities
-	//////////////////////////////////////////////////////////////////////
+	//
 	std::vector<std::string> tmp(numParameter());
 	setParameterId(tmp);
 }
@@ -288,6 +288,89 @@ void CenterCOM::update(Tissue &T,
 			vertexData[i][d] -= com[d];
 		}
 	}
+}
+
+CenterCOMcenterTriangulation::CenterCOMcenterTriangulation(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue) {
+	//Do some checks on the parameters and variable indeces
+	//
+	if (paraValue.size() != 0) {
+		std::cerr << "CenterCOMcenterTriangulation::CenterCOMcenterTriangulation() Uses no parameters.\n";
+		std::exit(EXIT_FAILURE);
+	}
+
+	if (indValue.size() != 1 || indValue[0].size() != 1) {
+		std::cerr << "CenterCOMcenterTriangulation::CenterCOMcenterTriangulation()"
+			  << " Uses one variable index for where cell vertices are stored "
+			  << "(must match TRBScenterTriangulation)." << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
+
+	//Set the variable values
+	//
+	setId("CenterCOMcenterTriangulation");
+	setParameter(paraValue);  
+	setVariableIndex(indValue);
+	
+	//Set the parameter identities
+	//
+	std::vector<std::string> tmp(numParameter());
+	setParameterId(tmp);
+}
+
+void CenterCOMcenterTriangulation::initiate(Tissue &T,
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData)
+{
+	update(T, cellData, wallData, vertexData, 0.0);
+}
+
+void CenterCOMcenterTriangulation::derivs(Tissue &T,
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs) 
+{
+
+}
+
+void CenterCOMcenterTriangulation::update(Tissue &T,
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	double h)
+{
+  size_t dimension = vertexData[0].size();
+  size_t numVertices = T.numVertex();
+  
+  std::vector<double> com(dimension, 0.0);
+  
+  for (size_t i = 0; i < numVertices; ++i) {
+    for (size_t d = 0; d < dimension; ++d) {
+      com[d] += vertexData[i][d];
+    }
+  }
+  
+  for (size_t d = 0; d < dimension; ++d) {
+    com[d] /= numVertices;
+  }
+  
+  for (size_t i = 0; i < numVertices; ++i) {
+    for (size_t d = 0; d < dimension; ++d) {
+      vertexData[i][d] -= com[d];
+    }
+  }
+  // Also update the additional central vertices stored in the cells
+  size_t numCells = T.numCell();
+  size_t cellVarIndex = variableIndex(0,0);
+  for (size_t i = 0; i < numCells; ++i) {
+    for (size_t d = 0; d < dimension; ++d) {
+      cellData[i][cellVarIndex+d] -= com[d];
+    }
+  }
+
 }
 
 CalculatePCAPlane::

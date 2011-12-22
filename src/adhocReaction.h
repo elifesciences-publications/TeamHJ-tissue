@@ -118,6 +118,47 @@ public:
 };
 
 ///
+/// @brief Centers the tissue such that the center of mass is in origo including for central mesh points
+///
+/// The translation is done at each update (i.e. after each ODE integration step).
+/// This function should be used in connection with mechanical TRBScenterTriangulation
+/// since those reactions adds an extra vertex in the cell data vector, which also 
+/// have to be moved. In a model file the reaction is defined as
+///
+/// @verbatim
+/// CenterCOMcenterTriangulation 0 1 1 
+/// cellDataPositionIndex
+/// @endverbatim
+///
+/// where the index have to be matched with what is given in the mechanical TRBS reaction.
+///  
+class CenterCOMcenterTriangulation : public BaseReaction
+{
+public:
+  
+  CenterCOMcenterTriangulation(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
+	
+  void initiate(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData);
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);
+  
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+};
+
+///
 /// @brief Helper reaction that only calculates the PCA plane for every cell.
 ///
 /// Since calculating the PCA plane is computationally expensive, this
