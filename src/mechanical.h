@@ -12,7 +12,11 @@
 #include"baseReaction.h"
 #include<cmath>
 
-//!Updates vertices from a cell pressure potential
+///
+/// @brief Updates vertices from a cell pressure potential
+///
+/// 
+///
 class VertexFromCellPressure : public BaseReaction {
   
  public:
@@ -169,7 +173,9 @@ class CylinderForce : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
-//!Applies a force towards or from a SphereCylinder surface
+///
+/// @brief Applies a force towards or from a SphereCylinder surface
+///
 class SphereCylinderForce : public BaseReaction {
   
  public:

@@ -787,11 +787,15 @@ derivs(Tissue &T,
 			      std::sqrt(normal[0]*normal[0]+
 					normal[1]*normal[1]+
 					normal[2]*normal[2]));  // angle between z axis and normal vector  -acos((dot(k,normal))/norm(normal))
-					                        // minus sign is because of right rotation direction
+    // minus sign is because of right rotation direction
     std::vector<double> u(3);              //rotation vector
     std::vector<double> Q1(3),Q2(3),Q3(3); //rotated position vectors of nodes
     std::vector<double> RotAnisocurr(3);   // rotated anisotropy vector (current shape)
     
+    //std::cerr << "Cell " << cellIndex << " " << cellData[cellIndex][variableIndex(0,1)]
+    //	      << " " << cellData[cellIndex][variableIndex(0,1)+1] << " "
+    //	      << cellData[cellIndex][variableIndex(0,1)+2] << std::endl;
+
     if (normal[0]*normal[0]+normal[1]*normal[1]>0.001) 
     { //If Triangle is not in x-y plane needs to be rotated down to that
       u[0] = -normal[1]/

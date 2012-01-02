@@ -2706,8 +2706,8 @@ derivs(Tissue &T,
       }
     }	
     // For saving normals in direction used for test plotting
-    for (size_t d=0; d<dimension; ++d)
-      cellData[cell.index()][d] = normal[d];
+    //for (size_t d=0; d<dimension; ++d)
+    //cellData[cell.index()][d] = normal[d];
   }
 }
 
