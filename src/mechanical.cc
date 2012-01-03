@@ -2711,6 +2711,62 @@ derivs(Tissue &T,
   }
 }
 
+VertexFromForce::
+VertexFromForce(std::vector<double> &paraValue, 
+		       std::vector< std::vector<size_t> > 
+		       &indValue ) 
+{  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()>3 ) {
+    std::cerr << "VertexFromForce::"
+	      << "VertexFromForce() "
+	      << "Uses a force vector that should be in one (x), two (x,y) or three (x,y,z) "
+	      << "dimensions." << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() < 1 ) {
+    std::cerr << "VertexFromForce::"
+	      << "VertexFromForce() "
+	      << "List of vertex indices given in first level." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexFromForce");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "F_x";
+  if (numParameter()>1)
+    tmp[1] = "F_y";
+  if (numParameter()==3)
+    tmp[2] = "F_z";
+  setParameterId( tmp );
+}
+
+void VertexFromForce::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  //Do the update for each vertex in the list given.
+  for (size_t k=0 ; k<numVariableIndex(0); ++k) {
+    size_t i = variableIndex(0,k);
+    assert(i<vertexData.size());
+    for (size_t d=0; d<vertexData[i].size(); ++d)
+      if( numParameter()>d )
+	vertexDerivs[i][d] += parameter(d);
+  }
+}
+
 DebugReaction::DebugReaction(std::vector<double> &paraValue,
 			     std::vector< std::vector<size_t> > &indValue)
 {

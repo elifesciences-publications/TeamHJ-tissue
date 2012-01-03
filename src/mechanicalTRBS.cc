@@ -265,6 +265,7 @@ derivs(Tissue &T,
       length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
 			     (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
 			     (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
+
       
       // Lame coefficients (can be defined out of loop)
       double lambda=young*poisson/(1-poisson*poisson);
@@ -283,6 +284,7 @@ derivs(Tissue &T,
       Angle[1]=std::asin(2*Area/(restingLength[0]*restingLength[1]));        
       Angle[2]=std::asin(2*Area/(restingLength[1]*restingLength[2]));
       
+      
       //Tensile Stiffness
       double tensileStiffness[3];
       double const temp = 1.0/(Area*16);                                      
@@ -291,12 +293,24 @@ derivs(Tissue &T,
       tensileStiffness[1]=(2*cotan[0]*cotan[0]*(lambda+mio)+mio)*temp;
       tensileStiffness[2]=(2*cotan[1]*cotan[1]*(lambda+mio)+mio)*temp;
       
+      //std::cerr << "Tensile stiffness" << std::endl;
+      //std::cerr << tensileStiffness[0] << std::endl
+      //	<< tensileStiffness[1] << std::endl
+      //	<< tensileStiffness[2] << std::endl << std::endl;
+
+
       //Angular Stiffness
       double angularStiffness[3];
       angularStiffness[0]=(2*cotan[1]*cotan[2]*(lambda+mio)-mio)*temp;
       angularStiffness[1]=(2*cotan[0]*cotan[2]*(lambda+mio)-mio)*temp;
       angularStiffness[2]=(2*cotan[0]*cotan[1]*(lambda+mio)-mio)*temp;
       
+      //std::cerr << "Angular stiffness" << std::endl;
+      //std::cerr << angularStiffness[0] << std::endl
+      //	<< angularStiffness[1] << std::endl
+      //	<< angularStiffness[2] << std::endl << std::endl;
+
+
       //Calculate biquadratic strains  
       std::vector<double> Delta(3);
       Delta[0]=(length[0])*(length[0])-(restingLength[0])*(restingLength[0]);
@@ -328,17 +342,17 @@ derivs(Tissue &T,
       
       // adding forces to the total vertexDerivs
       
-      cellDerivs[i][comIndex  ]+= Force[0][0];
-      cellDerivs[i][comIndex+1]+= Force[0][1];
-      cellDerivs[i][comIndex+2]+= Force[0][2];
+      cellDerivs[i][comIndex  ] += Force[0][0];
+      cellDerivs[i][comIndex+1] += Force[0][1];
+      cellDerivs[i][comIndex+2] += Force[0][2];
       
-      vertexDerivs[v2][0]+= Force[1][0];
-      vertexDerivs[v2][1]+= Force[1][1];
-      vertexDerivs[v2][2]+= Force[1][2];
+      vertexDerivs[v2][0] += Force[1][0];
+      vertexDerivs[v2][1] += Force[1][1];
+      vertexDerivs[v2][2] += Force[1][2];
       
-      vertexDerivs[v3][0]+= Force[2][0];
-      vertexDerivs[v3][1]+= Force[2][1];
-      vertexDerivs[v3][2]+= Force[2][2];
+      vertexDerivs[v3][0] += Force[2][0];
+      vertexDerivs[v3][1] += Force[2][1];
+      vertexDerivs[v3][2] += Force[2][2];
     }
   }
 }
@@ -366,7 +380,7 @@ initiate(Tissue &T,
   size_t numCell = cellData.size();
   assert (numCell==T.numCell());
   std::vector<double> com(dimension);
-
+  
   for (size_t i=0; i<numCell; ++i) {
     size_t numInternalWall = T.cell(i).numVertex();
     cellData[i].resize(numVariable+dimension+numInternalWall);
@@ -379,9 +393,12 @@ initiate(Tissue &T,
     for (size_t k=0; k<numInternalWall; ++k) {
       Vertex *tmpVertex = T.cell(i).vertex(k); 
       size_t vertexIndex = tmpVertex->index();
-      double distance = std::sqrt( (com[0]-vertexData[vertexIndex][0])*(com[0]-vertexData[vertexIndex][0])+
-				   (com[1]-vertexData[vertexIndex][1])*(com[1]-vertexData[vertexIndex][1])+
-				   (com[2]-vertexData[vertexIndex][2])*(com[2]-vertexData[vertexIndex][2]) );   
+      double distance = std::sqrt( (com[0]-vertexData[vertexIndex][0])*
+				   (com[0]-vertexData[vertexIndex][0])+
+				   (com[1]-vertexData[vertexIndex][1])*
+				   (com[1]-vertexData[vertexIndex][1])+
+				   (com[2]-vertexData[vertexIndex][2])*
+				   (com[2]-vertexData[vertexIndex][2]) );   
       cellData[i][numVariable+dimension+k] = distance;
     }
   }

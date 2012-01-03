@@ -142,6 +142,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromCellPlaneSphereCylinderConcentrationHill(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneTriangular")
     return new VertexFromCellPlaneTriangular(paraValue, indValue);
+  else if(idValue=="VertexFromForce")
+    return new VertexFromForce(paraValue,indValue);
   else if (idValue == "DebugReaction")
     return new DebugReaction(paraValue, indValue);
   

@@ -512,6 +512,44 @@ class VertexFromCellPlaneTriangular : public BaseReaction
 	      DataMatrix &vertexDerivs);
 };
 
+///
+/// @brief Updates list of vertices with a given force applied
+///
+/// 
+///
+class VertexFromForce : public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  VertexFromForce(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
 // Do not use this reaction. Restricted area (unless you are a developer).
 class DebugReaction : public BaseReaction
 {
