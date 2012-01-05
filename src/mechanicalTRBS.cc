@@ -66,7 +66,7 @@ derivs(Tissue &T,
     }
     
     double young = parameter(0);
-    double poisson = parameter(1);
+    double poisson =parameter(1);                
     size_t v1 = T.cell(i).vertex(0)->index();
     size_t v2 = T.cell(i).vertex(1)->index();
     size_t v3 = T.cell(i).vertex(2)->index();
@@ -100,10 +100,13 @@ derivs(Tissue &T,
     
     //Angles of the element ( assuming the order: 0,L0,1,L1,2,L2 )
     std::vector<double> Angle(3);
-    Angle[0]=std::asin(2*Area/(restingLength[0]*restingLength[2]));
+    Angle[0]=std::acos(  (restingLength[0]*restingLength[0]+restingLength[2]*restingLength[2]-restingLength[1]*restingLength[1])/
+                         (restingLength[0]*restingLength[2]*2)    );
+    Angle[1]=std::acos(  (restingLength[0]*restingLength[0]+restingLength[1]*restingLength[1]-restingLength[2]*restingLength[2])/
+                         (restingLength[0]*restingLength[1]*2)    );
+    Angle[2]=std::acos(  (restingLength[1]*restingLength[1]+restingLength[2]*restingLength[2]-restingLength[0]*restingLength[0])/
+                         (restingLength[1]*restingLength[2]*2)    );
     // can be ommited by cotan(A)=.25*sqrt(4*b*b*c*c/K-1)
-    Angle[1]=std::asin(2*Area/(restingLength[0]*restingLength[1]));        
-    Angle[2]=std::asin(2*Area/(restingLength[1]*restingLength[2]));
     
     //Tensile Stiffness
     double tensileStiffness[3];
@@ -113,11 +116,39 @@ derivs(Tissue &T,
     tensileStiffness[1]=(2*cotan[0]*cotan[0]*(lambda+mio)+mio)*temp;
     tensileStiffness[2]=(2*cotan[1]*cotan[1]*(lambda+mio)+mio)*temp;
     
+    //std::cerr <<"young, parameter0, poisson, parameter1, lambda and mio :  " 
+    //          << young <<" , " << parameter(0) <<" "<< poisson <<" , " << parameter(1)<< " "<< lambda <<" , "<< mio << std::endl;
+    
+    //std::cerr <<" angles, element " << i << std::endl;                                   
+    //std::cerr <<"[0] "<< Angle[0] << std::endl
+    //          <<"[1] "<< Angle[1] << std::endl
+    //          <<"[2] "<< Angle[2] << std::endl << std::endl;
+    
+    
+    //std::cerr <<"cotan of angles, element " << i << std::endl;     
+    //std::cerr <<"[0] "<< cotan[0] << std::endl
+    //          <<"[1] "<< cotan[1] << std::endl
+    //          <<"[2] "<< cotan[2] << std::endl << std::endl;
+
+    //std::cerr <<"tan of angles, element " << i << std::endl;                                    
+    //std::cerr <<"[0] "<< std::tan(Angle[0]) << std::endl
+    //          <<"[1] "<< std::tan(Angle[1]) << std::endl
+    //          <<"[2] "<< std::tan(Angle[2]) << std::endl << std::endl;
+
+
+    //std::cerr <<"Tensile stiffness, element " << i << std::endl;                                   
+    //std::cerr <<"[0] "<< tensileStiffness[0] << std::endl
+    //	        <<"[1] "<< tensileStiffness[1] << std::endl
+    // 	        <<"[2] "<< tensileStiffness[2] << std::endl << std::endl;
+
     //Angular Stiffness
     double angularStiffness[3];
     angularStiffness[0]=(2*cotan[1]*cotan[2]*(lambda+mio)-mio)*temp;
     angularStiffness[1]=(2*cotan[0]*cotan[2]*(lambda+mio)-mio)*temp;
     angularStiffness[2]=(2*cotan[0]*cotan[1]*(lambda+mio)-mio)*temp;
+
+    
+
     
     //Calculate biquadratic strains  
     std::vector<double> Delta(3);
@@ -147,6 +178,12 @@ derivs(Tissue &T,
                 +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][1]-position[2][1]); 
     Force[2][2]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1])*(position[0][2]-position[2][2])
                 +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][2]-position[2][2]); 
+
+    //std::cerr <<"Forces on Vertices , Element  "<< i << std::endl;                                                  //<<<<<<<<<<
+    //std::cerr <<"vertex [0] "<< Force[0][0] <<" "<<Force[0][1] <<" "<<Force[0][2] << std::endl
+    //          <<"vertex [1] "<< Force[1][0] <<" "<<Force[1][1] <<" "<<Force[1][2] << std::endl
+    //          <<"vertex [2] "<< Force[2][0] <<" "<<Force[2][1] <<" "<<Force[2][2] << std::endl<< std::endl;
+   
 
     // adding TRBS forces to the total vertexDerivs
     
@@ -229,7 +266,7 @@ derivs(Tissue &T,
     }
     
     double young = parameter(0);
-    double poisson = parameter(1);
+    double poisson =parameter(1);
     
     // One triangle per 'vertex' in cyclic order
     for (size_t k=0; k<numWalls; ++k) { 
@@ -242,7 +279,7 @@ derivs(Tissue &T,
       //size_t w3 = internal k+1
 
       // Position matrix holds in rows positions for com, vertex(k), vertex(k+1)
-      std::vector< std::vector<double> > position(3,vertexData[v2]);
+      DataMatrix position(3,vertexData[v2]);
       for (size_t d=0; d<dimension; ++d)
 	position[0][d] = cellData[i][comIndex+d]; // com position
       //position[1] = vertexData[v2]; // given by initiation
@@ -266,11 +303,11 @@ derivs(Tissue &T,
 			     (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
 			     (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
 
-
+      
       // Lame coefficients (can be defined out of loop)
       double lambda=young*poisson/(1-poisson*poisson);
       double mio=young/(1+poisson);
-
+      
       // Area of the element (using Heron's formula)                                      
       double Area=std::sqrt( ( restingLength[0]+restingLength[1]+restingLength[2])*
 			     (-restingLength[0]+restingLength[1]+restingLength[2])*
@@ -279,28 +316,23 @@ derivs(Tissue &T,
       
       //Angles of the element ( assuming the order: 0,L0,1,L1,2,L2 )
       std::vector<double> Angle(3);
-      Angle[0]=std::asin(2*Area/(restingLength[0]*restingLength[2]));
-      // can be ommited by cotan(A)=.25*sqrt(4*b*b*c*c/K-1)
-      Angle[1]=std::asin(2*Area/(restingLength[0]*restingLength[1]));        
-      Angle[2]=std::asin(2*Area/(restingLength[1]*restingLength[2]));
+       // can be ommited by cotan(A)=.25*sqrt(4*b*b*c*c/K-1)
+      Angle[0]=std::acos(  (restingLength[0]*restingLength[0]+restingLength[2]*restingLength[2]-restingLength[1]*restingLength[1])/
+                           (restingLength[0]*restingLength[2]*2)    );
+      Angle[1]=std::acos(  (restingLength[0]*restingLength[0]+restingLength[1]*restingLength[1]-restingLength[2]*restingLength[2])/
+                           (restingLength[0]*restingLength[1]*2)    );
+      Angle[2]=std::acos(  (restingLength[1]*restingLength[1]+restingLength[2]*restingLength[2]-restingLength[0]*restingLength[0])/
+                           (restingLength[1]*restingLength[2]*2)    );
       
       //Tensile Stiffness
-      std::vector<double> tensileStiffness(3);
-      double temp = 1.0/(Area*16.0);                                      
-      std::vector<double> cotan(3); 
-      cotan[0] = 1.0/std::tan(Angle[0]);
-      cotan[1] = 1.0/std::tan(Angle[1]);
-      cotan[2] = 1.0/std::tan(Angle[2]);
-
+      double tensileStiffness[3];
+      double const temp = 1.0/(Area*16);                                      
+      double cotan[3] = {1.0/std::tan(Angle[0]),1.0/std::tan(Angle[1]),1.0/std::tan(Angle[2])};    
       tensileStiffness[0]=(2*cotan[2]*cotan[2]*(lambda+mio)+mio)*temp;
       tensileStiffness[1]=(2*cotan[0]*cotan[0]*(lambda+mio)+mio)*temp;
       tensileStiffness[2]=(2*cotan[1]*cotan[1]*(lambda+mio)+mio)*temp;
       
-      //std::cerr << "Tensile stiffness" << std::endl;
-      //std::cerr << tensileStiffness[0] << std::endl
-      //	<< tensileStiffness[1] << std::endl
-      //	<< tensileStiffness[2] << std::endl << std::endl;
-
+     
 
       //Angular Stiffness
       double angularStiffness[3];
@@ -308,11 +340,7 @@ derivs(Tissue &T,
       angularStiffness[1]=(2*cotan[0]*cotan[2]*(lambda+mio)-mio)*temp;
       angularStiffness[2]=(2*cotan[0]*cotan[1]*(lambda+mio)-mio)*temp;
       
-      //std::cerr << "Angular stiffness" << std::endl;
-      //std::cerr << angularStiffness[0] << std::endl
-      //	<< angularStiffness[1] << std::endl
-      //	<< angularStiffness[2] << std::endl << std::endl;
-
+     
 
       //Calculate biquadratic strains  
       std::vector<double> Delta(3);
@@ -531,10 +559,13 @@ derivs(Tissue &T,
       
       //Angles of the element ( assuming the order: 0,L0,1,L1,2,L2 )
       std::vector<double> Angle(3);
-      Angle[0]=std::asin(2*Area/(restingLength[0]*restingLength[2]));
       // can be ommited by cotan(A)=.25*sqrt(4*b*b*c*c/K-1)
-      Angle[1]=std::asin(2*Area/(restingLength[0]*restingLength[1]));        
-      Angle[2]=std::asin(2*Area/(restingLength[1]*restingLength[2]));
+      Angle[0]=std::acos(  (restingLength[0]*restingLength[0]+restingLength[2]*restingLength[2]-restingLength[1]*restingLength[1])/
+                           (restingLength[0]*restingLength[2]*2)    );
+      Angle[1]=std::acos(  (restingLength[0]*restingLength[0]+restingLength[1]*restingLength[1]-restingLength[2]*restingLength[2])/
+                           (restingLength[0]*restingLength[1]*2)    );
+      Angle[2]=std::acos(  (restingLength[1]*restingLength[1]+restingLength[2]*restingLength[2]-restingLength[0]*restingLength[0])/
+                           (restingLength[1]*restingLength[2]*2)    );
       
       //Tensile Stiffness
       double tensileStiffness[3];
@@ -741,10 +772,13 @@ derivs(Tissue &T,
     
     //Angles of the element ( assuming the order: 0,L0,1,L1,2,L2 clockwise )
     std::vector<double> Angle(3);
-    Angle[0]=std::asin(2*restingArea/(restingLength[0]*restingLength[2]));
     // can be ommited by cotan(A)=.25*sqrt(4*b*b*c*c/K-1)
-    Angle[1]=std::asin(2*restingArea/(restingLength[0]*restingLength[1]));        
-    Angle[2]=std::asin(2*restingArea/(restingLength[1]*restingLength[2]));
+    Angle[0]=std::acos(  (restingLength[0]*restingLength[0]+restingLength[2]*restingLength[2]-restingLength[1]*restingLength[1])/
+                         (restingLength[0]*restingLength[2]*2)    );
+    Angle[1]=std::acos(  (restingLength[0]*restingLength[0]+restingLength[1]*restingLength[1]-restingLength[2]*restingLength[2])/
+                         (restingLength[0]*restingLength[1]*2)    );
+    Angle[2]=std::acos(  (restingLength[1]*restingLength[1]+restingLength[2]*restingLength[2]-restingLength[0]*restingLength[0])/
+                         (restingLength[1]*restingLength[2]*2)    );
     
     //Tensile Stiffness
     double tensileStiffness[3];
