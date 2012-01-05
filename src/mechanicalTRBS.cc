@@ -66,7 +66,7 @@ derivs(Tissue &T,
     }
     
     double young = parameter(0);
-    double poisson =parameter(1);
+    double poisson = parameter(1);
     size_t v1 = T.cell(i).vertex(0)->index();
     size_t v2 = T.cell(i).vertex(1)->index();
     size_t v3 = T.cell(i).vertex(2)->index();
@@ -229,7 +229,7 @@ derivs(Tissue &T,
     }
     
     double young = parameter(0);
-    double poisson =parameter(1);
+    double poisson = parameter(1);
     
     // One triangle per 'vertex' in cyclic order
     for (size_t k=0; k<numWalls; ++k) { 
@@ -242,7 +242,7 @@ derivs(Tissue &T,
       //size_t w3 = internal k+1
 
       // Position matrix holds in rows positions for com, vertex(k), vertex(k+1)
-      DataMatrix position(3,vertexData[v2]);
+      std::vector< std::vector<double> > position(3,vertexData[v2]);
       for (size_t d=0; d<dimension; ++d)
 	position[0][d] = cellData[i][comIndex+d]; // com position
       //position[1] = vertexData[v2]; // given by initiation
@@ -266,11 +266,11 @@ derivs(Tissue &T,
 			     (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
 			     (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
 
-      
+
       // Lame coefficients (can be defined out of loop)
       double lambda=young*poisson/(1-poisson*poisson);
       double mio=young/(1+poisson);
-      
+
       // Area of the element (using Heron's formula)                                      
       double Area=std::sqrt( ( restingLength[0]+restingLength[1]+restingLength[2])*
 			     (-restingLength[0]+restingLength[1]+restingLength[2])*
@@ -284,11 +284,14 @@ derivs(Tissue &T,
       Angle[1]=std::asin(2*Area/(restingLength[0]*restingLength[1]));        
       Angle[2]=std::asin(2*Area/(restingLength[1]*restingLength[2]));
       
-      
       //Tensile Stiffness
-      double tensileStiffness[3];
-      double const temp = 1.0/(Area*16);                                      
-      double cotan[3] = {1.0/std::tan(Angle[0]),1.0/std::tan(Angle[1]),1.0/std::tan(Angle[2])};    
+      std::vector<double> tensileStiffness(3);
+      double temp = 1.0/(Area*16.0);                                      
+      std::vector<double> cotan(3); 
+      cotan[0] = 1.0/std::tan(Angle[0]);
+      cotan[1] = 1.0/std::tan(Angle[1]);
+      cotan[2] = 1.0/std::tan(Angle[2]);
+
       tensileStiffness[0]=(2*cotan[2]*cotan[2]*(lambda+mio)+mio)*temp;
       tensileStiffness[1]=(2*cotan[0]*cotan[0]*(lambda+mio)+mio)*temp;
       tensileStiffness[2]=(2*cotan[1]*cotan[1]*(lambda+mio)+mio)*temp;
