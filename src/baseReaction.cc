@@ -10,6 +10,8 @@
 #include "baseReaction.h"
 #include "adhocReaction.h"
 #include "cellTime.h"
+#include "creation.h"
+#include "degradation.h"
 #include "directionReaction.h"
 #include "growth.h"
 #include "mechanical.h"
@@ -158,6 +160,17 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if (idValue == "VertexFromTRBSMT")
     return new VertexFromTRBSMT(paraValue, indValue);
     
+  //creation.h,creation.cc
+  else if(idValue=="CreationZero")
+    return new CreationZero(paraValue,indValue); 
+  else if(idValue=="CreationOne")
+    return new CreationOne(paraValue,indValue); 
+  //degradation.h,degradation.cc
+  else if(idValue=="DegradationOne")
+    return new DegradationOne(paraValue,indValue); 
+  else if(idValue=="DegradationTwo")
+    return new DegradationTwo(paraValue,indValue); 
+
   //network.h,network.cc
   else if(idValue=="AuxinModelSimple1")
     return new AuxinModelSimple1(paraValue,indValue); 
