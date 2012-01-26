@@ -138,18 +138,26 @@ void BaseSolver::setTissueVariables()
   // Copy variable values to tissue
   //
   for (size_t i=0; i<T_->numCell(); ++i) {
+    assert( T_->cell(i).numVariable() == cellData_[i].size() );
     for (size_t j=0; j<cellData_[i].size(); ++j)
       T_->cell(i).setVariable(j,cellData_[i][j]);
   }
   
   for (size_t i=0; i<T_->numWall(); ++i) {
     T_->wall(i).setLength(wallData_[i][0]);
+    if(T_->wall(i).numVariable()!=wallData_[i].size()-1) {
+      //std::cerr << "BaseSolver::setTissueVariables() " 
+      //<< "Wall " << T_->wall(i).index() << " " << T_->wall(i).numVariable()
+      //	<< " " << wallData_[i].size()-1 << std::endl;
+      T_->wall(i).setNumVariable(wallData_[i].size()-1);
+    }
     assert( T_->wall(i).numVariable()==wallData_[i].size()-1 ); //wallData also stores length
     for (size_t j=0; j<T_->wall(i).numVariable(); ++j)
       T_->wall(i).setVariable(j,wallData_[i][j+1]);
   }  
 
   for (size_t i=0; i<T_->numVertex(); ++i) {
+    assert( T_->vertex(i).numPosition() == vertexData_[i].size() );
     T_->vertex(i).setPosition(vertexData_[i]);
   }
 }

@@ -19,6 +19,8 @@
 SHELL = /bin/sh
 #Compilers and flags
 CXX = g++
+#CXXFLAGS = -g -Wall -pedantic -ansi
+#LDFLAGS = -g -Wall -pedantic -ansi 
 CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi
 LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi 
 

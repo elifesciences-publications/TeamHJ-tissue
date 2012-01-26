@@ -22,7 +22,7 @@ DivisionVolumeViaLongestWall(std::vector<double> &paraValue,
   if( paraValue.size()!=3 ) {
     std::cerr << "DivisionVolumeViaLongestWall::"
 	      << "DivisionVolumeViaLongestWall() "
-	      << "Three parameters used V_threshold, LWall_frac, and"
+	      << "Three parameters used V_threshold, LWall_frac, and "
 	      << "Lwall_threshold." << std::endl;
     exit(0);
   }

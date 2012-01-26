@@ -146,6 +146,10 @@ class Wall {
   ///
   inline size_t numVariable() const;
   ///
+  /// @brief Sets (resizes) the number of variables stored by the Wall.
+  ///
+  inline size_t setNumVariable(size_t n);
+  ///
   /// @brief Returns variable stored at i in the variable vector in the Wall.
   ///
   inline double variable(size_t i) const;
@@ -277,6 +281,9 @@ inline Vertex* Wall::vertex2() const {
 inline double Wall::length() const { return length_; }
 
 inline size_t Wall::numVariable() const { return variable_.size(); }
+
+inline size_t Wall::setNumVariable(size_t n) { 
+  variable_.resize(n); return variable_.size(); }
 
 inline double Wall::variable(size_t i) const { return variable_[i];}
 
