@@ -1706,7 +1706,7 @@ AuxinROPModel(std::vector<double> &paraValue,
   if( paraValue.size()!=16 ) {
     std::cerr << "AuxinROPModel::"
 	      << "AuxinROPModel() "
-	      << "14 parameters used (see network.h)\n";
+	      << "16 parameters used (see network.h)\n";
     exit(0);
   }
   if( indValue.size() != 2 || indValue[0].size() != 3 || indValue[1].size() != 3 ) {
