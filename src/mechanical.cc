@@ -163,6 +163,7 @@ derivs(Tissue &T,
 	dx[d] = x0[d]-cellCenter[d];
 	dxNorm += dx[d]*dx[d];
       }
+
       if (dxNorm>0.0) {
 	dxNorm = std::sqrt(dxNorm);
 	double dxInv = 1.0/dxNorm;
@@ -174,6 +175,20 @@ derivs(Tissue &T,
 	std::cerr << "VertexFromCellPressurecellTriangulation::derivs() "
 		  << "Force direction undetermined." << std::endl;
       }
+      double wallLength = 0.0;
+      for( size_t d=0 ; d<dimension ; ++d ) {
+	wallLength += (vertexData[v1I][d] - vertexData[v2I][d])*
+	  (vertexData[v1I][d] - vertexData[v2I][d]);
+      }
+      if (wallLength>0.0) {
+	wallLength = std::sqrt(wallLength);
+      }
+      else {
+	std::cerr << "VertexFromCellPressurecellTriangulation::derivs() "
+		  << "Strange wall length." << std::endl;
+      }
+      
+      factor *= wallLength;    
       for( size_t d=0 ; d<dimension ; ++d ) {
 	vertexDerivs[v1I][d] += factor * dx[d];
 	vertexDerivs[v2I][d] += factor * dx[d];	

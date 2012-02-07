@@ -53,9 +53,10 @@ class VertexFromCellPressure : public BaseReaction {
 ///
 /// @brief Updates vertices from a cell pressure potential
 ///
-/// This function determines the direction of the pressure term
-/// from the position of the central mesh cell vertex. Applies a force
-/// proportional to the pressure (parameter(0)) and the size of the wall.
+/// This function determines the direction of the pressure force term
+/// is from the position of the central mesh cell vertex to the center of the wall. 
+/// Applies a force proportional to the pressure (parameter(0)) and the 
+/// size of the wall.
 ///
 /// @note Maybe it should rather be normal to the wall in the plane of the triangle?
 ///
