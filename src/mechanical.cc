@@ -85,6 +85,103 @@ derivs(Tissue &T,
   }
 }
 
+VertexFromCellPressurecenterTriangulation::
+VertexFromCellPressurecenterTriangulation(std::vector<double> &paraValue, 
+					  std::vector< std::vector<size_t> > 
+					  &indValue ) 
+{  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=2 || (paraValue[1] != 0.0 && paraValue[1] != 1.0) ) {
+    std::cerr << "VertexFromCellPressurecenterTriangulation::"
+	      << "VertexFromCellPressurecenterTriangulation() "
+	      << "Uses two parameters K_force and normalizeVolumeFlag (= 0 or 1).\n";
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+    std::cerr << "VertexFromCellPressurecenterTriangulation::"
+	      << "VertexFromCellPressurecenterTriangulation() " << std::endl
+	      << "Start of additional Cell variable indices (center(x,y,z) "
+	      << "L_1,...,L_n, n=num vertex) is given in second level." 
+	      << std::endl;    
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexFromCellPressurecenterTriangulation");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "K_force";
+  tmp[1] = "f_V_norm";
+  setParameterId( tmp );
+}
+
+void VertexFromCellPressurecenterTriangulation::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  //Do the update for each vertex via each wall in each cell
+  size_t numCells = T.numCell();
+  size_t dimension = T.vertex(0).numPosition(); 
+  std::vector<double> cellCenter(dimension);
+  
+  //Assumming vertices and walls are sorted
+  //
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {
+    Cell &tmpCell = T.cell(cellI);
+    
+    double factor = 0.5 * parameter(0);
+    if (parameter(1) == 1)
+      {
+	//NOTE maybe this one should be calculated using the central mesh vertex?
+	double cellVolume = tmpCell.calculateVolume(vertexData);
+	factor /= std::fabs(cellVolume);
+      }
+    
+    for (size_t d=0; d<dimension; ++d) {
+      cellCenter[d] = cellData[cellI][variableIndex(0,0)+d];
+    }
+
+    for (size_t k = 0; k < tmpCell.numVertex(); ++k) {
+      size_t v1I = tmpCell.vertex(k)->index();
+      size_t v2I = tmpCell.vertex((k + 1) % (tmpCell.numVertex()))->index();
+      std::vector<double> x0(dimension),dx(dimension);
+      double dxNorm = 0.0;
+      for( size_t d=0 ; d<dimension ; ++d ) {
+	x0[d] = 0.5*(vertexData[v1I][d] + vertexData[v2I][d]);
+	// Caveat: Maybe this should be normal to the wall in the triangle plane?
+	dx[d] = x0[d]-cellCenter[d];
+	dxNorm += dx[d]*dx[d];
+      }
+      if (dxNorm>0.0) {
+	dxNorm = std::sqrt(dxNorm);
+	double dxInv = 1.0/dxNorm;
+	for( size_t d=0 ; d<dimension ; ++d ) {
+	  dx[d] = dx[d]*dxInv;
+	}
+      }
+      else {
+	std::cerr << "VertexFromCellPressurecellTriangulation::derivs() "
+		  << "Force direction undetermined." << std::endl;
+      }
+      for( size_t d=0 ; d<dimension ; ++d ) {
+	vertexDerivs[v1I][d] += factor * dx[d];
+	vertexDerivs[v2I][d] += factor * dx[d];	
+      }
+    }
+  }
+}
+
 VertexFromCellPressureVolumeNormalized::
 VertexFromCellPressureVolumeNormalized(std::vector<double> &paraValue, 
 			   std::vector< std::vector<size_t> > 
@@ -458,7 +555,7 @@ derivs(Tissue &T,
   //Do the update for each vertex via each wall in each cell
   size_t numCells = T.numCell();
   size_t dimension = T.vertex(0).numPosition(); 
-
+  
   //For each cell
   for( size_t cellI=0 ; cellI<numCells ; ++cellI ) {
     Cell &tmpCell = T.cell(cellI);
@@ -1037,15 +1134,15 @@ VertexFromPressureExperimental::VertexFromPressureExperimental(std::vector<doubl
 												   std::vector< std::vector<size_t> > &indValue)
 {
 	if (paraValue.size() != 2) {
-		std::cerr << "VertexFromPressureExperimental::VertexFromPressureExperimental() "
-							<< "Uses two parameter: k no_contraction_flag" << std::endl;
-		exit(EXIT_FAILURE);
+	  std::cerr << "VertexFromPressureExperimental::VertexFromPressureExperimental() "
+		    << "Uses two parameter: k no_contraction_flag" << std::endl;
+	  exit(EXIT_FAILURE);
 	}
 	
 	if (indValue.size() != 1 || indValue[0].size() != 1) {
-		std::cerr << "VertexFromPressureExperimental::VertexFromPressureExperimental() "
-							<< "Water volume index given.\n";
-		exit(EXIT_FAILURE);
+	  std::cerr << "VertexFromPressureExperimental::VertexFromPressureExperimental() "
+		    << "Water volume index given.\n";
+	  exit(EXIT_FAILURE);
 	}
 	
 	setId("VertexFromPressureExperimental");
@@ -1060,393 +1157,393 @@ VertexFromPressureExperimental::VertexFromPressureExperimental(std::vector<doubl
 
 void VertexFromPressureExperimental::
 derivs(Tissue &T,
-			 DataMatrix &cellData,
-			 DataMatrix &wallData,
-			 DataMatrix &vertexData,
-			 DataMatrix &cellDerivs,
-			 DataMatrix &wallDerivs,
-			 DataMatrix &vertexDerivs)
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs)
 {
-	// ATTENTION! This function assume two dimensions (x, y) and that
-	// the vertices are sorted in a clock-wise order.
-	
-	assert(T.vertex(0).numPosition());
-	
-	double area;
-	for (size_t n = 0; n < T.numCell(); ++n) {
-		Cell cell = T.cell(n);
-		std::vector< std::pair<double, double> > vertices;
-		for (size_t i = 0; i < cell.numVertex(); ++i) {
-			std::pair<double, double> vertex;
-			vertex.first = vertexData[cell.vertex(i)->index()][0];
-			vertex.second = vertexData[cell.vertex(i)->index()][1];
-			vertices.push_back(vertex);
-		}
-		area = polygonArea(vertices);
-		double sa = area < 0 ? -1 : +1;
-		area = std::fabs(area);
-		
-		if (parameter(1) != 0.0 && cellData[n][variableIndex(0, 0)] - area < 0) {
-			//Std::cerr << "Lower water volume than volume: " << n << " " 
-			//				<< area << " " << cellData[n][variableIndex(0,0)]
-			//				<< std::endl;
-			continue;
-		}
-		for (size_t i = 1; i < (cell.numVertex() + 1); ++i) {
-			Vertex *vertex = cell.vertex(i % cell.numVertex()); // Current vertex in polygon.
-			Vertex *pvertex = cell.vertex((i - 1) % cell.numVertex()); // Previous vertex in polygon.
-			Vertex *nvertex = cell.vertex((i + 1) % cell.numVertex()); // Next vertex in polygon.
-			
-			double px = vertexData[pvertex->index()][0];
-			double py = vertexData[pvertex->index()][1];
-			double nx = vertexData[nvertex->index()][0];
-			double ny = vertexData[nvertex->index()][1];
-			
-			double dAdx = sa * 0.5 * (-py + ny);
-			double dAdy = sa * 0.5 * (px - nx);
-			
-			vertexDerivs[vertex->index()][0] += parameter(0) * (1 - area / cellData[n][variableIndex(0, 0)]) * dAdx;
-			vertexDerivs[vertex->index()][1] += parameter(0) * (1 - area / cellData[n][variableIndex(0, 0)]) * dAdy;
-		}
-	}
+  // ATTENTION! This function assume two dimensions (x, y) and that
+  // the vertices are sorted in a clock-wise order.
+  
+  assert(T.vertex(0).numPosition());
+  
+  double area;
+  for (size_t n = 0; n < T.numCell(); ++n) {
+    Cell cell = T.cell(n);
+    std::vector< std::pair<double, double> > vertices;
+    for (size_t i = 0; i < cell.numVertex(); ++i) {
+      std::pair<double, double> vertex;
+      vertex.first = vertexData[cell.vertex(i)->index()][0];
+      vertex.second = vertexData[cell.vertex(i)->index()][1];
+      vertices.push_back(vertex);
+    }
+    area = polygonArea(vertices);
+    double sa = area < 0 ? -1 : +1;
+    area = std::fabs(area);
+    
+    if (parameter(1) != 0.0 && cellData[n][variableIndex(0, 0)] - area < 0) {
+      //Std::cerr << "Lower water volume than volume: " << n << " " 
+      //				<< area << " " << cellData[n][variableIndex(0,0)]
+      //				<< std::endl;
+      continue;
+    }
+    for (size_t i = 1; i < (cell.numVertex() + 1); ++i) {
+      Vertex *vertex = cell.vertex(i % cell.numVertex()); // Current vertex in polygon.
+      Vertex *pvertex = cell.vertex((i - 1) % cell.numVertex()); // Previous vertex in polygon.
+      Vertex *nvertex = cell.vertex((i + 1) % cell.numVertex()); // Next vertex in polygon.
+      
+      double px = vertexData[pvertex->index()][0];
+      double py = vertexData[pvertex->index()][1];
+      double nx = vertexData[nvertex->index()][0];
+      double ny = vertexData[nvertex->index()][1];
+      
+      double dAdx = sa * 0.5 * (-py + ny);
+      double dAdy = sa * 0.5 * (px - nx);
+      
+      vertexDerivs[vertex->index()][0] += parameter(0) * (1 - area / cellData[n][variableIndex(0, 0)]) * dAdx;
+      vertexDerivs[vertex->index()][1] += parameter(0) * (1 - area / cellData[n][variableIndex(0, 0)]) * dAdy;
+    }
+  }
 }
 
 double VertexFromPressureExperimental::polygonArea(std::vector< std::pair<double, double> > vertices)
 {
-	double area = 0.0;
-	size_t N = vertices.size();
-	for (size_t n = 0; n < N; ++n) {
-		area += vertices[n].first * vertices[(n + 1) % N].second;
-		area -= vertices[(n + 1) % N].first * vertices[n].second;
-	}
-	area *= 0.5;
-	return area;
+  double area = 0.0;
+  size_t N = vertices.size();
+  for (size_t n = 0; n < N; ++n) {
+    area += vertices[n].first * vertices[(n + 1) % N].second;
+    area -= vertices[(n + 1) % N].first * vertices[n].second;
+  }
+  area *= 0.5;
+  return area;
 }
 
 CellVolumeExperimental::
 CellVolumeExperimental(std::vector<double> &paraValue,
-											 std::vector< std::vector<size_t> > &indValue)
+		       std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 4) {
-		std::cerr << "CellVolumeExperimental::CellVolumeExperimental() "
-							<< "Uses four parameters: k_p, P_max, k_pp and "
-							<< "allowShrink_flag." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	if (indValue.size() < 2 || indValue.size() > 3
-			|| indValue[0].size() != 2 
-			|| (indValue.size()==3 && indValue[2].size() != 1 ) ) {
-		std::cerr << "CellVolumeExperimental::CellVolumeExperimental() "
-							<< "Wall length index and cell volume index must be given in "
-							<< "first level.\n"
-							<< "Force indices must ge given in second level. "
-							<< "Optionally index for saving the pressure can be"
-							<< " given at third level." << std::endl; 		
-		exit(EXIT_FAILURE);
-	}
-	
-	setId("VertexFromWallSpringExperimental");
-	setParameter(paraValue);
-	setVariableIndex(indValue);
-	
-	std::vector<std::string> tmp(numParameter());
-	tmp[0] = "k_p";
-	tmp[1] = "P_max";
-	tmp[2] = "k_pp";
-	tmp[3] = "allowShrink_flag";
-
-	setParameterId(tmp);
+  if (paraValue.size() != 4) {
+    std::cerr << "CellVolumeExperimental::CellVolumeExperimental() "
+	      << "Uses four parameters: k_p, P_max, k_pp and "
+	      << "allowShrink_flag." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  if (indValue.size() < 2 || indValue.size() > 3
+      || indValue[0].size() != 2 
+      || (indValue.size()==3 && indValue[2].size() != 1 ) ) {
+    std::cerr << "CellVolumeExperimental::CellVolumeExperimental() "
+	      << "Wall length index and cell volume index must be given in "
+	      << "first level.\n"
+	      << "Force indices must ge given in second level. "
+	      << "Optionally index for saving the pressure can be"
+	      << " given at third level." << std::endl; 		
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("VertexFromWallSpringExperimental");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "k_p";
+  tmp[1] = "P_max";
+  tmp[2] = "k_pp";
+  tmp[3] = "allowShrink_flag";
+  
+  setParameterId(tmp);
 }
 
 void CellVolumeExperimental::
 derivs(Tissue &T,
-			 DataMatrix &cellData,
-			 DataMatrix &wallData,
-			 DataMatrix &vertexData,
-			 DataMatrix &cellDerivs,
-			 DataMatrix &wallDerivs,
-			 DataMatrix &vertexDerivs)
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs)
 {
-	for (size_t n = 0; n < T.numCell(); ++n) {
-		Cell cell = T.cell(n);
-		
-		double P = 0.0;
-		double sum = 0.0;
-		for (size_t i = 0; i < cell.numWall(); ++i) {
-			size_t vertex1Index = cell.wall(i)->vertex1()->index();
-			size_t vertex2Index = cell.wall(i)->vertex2()->index();
-			size_t dimensions = vertexData[vertex1Index].size();
-			
-			double distance = 0.0;
-			for (size_t d = 0; d < dimensions; ++d) {
-				distance += (vertexData[vertex1Index][d] - vertexData[vertex2Index][d])
-					* (vertexData[vertex1Index][d] - vertexData[vertex2Index][d]);
-			}
-			distance = std::sqrt(distance);
-			
-			for (size_t j = 0; j < numVariableIndex(1); ++j)
-				P += wallData[cell.wall(i)->index()][variableIndex(1, j)]/distance;
-			sum += distance;
-		}
-		P *= parameter(2);
-
-		if (numVariableIndexLevel()==3)
-			cellData[n][variableIndex(2,0)]=P;
-		
-		if( parameter(3) || parameter(1)-P>0.0 )
-			cellDerivs[cell.index()][variableIndex(0, 1)] += 
-				parameter(0) * (parameter(1) - P) * sum;
-	}
+  for (size_t n = 0; n < T.numCell(); ++n) {
+    Cell cell = T.cell(n);
+    
+    double P = 0.0;
+    double sum = 0.0;
+    for (size_t i = 0; i < cell.numWall(); ++i) {
+      size_t vertex1Index = cell.wall(i)->vertex1()->index();
+      size_t vertex2Index = cell.wall(i)->vertex2()->index();
+      size_t dimensions = vertexData[vertex1Index].size();
+      
+      double distance = 0.0;
+      for (size_t d = 0; d < dimensions; ++d) {
+	distance += (vertexData[vertex1Index][d] - vertexData[vertex2Index][d])
+	  * (vertexData[vertex1Index][d] - vertexData[vertex2Index][d]);
+      }
+      distance = std::sqrt(distance);
+      
+      for (size_t j = 0; j < numVariableIndex(1); ++j)
+	P += wallData[cell.wall(i)->index()][variableIndex(1, j)]/distance;
+      sum += distance;
+    }
+    P *= parameter(2);
+    
+    if (numVariableIndexLevel()==3)
+      cellData[n][variableIndex(2,0)]=P;
+    
+    if( parameter(3) || parameter(1)-P>0.0 )
+      cellDerivs[cell.index()][variableIndex(0, 1)] += 
+	parameter(0) * (parameter(1) - P) * sum;
+  }
 }
 
 EpidermalRadialForce::EpidermalRadialForce(std::vector<double> &paraValue,
-								   std::vector< std::vector<size_t> > &indValue)
+					   std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 1) {
-		std::cerr << "EpidermalRadialForce::EpidermalRadialForce() " 
-							<< "Uses one parameter: force" << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	if (indValue.size() != 0) {
-		std::cerr << "EpidermalRadialForce::EpidermalRadialForce() "
-                    << "No indices are given." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	setId("EpidermalRadialForce");
-	setParameter(paraValue);
-	setVariableIndex(indValue);
-	
-	std::vector<std::string> tmp(numParameter());
-	tmp[0] = "force";
-
-	setParameterId(tmp);
+  if (paraValue.size() != 1) {
+    std::cerr << "EpidermalRadialForce::EpidermalRadialForce() " 
+	      << "Uses one parameter: force" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  if (indValue.size() != 0) {
+    std::cerr << "EpidermalRadialForce::EpidermalRadialForce() "
+	      << "No indices are given." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("EpidermalRadialForce");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "force";
+  
+  setParameterId(tmp);
 }
 
 void EpidermalRadialForce::derivs(Tissue &T,
-						    DataMatrix &cellData,
-						    DataMatrix &wallData,
-						    DataMatrix &vertexData,
-						    DataMatrix &cellDerivs,
-						    DataMatrix &wallDerivs,
-						    DataMatrix &vertexDerivs)
+				  DataMatrix &cellData,
+				  DataMatrix &wallData,
+				  DataMatrix &vertexData,
+				  DataMatrix &cellDerivs,
+				  DataMatrix &wallDerivs,
+				  DataMatrix &vertexDerivs)
 {
-	for (size_t n = 0; n < T.numVertex(); ++n) {
-		Vertex vertex = T.vertex(n);
-		
-		// If vertex is not in the epidermal layer then skip.
-		bool isEpidermalVertex = false;
-		for (size_t i = 0; i < vertex.numWall(); ++i) {
-			Wall *wall = vertex.wall(i);
-			if ((wall->cell1()->index() == (size_t) -1) || (wall->cell2()->index() == (size_t) -1)) {
-				isEpidermalVertex = true;
-				break;
-			}
-		}
-		if (isEpidermalVertex == false) {
-			continue;
-
-		}
-
-		double x = vertex.position(0);
-		double y = vertex.position(1);
-		double A = std::sqrt(x * x + y * y);
-		if (A == 0)
-			continue;
-		x /= A;
-		y /= A;
-
-// 		std::cerr << "Vertex " << vertex.index() << std::endl;
-// 		std::cerr << " x = " << x << std::endl;
-// 		std::cerr << " y = " << y << std::endl;
-
-		vertexDerivs[vertex.index()][0] += -parameter(0) * x;
-		vertexDerivs[vertex.index()][1] += -parameter(0) * y;
-	}
+  for (size_t n = 0; n < T.numVertex(); ++n) {
+    Vertex vertex = T.vertex(n);
+    
+    // If vertex is not in the epidermal layer then skip.
+    bool isEpidermalVertex = false;
+    for (size_t i = 0; i < vertex.numWall(); ++i) {
+      Wall *wall = vertex.wall(i);
+      if ((wall->cell1()->index() == (size_t) -1) || (wall->cell2()->index() == (size_t) -1)) {
+	isEpidermalVertex = true;
+	break;
+      }
+    }
+    if (isEpidermalVertex == false) {
+      continue;
+      
+    }
+    
+    double x = vertex.position(0);
+    double y = vertex.position(1);
+    double A = std::sqrt(x * x + y * y);
+    if (A == 0)
+      continue;
+    x /= A;
+    y /= A;
+    
+    // 		std::cerr << "Vertex " << vertex.index() << std::endl;
+    // 		std::cerr << " x = " << x << std::endl;
+    // 		std::cerr << " y = " << y << std::endl;
+    
+    vertexDerivs[vertex.index()][0] += -parameter(0) * x;
+    vertexDerivs[vertex.index()][1] += -parameter(0) * y;
+  }
 }
 
 PerpendicularWallPressure::PerpendicularWallPressure(std::vector<double> &paraValue,
-										   std::vector< std::vector<size_t> > &indValue)
+						     std::vector< std::vector<size_t> > &indValue)
 {
-	if (paraValue.size() != 1) {
-		std::cerr << "PerpendicularWallPressure::PerpendicularWallPressure() " 
-				<< "Uses one parameter: k_force" << std::endl;
+  if (paraValue.size() != 1) {
+    std::cerr << "PerpendicularWallPressure::PerpendicularWallPressure() " 
+	      << "Uses one parameter: k_force" << std::endl;
 		exit(EXIT_FAILURE);
-	}
-	
-	if (indValue.size() != 1 || indValue[0].size() != 1) {
-		std::cerr << "PerpendicularWallPressure::PerpendicularWallPressure() "
-                    << "First level gives pressure index in cell." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	
-	setId("PerpendicularWallPressure");
-	setParameter(paraValue);
-	setVariableIndex(indValue);
-	
-	std::vector<std::string> tmp(numParameter());
-	tmp[0] = "k_force";
-
-	setParameterId(tmp);
+  }
+  
+  if (indValue.size() != 1 || indValue[0].size() != 1) {
+    std::cerr << "PerpendicularWallPressure::PerpendicularWallPressure() "
+	      << "First level gives pressure index in cell." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("PerpendicularWallPressure");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "k_force";
+  
+  setParameterId(tmp);
 }
 
 void PerpendicularWallPressure::derivs(Tissue &T,
-							    DataMatrix &cellData,
-							    DataMatrix &wallData,
-							    DataMatrix &vertexData,
-							    DataMatrix &cellDerivs,
-							    DataMatrix &wallDerivs,
-							    DataMatrix &vertexDerivs)
+				       DataMatrix &cellData,
+				       DataMatrix &wallData,
+				       DataMatrix &vertexData,
+				       DataMatrix &cellDerivs,
+				       DataMatrix &wallDerivs,
+				       DataMatrix &vertexDerivs)
 {
-	size_t dimension = vertexData[0].size();
-	if (dimension==2) {
-		for (size_t n = 0; n < T.numWall(); ++n) {
-			Wall wall = T.wall(n);
-			std::vector<Cell *> cells(2);
-			cells[0] = wall.cell1();
-			cells[1] = wall.cell2();
-			std::vector<Vertex *> vertices(2);
-			vertices[0] = wall.vertex1();
-			vertices[1] = wall.vertex2();
-			
-			double nx = vertexData[vertices[1]->index()][0] - vertexData[vertices[0]->index()][0];
-			double ny = vertexData[vertices[1]->index()][1] - vertexData[vertices[0]->index()][1];
-			double A = std::sqrt(nx * nx + ny * ny);
-			nx = nx / A;
-			ny = ny / A;
-			
-			for (size_t i = 0; i < cells.size(); ++i) {
-				Cell *cell = cells[i];
-				
-				if (cell == T.background()) {
-					continue;
-				}
-				
-				double force = parameter(0) * 
-					cellData[cell->index()][variableIndex(0, 0)] *  
-					wall.lengthFromVertexPosition(vertexData);
-				
-				double x = 0.0;
-				double y = 0.0;
-				for (size_t j = 0; j < cell->numVertex(); ++j) {
-					x += vertexData[cell->vertex(j)->index()][0];
-					y += vertexData[cell->vertex(j)->index()][1];
-				}
-				x = (x / cell->numVertex()) - vertexData[vertices[0]->index()][0];
-				y = (y / cell->numVertex()) - vertexData[vertices[0]->index()][1];
-				
-				int sign = (nx * y - ny * x) >= 0 ? 1 : -1;
-				
-				for (size_t k = 0; k < vertices.size(); ++k) {
-					Vertex *vertex = vertices[k];
-					vertexDerivs[vertex->index()][0] += ny * sign * force;
-					vertexDerivs[vertex->index()][1] += - nx * sign * force;
-				}
-			}
-		}
+  size_t dimension = vertexData[0].size();
+  if (dimension==2) {
+    for (size_t n = 0; n < T.numWall(); ++n) {
+      Wall wall = T.wall(n);
+      std::vector<Cell *> cells(2);
+      cells[0] = wall.cell1();
+      cells[1] = wall.cell2();
+      std::vector<Vertex *> vertices(2);
+      vertices[0] = wall.vertex1();
+      vertices[1] = wall.vertex2();
+      
+      double nx = vertexData[vertices[1]->index()][0] - vertexData[vertices[0]->index()][0];
+      double ny = vertexData[vertices[1]->index()][1] - vertexData[vertices[0]->index()][1];
+      double A = std::sqrt(nx * nx + ny * ny);
+      nx = nx / A;
+      ny = ny / A;
+      
+      for (size_t i = 0; i < cells.size(); ++i) {
+	Cell *cell = cells[i];
+	
+	if (cell == T.background()) {
+	  continue;
 	}
-	else if (dimension==3) {
-
-		size_t numCell = T.numCell();
-		for (size_t i=0; i<numCell; ++i) {
-			Cell* cell1 = &(T.cell(i));
-			size_t c1I = cell1->index();
-			std::vector<double> n1 = cell1->getNormalToPCAPlane();
-			int n1Sign = cell1->vectorSignFromSort(n1,vertexData);
-			std::vector<double> n = n1;
-			std::vector<double> x1 = cell1->positionFromVertex(vertexData);
-
-			size_t numNeigh = cell1->numWall();
-			for (size_t k=0; k<numNeigh; ++k) {
-				Cell* cell2 = cell1->cellNeighbor(k);
-				size_t c2I = cell2->index();
-				// Get normal to second cell (if not background) and calculate combined normal (n)
-				if (cell2!=T.background() && c2I<c1I) {
-					continue;
-				}
-				else if (cell2!=T.background()) {
-					std::vector<double> n2(dimension);
-					n2 = cell2->getNormalToPCAPlane();
-					int n2Sign = cell2->vectorSignFromSort(n2,vertexData);
-					for (size_t d=0; d<dimension; ++d) 
-						n[d] = n1Sign*n1[d]+n2Sign*n2[d];
-				}
-				// Get wall direction
-				size_t v1I = cell1->wall(k)->vertex1()->index();
-				size_t v2I = cell1->wall(k)->vertex2()->index();
-				std::vector<double> nw(dimension),xw(dimension);
-				for (size_t d=0; d<dimension; ++d) {
-					nw[d] = vertexData[v2I][d]-vertexData[v1I][d];
-					xw[d] = 0.5*(vertexData[v2I][d]+vertexData[v1I][d]);					
-				}
-				// Normalize n and nw
-				double norm=0.0,normW=0.0;
-				for (size_t d=0; d<dimension; ++d) { 
-					norm += n[d]*n[d];
-					normW += nw[d]*nw[d];
-				}
-				assert(norm>0.0 && normW>0.0);
-				norm = std::sqrt(norm);
-				normW = std::sqrt(normW);
-				double normFac=1.0/norm,normWFac=1.0/normW;
-				for (size_t d=0; d<dimension; ++d) {
-					n[d] *= normFac;
-					nw[d] *= normWFac;
-				}
-				
-				// Calculate force direction perpendicular to n and nw, plus sign
-				std::vector<double> nF(dimension);
-				nF[0] = n[1]*nw[2]-n[2]*nw[1];
-				nF[1] = n[2]*nw[0]-n[0]*nw[2];
-				nF[2] = n[0]*nw[1]-n[1]*nw[0];
-				norm=0.0;
-				for (size_t d=0; d<dimension; ++d) { 
-					norm += nF[d]*nF[d];
-				}
-				assert(norm>0.0);
-				norm = std::sqrt(norm);
-				normFac=1.0/norm;
-				for (size_t d=0; d<dimension; ++d) {
-					nF[d] *= normFac;
-				}
-
-				// sign from scalar product?
-				double scalar=0.0;
-				for (size_t d=0; d<dimension; ++d)
-					scalar += (xw[d]-x1[d])*nF[d];
-				int sign=1;
-				if (scalar<0.0)
-					sign=-1;
-				double forceFactor = parameter(0)*cellData[c1I][variableIndex(0,0)]*normW;
-				if (cell2!=T.background())
-					forceFactor -= parameter(0)*cellData[c2I][variableIndex(0,0)]*normW;
-				
-				// Print result (wall and nF) for debugging
-				//double fac=0.5*sign;
-				//std::cerr << c1I << " " << vertexData[v1I][0] << " " 
-				//				<< vertexData[v1I][1] << " " 
-				//				<< vertexData[v1I][2] << " " 
-				//				<< xw[0] << " " << xw[1] << " " << xw[2] << std::endl;
-				//std::cerr << c1I << " " << vertexData[v2I][0] << " " 
-				//				<< vertexData[v2I][1] << " " 
-				//				<< vertexData[v2I][2] << " " 
-				//				<< xw[0]+fac*nF[0] << " " << xw[1]+fac*nF[1] << " " << xw[2]+fac*nF[2] 
-				//				<< std::endl << std::endl << std::endl;
-				
-				for (size_t d=0; d<dimension; ++d) {
-					vertexDerivs[v1I][d] += forceFactor*sign*nF[d];
-					vertexDerivs[v2I][d] += forceFactor*sign*nF[d];
-				}				
-			}
-		}
+	
+	double force = parameter(0) * 
+	  cellData[cell->index()][variableIndex(0, 0)] *  
+	  wall.lengthFromVertexPosition(vertexData);
+	
+	double x = 0.0;
+	double y = 0.0;
+	for (size_t j = 0; j < cell->numVertex(); ++j) {
+	  x += vertexData[cell->vertex(j)->index()][0];
+	  y += vertexData[cell->vertex(j)->index()][1];
 	}
-	else {
-		std::cerr << "PerpendicularWallPressure::derivs() Only applicable for two or three"
-							<< " dimensions." << std::endl;
-		exit(-1);
+	x = (x / cell->numVertex()) - vertexData[vertices[0]->index()][0];
+	y = (y / cell->numVertex()) - vertexData[vertices[0]->index()][1];
+	
+	int sign = (nx * y - ny * x) >= 0 ? 1 : -1;
+	
+	for (size_t k = 0; k < vertices.size(); ++k) {
+	  Vertex *vertex = vertices[k];
+	  vertexDerivs[vertex->index()][0] += ny * sign * force;
+	  vertexDerivs[vertex->index()][1] += - nx * sign * force;
 	}
+      }
+    }
+  }
+  else if (dimension==3) {
+    
+    size_t numCell = T.numCell();
+    for (size_t i=0; i<numCell; ++i) {
+      Cell* cell1 = &(T.cell(i));
+      size_t c1I = cell1->index();
+      std::vector<double> n1 = cell1->getNormalToPCAPlane();
+      int n1Sign = cell1->vectorSignFromSort(n1,vertexData);
+      std::vector<double> n = n1;
+      std::vector<double> x1 = cell1->positionFromVertex(vertexData);
+      
+      size_t numNeigh = cell1->numWall();
+      for (size_t k=0; k<numNeigh; ++k) {
+	Cell* cell2 = cell1->cellNeighbor(k);
+	size_t c2I = cell2->index();
+	// Get normal to second cell (if not background) and calculate combined normal (n)
+	if (cell2!=T.background() && c2I<c1I) {
+	  continue;
+	}
+	else if (cell2!=T.background()) {
+	  std::vector<double> n2(dimension);
+	  n2 = cell2->getNormalToPCAPlane();
+	  int n2Sign = cell2->vectorSignFromSort(n2,vertexData);
+	  for (size_t d=0; d<dimension; ++d) 
+	    n[d] = n1Sign*n1[d]+n2Sign*n2[d];
+	}
+	// Get wall direction
+	size_t v1I = cell1->wall(k)->vertex1()->index();
+	size_t v2I = cell1->wall(k)->vertex2()->index();
+	std::vector<double> nw(dimension),xw(dimension);
+	for (size_t d=0; d<dimension; ++d) {
+	  nw[d] = vertexData[v2I][d]-vertexData[v1I][d];
+	  xw[d] = 0.5*(vertexData[v2I][d]+vertexData[v1I][d]);					
+	}
+	// Normalize n and nw
+	double norm=0.0,normW=0.0;
+	for (size_t d=0; d<dimension; ++d) { 
+	  norm += n[d]*n[d];
+	  normW += nw[d]*nw[d];
+	}
+	assert(norm>0.0 && normW>0.0);
+	norm = std::sqrt(norm);
+	normW = std::sqrt(normW);
+	double normFac=1.0/norm,normWFac=1.0/normW;
+	for (size_t d=0; d<dimension; ++d) {
+	  n[d] *= normFac;
+	  nw[d] *= normWFac;
+	}
+	
+	// Calculate force direction perpendicular to n and nw, plus sign
+	std::vector<double> nF(dimension);
+	nF[0] = n[1]*nw[2]-n[2]*nw[1];
+	nF[1] = n[2]*nw[0]-n[0]*nw[2];
+	nF[2] = n[0]*nw[1]-n[1]*nw[0];
+	norm=0.0;
+	for (size_t d=0; d<dimension; ++d) { 
+	  norm += nF[d]*nF[d];
+	}
+	assert(norm>0.0);
+	norm = std::sqrt(norm);
+	normFac=1.0/norm;
+	for (size_t d=0; d<dimension; ++d) {
+	  nF[d] *= normFac;
+	}
+	
+	// sign from scalar product?
+	double scalar=0.0;
+	for (size_t d=0; d<dimension; ++d)
+	  scalar += (xw[d]-x1[d])*nF[d];
+	int sign=1;
+	if (scalar<0.0)
+	  sign=-1;
+	double forceFactor = parameter(0)*cellData[c1I][variableIndex(0,0)]*normW;
+	if (cell2!=T.background())
+	  forceFactor -= parameter(0)*cellData[c2I][variableIndex(0,0)]*normW;
+	
+	// Print result (wall and nF) for debugging
+	//double fac=0.5*sign;
+	//std::cerr << c1I << " " << vertexData[v1I][0] << " " 
+	//				<< vertexData[v1I][1] << " " 
+	//				<< vertexData[v1I][2] << " " 
+	//				<< xw[0] << " " << xw[1] << " " << xw[2] << std::endl;
+	//std::cerr << c1I << " " << vertexData[v2I][0] << " " 
+	//				<< vertexData[v2I][1] << " " 
+	//				<< vertexData[v2I][2] << " " 
+	//				<< xw[0]+fac*nF[0] << " " << xw[1]+fac*nF[1] << " " << xw[2]+fac*nF[2] 
+	//				<< std::endl << std::endl << std::endl;
+	
+	for (size_t d=0; d<dimension; ++d) {
+	  vertexDerivs[v1I][d] += forceFactor*sign*nF[d];
+	  vertexDerivs[v2I][d] += forceFactor*sign*nF[d];
+	}				
+      }
+    }
+  }
+  else {
+    std::cerr << "PerpendicularWallPressure::derivs() Only applicable for two or three"
+	      << " dimensions." << std::endl;
+    exit(-1);
+  }
 }
 
 VertexFromCellPlane::

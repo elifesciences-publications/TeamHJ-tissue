@@ -102,6 +102,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromCellPowerdiagram(paraValue,indValue);
   else if(idValue=="VertexFromCellPressure")
     return new VertexFromCellPressure(paraValue,indValue);
+  else if(idValue=="VertexFromCellPressurecenterTriangulation")
+    return new VertexFromCellPressurecenterTriangulation(paraValue,indValue);
   else if(idValue=="VertexFromCellPressureVolumeNormalized")
     return new VertexFromCellPressureVolumeNormalized(paraValue,indValue);
   else if(idValue=="VertexFromCellPressureThresholdFromMaxPos")
