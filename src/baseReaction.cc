@@ -36,6 +36,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new WallGrowthExponentialStressTruncated(paraValue, indValue);
   else if(idValue == "WallGrowthStress")
     return new WallGrowthStress(paraValue, indValue);
+  else if(idValue == "WallGrowthStresscenterTriangulation")
+    return new WallGrowthStresscenterTriangulation(paraValue, indValue);
   else if(idValue == "WallGrowthStressSpatial")
     return new WallGrowthStressSpatial(paraValue, indValue);
   else if(idValue == "WallGrowthStressSpatialSingle")

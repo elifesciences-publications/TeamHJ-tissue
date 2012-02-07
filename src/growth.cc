@@ -213,6 +213,114 @@ derivs(Tissue &T,
   }
 }
 
+WallGrowthStresscenterTriangulation::
+WallGrowthStresscenterTriangulation(std::vector<double> &paraValue, 
+				    std::vector< std::vector<size_t> > 
+				    &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=4 ) {
+    std::cerr << "WallGrowthStresscenterTriangulation::"
+	      << "WallGrowthStresscenterTriangulation() "
+	      << "Uses four parameters k_growth, stress_threshold "
+	      << "stretch_flag and linear_flag (0 const, 1 prop to wall length)" 
+	      << std::endl;
+    exit(0);
+  }
+  if( paraValue[2] != 0.0 && paraValue[2] != 1.0 ) {
+    std::cerr << "WallGrowthStresscenterTriangulation::"
+	      << "WallGrowthStresscenterTriangulation() "
+	      << "stretch_flag parameter must be 0 (stress used) or " 
+	      << "1 (stretch used)." << std::endl;
+    exit(0);
+  }
+  if( paraValue[2] == 0.0 ) {
+    std::cerr << "WallGrowthStresscenterTriangulation::"
+	      << "WallGrowthStresscenterTriangulation() "
+	      << "stretch_flag parameter must be 1 (stretch used) (not implemented for" 
+	      << " stress yet..." 
+	      << std::endl;
+    exit(0);
+  }
+  if( paraValue[3] != 0.0 && paraValue[3] != 1.0 ) {
+    std::cerr << "WallGrowthStresscenterTriangulation::"
+	      << "WallGrowthStresscenterTriangulation() "
+	      << "linear_flag parameter must be 0 (constant growth) or " 
+	      << "1 (length dependent growth)." << std::endl;
+    exit(0);
+  }
+  
+  if( (indValue.size()!=1 && indValue.size()!=2) || indValue[0].size() != 1 
+      || (paraValue[2]==0 && (indValue.size()!=2 || !indValue[1].size())) ) {
+    std::cerr << "WallGrowthStresscenterTriangulation::"
+	      << "WallGrowthStresscenterTriangulation() "
+	      << "Start of additional Cell variable indices (center(x,y,z) "
+	      << "L_1,...,L_n, n=num vertex) is given in first level, " 
+	      << "and stress variable indices at second (if strain_flag not set)."
+	      << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("WallGrowthStresscenterTriangulation");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "k_growth";
+  tmp[1] = "s_threshold";
+  tmp[2] = "strain_flag";
+  tmp[3] = "linear_flag";
+  setParameterId( tmp );
+}
+
+void WallGrowthStresscenterTriangulation::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  size_t numCells = T.numCell();
+  size_t posStartIndex = variableIndex(0,0);
+  size_t lengthStartIndex = posStartIndex+3;
+  
+  for (size_t i=0; i<numCells; ++i) {
+    for (size_t k=0; k<T.cell(i).numVertex(); ++k) {
+      size_t v = T.cell(i).vertex(k)->index();
+      double stress=0.0;
+      if (!parameter(2)) {//Stress used, read from saved data in the wall
+	std::cerr << "WallGrowthStresscenterTriangulation::derivs() " << std::endl
+		  << "Strain (and not stress) is the only implemented version sofar."
+		  << std::endl;
+	//for (size_t k=0; k<numVariableIndex(1); ++k)
+	//stress += wallData[i][variableIndex(1,k)];
+      }
+      else { //Strain/stretch used
+	double distance=0.0;
+	for( size_t d=0 ; d<vertexData[v].size() ; d++ )
+	  distance += (vertexData[v][d]-cellData[i][d+posStartIndex])*
+	    (vertexData[v][d]-cellData[i][d+posStartIndex]);
+	distance = std::sqrt(distance);
+	stress = (distance-cellData[i][k+lengthStartIndex]) /
+	  cellData[i][k+lengthStartIndex];
+      }
+      if (stress > parameter(1)) {
+	double growthRate = parameter(0)*(stress - parameter(1));
+	if (parameter(3))
+	  growthRate *= cellData[i][k+lengthStartIndex];
+	cellDerivs[i][k+lengthStartIndex] += growthRate;
+      }
+    }
+  }
+}
+
 WallGrowthStressSpatial::
 WallGrowthStressSpatial(std::vector<double> &paraValue, 
 			std::vector< std::vector<size_t> > 
@@ -699,7 +807,7 @@ MoveVertexRadiallycenterTriangulation(std::vector<double> &paraValue,
     std::cerr << "MoveVertexRadiallycenterTriangulation::"
 	      << "MoveVertexRadiallycenterTriangulation() " << std::endl
 	      << "Start of additional Cell variable indices (center(x,y,z) "
-	      << "L_1,...,L_n, n=num vertex) is given in second level." 
+	      << "L_1,...,L_n, n=num vertex) is given in first level." 
 	      << std::endl;
     exit(0);
   }
