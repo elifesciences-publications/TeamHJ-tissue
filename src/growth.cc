@@ -682,10 +682,95 @@ derivs(Tissue &T,
   }
 }
 
+MoveVertexRadiallycenterTriangulation::
+MoveVertexRadiallycenterTriangulation(std::vector<double> &paraValue, 
+				      std::vector< std::vector<size_t> > 
+				      &indValue ) {
+  
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=2 || ( paraValue[1]!=0 && paraValue[1]!=1) ) {
+    std::cerr << "MoveVertexRadiallycenterTriangulation::"
+	      << "MoveVertexRadiallycenterTriangulation() "
+	      << "Uses two parameters k_growth and r_pow (0,1)\n";
+    exit(0);
+  }  
+  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+    std::cerr << "MoveVertexRadiallycenterTriangulation::"
+	      << "MoveVertexRadiallycenterTriangulation() " << std::endl
+	      << "Start of additional Cell variable indices (center(x,y,z) "
+	      << "L_1,...,L_n, n=num vertex) is given in second level." 
+	      << std::endl;
+    exit(0);
+  }
+  // Set the variable values
+  //
+  setId("MoveVertexRadiallycenterTriangulation");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "k_growth";
+  tmp[0] = "r_pow";
+  setParameterId( tmp );
+}
+
+void MoveVertexRadiallycenterTriangulation::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  size_t numVertices = T.numVertex();
+  size_t numCells = T.numCell();
+  size_t dimension=vertexData[0].size();
+  
+  // Move vertices
+  for( size_t i=0 ; i<numVertices ; ++i ) {
+    double fac=parameter(0);
+    if( parameter(1)==0.0 ) {
+      double r=0.0;
+      for( size_t d=0 ; d<dimension ; ++d )
+	r += vertexData[i][d]*vertexData[i][d];
+      if( r>0.0 )
+	r = std::sqrt(r);
+      if( r>0.0 )
+	fac /= r;
+      else
+	fac=0.0;
+    }
+    for( size_t d=0 ; d<dimension ; ++d )
+      vertexDerivs[i][d] += fac*vertexData[i][d];
+  }
+  // Move vertices defined in cell centers
+  for( size_t i=0 ; i<numCells ; ++i ) {
+    double fac=parameter(0);
+    if( parameter(1)==0.0 ) {
+      double r=0.0;
+      for( size_t d=variableIndex(0,0) ; d<variableIndex(0,0)+dimension ; ++d )
+	r += cellData[i][d]*cellData[i][d];
+      if( r>0.0 )
+	r = std::sqrt(r);
+      if( r>0.0 )
+	fac /= r;
+      else
+	fac=0.0;
+    }
+    for( size_t d=variableIndex(0,0) ; d<variableIndex(0,0)+dimension ; ++d )
+      cellDerivs[i][d] += fac*cellData[i][d];
+  }
+}
+
 MoveVertexSphereCylinder::
 MoveVertexSphereCylinder(std::vector<double> &paraValue, 
-		   std::vector< std::vector<size_t> > 
-		   &indValue ) {
+			 std::vector< std::vector<size_t> > 
+			 &indValue ) {
   
   // Do some checks on the parameters and variable indeces
   //

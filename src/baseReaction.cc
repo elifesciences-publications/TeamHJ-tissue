@@ -46,6 +46,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new WallGrowthConstantStressEpidermalAsymmetric(paraValue, indValue);
   else if(idValue == "MoveVertexRadially")
     return new MoveVertexRadially(paraValue, indValue);
+  else if(idValue == "MoveVertexRadiallycenterTriangulation")
+    return new MoveVertexRadiallycenterTriangulation(paraValue, indValue);
   else if(idValue == "MoveVertexSphereCylinder")
     return new MoveVertexSphereCylinder(paraValue, indValue);
   else if (idValue == "WallLengthGrowExperimental")
