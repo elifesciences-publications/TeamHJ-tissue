@@ -133,25 +133,17 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t dimension = T.vertex(0).numPosition(); 
   std::vector<double> cellCenter(dimension);
-  
+
   //Assumming vertices and walls are sorted
   //
   //For each cell
   for (size_t cellI = 0; cellI < numCells; ++cellI) {
     Cell &tmpCell = T.cell(cellI);
-    
-    double factor = 0.5 * parameter(0);
-    if (parameter(1) == 1)
-      {
-	//NOTE maybe this one should be calculated using the central mesh vertex?
-	double cellVolume = tmpCell.calculateVolume(vertexData);
-	factor /= std::fabs(cellVolume);
-      }
-    
+ 
     for (size_t d=0; d<dimension; ++d) {
       cellCenter[d] = cellData[cellI][variableIndex(0,0)+d];
     }
-
+    
     for (size_t k = 0; k < tmpCell.numVertex(); ++k) {
       size_t v1I = tmpCell.vertex(k)->index();
       size_t v2I = tmpCell.vertex((k + 1) % (tmpCell.numVertex()))->index();
@@ -159,11 +151,32 @@ derivs(Tissue &T,
       double dxNorm = 0.0;
       for( size_t d=0 ; d<dimension ; ++d ) {
 	x0[d] = 0.5*(vertexData[v1I][d] + vertexData[v2I][d]);
-	// Caveat: Maybe this should be normal to the wall in the triangle plane?
+	// Caveat: This is  normal to the wall in the triangle plane
 	dx[d] = x0[d]-cellCenter[d];
+      }
+      double wallLength = 0.0;
+      double wallFactor = 0.0; // dx.wallVector/wallVector^2 for making dx perpendicular to the wall 
+      std::vector<double> wallVector(dimension);
+ 
+     for( size_t d=0 ; d<dimension ; ++d ) {
+       wallVector[d]=vertexData[v1I][d] - vertexData[v2I][d];
+       wallLength +=wallVector[d]*wallVector[d];
+      }
+      if (wallLength>0.0) {
+	wallLength = std::sqrt(wallLength);
+      }
+      else {
+	std::cerr << "VertexFromCellPressurecellTriangulation::derivs() "
+		  << "Strange wall length." << std::endl;
+      }
+      wallFactor= ( dx[0]*wallVector[0]
+                    +dx[1]*wallVector[1]
+                    +dx[2]*wallVector[2])/(wallLength*wallLength);
+      for( size_t d=0 ; d<dimension ; ++d ) {
+        
+        dx[d]=dx[d]-wallFactor*wallVector[d];
 	dxNorm += dx[d]*dx[d];
       }
-
       if (dxNorm>0.0) {
 	dxNorm = std::sqrt(dxNorm);
 	double dxInv = 1.0/dxNorm;
@@ -175,20 +188,13 @@ derivs(Tissue &T,
 	std::cerr << "VertexFromCellPressurecellTriangulation::derivs() "
 		  << "Force direction undetermined." << std::endl;
       }
-      double wallLength = 0.0;
-      for( size_t d=0 ; d<dimension ; ++d ) {
-	wallLength += (vertexData[v1I][d] - vertexData[v2I][d])*
-	  (vertexData[v1I][d] - vertexData[v2I][d]);
-      }
-      if (wallLength>0.0) {
-	wallLength = std::sqrt(wallLength);
-      }
-      else {
-	std::cerr << "VertexFromCellPressurecellTriangulation::derivs() "
-		  << "Strange wall length." << std::endl;
-      }
-      
-      factor *= wallLength;    
+      double factor = 0.5 * parameter(0);
+      if (parameter(1) == 1)
+        {
+          //NOTE maybe this one should be calculated using the central mesh vertex?
+          double cellVolume = tmpCell.calculateVolume(vertexData);                                   factor /= std::fabs(cellVolume);         
+        }
+       factor *= wallLength;    
       for( size_t d=0 ; d<dimension ; ++d ) {
 	vertexDerivs[v1I][d] += factor * dx[d];
 	vertexDerivs[v2I][d] += factor * dx[d];	
