@@ -268,6 +268,7 @@ derivs(Tissue &T,
     double young = parameter(0);
     double poisson =parameter(1);
     
+    double StrainCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};
     // One triangle per 'vertex' in cyclic order
     for (size_t k=0; k<numWalls; ++k) { 
       size_t kPlusOneMod = (k+1)%numWalls;
@@ -296,14 +297,14 @@ derivs(Tissue &T,
       length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
 			     (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
 			     (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
-
+      
       length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
-
+        
       length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
 			     (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
 			     (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
 
-      
+            
       // Lame coefficients (can be defined out of loop)
       double lambda=young*poisson/(1-poisson*poisson);
       double mio=young/(1+poisson);
@@ -314,6 +315,12 @@ derivs(Tissue &T,
 			     ( restingLength[0]-restingLength[1]+restingLength[2])*
 			     ( restingLength[0]+restingLength[1]-restingLength[2])  )*0.25;
       
+      double currentArea=std::sqrt( ( length[0]+length[1]+length[2])*
+                                    (-length[0]+length[1]+length[2])*
+                                    ( length[0]-length[1]+length[2])*
+                                    ( length[0]+length[1]-length[2])  )*0.25;
+      
+
       //Angles of the element ( assuming the order: 0,L0,1,L1,2,L2 )
       std::vector<double> Angle(3);
        // can be ommited by cotan(A)=.25*sqrt(4*b*b*c*c/K-1)
@@ -324,6 +331,230 @@ derivs(Tissue &T,
       Angle[2]=std::acos(  (restingLength[1]*restingLength[1]+restingLength[2]*restingLength[2]-restingLength[0]*restingLength[0])/
                            (restingLength[1]*restingLength[2]*2)    );
       
+      
+      //Strain tensor- reverse calculation- sign of eigen values should be changed as the roles of current and resting shape are switched  
+      //Strain tensor  (counterclockwise ordering of nodes/edges)
+      double CurrentAngle1=std::acos(  (length[0]*length[0]+length[1]*length[1]-length[2]*length[2])/
+                           (length[0]*length[1]*2)    );
+
+      double Pa=std::cos(CurrentAngle1)*length[0];
+      double Pc=std::sin(CurrentAngle1)*length[0];
+      double Pb=length[1];
+      // shape vector matrix = inverse of coordinate matrix      
+      double ShapeVector[3][2]={ {  0   ,       1/Pc      }, 
+                                 {-1/Pb , (Pa-Pb)/(Pb*Pc) },       
+                                 { 1/Pb ,     -Pa/(Pb*Pc) }  };
+            
+      
+      // //Strain tensor  (clockwise ordering of nodes/edges)
+      // double CurrentAngle2=std::acos(  (length[1]*length[1]+length[2]*length[2]-length[0]*length[0])/
+      //                                  (length[1]*length[2]*2)    );
+
+      // double Pa=std::cos(CurrentAngle2)*length[2];
+      // double Pb=length[1];
+      // double Pc=std::sin(CurrentAngle2)*length[2];
+      
+      // double ShapeVector[3][2]={ {  0   ,       1/Pc      }, 
+      //                            { 1/Pb ,     -Pa/(Pb*Pc) },       
+      //                            {-1/Pb , (Pa-Pb)/(Pb*Pc) }  };
+
+
+      //square of radius of circumstancing circle in resting shape
+      double Rcirc2=(0.25*restingLength[0]*restingLength[1]*restingLength[2]/Area)*(0.25*restingLength[0]*restingLength[1]*restingLength[2]/Area);  
+      
+      double StrainTensor[3][3];
+      int kk;
+      double QrQs;
+      StrainTensor[0][0]=0;
+      StrainTensor[0][1]=0;
+      StrainTensor[1][0]=0;
+      StrainTensor[1][1]=0;
+
+      for ( int r=0 ; r<3 ; ++r )
+        { for ( int s=0 ; s<3 ; ++s )
+            {     
+              if ((r==0 && s==1)||(r==1 && s==0)) kk=0;
+              if ((r==0 && s==2)||(r==2 && s==0)) kk=2;
+              if ((r==1 && s==2)||(r==2 && s==1)) kk=1; 
+              if ( s!=r ) QrQs=Rcirc2-(restingLength[kk]*restingLength[kk])*0.5;
+              if ( s==r ) QrQs=Rcirc2;
+              
+              StrainTensor[0][0]=StrainTensor[0][0]+QrQs*ShapeVector[r][0]*ShapeVector[s][0];
+              StrainTensor[0][1]=StrainTensor[0][1]+QrQs*ShapeVector[r][0]*ShapeVector[s][1];
+              StrainTensor[1][0]=StrainTensor[1][0]+QrQs*ShapeVector[r][1]*ShapeVector[s][0];
+              StrainTensor[1][1]=StrainTensor[1][1]+QrQs*ShapeVector[r][1]*ShapeVector[s][1];
+            }
+        }
+
+      StrainTensor[0][0]=StrainTensor[0][0]-1; // E=(C-I)/2 
+      StrainTensor[1][1]=StrainTensor[1][1]-1;
+      
+      StrainTensor[0][0]=0.5*StrainTensor[0][0];
+      StrainTensor[0][1]=0.5*StrainTensor[0][1];
+      StrainTensor[1][0]=0.5*StrainTensor[1][0];
+      StrainTensor[1][1]=0.5*StrainTensor[1][1];
+
+      StrainTensor[0][2]=0;
+      StrainTensor[1][2]=0;
+      StrainTensor[2][2]=0;
+      StrainTensor[2][0]=0;
+      StrainTensor[2][1]=0;
+      
+      // // eigenvalues and eigenvectors of strain tensor
+
+      // double eigenvalue[2];
+      // eigenvalue[0]=0.5*(StrainTensor[0][0]+StrainTensor[1][1]+
+      //                    std::sqrt( (StrainTensor[0][0]-StrainTensor[1][1])*(StrainTensor[0][0]-StrainTensor[1][1])+
+      //                               4*StrainTensor[0][1]*StrainTensor[1][0]                                          ) 
+      //                    ); 
+      // eigenvalue[1]=0.5*(StrainTensor[0][0]+StrainTensor[1][1]-
+      //                    std::sqrt( (StrainTensor[0][0]-StrainTensor[1][1])*(StrainTensor[0][0]-StrainTensor[1][1])+
+      //                               4*StrainTensor[0][1]*StrainTensor[1][0]                                          ) 
+      //                    ); 
+      // eigenvalue[0]=-eigenvalue[0]; // because of reverse calculation of strain tensor
+      // eigenvalue[1]=-eigenvalue[1];
+
+      // double strainMAX;
+      // double strainMIN;
+      // int starainDEG=0;
+
+      // // to be modified
+      // if eigenvalue[0]==eigenvalue[1] {  
+      //     strainMAX=eigenvalue[0];
+      //     strainMIN=eigenvalue[0];
+      //     starainDEG=1; // strain tensor is degenerate- random maximal strain dirrection
+      //   }
+      // if (eigenvalue[0] > eigenvalue[1] && eigenvalue[0] > 0) {
+      //     strainMAX=eigenvalue[0];
+      //     strainMIN=eigenvalue[1];
+      //   }
+      // if (eigenvalue[0] < eigenvalue[1] && eigenvalue[1] > 0){
+      //     strainMAX=eigenvalue[1];
+      //     strainMIN=eigenvalue[0];
+      //   }
+      // if (eigenvalue[0] <=0 && eigenvalue[1] <=0){
+      //   //??????????????????????????????????????????
+      //   }
+      
+
+      // // Anisotropy meassure
+      // double temp;
+      // double AnisoMeassure=0;
+      // if ( strainDEG!=1 && eigenvalue[0] > 0 && eigenvalue[0] > 0 ) {
+      //     AnisoMeassure=(strainMAX-strainMIN)/strainMAX;
+      //   }
+      // else { //???????????????????????????????????????
+      // }
+
+      // // eigenvectors
+      // double eigenvector[2][3];
+      // if strainDEG==1 {
+      //     // choose a random direction for eigen vectors but orthonormal in 2D (x,y)
+      //   }
+      // else {
+      //   if StrainTensor[0][0]==eigenvalue[0] { // tensor is diagonal
+      //       eigenvector[0][0]=1; //V1x
+      //       eigenvector[0][1]=0; //V1y
+      //       eigenvector[1][0]=0; //V2x
+      //       eigenvector[1][1]=1; //V2y
+      //     }
+      //   if StrainTensor[0][0]==eigenvalue[1] { // tensor is diagonal
+      //       eigenvector[0][0]=0; //V1x
+      //       eigenvector[0][1]=1; //V1y
+      //       eigenvector[1][0]=1; //V2x
+      //       eigenvector[1][1]=0; //V2y
+      //     }
+      //   if (StrainTensor[0][0]!=eigenvalue[0] &&StrainTensor[0][0]!=eigenvalue[1])  { // tensor is diagonal
+      //     eigenvector[0][0]=StrainTensor[0][1]/(StrainTensor[0][0]-eigenvalue[0]); //V1x
+      //     eigenvector[0][1]=1; //V1y
+      //     temp=std:: sqrt(eigenvector[0][0]*eigenvector[0][0]+1);
+      //     eigenvector[0][0]=eigenvector[0][0]/temp;
+      //     eigenvector[0][1]=eigenvector[0][1]/temp;
+        
+      //     eigenvector[1][0]=0; //V2x
+      //     eigenvector[1][1]=1; //V2y
+      //     }
+      // }
+       
+      
+
+
+      //rotation matrix to go to global coordinate system based on counter clockwise ordering
+      double rotation[3][3];  
+
+      double tempA=std::sqrt((position[2][0]-position[1][0])*(position[2][0]-position[1][0])+
+                             (position[2][1]-position[1][1])*(position[2][1]-position[1][1])+
+                             (position[2][2]-position[1][2])*(position[2][2]-position[1][2])  );
+
+      double tempB=std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+                             (position[0][1]-position[1][1])*(position[0][1]-position[1][1])+
+                             (position[0][2]-position[1][2])*(position[0][2]-position[1][2])  );
+
+      double Xcurrent[3];      
+      Xcurrent[0]= (position[2][0]-position[1][0])/tempA;
+      Xcurrent[1]= (position[2][1]-position[1][1])/tempA;
+      Xcurrent[2]= (position[2][2]-position[1][2])/tempA;
+      
+      double Bcurrent[3];      
+      Bcurrent[0]= (position[0][0]-position[1][0])/tempB;
+      Bcurrent[1]= (position[0][1]-position[1][1])/tempB;
+      Bcurrent[2]= (position[0][2]-position[1][2])/tempB;
+
+      double Zcurrent[3];      
+      Zcurrent[0]= Xcurrent[1]*Bcurrent[2]-Xcurrent[2]*Bcurrent[1];
+      Zcurrent[1]= Xcurrent[2]*Bcurrent[0]-Xcurrent[0]*Bcurrent[2];
+      Zcurrent[2]= Xcurrent[0]*Bcurrent[1]-Xcurrent[1]*Bcurrent[0];
+      
+      tempA=std:: sqrt(Zcurrent[0]*Zcurrent[0]+Zcurrent[1]*Zcurrent[1]+Zcurrent[2]*Zcurrent[2]);
+      Zcurrent[0]=Zcurrent[0]/tempA;
+      Zcurrent[1]=Zcurrent[1]/tempA;
+      Zcurrent[2]=Zcurrent[2]/tempA;
+
+      double Ycurrent[3];      
+      Ycurrent[0]= Zcurrent[1]*Xcurrent[2]-Zcurrent[2]*Xcurrent[1];
+      Ycurrent[1]= Zcurrent[2]*Xcurrent[0]-Zcurrent[0]*Xcurrent[2];
+      Ycurrent[2]= Zcurrent[0]*Xcurrent[1]-Zcurrent[1]*Xcurrent[0];
+
+
+      rotation[0][0]=Xcurrent[0];
+      rotation[1][0]=Xcurrent[1];
+      rotation[2][0]=Xcurrent[2];
+
+      rotation[0][1]=Ycurrent[0];
+      rotation[1][1]=Ycurrent[1];
+      rotation[2][1]=Ycurrent[2];
+
+      rotation[0][2]=Zcurrent[0];
+      rotation[1][2]=Zcurrent[1];
+      rotation[2][2]=Zcurrent[2];      
+
+      // rotariong strain tensor to the global coordinate system
+      double tempR[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+      for (int r=0 ; r<3 ; r++) {
+        for (int s=0 ; s<3 ; s++) {
+          for(int w=0 ; w<3 ; w++) {
+            tempR[r][s]=tempR[r][s]+rotation[r][w]*StrainTensor[w][s];
+          }
+        }
+      }
+      for (int r=0 ; r<3 ; r++) {
+        for (int s=0 ; s<3 ; s++) {
+          StrainTensor[r][s]=0;
+          for(int w=0 ; w<3 ; w++) {
+            StrainTensor[r][s]=StrainTensor[r][s]+tempR[r][w]*rotation[s][w];
+          }
+        }
+      }
+      
+      // std::cerr <<" Sxx  "<< StrainTensor[0][0] <<" Sxy  "<< StrainTensor[0][1] << std::endl
+      //           <<" Syx  "<< StrainTensor[1][0] <<" Syy  "<< StrainTensor[1][1] << std::endl<<std::endl;
+     
+      for (int r=0 ; r<3 ; r++) {
+        for (int s=0 ; s<3 ; s++) {   
+          StrainCellGlobal[r][s]= StrainCellGlobal[r][s]+StrainTensor[r][s];
+        }
+      }
+      
       //Tensile Stiffness
       double tensileStiffness[3];
       double const temp = 1.0/(Area*16);                                      
@@ -332,21 +563,18 @@ derivs(Tissue &T,
       tensileStiffness[1]=(2*cotan[0]*cotan[0]*(lambda+mio)+mio)*temp;
       tensileStiffness[2]=(2*cotan[1]*cotan[1]*(lambda+mio)+mio)*temp;
       
-     
-
       //Angular Stiffness
       double angularStiffness[3];
       angularStiffness[0]=(2*cotan[1]*cotan[2]*(lambda+mio)-mio)*temp;
       angularStiffness[1]=(2*cotan[0]*cotan[2]*(lambda+mio)-mio)*temp;
       angularStiffness[2]=(2*cotan[0]*cotan[1]*(lambda+mio)-mio)*temp;
       
-     
-
       //Calculate biquadratic strains  
       std::vector<double> Delta(3);
       Delta[0]=(length[0])*(length[0])-(restingLength[0])*(restingLength[0]);
       Delta[1]=(length[1])*(length[1])-(restingLength[1])*(restingLength[1]);
       Delta[2]=(length[2])*(length[2])-(restingLength[2])*(restingLength[2]);
+  
       //Forces of vertices
       double Force[3][3];                                           
       
@@ -385,7 +613,104 @@ derivs(Tissue &T,
       vertexDerivs[v3][1] += Force[2][1];
       vertexDerivs[v3][2] += Force[2][2];
     }
-  }
+    for (int r=0 ; r<3 ; r++) {
+      for (int s=0 ; s<3 ; s++) {   
+        StrainCellGlobal[r][s]= StrainCellGlobal[r][s]/numWalls;
+      }
+    }
+    // std::cerr <<" Sxx  "<< StrainCellGlobal[0][0] <<" Sxy  "<< StrainCellGlobal[0][1] <<" Sxz  "<< StrainCellGlobal[0][2] << std::endl
+    //           <<" Syx  "<< StrainCellGlobal[1][0] <<" Syy  "<< StrainCellGlobal[1][1] <<" Syz  "<< StrainCellGlobal[1][2] << std::endl
+    //           <<" Szx  "<< StrainCellGlobal[2][0] <<" Szy  "<< StrainCellGlobal[2][1] <<" Szz  "<< StrainCellGlobal[2][2] << std::endl <<std::endl;
+    
+    // // eigenvalue/eigenvectors of averaged strain tensor in global coordinate system. (Jacobi method)
+    
+    double eigenVector[3][3]={{1,0,0},{0,1,0},{0,0,1}};
+    double pivot=1;
+    double pi=3.1415;
+    int I,J;
+    double RotAngle,Si,Co;
+    while (pivot>0.001) {
+        pivot=std::abs(StrainCellGlobal[1][0]);
+        I=1;
+        J=0;
+        if (std::abs(StrainCellGlobal[2][0])>pivot) {
+           pivot=std::abs(StrainCellGlobal[2][0]);
+           I=2;
+           J=0;
+          }
+        if (std::abs(StrainCellGlobal[2][1])>pivot) {
+            pivot=std::abs(StrainCellGlobal[2][1]);
+            I=2;
+            J=1;
+          }
+        if (std::abs(StrainCellGlobal[I][I]-StrainCellGlobal[J][J])<0.001) {
+            RotAngle=pi/4;
+          }            
+        else {
+          RotAngle=0.5*std::atan((2*StrainCellGlobal[I][J])/(StrainCellGlobal[J][J]-StrainCellGlobal[I][I]));
+        }
+        Si=std::sin(RotAngle);
+        Co=std::cos(RotAngle);
+        double tempRot[3][3]={{1,0,0},{0,1,0},{0,0,1}};
+        tempRot[I][I]=Co;
+        tempRot[J][J]=Co;
+        tempRot[I][J]=Si;
+        tempRot[J][I]=-Si;
+        double tempStrain[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+        for (int r=0 ; r<3 ; r++) {
+          for (int s=0 ; s<3 ; s++) {
+            for(int w=0 ; w<3 ; w++) {
+              tempStrain[r][s]=tempStrain[r][s]+StrainCellGlobal[r][w]*tempRot[w][s];
+            }
+          }
+        }
+        for (int r=0 ; r<3 ; r++) {
+          for (int s=0 ; s<3 ; s++) {
+            for(int w=0 ; w<3 ; w++) {
+              StrainCellGlobal[r][s]=StrainCellGlobal[r][s]+tempRot[w][r]*tempStrain[w][s];
+            }
+          }
+        }
+        
+        for (int r=0 ; r<3 ; r++) {
+          for (int s=0 ; s<3 ; s++) {
+            tempStrain[r][s]=eigenVector[r][s];
+          }
+        }
+        eigenVector= {{0,0,0},{0,0,0},{0,0,0}}; 
+        for (int r=0 ; r<3 ; r++) {
+          for (int s=0 ; s<3 ; s++) {
+            for(int w=0 ; w<3 ; w++) {
+              eigenVector[r][s]=eigenVector[r][s]+tempStrain[r][w]*tempRot[w][s];
+            }
+          }
+        }
+    }
+    // maximal strain direction
+    double maximalStrainValue=-StrainCellGlobal[0][0];
+    I=0;
+    if (-StrainCellGlobal[1][1]>maximalStrainValue) {
+      maximalStrainValue=-StrainCellGlobal[1][1];
+      I=1;
+    }
+    if (-StrainCellGlobal[2][2]>maximalStrainValue) {
+      maximalStrainValue=-StrainCellGlobal[2][2];
+      I=2;
+    }
+    // std::cerr<<"maximal direction "<< eigenVector[0][I] <<" "<< eigenVector[1][I] <<" "<< eigenVector[2][I] <<std::endl;  
+    // std::cerr<<"maximal strain value "<< maximalStrainValue <<std::endl;  
+    if (dimension==2){
+      cellData[i][0]=eigenVector[0][I];
+      cellData[i][1]=eigenVector[1][I];
+    }
+    if (dimension==3){
+      cellData[i][0]=eigenVector[0][I];
+      cellData[i][1]=eigenVector[1][I];
+      cellData[i][2]=eigenVector[2][I];
+    }
+    // maximal Strain value shoul be used
+    
+  } 
 }
 
 void VertexFromTRBScenterTriangulation::
@@ -827,15 +1152,15 @@ derivs(Tissue &T,
     Lb[1] = position[2][1]-position[0][1];
     Lb[2] = position[2][2]-position[0][2];  
 
-    std::vector<double> normal(3);//cross(Q2-Q1,Q3-Q1)  assuming clockwise ordering 
-    normal[0] = -La[1]*Lb[2]+La[2]*Lb[1];
-    normal[1] = -La[2]*Lb[0]+La[0]*Lb[2]; 
-    normal[2] = -La[0]*Lb[1]+La[1]*Lb[0];   
+    //std::vector<double> normal(3);//cross(Q2-Q1,Q3-Q1)  assuming clockwise ordering 
+    //normal[0] = -La[1]*Lb[2]+La[2]*Lb[1];
+    //normal[1] = -La[2]*Lb[0]+La[0]*Lb[2]; 
+    //normal[2] = -La[0]*Lb[1]+La[1]*Lb[0];   
     
-    //std::vector<double> normal(3);//cross(Q2-Q1,Q3-Q1)  assuming counter-clockwise ordering 
-    //normal[0] = La[1]*Lb[2]-La[2]*Lb[1];
-    //normal[1] = La[2]*Lb[0]-La[0]*Lb[2]; 
-    //normal[2] = La[0]*Lb[1]-La[1]*Lb[0];  
+    std::vector<double> normal(3);//cross(Q2-Q1,Q3-Q1)  assuming counter-clockwise ordering 
+    normal[0] = La[1]*Lb[2]-La[2]*Lb[1];
+    normal[1] = La[2]*Lb[0]-La[0]*Lb[2]; 
+    normal[2] = La[0]*Lb[1]-La[1]*Lb[0];  
                      
     double alpha = -std::acos(normal[2]/
 			      std::sqrt(normal[0]*normal[0]+
