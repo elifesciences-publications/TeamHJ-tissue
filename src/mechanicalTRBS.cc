@@ -707,10 +707,10 @@ derivs(Tissue &T,
     // std::cerr<<"maximal direction "<< eigenVector[0][I] <<" "<< eigenVector[1][I] <<" "<< eigenVector[2][I] <<std::endl;  
     // std::cerr<<"maximal strain value "<< maximalStrainValue <<std::endl;  
     
-    // if (dimension==2){
-    //   cellData[i][0]=eigenVector[0][I];
-    //   cellData[i][1]=eigenVector[1][I];
-    // }
+    if (dimension==2){
+      cellData[i][0]=eigenVector[0][I];
+      cellData[i][1]=eigenVector[1][I];
+    }
     if (dimension==3){
       cellData[i][0]=eigenVector[0][I];
       cellData[i][1]=eigenVector[1][I];
