@@ -629,7 +629,7 @@ derivs(Tissue &T,
     double pi=3.1415;
     int I,J;
     double RotAngle,Si,Co;
-    while (pivot>0.001) {
+    while (pivot>0.00001) {
         pivot=std::abs(StrainCellGlobal[1][0]);
         I=1;
         J=0;
@@ -643,7 +643,7 @@ derivs(Tissue &T,
             I=2;
             J=1;
           }
-        if (std::abs(StrainCellGlobal[I][I]-StrainCellGlobal[J][J])<0.001) {
+        if (std::abs(StrainCellGlobal[I][I]-StrainCellGlobal[J][J])<0.00001) {
             RotAngle=pi/4;
           }            
         else {
@@ -664,6 +664,13 @@ derivs(Tissue &T,
             }
           }
         }
+
+        for (int r=0 ; r<3 ; r++) {
+          for (int s=0 ; s<3 ; s++) {
+            StrainCellGlobal[r][s]=0;
+          }
+        }
+
         for (int r=0 ; r<3 ; r++) {
           for (int s=0 ; s<3 ; s++) {
             for(int w=0 ; w<3 ; w++) {
@@ -699,15 +706,17 @@ derivs(Tissue &T,
     }
     // std::cerr<<"maximal direction "<< eigenVector[0][I] <<" "<< eigenVector[1][I] <<" "<< eigenVector[2][I] <<std::endl;  
     // std::cerr<<"maximal strain value "<< maximalStrainValue <<std::endl;  
-    if (dimension==2){
-      cellData[i][0]=eigenVector[0][I];
-      cellData[i][1]=eigenVector[1][I];
-    }
+    
+    // if (dimension==2){
+    //   cellData[i][0]=eigenVector[0][I];
+    //   cellData[i][1]=eigenVector[1][I];
+    // }
     if (dimension==3){
       cellData[i][0]=eigenVector[0][I];
       cellData[i][1]=eigenVector[1][I];
       cellData[i][2]=eigenVector[2][I];
     }
+    
     // maximal Strain value shoul be used
     
   } 
