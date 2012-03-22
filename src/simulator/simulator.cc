@@ -60,7 +60,7 @@ int main(int argc,char *argv[]) {
 	      << " final state in init file format." << std::endl;
     std::cerr << "-init_output_format format - Sets format for output of"
 	      << " final state in specified init file format." << std::endl
-	      << "Available formats are tissue (default), and fem." << std::endl;
+	      << "Available formats are tissue (default), fem, and triTissue." << std::endl;
     std::cerr << "-verbose flag - Set flag for verbose (flag=1) or "
 	      << "silent (0) output mode to stderr." << std::endl; 
     std::cerr << "-debug_output file - Saves the last ten variable"
@@ -128,6 +128,11 @@ int main(int argc,char *argv[]) {
       else if (initFormat.compare("fem")==0) {
 	std::cerr << "Printing init in file " << fileName << " using fem format." << std::endl;
 	S->printInitFem(OUT);
+	OUT.close();
+      }
+      else if (initFormat.compare("triTissue")==0) {
+	std::cerr << "Printing init in file " << fileName << " using triangulated tissue format." << std::endl;
+	S->printInitTri(OUT);
 	OUT.close();
       }
       else {

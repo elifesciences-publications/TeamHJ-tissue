@@ -82,7 +82,13 @@ protected:
   ///
   /// @brief Updates the tissue variables from the current state of the internal variables
   ///
-  void setTissueVariables();
+  /// This uses the updated variables in cellData, wallData, and vertexData, and copies these 
+  /// into the Tissue structure. If 'numCellVariable' is given, only the first numCellVariable
+  /// entries for each line in cellData is copied to the structured (to be used when extra
+  /// variables (not the same in each line of the cellData matrix) are stored in cellData, e.g.
+  /// when centerTriangulation has been applied). 
+  /// 
+  void setTissueVariables(size_t numCellVariable=size_t(-1));
   
   ///
   /// @brief General printing function
@@ -119,6 +125,17 @@ protected:
   /// tissue connections.
   ///
   void printInitFem(std::ostream &os) const;
+  /// 
+  /// @brief Prints init in a triangulated tissue format
+  ///
+  /// Prints the current state in a triangulated tissue format using cellData, wallData, vertexData
+  /// and tissue connections. It will do this in a triangulation with a vertex at the center of each
+  /// cell. If centerTriangulation has already been applied, it will use this data directly, otherwise
+  /// it will triangulate using the cell center calculated by the current vertex positions.
+  ///
+  void printInitTri(std::ostream &os) const;
+
+
   void printDebug(std::ostream &os) const;
   
   virtual void readParameterFile(std::ifstream &IN);

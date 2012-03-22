@@ -102,7 +102,7 @@ VertexFromCellPressurecenterTriangulation(std::vector<double> &paraValue,
     std::cerr << "VertexFromCellPressurecenterTriangulation::"
 	      << "VertexFromCellPressurecenterTriangulation() " << std::endl
 	      << "Start of additional Cell variable indices (center(x,y,z) "
-	      << "L_1,...,L_n, n=num vertex) is given in second level." 
+	      << "L_1,...,L_n, n=num vertex) is given in first level." 
 	      << std::endl;    
     exit(0);
   }

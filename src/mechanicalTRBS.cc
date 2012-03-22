@@ -684,7 +684,8 @@ derivs(Tissue &T,
             tempStrain[r][s]=eigenVector[r][s];
           }
         }
-        eigenVector= {{0,0,0},{0,0,0},{0,0,0}}; 
+        //eigenVector= {{0,0,0},{0,0,0},{0,0,0}}; 
+	//HJ: commented due to compilation problems...all values set below anyway?
         for (int r=0 ; r<3 ; r++) {
           for (int s=0 ; s<3 ; s++) {
             for(int w=0 ; w<3 ; w++) {

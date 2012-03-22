@@ -119,7 +119,7 @@ void BaseSolver::getInit()
   }
 }
 
-void BaseSolver::setTissueVariables()
+void BaseSolver::setTissueVariables(size_t numCellVariable)
 {
   //
   // Check size of data vectors
@@ -137,12 +137,21 @@ void BaseSolver::setTissueVariables()
   //
   // Copy variable values to tissue
   //
-  for (size_t i=0; i<T_->numCell(); ++i) {
-    assert( T_->cell(i).numVariable() == cellData_[i].size() );
-    for (size_t j=0; j<cellData_[i].size(); ++j)
-      T_->cell(i).setVariable(j,cellData_[i][j]);
+  if (numCellVariable==size_t(-1)) { // default, all cell variables copied
+    for (size_t i=0; i<T_->numCell(); ++i) {
+      assert( T_->cell(i).numVariable() == cellData_[i].size() );
+      for (size_t j=0; j<cellData_[i].size(); ++j)
+	T_->cell(i).setVariable(j,cellData_[i][j]);
+    }
   }
-  
+  else { // value given by user, only these cell variables copied (to keep matrix form of cell variables)
+    for (size_t i=0; i<T_->numCell(); ++i) {
+      assert( T_->cell(i).numVariable() >= numCellVariable );
+      for (size_t j=0; j<numCellVariable; ++j)
+	T_->cell(i).setVariable(j,cellData_[i][j]);
+    }
+  }
+  // wall variables
   for (size_t i=0; i<T_->numWall(); ++i) {
     T_->wall(i).setLength(wallData_[i][0]);
     if(T_->wall(i).numVariable()!=wallData_[i].size()-1) {
@@ -155,7 +164,7 @@ void BaseSolver::setTissueVariables()
     for (size_t j=0; j<T_->wall(i).numVariable(); ++j)
       T_->wall(i).setVariable(j,wallData_[i][j+1]);
   }  
-
+  // vertex variables
   for (size_t i=0; i<T_->numVertex(); ++i) {
     assert( T_->vertex(i).numPosition() == vertexData_[i].size() );
     T_->vertex(i).setPosition(vertexData_[i]);
@@ -252,7 +261,8 @@ void BaseSolver::print(std::ostream &os)
     std::string pvdFile = "tmp/tissue.pvd";
     std::string cellFile = "tmp/VTK_cells.vtu";
     std::string wallFile = "tmp/VTK_walls.vtu";
-    setTissueVariables();
+    static size_t numCellVar = T_->cell(0).numVariable();
+    setTissueVariables(numCellVar);
     if( tCount==0 ) {
       PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
     }
@@ -265,7 +275,8 @@ void BaseSolver::print(std::ostream &os)
     std::string pvdFile = "tmp/tissue.pvd";
     std::string cellFile = "tmp/VTK_cells.vtu";
     std::string wallFile = "tmp/VTK_walls.vtu";
-    setTissueVariables();
+    static size_t numCellVar = T_->cell(0).numVariable();
+    setTissueVariables(numCellVar);
     if( tCount==0 ) {
         PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
     }
@@ -703,37 +714,37 @@ void BaseSolver::print(std::ostream &os)
 void BaseSolver::printInit(std::ostream &os) const
 {
   assert( T_->numCell()==cellData_.size() && 
-					T_->numWall()==wallData_.size() &&
-					T_->numVertex()==vertexData_.size() );
-
-	// Increase resolution 
-	unsigned int oldPrecision = os.precision(); 
-	os.precision(20);
-	std::cerr << "Tissue::printInit(): old precision: " << oldPrecision << " new " 
-						<< os.precision() << std::endl;	
-
+	  T_->numWall()==wallData_.size() &&
+	  T_->numVertex()==vertexData_.size() );
+  
+  // Increase resolution 
+  unsigned int oldPrecision = os.precision(); 
+  os.precision(20);
+  std::cerr << "Tissue::printInit(): old precision: " << oldPrecision << " new " 
+	    << os.precision() << std::endl;	
+  
   os << T_->numCell() << " " << T_->numWall() << " " << T_->numVertex() << std::endl;
-	
+  
   //Print the connectivity from walls
   for( size_t i=0 ; i<T_->numWall() ; ++i ) {
     os << i << " ";
-		if( T_->wall(i).cell1()->index()<T_->numCell() )
-			os << T_->wall(i).cell1()->index() << " " ;
-		else
-			os << "-1 ";
-		if( T_->wall(i).cell2()->index()<T_->numCell() )
-			os << T_->wall(i).cell2()->index() << " ";
-		else
-			os << "-1 ";
-		os << T_->wall(i).vertex1()->index() 
-			 << " " << T_->wall(i).vertex2()->index() << std::endl;
-	}
+    if( T_->wall(i).cell1()->index()<T_->numCell() )
+      os << T_->wall(i).cell1()->index() << " " ;
+    else
+      os << "-1 ";
+    if( T_->wall(i).cell2()->index()<T_->numCell() )
+      os << T_->wall(i).cell2()->index() << " ";
+    else
+      os << "-1 ";
+    os << T_->wall(i).vertex1()->index() 
+       << " " << T_->wall(i).vertex2()->index() << std::endl;
+  }
   os << std::endl;
   
   //Print the vertex positions
   os << T_->numVertex() << " " << T_->vertex(0).numPosition() << std::endl;
   for( size_t i=0 ; i<T_->numVertex() ; ++i ) {
-		assert( T_->vertex(i).numPosition()==vertexData_[i].size() );
+    assert( T_->vertex(i).numPosition()==vertexData_[i].size() );
     for( size_t j=0 ; j<T_->vertex(i).numPosition() ; ++j )
       os << vertexData_[i][j] << " ";
     os << std::endl;
@@ -743,45 +754,45 @@ void BaseSolver::printInit(std::ostream &os) const
   //Print wall data
   os << T_->numWall() << " 1 " << wallData_[0].size()-1 << std::endl;
   for( size_t i=0 ; i<T_->numWall() ; ++i ) {
-		assert( wallData_[i].size() );
+    assert( wallData_[i].size() );
     for( size_t j=0 ; j<wallData_[i].size() ; ++j )
       os << wallData_[i][j] << " ";
     os << std::endl;
   }
   os << std::endl;
-	
+  
   //Print cell data
   os << T_->numCell() << " " << T_->cell(0).numVariable() << std::endl;
   if( T_->cell(0).numVariable() ) {
     for( size_t i=0 ; i<T_->numCell() ; ++i ) {
-			assert( cellData_[i].size() );
-			for( size_t j=0 ; j<cellData_[i].size() ; ++j )
-				os << cellData_[i][j] << " ";
+      assert( cellData_[i].size() );
+      for( size_t j=0 ; j<cellData_[i].size() ; ++j )
+	os << cellData_[i][j] << " ";
       os << std::endl;
     }
     os << std::endl;
   }  
-	os.precision(oldPrecision);
+  os.precision(oldPrecision);
 }
 
 void BaseSolver::printInitFem(std::ostream &os) const
 {
-	assert( T_->numCell()==cellData_.size() && 
-					T_->numWall()==wallData_.size() &&
-					T_->numVertex()==vertexData_.size() );
+  assert( T_->numCell()==cellData_.size() && 
+	  T_->numWall()==wallData_.size() &&
+	  T_->numVertex()==vertexData_.size() );
 	
-	// Increase resolution 
-	unsigned int oldPrecision = os.precision(); 
-	os.precision(20);
-	//std::cerr << "Tissue::printInit(): old precision: " << oldPrecision << " new " 
-	//				<< os.precision() << std::endl;	
-	
+  // Increase resolution 
+  unsigned int oldPrecision = os.precision(); 
+  os.precision(20);
+  //std::cerr << "Tissue::printInit(): old precision: " << oldPrecision << " new " 
+  //				<< os.precision() << std::endl;	
+  
   //Print the vertex positions
-	size_t numV=vertexData_.size();
-	os << numV << " nodes" << std::endl;
+  size_t numV=vertexData_.size();
+  os << numV << " nodes" << std::endl;
   for (size_t i=0; i<numV; ++i) {
-		assert( T_->vertex(i).numPosition()==vertexData_[i].size() );
-		os << i << " : ";
+    assert( T_->vertex(i).numPosition()==vertexData_[i].size() );
+    os << i << " : ";
     for (size_t j=0; j<T_->vertex(i).numPosition(); ++j )
       os << vertexData_[i][j] << " ";
     os << std::endl;
@@ -789,17 +800,97 @@ void BaseSolver::printInitFem(std::ostream &os) const
   //os << std::endl;
   
   //Print cell connection data
-	size_t numC=T_->numCell();
+  size_t numC=T_->numCell();
   os << numC << " faces" << std::endl;
-	for (size_t i=0; i<numC; ++i) {
-		os << i << " : ";
-		size_t numV=T_->cell(i).numVertex();
-		os << numV << ", ";
-		for (size_t k=0; k<numV; ++k)
-			os << T_->cell(i).vertex(k)->index() << " ";
-		os << std::endl;
-	}
-	os.precision(oldPrecision);
+  for (size_t i=0; i<numC; ++i) {
+    os << i << " : ";
+    size_t numV=T_->cell(i).numVertex();
+    os << numV << ", ";
+    for (size_t k=0; k<numV; ++k)
+      os << T_->cell(i).vertex(k)->index() << " ";
+    os << std::endl;
+  }
+  os.precision(oldPrecision);
+}
+
+void BaseSolver::printInitTri(std::ostream &os) const
+{
+  assert( T_->numCell()==cellData_.size() && 
+	  T_->numWall()==wallData_.size() &&
+	  T_->numVertex()==vertexData_.size() );
+  
+  // Increase resolution 
+  unsigned int oldPrecision = os.precision(); 
+  os.precision(20);
+  std::cerr << "Tissue::printInitTri(): old precision: " << oldPrecision << " new " 
+	    << os.precision() << std::endl;	
+  
+  // Create data structure for triangulated tissue.
+  //
+  size_t numC=0; //added below
+  size_t numW=T_->numWall(); //appended below
+  size_t numV=T_->numVertex()+T_->numCell(); //all
+  for( size_t i=0 ; i<T_->numCell() ; ++i ) {
+    numC += T_->cell(i).numWall();
+    numW += T_->cell(i).numVertex();
+  }
+  DataMatrix c(numC);
+  DataMatrix w(numW);
+  DataMatrix v(numV);
+  std::vector< std::pair<size_t,size_t> > cellNeigh(numW); // Wall connections to cells
+  std::vector< std::pair<size_t,size_t> > vertexNeigh(numW); // Wall connections to vertices
+
+  // TODO:
+  // COPY THE DATA INTO THE ENLARGED STRUCTURE HERE
+
+  //   if( T_->wall(i).cell1()->index()<T_->numCell() )
+  //  os << T_->wall(i).cell1()->index() << " " ;
+  //else
+  //  os << "-1 ";
+
+  // Print the init file with the new data
+  //
+  os << numC << " " << numW << " " << numV << std::endl;
+  
+  // Print the connectivity from walls
+  for( size_t i=0 ; i<numW ; ++i ) {
+    os << i << " "; // index
+    os << cellNeigh[i].first << " " << cellNeigh[i].second << " "; // cell neighbors
+    os << vertexNeigh[i].first << " " << vertexNeigh[i].second << std::endl; // vertex neighbors
+  }
+  os << std::endl;
+  
+  // Print the vertex positions
+  os << numV << " " << v[0].size() << std::endl;
+  for( size_t i=0 ; i<numV ; ++i ) {
+    for( size_t j=0 ; j<v[i].size() ; ++j )
+      os << v[i][j] << " ";
+    os << std::endl;
+  }
+  os << std::endl;
+  
+  // Print wall data
+  os << numW << " 1 " << w[0].size()-1 << std::endl;
+  for( size_t i=0 ; i<numW ; ++i ) {
+    assert( wa[i].size() );
+    for( size_t j=0 ; j<w[i].size() ; ++j )
+      os << w[i][j] << " ";
+    os << std::endl;
+  }
+  os << std::endl;
+  
+  // Print cell data
+  os << numC << " " << c[0].size() << std::endl;
+  if( c[0].size() ) {
+    for( size_t i=0 ; i<numC ; ++i ) {
+      assert( c[i].size() );
+      for( size_t j=0 ; j<c[i].size() ; ++j )
+	os << c[i][j] << " ";
+      os << std::endl;
+    }
+    os << std::endl;
+  }  
+  os.precision(oldPrecision);
 }
 
 void BaseSolver::printDebug(std::ostream &os) const
