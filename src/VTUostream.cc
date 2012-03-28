@@ -56,7 +56,7 @@ void VTUostream::write_cells(Tissue const& t)
     write_piece_header(t.numVertex(), t.numCell());
     write_cell_point_geometry(t);
     write_cell_geometry(t);
-    write_cell_data_header("Scalars=\"cell variable 0\"");
+    write_cell_data_header("Scalars=\"cell variable 4\" Vectors=\"cell vector\"");
     write_cell_data(t);
     write_cell_data_footer();
     write_piece_footer();
@@ -75,7 +75,7 @@ void VTUostream::write_cells2(Tissue const& t)
     write_piece_header(npts, t.numCell());
     write_cell_point_geometry2(t);
     write_cell_geometry2(t);
-    write_cell_data_header("Scalars=\"cell variable 0\"");
+    write_cell_data_header("Scalars=\"cell variable 4\" Vectors=\"cell vector\"");
     write_cell_data(t);
     write_cell_data_footer();
     write_piece_footer();
@@ -102,23 +102,23 @@ void VTUostream::write_walls(Tissue const& t)
 //-----------------------------------------------------------------------------
 void VTUostream::write_walls2(Tissue const& t)
 {
-	typedef std::vector<Cell>::const_iterator CellIter;
-	std::vector<Cell> const& cells = t.cell();
-	int ncell = 0;
-	CellIter cit, cend;
-	for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
-		ncell += cit->numWall();
-	;
-	std::vector<Vertex*> verts;
-	verts.reserve(t.numWall()*2);
-	
-	write_piece_header(t.numVertex() + ncell, ncell);
-	write_wall_point_geometry2(t, verts);
-	write_wall_geometry2(t, verts);
-	write_wall_data_header("Scalars=\"wall variable 0\"");
-	write_wall_data(t);
-	write_wall_data_footer();
-	write_piece_footer();
+    typedef std::vector<Cell>::const_iterator CellIter;
+    std::vector<Cell> const& cells = t.cell();
+    int ncell = 0;
+    CellIter cit, cend;
+    for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
+        ncell += cit->numWall();
+    ;
+    std::vector<Vertex*> verts;
+    verts.reserve(t.numWall()*2);
+
+    write_piece_header(t.numVertex() + ncell, ncell);
+    write_wall_point_geometry2(t, verts);
+    write_wall_geometry2(t, verts);
+    write_wall_data_header("Scalars=\"wall variable 0\"");
+    write_wall_data(t);
+    write_wall_data_footer();
+    write_piece_footer();
 }
 //-----------------------------------------------------------------------------
 
@@ -170,7 +170,7 @@ void VTUostream::write_cell_point_geometry(Tissue const& t)
 
     VertexIter viter, vend;
     *m_os << "<Points>\n"
-            << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n";
+    << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n";
     for (viter = vertices.begin(), vend = vertices.end(); viter != vend; ++viter)
     {
         std::vector<double> const& p = viter->position();
@@ -182,7 +182,7 @@ void VTUostream::write_cell_point_geometry(Tissue const& t)
         *m_os << "\n";
     }
     *m_os << "</DataArray>\n"
-            << "</Points>\n";
+    << "</Points>\n";
 }
 //-----------------------------------------------------------------------------
 
@@ -192,7 +192,7 @@ void VTUostream::write_cell_geometry(Tissue const& t)
     std::vector<Cell> const& cells = t.cell();
 
     *m_os << "<Cells>\n"
-            << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n";
+    << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n";
     CellIter cit, cend;
     for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
     {
@@ -236,7 +236,7 @@ void VTUostream::write_cell_geometry(Tissue const& t)
     }
 
     *m_os << "</DataArray>\n"
-            << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n";
+    << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n";
     int total_offset = 0;
     for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
     {
@@ -245,8 +245,8 @@ void VTUostream::write_cell_geometry(Tissue const& t)
     }
 
     *m_os << "\n"
-            << "</DataArray>\n"
-            << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
+    << "</DataArray>\n"
+    << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
     for (size_t i = 0; i < t.numCell(); ++i)
     {
         *m_os << 7 << " ";
@@ -254,7 +254,7 @@ void VTUostream::write_cell_geometry(Tissue const& t)
     *m_os << "\n";
     //*/
     *m_os << "</DataArray>\n"
-            << "</Cells>\n";
+    << "</Cells>\n";
 }
 //-----------------------------------------------------------------------------
 
@@ -336,13 +336,13 @@ void VTUostream::write_wall_point_geometry(Tissue const& t)
 
     PointIter piter, pend;
     *m_os << "<Points>\n"
-            << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n";
+    << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n";
     for (piter = points.begin(), pend = points.end(); piter != pend; ++piter)
     {
         *m_os << piter->x << " " << piter->y << " " << piter->z << "\n";
     }
     *m_os << "</DataArray>\n"
-            << "</Points>\n";
+    << "</Points>\n";
 }
 //-----------------------------------------------------------------------------
 
@@ -352,7 +352,7 @@ void VTUostream::write_wall_geometry(Tissue const& t)
     std::vector<Cell> const& cells = t.cell();
 
     *m_os << "<Cells>\n"
-            << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n";
+    << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n";
     int count = 0;
     CellIter cit, cend;
     for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
@@ -368,7 +368,7 @@ void VTUostream::write_wall_geometry(Tissue const& t)
     }
 
     *m_os << "</DataArray>\n"
-            << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n";
+    << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n";
     int total_offset = 0;
     for (int i = 0; i < count; ++i)
     {
@@ -377,8 +377,8 @@ void VTUostream::write_wall_geometry(Tissue const& t)
     }
     *m_os << "\n"
 
-            << "</DataArray>\n"
-            << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
+    << "</DataArray>\n"
+    << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
     for (int i = 0; i < count; ++i)
     {
         *m_os << 3 << " ";
@@ -386,7 +386,7 @@ void VTUostream::write_wall_geometry(Tissue const& t)
     *m_os << "\n";
     //*/
     *m_os << "</DataArray>\n"
-            << "</Cells>\n";
+    << "</Cells>\n";
 }
 //-----------------------------------------------------------------------------
 
@@ -397,7 +397,23 @@ void VTUostream::write_cell_data(Tissue const& t)
 
     CellIter cit = cells.begin(), cend;
     int nvars = cit->numVariable();
-    for (int i = 0; i < nvars; ++i)
+    //write a cell vector data assuming first 3 cell variables are vector components and 4th is a length
+    *m_os << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" Name=\"cell vector\" format=\"ascii\">\n";
+    for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
+    {
+        Cell &c = const_cast<Cell&> (*cit);
+        *m_os << c.variable(0) << " " << c.variable(1) << " " << c.variable(2) << "\n";
+    }
+    *m_os << "</DataArray>\n";
+    *m_os << "<DataArray type=\"Float64\" Name=\"cell vector length\" format=\"ascii\">\n";
+    for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
+    {
+        Cell &c = const_cast<Cell&> (*cit);
+        *m_os << c.variable(3) << " ";
+    }
+    *m_os << "\n"<< "</DataArray>\n";
+    //write rest of the cell data
+    for (int i = 4; i < nvars; ++i)
     {
         *m_os << "<DataArray type=\"Float64\" Name=\"cell variable " << i << "\" format=\"ascii\">\n";
         for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
@@ -406,7 +422,7 @@ void VTUostream::write_cell_data(Tissue const& t)
             *m_os << c.variable(i) << " ";
         }
         *m_os << "\n"
-                << "</DataArray>\n";
+        << "</DataArray>\n";
     }
 }
 //-----------------------------------------------------------------------------
@@ -418,24 +434,24 @@ void VTUostream::write_wall_data(Tissue const& t)
     CellIter cit = cells.begin(), cend;
     Cell &c = const_cast<Cell&> (*cit);
 
-		//Print wall lengths
+    //Print wall lengths
     *m_os << "<DataArray type=\"Float64\" Name=\"wall length\" format=\"ascii\">\n";
     for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
-			{
-				Cell &c = const_cast<Cell&>(*cit);
-				typedef std::vector<Wall*>::const_iterator WallIter;
-				std::vector<Wall*> const& walls = c.wall();
-				WallIter wit, wend;
-				for (wit = walls.begin(), wend = walls.end(); wit != wend; ++wit)
-					{
-						Wall &w = const_cast<Wall&>(**wit);
-						*m_os << w.length() << " ";
-					}
-			}
+    {
+        Cell &c = const_cast<Cell&>(*cit);
+        typedef std::vector<Wall*>::const_iterator WallIter;
+        std::vector<Wall*> const& walls = c.wall();
+        WallIter wit, wend;
+        for (wit = walls.begin(), wend = walls.end(); wit != wend; ++wit)
+        {
+            Wall &w = const_cast<Wall&>(**wit);
+            *m_os << w.length() << " ";
+        }
+    }
     *m_os << "\n"
-					<< "</DataArray>\n";
+    << "</DataArray>\n";
 
-		// Print wall variables
+    // Print wall variables
     int nvars = c.wall(0)->numVariable();
     for (int i = 0; i < nvars; ++i)
     {
@@ -453,74 +469,74 @@ void VTUostream::write_wall_data(Tissue const& t)
             }
         }
         *m_os << "\n"
-                << "</DataArray>\n";
+        << "</DataArray>\n";
     }
 }
 //-----------------------------------------------------------------------------
 
 void VTUostream::write_wall_data2(Tissue const& t)
 {
-  typedef std::vector<Cell>::const_iterator CellIter;
-  std::vector<Cell> const& cells = t.cell();
-  CellIter cit = cells.begin(), cend;
-  Cell &c = const_cast<Cell&> (*cit);
-  //Print wall lengths
-  *m_os << "<DataArray type=\"Float64\" Name=\"wall length\" format=\"ascii\">\n";
-  for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
+    typedef std::vector<Cell>::const_iterator CellIter;
+    std::vector<Cell> const& cells = t.cell();
+    CellIter cit = cells.begin(), cend;
+    Cell &c = const_cast<Cell&> (*cit);
+    //Print wall lengths
+    *m_os << "<DataArray type=\"Float64\" Name=\"wall length\" format=\"ascii\">\n";
+    for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
     {
-      Cell &c = const_cast<Cell&>(*cit);
-      typedef std::vector<Wall*>::const_iterator WallIter;
-      std::vector<Wall*> const& walls = c.wall();
-      WallIter wit, wend;
-      for (wit = walls.begin(), wend = walls.end(); wit != wend; ++wit)
-	{
-	  Wall &w = const_cast<Wall&>(**wit);
-	  *m_os << w.length() << " ";
-	}
+        Cell &c = const_cast<Cell&>(*cit);
+        typedef std::vector<Wall*>::const_iterator WallIter;
+        std::vector<Wall*> const& walls = c.wall();
+        WallIter wit, wend;
+        for (wit = walls.begin(), wend = walls.end(); wit != wend; ++wit)
+        {
+            Wall &w = const_cast<Wall&>(**wit);
+            *m_os << w.length() << " ";
+        }
     }
-  *m_os << "\n"
-	<< "</DataArray>\n";
-  // Print wall variables assuming paired structure
-  //total number of variables in the wall
-  int nvars = c.wall(0)->numVariable();
-  //check if nvars is odd so it can be of the form (length, v1c1, v1c2, v2c1, v2c2, ...)
-  //    if (!(nvars & 0x1))
-  //    {
-  //        std::cerr << "VTUostream::write_wall_data2(Tissue const& t); number of wall variables does not fit requested format\n";
-  //        exit(EXIT_FAILURE);
-  //    }
-  for (int i = 0; i < nvars; i+=2)
+    *m_os << "\n"
+    << "</DataArray>\n";
+    // Print wall variables assuming paired structure
+    //total number of variables in the wall
+    int nvars = c.wall(0)->numVariable();
+    //check if nvars is odd so it can be of the form (length, v1c1, v1c2, v2c1, v2c2, ...)
+    //    if (!(nvars & 0x1))
+    //    {
+    //        std::cerr << "VTUostream::write_wall_data2(Tissue const& t); number of wall variables does not fit requested format\n";
+    //        exit(EXIT_FAILURE);
+    //    }
+    for (int i = 0; i < nvars; i+=2)
     {
-      *m_os << "<DataArray type=\"Float64\" Name=\"wall variable " << i/2 << "\" format=\"ascii\">\n";
-      for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
-	{
-	  Cell &c = const_cast<Cell&> (*cit);
-	  size_t c_id = c.index();
-	  typedef std::vector<Wall*>::const_iterator WallIter;
-	  std::vector<Wall*> const& walls = c.wall();
-	  WallIter wit, wend;
-	  for (wit = walls.begin(), wend = walls.end(); wit != wend; ++wit)
-	    {
-	      Wall &w = const_cast<Wall&> (**wit);
-	      size_t c1id = w.cell1()->index();
-	      size_t c2id = w.cell2()->index();
-	      int j = -1;
-	      if (c_id == c1id)
-		j = i;
-	      else if (c_id == c2id)
-		j = i+1;
-	      else
-		{
-		  std::cerr << "VTUostream::write_wall_data2(Tissue const& t); "
-			    << "Wall does not report connection to the cell "
-			    << "which was accessed through\n";
-		  exit(EXIT_FAILURE);
-		}
-	      *m_os << w.variable(j) << " ";
-	    }
-	}
-      *m_os << "\n"
-	    << "</DataArray>\n";
+        *m_os << "<DataArray type=\"Float64\" Name=\"wall variable " << i/2 << "\" format=\"ascii\">\n";
+        for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
+        {
+            Cell &c = const_cast<Cell&> (*cit);
+            size_t c_id = c.index();
+            typedef std::vector<Wall*>::const_iterator WallIter;
+            std::vector<Wall*> const& walls = c.wall();
+            WallIter wit, wend;
+            for (wit = walls.begin(), wend = walls.end(); wit != wend; ++wit)
+            {
+                Wall &w = const_cast<Wall&> (**wit);
+                size_t c1id = w.cell1()->index();
+                size_t c2id = w.cell2()->index();
+                int j = -1;
+                if (c_id == c1id)
+                    j = i;
+                else if (c_id == c2id)
+                    j = i+1;
+                else
+                {
+                    std::cerr << "VTUostream::write_wall_data2(Tissue const& t); "
+                              << "Wall does not report connection to the cell "
+                              << "which was accessed through\n";
+                    exit(EXIT_FAILURE);
+                }
+                *m_os << w.variable(j) << " ";
+            }
+        }
+        *m_os << "\n"
+        << "</DataArray>\n";
     }
 }
 //-----------------------------------------------------------------------------
@@ -530,7 +546,7 @@ void VTUostream::write_cell_point_geometry2(Tissue const& t)
     std::vector<Cell> const& cells = t.cell();
 
     *m_os << "<Points>\n"
-            << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n";
+    << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n";
     CellIter cit, cend;
     for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
     {
@@ -552,7 +568,7 @@ void VTUostream::write_cell_point_geometry2(Tissue const& t)
         }
     }
     *m_os << "</DataArray>\n"
-            << "</Points>\n";
+    << "</Points>\n";
 }
 //-----------------------------------------------------------------------------
 
@@ -562,7 +578,7 @@ void VTUostream::write_cell_geometry2(Tissue const& t)
     std::vector<Cell> const& cells = t.cell();
 
     *m_os << "<Cells>\n"
-            << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n";
+    << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n";
     CellIter cit, cend;
     int count = 0;
     for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
@@ -576,7 +592,7 @@ void VTUostream::write_cell_geometry2(Tissue const& t)
     }
 
     *m_os << "</DataArray>\n"
-            << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n";
+    << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n";
     int total_offset = 0;
     for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
     {
@@ -585,15 +601,15 @@ void VTUostream::write_cell_geometry2(Tissue const& t)
     }
     *m_os << "\n"
 
-            << "</DataArray>\n"
-            << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
+    << "</DataArray>\n"
+    << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
     for (size_t i = 0; i < t.numCell(); ++i)
     {
         *m_os << 7 << " ";
     }
     *m_os << "\n";
     *m_os << "</DataArray>\n"
-            << "</Cells>\n";
+    << "</Cells>\n";
 }
 //-----------------------------------------------------------------------------
 
@@ -605,7 +621,7 @@ void VTUostream::write_wall_point_geometry2(Tissue const& t, std::vector<Vertex*
 
     VertexIter viter, vend;
     *m_os << "<Points>\n"
-            << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n";
+    << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n";
     for (viter = vertices.begin(), vend = vertices.end(); viter != vend; ++viter)
     {
         std::vector<double> const& p = viter->position();
@@ -702,7 +718,7 @@ void VTUostream::write_wall_point_geometry2(Tissue const& t, std::vector<Vertex*
 
     }
     *m_os << "</DataArray>\n"
-            << "</Points>\n";
+    << "</Points>\n";
 }
 //-----------------------------------------------------------------------------
 
@@ -711,7 +727,7 @@ void VTUostream::write_wall_geometry2(Tissue const& t, std::vector<Vertex*> cons
     typedef std::vector<Cell>::const_iterator CellIter;
     std::vector<Cell> const& cells = t.cell();
     *m_os << "<Cells>\n"
-            << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n";
+    << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n";
     int count = 0, offset = t.numVertex();
     //construct quad walls by ordering vertices circularly: first 2 original verices of the wall then 2 displaced vertices
     std::vector<Vertex*> ::const_iterator vit = verts.begin(), vend = verts.end(), vstart;
@@ -730,7 +746,7 @@ void VTUostream::write_wall_geometry2(Tissue const& t, std::vector<Vertex*> cons
     }
     *m_os << "\n";
     *m_os << "</DataArray>\n"
-            << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n";
+    << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n";
     int total_offset = 0;
     for (int i = 0; i < count; ++i)
     {
@@ -739,8 +755,8 @@ void VTUostream::write_wall_geometry2(Tissue const& t, std::vector<Vertex*> cons
     }
     *m_os << "\n"
 
-            << "</DataArray>\n"
-            << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
+    << "</DataArray>\n"
+    << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
     for (int i = 0; i < count; ++i)
     {
         *m_os << 7 << " ";
@@ -748,6 +764,6 @@ void VTUostream::write_wall_geometry2(Tissue const& t, std::vector<Vertex*> cons
     *m_os << "\n";
     //*/
     *m_os << "</DataArray>\n"
-            << "</Cells>\n";
+    << "</Cells>\n";
 }
 //-----------------------------------------------------------------------------
