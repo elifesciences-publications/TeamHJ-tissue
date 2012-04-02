@@ -830,18 +830,56 @@ void BaseSolver::printInitTri(std::ostream &os) const
   size_t numC=0; //added below
   size_t numW=T_->numWall(); //appended below
   size_t numV=T_->numVertex()+T_->numCell(); //all
+  std::vector<size_t> cellIndexStart(T_->numCell());
   for( size_t i=0 ; i<T_->numCell() ; ++i ) {
     numC += T_->cell(i).numWall();
     numW += T_->cell(i).numVertex();
+    if (i==0) {
+      cellIndexStart[i] = T_->numCell();
+    }
+    else {
+      cellIndexStart[i] = cellIndexStart[i-1]+T_->cell(i-1).numWall()-1;
+    }
   }
   DataMatrix c(numC);
   DataMatrix w(numW);
   DataMatrix v(numV);
+  for (size_t i=0; i<T_->numVertex(); ++i) {
+    v[i] = vertexData_[i];
+  }
   std::vector< std::pair<size_t,size_t> > cellNeigh(numW); // Wall connections to cells
   std::vector< std::pair<size_t,size_t> > vertexNeigh(numW); // Wall connections to vertices
 
+  std::vector<double> wallTmpData(wallData_[0].size(),0.0);
+  size_t D=3; //dimension for central vertex
   // TODO:
   // COPY THE DATA INTO THE ENLARGED STRUCTURE HERE
+  for (size_t i=0; i<T_->numCell(); ++i) {
+    // Add central vertex
+    size_t vI = T_->numVertex()+i;
+    v[vI].resize(v[0].size());
+    for (size_t d=0; d<v[vI].size(); ++d) {
+      v[vI][d] = cellData[i][T_->cell(i).numVariable()+d]; //Assuming central vertex stored at end
+    }
+    for (size_t k=0; k<T_->cell(i).numWall()) {
+      // add cell data in correct (new) cell
+      if (k==0) {
+	c[i] = cellData_[i];
+      }
+      else {
+	c[indexStart[i]+k-1] = cellData_[i];
+      }
+      // update current wall
+
+      // add new wall between vertex and central vertex
+      size_t wI = wallIndexStart[i]+k;
+      wallTmpData[0] = cellData[i][T_->cell(i).numVariable()+D+k];// set current length
+      w[wI] = wallTmpData;
+      vertexNeigh[wI].first = T_->cell(i).vertex(k);
+      vertexNeigh[wI].second = vI;
+
+    }
+  }
 
   //   if( T_->wall(i).cell1()->index()<T_->numCell() )
   //  os << T_->wall(i).cell1()->index() << " " ;
