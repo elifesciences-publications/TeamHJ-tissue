@@ -138,13 +138,15 @@ void BaseSolver::setTissueVariables(size_t numCellVariable)
   // Copy variable values to tissue
   //
   if (numCellVariable==size_t(-1)) { // default, all cell variables copied
+    std::cerr << "BaseSolver::setTissueVariables() Setting all cell "
+	      << "variables." << std::endl;
     for (size_t i=0; i<T_->numCell(); ++i) {
-      assert( T_->cell(i).numVariable() == cellData_[i].size() );
-      for (size_t j=0; j<cellData_[i].size(); ++j)
-	T_->cell(i).setVariable(j,cellData_[i][j]);
+      T_->cell(i).setVariable(cellData_[i]);
     }
   }
   else { // value given by user, only these cell variables copied (to keep matrix form of cell variables)
+    std::cerr << "BaseSolver::setTissueVariables() Setting " << numCellVariable 
+	      << " first cell variables." << std::endl;
     for (size_t i=0; i<T_->numCell(); ++i) {
       assert( T_->cell(i).numVariable() >= numCellVariable );
       for (size_t j=0; j<numCellVariable; ++j)
@@ -822,9 +824,15 @@ void BaseSolver::printInitTri(std::ostream &os) const
   // Increase resolution 
   unsigned int oldPrecision = os.precision(); 
   os.precision(20);
-  std::cerr << "Tissue::printInitTri(): old precision: " << oldPrecision << " new " 
-	    << os.precision() << std::endl;	
-  
+  //std::cerr << "Tissue::printInitTri(): old precision: " << oldPrecision << " new " 
+  //	    << os.precision() << std::endl;	
+  if (T_->cell(0).numVariable() == cellData_[0].size()) {
+    std::cerr << "BaseSolver::printInitTri() Only works for tissue with central mesh"
+	      << " point stored at end of cell variable data." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+
   // Create data structure for triangulated tissue.
   //
   size_t numC=0; //added below
@@ -855,32 +863,84 @@ void BaseSolver::printInitTri(std::ostream &os) const
 
   std::vector<double> wallTmpData(wallData_[0].size(),0.0);
   size_t D=3; //dimension for central vertex
-  // TODO:
-  // COPY THE DATA INTO THE ENLARGED STRUCTURE HERE
+
   for (size_t i=0; i<T_->numCell(); ++i) {
-    // Add central vertex
+    // Add central vertex with position
     size_t vI = T_->numVertex()+i;
     v[vI].resize(v[0].size());
     for (size_t d=0; d<v[vI].size(); ++d) {
       v[vI][d] = cellData_[i][T_->cell(i).numVariable()+d]; //Assuming central vertex stored at end
     }
     for (size_t k=0; k<T_->cell(i).numWall(); ++k) {
-      // add cell data in correct (new) cell
+      // add cell data in correct cell
       if (k==0) {
+	// old index used
 	c[i] = cellData_[i];
       }
       else {
+	// new index for the rest (and store same cell data)
 	c[cellIndexStart[i]+k-1] = cellData_[i];
       }
-      // update current wall
+      // update current walls including neighborhood
+      size_t wI = T_->cell(i).wall(k)->index();
+      // wall data stays the same
+      w[wI] = wallData_[wI];
+      // vertex neighbors stay the same
+      vertexNeigh[wI].first = T_->cell(i).vertex(k)->index();
+      if (k<T_->cell(i).numVertex()-1) {
+	vertexNeigh[wI].second = T_->cell(i).vertex(k+1)->index();
+      }
+      else {
+	vertexNeigh[wI].second = T_->cell(i).vertex(0)->index();
+      }
+      // first find current cell as neighbor
+      if (T_->cell(i).wall(k)->cell1()->index() == i) {
+	if (k==0) {
+	  cellNeigh[wI].first = i;
+	}
+	else {
+	  cellNeigh[wI].first = cellIndexStart[i]+k-1;
+	}
+      }
+      else if (T_->cell(i).wall(k)->cell2()->index() == i) {
+	if (k==0) {
+	  cellNeigh[wI].second = i;
+	}
+	else {
+	  cellNeigh[wI].second = cellIndexStart[i]+k-1;
+	}
+      }
+      else {
+	std::cerr << "BaseReaction::printInitTri() Error: Cell wall not"
+		  << "connected to cell." << std::endl;
+	exit(EXIT_FAILURE);
+      }
+      // also recognize if the wall is connected to background
+      if (T_->cell(i).wall(k)->cell1() == T_->background() ) {
+	cellNeigh[wI].first = size_t(-1);
+      }
+      else if (T_->cell(i).wall(k)->cell2() == T_->background() ) {
+	cellNeigh[wI].second = size_t(-1);
+      }
 
       // add new wall between vertex and central vertex
-      size_t wI = wallIndexStart[i]+k;
+      wI = wallIndexStart[i]+k;
       wallTmpData[0] = cellData_[i][T_->cell(i).numVariable()+D+k];// set current length
       w[wI] = wallTmpData;
       vertexNeigh[wI].first = T_->cell(i).vertex(k)->index();
       vertexNeigh[wI].second = vI;
-
+      if (k==0) {
+	cellNeigh[wI].first = T_->cell(i).index(); //i
+	cellNeigh[wI].second = cellIndexStart[i]; // from added list of new cells
+      }
+      else if (k==T_->cell(i).numWall()-1) {
+	cellNeigh[wI].first = cellIndexStart[i]+k-1; // from added list of new cells
+	cellNeigh[wI].second = T_->cell(i).index(); //i
+      }
+      else {
+	cellNeigh[wI].first = cellIndexStart[i]+k-1; // from added list of new cells
+	cellNeigh[wI].second = cellIndexStart[i]+k; // from added list of new cells
+      }
     }
   }
 
@@ -896,7 +956,18 @@ void BaseSolver::printInitTri(std::ostream &os) const
   // Print the connectivity from walls
   for( size_t i=0 ; i<numW ; ++i ) {
     os << i << " "; // index
-    os << cellNeigh[i].first << " " << cellNeigh[i].second << " "; // cell neighbors
+    if (cellNeigh[i].first<numC) { // cell neighbors
+      os << cellNeigh[i].first << " ";
+    }
+    else {
+      os << "-1 ";
+    }
+    if (cellNeigh[i].second<numC) {
+      os << cellNeigh[i].second << " "; 
+    }
+    else {
+      os << "-1 ";
+    }
     os << vertexNeigh[i].first << " " << vertexNeigh[i].second << std::endl; // vertex neighbors
   }
   os << std::endl;

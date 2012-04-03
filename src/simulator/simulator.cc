@@ -117,7 +117,7 @@ int main(int argc,char *argv[]) {
     } 
     else {
       std::cerr << "Setting tissue variables from simulator data." << std::endl;
-      S->setTissueVariables();
+      S->setTissueVariables(T.cell(0).numVariable());
       std::string initFormat;
       initFormat = myConfig::getValue("init_output_format",0);
       if (initFormat.empty() || initFormat.compare("tissue")==0) {

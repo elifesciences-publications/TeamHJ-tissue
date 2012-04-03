@@ -188,7 +188,7 @@ class Cell {
   ///
   /// @brief Sets all variables in the variable vector to the values provided
   ///  
-  void setVariable( std::vector<double> &val );
+  void setVariable( std::vector<double> val );
   ///
   /// @brief Adds a variable to the end of the vector in a cell
   ///  
