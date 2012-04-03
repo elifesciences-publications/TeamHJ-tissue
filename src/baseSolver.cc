@@ -831,14 +831,17 @@ void BaseSolver::printInitTri(std::ostream &os) const
   size_t numW=T_->numWall(); //appended below
   size_t numV=T_->numVertex()+T_->numCell(); //all
   std::vector<size_t> cellIndexStart(T_->numCell());
+  std::vector<size_t> wallIndexStart(T_->numCell());
   for( size_t i=0 ; i<T_->numCell() ; ++i ) {
     numC += T_->cell(i).numWall();
     numW += T_->cell(i).numVertex();
     if (i==0) {
       cellIndexStart[i] = T_->numCell();
+      wallIndexStart[i] = T_->numWall();
     }
     else {
       cellIndexStart[i] = cellIndexStart[i-1]+T_->cell(i-1).numWall()-1;
+      wallIndexStart[i] = wallIndexStart[i-1]+T_->cell(i-1).numWall();
     }
   }
   DataMatrix c(numC);
@@ -859,23 +862,23 @@ void BaseSolver::printInitTri(std::ostream &os) const
     size_t vI = T_->numVertex()+i;
     v[vI].resize(v[0].size());
     for (size_t d=0; d<v[vI].size(); ++d) {
-      v[vI][d] = cellData[i][T_->cell(i).numVariable()+d]; //Assuming central vertex stored at end
+      v[vI][d] = cellData_[i][T_->cell(i).numVariable()+d]; //Assuming central vertex stored at end
     }
-    for (size_t k=0; k<T_->cell(i).numWall()) {
+    for (size_t k=0; k<T_->cell(i).numWall(); ++k) {
       // add cell data in correct (new) cell
       if (k==0) {
 	c[i] = cellData_[i];
       }
       else {
-	c[indexStart[i]+k-1] = cellData_[i];
+	c[cellIndexStart[i]+k-1] = cellData_[i];
       }
       // update current wall
 
       // add new wall between vertex and central vertex
       size_t wI = wallIndexStart[i]+k;
-      wallTmpData[0] = cellData[i][T_->cell(i).numVariable()+D+k];// set current length
+      wallTmpData[0] = cellData_[i][T_->cell(i).numVariable()+D+k];// set current length
       w[wI] = wallTmpData;
-      vertexNeigh[wI].first = T_->cell(i).vertex(k);
+      vertexNeigh[wI].first = T_->cell(i).vertex(k)->index();
       vertexNeigh[wI].second = vI;
 
     }
