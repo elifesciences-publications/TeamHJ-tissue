@@ -865,21 +865,29 @@ void BaseSolver::printInitTri(std::ostream &os) const
   size_t D=3; //dimension for central vertex
 
   for (size_t i=0; i<T_->numCell(); ++i) {
+    size_t numCellVar = T_->cell(i).numVariable();
     // Add central vertex with position
     size_t vI = T_->numVertex()+i;
     v[vI].resize(v[0].size());
     for (size_t d=0; d<v[vI].size(); ++d) {
-      v[vI][d] = cellData_[i][T_->cell(i).numVariable()+d]; //Assuming central vertex stored at end
+      v[vI][d] = cellData_[i][numCellVar+d]; //Assuming central vertex stored at end
     }
     for (size_t k=0; k<T_->cell(i).numWall(); ++k) {
-      // add cell data in correct cell
+      // add cell data in correct cell      
       if (k==0) {
 	// old index used
-	c[i] = cellData_[i];
+	c[i].resize(numCellVar); 
+	for( size_t j=0; j<numCellVar; ++j) {
+	  c[i][j] = cellData_[i][j];
+	}
       }
       else {
 	// new index for the rest (and store same cell data)
-	c[cellIndexStart[i]+k-1] = cellData_[i];
+	size_t ii = cellIndexStart[i]+k-1; 
+	c[ii].resize(numCellVar); 
+	for( size_t j=0; j<numCellVar; ++j) {
+	  c[ii][j] = cellData_[i][j];
+	}
       }
       // update current walls including neighborhood
       size_t wI = T_->cell(i).wall(k)->index();
@@ -930,16 +938,13 @@ void BaseSolver::printInitTri(std::ostream &os) const
       vertexNeigh[wI].first = T_->cell(i).vertex(k)->index();
       vertexNeigh[wI].second = vI;
       if (k==0) {
-	cellNeigh[wI].first = T_->cell(i).index(); //i
-	cellNeigh[wI].second = cellIndexStart[i]; // from added list of new cells
-      }
-      else if (k==T_->cell(i).numWall()-1) {
-	cellNeigh[wI].first = cellIndexStart[i]+k-1; // from added list of new cells
+	cellNeigh[wI].first = cellIndexStart[i]+T_->
+	  cell(i).numWall()-2; // last from added list of new cells
 	cellNeigh[wI].second = T_->cell(i).index(); //i
       }
       else {
-	cellNeigh[wI].first = cellIndexStart[i]+k-1; // from added list of new cells
-	cellNeigh[wI].second = cellIndexStart[i]+k; // from added list of new cells
+	cellNeigh[wI].first = cellNeigh[wI-1].second; // second from prev wall (going around)
+	cellNeigh[wI].second = cellIndexStart[i]+k-1; // from added list of new cells
       }
     }
   }
