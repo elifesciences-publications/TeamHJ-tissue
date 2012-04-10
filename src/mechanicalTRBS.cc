@@ -607,7 +607,6 @@ derivs(Tissue &T,
           }
         }
         eigenVector= {{0,0,0},{0,0,0},{0,0,0}}; 
-	//HJ: commented due to compilation problems...all values set below anyway?
         for (int r=0 ; r<3 ; r++) {
           for (int s=0 ; s<3 ; s++) {
             for(int w=0 ; w<3 ; w++) {
@@ -2046,23 +2045,6 @@ derivs(Tissue &T,
       //           <<" Syx  "<< StrainTensor[1][0] <<" Syy  "<< StrainTensor[1][1] << std::endl;
     
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 VertexFromTRBScenterTriangulationMT::
 VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue, 
 	       std::vector< std::vector<size_t> > 
@@ -2073,16 +2055,25 @@ VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue,
     std::cerr << "VertexFromTRBScenterTriangulationMT::"
 	      << "VertexFromTRBScenterTriangulationMT() "
               << "Uses four parameters young modulus and poisson coefficients in "
-	      << "longitudinal and transverse directions." << std::endl;
+	      << "longitudinal (MT) and transverse directions." << std::endl;
 	      
     exit(0);
   }
-  if( indValue.size()!=2 || indValue[0].size()!=1 || indValue[1].size()!=1 ) { 
+  if( (indValue.size()!=2 && indValue.size()!=4) || 
+      indValue[0].size()!=2 || indValue[1].size()!=1 ||
+      (indValue.size()==4 && (indValue[2].size()!=0 && indValue[2].size()!=1)) ||
+      (indValue.size()==4 && (indValue[3].size()!=0 && indValue[3].size()!=1)) 
+      ) { 
     std::cerr << "VertexFromTRBScenterTriangulationMT::"
 	      << "VertexFromTRBScenterTriangulationMT() "
-	      << "Wall length index is given in first level." << std::endl
+	      << "Wall length index and MT direction initial index are given in first level." 
+	      << std::endl
 	      << "Start of additional Cell variable indices (center(x,y,z) "
-	      << "L_1,...,L_n, n=num vertex) is given in second level." 
+	      << "L_1,...,L_n, n=num vertex) is given in second level (typically at end)." 
+	      << "Optionally two additional levels can be given where the strain and stress "
+	      << "directions can be stored at given indices. If index given at third level, "
+	      << "strain direction will be stored starting at this (cell) variable index, "
+	      << "and for fourth level stress will be stored."
 	      << std::endl;
     exit(0);
   }
@@ -3098,22 +3089,22 @@ derivs(Tissue &T,
 
 
 
-
-      // storing maximal stress in cellData
-      if (dimension==2)
-        {
-          cellData[cellIndex][0]=eigenVectorStress[0][Istress];
-          cellData[cellIndex][1]=eigenVectorStress[1][Istress];
-        }
-      if (dimension==3)
-        {
-          cellData[cellIndex][0]=eigenVectorStress[0][Istress];
-          cellData[cellIndex][1]=eigenVectorStress[1][Istress];
-          cellData[cellIndex][2]=eigenVectorStress[2][Istress];
-          // cellData[cellIndex][3]=10*maximalStressValue;   //NOTE maximal Strain and Stress Values can be used this is an option
-        }
-      
-    }      
+      if (numVariableIndexLevel()==4 && numVariableIndex(3) ) {
+	// storing maximal stress in cellData
+	if (dimension==2)
+	  {
+	    cellData[cellIndex][variableIndex(3,0)]=eigenVectorStress[0][Istress];
+	    cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStress[1][Istress];
+	  }
+	if (dimension==3)
+	  {
+	    cellData[cellIndex][variableIndex(3,0)]=eigenVectorStress[0][Istress];
+	    cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStress[1][Istress];
+	    cellData[cellIndex][variableIndex(3,0)+2]=eigenVectorStress[2][Istress];
+	    // cellData[cellIndex][3]=10*maximalStressValue;   //NOTE maximal Strain and Stress Values can be used this is an option
+	  }
+      }
+  }      
 }     
 
 

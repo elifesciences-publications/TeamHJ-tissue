@@ -41,10 +41,12 @@ BaseDirectionUpdate::createDirectionUpdate(std::vector<double> &paraValue,
 	  return new PCAPlaneDirection(paraValue, indValue);
   else if (idValue == "VertexStressDirection")
 	  return new VertexStressDirection(paraValue, indValue);
+  else if (idValue == "CellVectorDirection")
+    return new CellVectorDirection(paraValue, indValue);
   else if (idValue == "ForceDirection") {
-		std::cerr << "ForceDirection renamed into WallStressDirection." << std::endl;
-		exit(-1);
-	}
+    std::cerr << "ForceDirection renamed into WallStressDirection." << std::endl;
+    exit(-1);
+  }
   //Default, if nothing found
   else {
 	  std::cerr << "\nBaseDirectionUpdate::createDirectionUpdate() WARNING: DirectionUpdatetype "

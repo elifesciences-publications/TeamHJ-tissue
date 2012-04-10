@@ -1331,5 +1331,66 @@ void VertexStressDirection::update(Tissue &T, double h,
 	}
 }
 
+CellVectorDirection::
+CellVectorDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
+{
+  if (paraValue.size() != 1) {
+    std::cerr << "CellVectorDirection::CellVectorDirection() " 
+	      << "One parameter is used orientation_flag (0 for direction parallel with "
+	      << "given cell direction, 1 for perpendicular direction)." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  if (indValue.size() != 2 || indValue[0].size() != 1 || indValue[1].size() != 1) {
+    std::cerr << "CellVectorDirection::CellVectorDirection() \n"
+	      << "First level: Start of cell direction (to be updated) index is used."
+	      << std::endl
+	      << "Second level: Start of cell direction index (to be updated from)"
+	      << " is used." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("CellVectorDirection");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp.resize(numParameter());
+  tmp[0] = "orientation_flag";
+  setParameterId(tmp);
+}
+  
+void CellVectorDirection::initiate(Tissue &T,
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
+{
+	// No initialization
+}
 
+void CellVectorDirection::update(Tissue &T, double h,
+	DataMatrix &cellData,
+	DataMatrix &wallData,
+	DataMatrix &vertexData,
+	DataMatrix &cellDerivs,
+	DataMatrix &wallDerivs,
+	DataMatrix &vertexDerivs)
+{
+  if( parameter(0)!=0. ) {
+    std::cerr << "CellVectorDirection::update() Only parallell direction (p_0=0)"
+	      << " allowed at the moment." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  size_t dimensions = vertexData[0].size();
+  
+  for (size_t n = 0; n < T.numCell(); ++n) {
+    size_t i = T.cell(n).index();
+    for (size_t d = 0; d<dimensions; ++d) {
+      cellData[i][variableIndex(0,0)+d] = cellData[i][variableIndex(1,0)+d]; 
+    }
+  }
+}
 

@@ -283,20 +283,6 @@ class VertexFromTRBSMT : public BaseReaction {
 /// Y_modulus_Longitudinal P_coeff_Longitudinal Y_modulus_Transverse P_coeff_Transverse 
 /// L_ij-index MT_cellIndex
 /// InternalVarStartIndex
-
-/// VertexFromTRBScenterTriangulation 2 2 1 1
-/// Y_modulus P_coeff
-/// L_ij-index
-/// InternalVarStartIndex
-
-/// VertexFromTRBS 2 1 1
-/// Y_modulus P_coeff
-/// L_ij-index
-
-
-/// VertexFromTRBSMT 4 1 2
-/// Y_modulus_Longitudinal P_coeff_Longitudinal Y_modulus_Transverse P_coeff_Transverse 
-/// L_ij-index MT_cellIndex
 /// @endverbatim
 ///
 class VertexFromTRBScenterTriangulationMT : public BaseReaction {

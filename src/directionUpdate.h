@@ -264,4 +264,26 @@ class VertexStressDirection : public BaseDirectionUpdate
 	      DataMatrix &vertexDerivs);
 };
 
+class CellVectorDirection : public BaseDirectionUpdate
+{
+ public:
+  CellVectorDirection(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
+  
+  void initiate(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);
+  
+  void update(Tissue &T, double h,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);
+};
+
 #endif
