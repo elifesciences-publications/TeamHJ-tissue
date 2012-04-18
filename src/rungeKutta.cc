@@ -620,25 +620,25 @@ void RK4::simulate(size_t verbose)
   //Resize each vector
   size_t Ncvar=T_->cell(0).numVariable();
   for( size_t i=0 ; i<Nc ; ++i ) {
-    ytCell[i].resize(Ncvar);
-    dytCell[i].resize(Ncvar);
-    dymCell[i].resize(Ncvar);
+    ytCell[i].resize(cellData_[i].size());
+    dytCell[i].resize(cellData_[i].size());
+    dymCell[i].resize(cellData_[i].size());
   }
   size_t Nwvar=T_->wall(0).numVariable()+1;
   for( size_t i=0 ; i<Nw ; ++i ) {
-    ytWall[i].resize(Nwvar);
-    dytWall[i].resize(Nwvar);
-    dymWall[i].resize(Nwvar);
+    ytWall[i].resize(wallData_[i].size());
+    dytWall[i].resize(wallData_[i].size());
+    dymWall[i].resize(wallData_[i].size());
   }
   size_t Nvvar=T_->vertex(0).numPosition();
   for( size_t i=0 ; i<Nv ; ++i ) {
-    ytVertex[i].resize(Nvvar);
-    dytVertex[i].resize(Nvvar);
-    dymVertex[i].resize(Nvvar);
+    ytVertex[i].resize(vertexData_[i].size());
+    dytVertex[i].resize(vertexData_[i].size());
+    dymVertex[i].resize(vertexData_[i].size());
   }
   
   // Initiate print times
-  //////////////////////////////////////////////////////////////////////
+  //
   double tiny = 1e-10;
   double printTime=endTime_+tiny;
   double printDeltaTime=endTime_+2.*tiny;
@@ -654,7 +654,7 @@ void RK4::simulate(size_t verbose)
     printDeltaTime=(endTime_-startTime_)/double(numPrint_-1);
   }
   // Go
-  //////////////////////////////////////////////////////////////////////
+  //
   t_=startTime_;
   numOk_ = numBad_ = 0;
   while( t_<endTime_ ) {

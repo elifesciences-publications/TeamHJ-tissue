@@ -606,7 +606,11 @@ derivs(Tissue &T,
             tempStrain[r][s]=eigenVector[r][s];
           }
         }
-        eigenVector= {{0,0,0},{0,0,0},{0,0,0}}; 
+	for (size_t ii=0; ii<3; ++ii) {
+	  for (size_t jj=0; jj<3; ++jj) {
+	    eigenVector[ii][jj] = 0.0;
+	  }
+	}
         for (int r=0 ; r<3 ; r++) {
           for (int s=0 ; s<3 ; s++) {
             for(int w=0 ; w<3 ; w++) {
@@ -1574,8 +1578,11 @@ derivs(Tissue &T,
               }
           }
 
-        eigenVectorStrain= {{0,0,0},{0,0,0},{0,0,0}}; 
-	//HJ: commented due to compilation problems...all values set below anyway?
+	for (size_t ii=0; ii<3; ++ii) {
+	  for (size_t jj=0; jj<3; ++jj) {
+	    eigenVectorStrain[ii][jj] = 0.0; 
+	  }
+	}	
         for (int r=0 ; r<3 ; r++) {
           for (int s=0 ; s<3 ; s++) {
             for(int w=0 ; w<3 ; w++) {
@@ -1683,8 +1690,11 @@ derivs(Tissue &T,
                 tempStress[r][s]=eigenVectorStress[r][s];
               }
           }
-        eigenVectorStress= {{0,0,0},{0,0,0},{0,0,0}}; 
-        //HJ: commented due to compilation problems...all values set below anyway?
+	for (size_t ii=0; ii<3; ++ii) {
+	  for (size_t jj=0; jj<3; ++jj) {
+	    eigenVectorStress[ii][jj] = 0.0;
+	  }
+	}
         for (int r=0 ; r<3 ; r++) {
           for (int s=0 ; s<3 ; s++) {
             for(int w=0 ; w<3 ; w++) {
@@ -2015,7 +2025,7 @@ derivs(Tissue &T,
     vertexDerivs[v3][1]+= Force[2][1];
     vertexDerivs[v3][2]+= Force[2][2];
   }
-}
+      }
 // 1
   // int kk;
       // double PrPs;
@@ -2045,8 +2055,8 @@ derivs(Tissue &T,
       //           <<" Syx  "<< StrainTensor[1][0] <<" Syy  "<< StrainTensor[1][1] << std::endl;
     
 
-VertexFromTRBScenterTriangulationMT::
-VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue, 
+      VertexFromTRBScenterTriangulationMT::
+  VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue, 
 	       std::vector< std::vector<size_t> > 
 	       &indValue ) 
 {  
@@ -3020,8 +3030,11 @@ derivs(Tissue &T,
           for (int s=0 ; s<3 ; s++) 
             tempStress[r][s]=eigenVectorStress[r][s];
           
-        eigenVectorStress= {{0,0,0},{0,0,0},{0,0,0}}; 
-        //HJ: commented due to compilation problems...all values set below anyway?
+	for (size_t ii=0; ii<3; ++ii) {
+	  for (size_t jj=0; jj<3; ++jj) {
+	    eigenVectorStress[ii][jj] = 0.0;
+	  }
+	}
         for (int r=0 ; r<3 ; r++) 
           for (int s=0 ; s<3 ; s++) 
             for(int w=0 ; w<3 ; w++) 
