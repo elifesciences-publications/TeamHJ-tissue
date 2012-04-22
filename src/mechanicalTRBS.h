@@ -364,12 +364,12 @@ class VertexFromTRBScenterTriangulationMT : public BaseReaction {
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// VertexFromTRBScenterTriangulationConcentrationHillMT 5 2 3 1
+/// VertexFromTRBScenterTriangulationConcentrationHillMT 8 2 3 1
 /// Y_modulus_Longitudinal_min Y_modulus_Longitudinal_max P_coeff_Longitudinal Y_modulus_Transverse_min Y_modulus_Transverse_max P_coeff_Transverse  K_hill n_hill
 /// L_ij-index  concentration-index MT_cellIndex
 /// InternalVarStartIndex
 ///or
-/// VertexFromTRBScenterTriangulationConcentrationHillMT 5 4 3 1 1/0 1/0
+/// VertexFromTRBScenterTriangulationConcentrationHillMT 8 4 3 1 1/0 1/0
 /// Y_modulus_Longitudinal_min Y_modulus_Longitudinal_max P_coeff_Longitudinal Y_modulus_Transverse_min Y_modulus_Transverse_max P_coeff_Transverse  K_hill n_hill
 /// L_ij-index  concentration-index MT_cellIndex
 /// InternalVarStartIndex
