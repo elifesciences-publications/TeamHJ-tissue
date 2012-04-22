@@ -167,6 +167,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromTRBSMT(paraValue, indValue);
   else if (idValue == "VertexFromTRBScenterTriangulationMT")
     return new VertexFromTRBScenterTriangulationMT(paraValue, indValue);
+ else if (idValue == "VertexFromTRBScenterTriangulationConcentrationHillMT")
+   return new VertexFromTRBScenterTriangulationConcentrationHillMT(paraValue, indValue);
   
 
   //creation.h,creation.cc
