@@ -558,6 +558,15 @@ class VertexFromCellPlaneTriangular : public BaseReaction
 ///
 /// @brief Updates list of vertices with a given force applied
 ///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// VertexFromForce 1/2/3(dimension) 1 (no of vertices)
+/// Force component(s)
+/// 1st vertex index
+/// 2nd vertex index
+/// ...
+/// @endverbatim
 /// 
 ///
 class VertexFromForce : public BaseReaction {
