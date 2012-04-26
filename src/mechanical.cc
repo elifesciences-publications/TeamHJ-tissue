@@ -2885,6 +2885,68 @@ derivs(Tissue &T,
   }
 }
 
+
+VertexFromBall::
+VertexFromBall(std::vector<double> &paraValue, 
+		       std::vector< std::vector<size_t> > 
+		       &indValue ) 
+{  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=4 ) {
+    std::cerr << "VertexFromBall::"
+	      << "VertexFromBall() "
+	      << "Puts a fixed ball(sphere) of a given radius (radius) in a given position (x,y,z) on top of meriestem "
+	      << "4 parameters needed: radius, x, y, z" << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() < 1 ) {
+    std::cerr << "VertexFromBall::"
+	      << "VertexFromBall() "
+	      << "arbitrary positive number given in first level." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexFromBall");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "Radius";
+  tmp[1] = "xc";
+  tmp[2] = "yc";
+  tmp[3] = "zc";
+  setParameterId( tmp );
+}
+
+void VertexFromBall::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  //Do the update for each vertex .
+  size_t numVertex = T.numVertex();
+  for (size_t vertexIndex=0 ; vertexIndex<numVertex; ++vertexIndex) {
+    double Radius=parameter(0);
+    double Xc=parameter(1);
+    double Yc=parameter(2);
+    double Zc=parameter(3);
+    DataMatrix position(1,vertexData[vertexIndex]);
+    double d2=(position[0][0]-Xc)*(position[0][0]-Xc)+(position[0][1]-Yc)*(position[0][1]-Yc)+(position[0][2]-Zc)*(position[0][2]-Zc);
+    if( d2 < Radius*Radius ){
+      vertexData[vertexIndex][2]=Zc-std::sqrt(Radius*Radius-(position[0][0]-Xc)*(position[0][0]-Xc)-(position[0][1]-Yc)*(position[0][1]-Yc));
+    }
+  }
+}
+
+
 DebugReaction::DebugReaction(std::vector<double> &paraValue,
 			     std::vector< std::vector<size_t> > &indValue)
 {
