@@ -3083,7 +3083,7 @@ derivs(Tissue &T,
           Istrain=2;
         }
       // std::cerr<<"maximal Strain direction "<< eigenVectorStrain[0][Istrain] <<" "<< eigenVectorStrain[1][Istrain] <<" "<< eigenVectorStrain[2][Istrain] <<std::endl;  
-      // std::cerr<<"maximal Strain value "<< maximalStrainValue <<std::endl;  
+      //std::cerr<<"maximal Strain value "<< maximalStrainValue <<std::endl;  
       
       // STRESS:
       
@@ -3164,7 +3164,7 @@ derivs(Tissue &T,
           Istress=2;
         }
       // std::cerr<<"maximal Stress direction "<< eigenVectorStress[0][Istress] <<" "<< eigenVectorStress[1][Istress] <<" "<< eigenVectorStress[2][Istress] <<std::endl;  
-      // std::cerr<<"maximal Stress value "<< maximalStressValue <<std::endl;  
+      //std::cerr<<"maximal Stress value "<< maximalStressValue <<std::endl;  
       
     
 
@@ -3205,6 +3205,7 @@ derivs(Tissue &T,
             cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStrain[0][Istrain];
             cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStrain[1][Istrain];
             cellData[cellIndex][variableIndex(2,0)+2]=eigenVectorStrain[2][Istrain];
+            cellData[cellIndex][variableIndex(2,0)+3]=maximalStrainValue;
             // cellData[cellIndex][3]=10*maximalStrainValue;  //NOTE maximal Strain and Stress Values can be used - this is an option
           }
       }
@@ -3221,6 +3222,7 @@ derivs(Tissue &T,
 	    cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStress[0][Istress];
 	    cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStress[1][Istress];
 	    cellData[cellIndex][variableIndex(3,0)+2]=eigenVectorStress[2][Istress];
+            cellData[cellIndex][variableIndex(3,0)+11]=maximalStressValue;
 	    // cellData[cellIndex][3]=10*maximalStressValue;   //NOTE maximal Strain and Stress Values can be used this is an option
 	  }
       }
@@ -4225,9 +4227,6 @@ derivs(Tissue &T,
       // std::cerr<<"maximal Stress direction "<< eigenVectorStress[0][Istress] <<" "<< eigenVectorStress[1][Istress] <<" "<< eigenVectorStress[2][Istress] <<std::endl;  
       // std::cerr<<"maximal Stress value "<< maximalStressValue <<std::endl;  
       
-    
-
-
       // storing normal dirrection to  strain in cellData  ????????? not ready YET
      
       // normal to the cell plane in global direction is Zcurrent[], vector product gives the perpendicular strain direction
@@ -4264,6 +4263,7 @@ derivs(Tissue &T,
             cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStrain[0][Istrain];
             cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStrain[1][Istrain];
             cellData[cellIndex][variableIndex(2,0)+2]=eigenVectorStrain[2][Istrain];
+            cellData[cellIndex][variableIndex(2,0)+3]=maximalStrainValue;
             // cellData[cellIndex][3]=10*maximalStrainValue;  //NOTE maximal Strain and Stress Values can be used - this is an option
           }
       }
@@ -4280,6 +4280,7 @@ derivs(Tissue &T,
 	    cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStress[0][Istress];
 	    cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStress[1][Istress];
 	    cellData[cellIndex][variableIndex(3,0)+2]=eigenVectorStress[2][Istress];
+            cellData[cellIndex][variableIndex(3,0)+3]=maximalStressValue;
 	    // cellData[cellIndex][3]=10*maximalStressValue;   //NOTE maximal Strain and Stress Values can be used this is an option
 	  }
       }
