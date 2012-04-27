@@ -604,7 +604,7 @@ class VertexFromForce : public BaseReaction {
 
 //-------------------------------------------------
 ///
-/// @brief Updates position of vertices assuming that they are constraint with a ball from above
+/// @brief Updates position of vertices assuming that they are constrained with a ball from above
 ///
 /// In a model file the reaction is defined as
 ///
