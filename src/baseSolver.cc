@@ -198,7 +198,7 @@ void BaseSolver::print(std::ostream &os)
 	    << static_cast<int>(cellData_.size())-static_cast<int>(NOld) 
 	    << " " << numOk_-okOld << " " << numBad_-badOld << " "
 	    << time << std::endl;; 
-  tOld = t_;
+  tOld = t_;  
   NOld = cellData_.size();
   okOld = numOk_;
   badOld = numBad_;

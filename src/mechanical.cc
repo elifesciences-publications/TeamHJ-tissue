@@ -2900,10 +2900,10 @@ VertexFromBall(std::vector<double> &paraValue,
 	      << "4 parameters needed: radius, x, y, z" << std::endl;
     exit(0);
   }
-  if( indValue.size() != 1 || indValue[0].size() < 1 ) {
+  if( indValue.size() != 0 ) {
     std::cerr << "VertexFromBall::"
 	      << "VertexFromBall() "
-	      << "arbitrary positive number given in first level." << std::endl;
+	      << "No variable indices used." << std::endl;
     exit(0);
   }
   //Set the variable values
