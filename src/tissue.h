@@ -196,6 +196,15 @@ class Tissue {
   ///
   void readMerryInit(const char *initFile,int verbose=0);
   ///
+  /// @brief Reads an initial tissue configuration from MGX format
+  ///
+  /// Reads an initial tissue configuration from the file initFile. It 
+  /// assumes that the format is the format provided by the MGX software,
+	/// by saving the cell format after segmentation (before makeCell).
+  /// See the function implementation for the format.
+  ///
+  void readMGXTriInit(const char *initFile,int verbose=0);
+  ///
   /// @brief Opens the file modelFile and then calls readModel(std::ifstream&,int)
   ///
   /// @see Tissue::readModel(std::ifstream&,int)

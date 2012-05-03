@@ -19,17 +19,17 @@
 #include "myMath.h"
 
 Tissue::Tissue() {  
-  cell_.reserve(10000);
-  wall_.reserve(10000);
-  vertex_.reserve(10000);
+  cell_.reserve(100000);
+  wall_.reserve(100000);
+  vertex_.reserve(100000);
   Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
   background_ = tmpCell;
 }
 
 Tissue::Tissue( const Tissue & tissueCopy ) {
-  cell_.reserve(10000);
-  wall_.reserve(10000);
-  vertex_.reserve(10000);
+  cell_.reserve(100000);
+  wall_.reserve(100000);
+  vertex_.reserve(100000);
   Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
   background_ = tmpCell;
 }
@@ -38,9 +38,9 @@ Tissue::Tissue( const std::vector<Cell> &cellVal,
 		const std::vector<Wall> &wallVal,
 		const std::vector<Vertex> &vertexVal ) {
   
-  cell_.reserve(10000);
-  wall_.reserve(10000);
-  vertex_.reserve(10000);
+  cell_.reserve(100000);
+  wall_.reserve(100000);
+  vertex_.reserve(100000);
 
   Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
   background_ = tmpCell;
@@ -50,9 +50,9 @@ Tissue::Tissue( const std::vector<Cell> &cellVal,
 }
 
 Tissue::Tissue( const char *initFile, int verbose ) {
-  cell_.reserve(10000);
-  wall_.reserve(10000);
-  vertex_.reserve(10000);
+  cell_.reserve(100000);
+  wall_.reserve(100000);
+  vertex_.reserve(100000);
 
   Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
   background_ = tmpCell;
@@ -62,9 +62,9 @@ Tissue::Tissue( const char *initFile, int verbose ) {
 
 Tissue::Tissue( std::string initFile, int verbose ) 
 {
-  cell_.reserve(10000);
-  wall_.reserve(10000);
-  vertex_.reserve(10000);
+  cell_.reserve(100000);
+  wall_.reserve(100000);
+  vertex_.reserve(100000);
 	
   Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
   background_ = tmpCell;
@@ -78,9 +78,9 @@ Tissue::Tissue( DataMatrix &cellData,
 								std::vector< std::vector<size_t> > &wallVertex,
 								int verbose)
 {
-  cell_.reserve(10000);
-  wall_.reserve(10000);
-  vertex_.reserve(10000);
+  cell_.reserve(100000);
+  wall_.reserve(100000);
+  vertex_.reserve(100000);
 	
   Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
   background_ = tmpCell;
@@ -457,7 +457,7 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
     std::cerr << "Tissue::readMerryInit(char*) - "
 							<< "Cannot open file " << initFile 
 							<< std::endl; 
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
   unsigned int numVertexVal,dimension;
   IN >> numVertexVal;
@@ -728,6 +728,95 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 	checkConnectivity(verbose);
 	sortCellWallAndCellVertex();
 	checkConnectivity(verbose);
+}
+
+void Tissue::readMGXTriInit( const char *initFile, int verbose ) 
+{
+  std::ifstream IN(initFile);
+  if( !IN ) {
+    std::cerr << "Tissue::readMGXTriInit(char*) - "
+							<< "Cannot open file " << initFile 
+							<< std::endl; 
+		exit(EXIT_FAILURE);
+	}
+  unsigned int numVertexVal,dimension=3;//assuming always 3
+  IN >> numVertexVal;
+  setNumVertex( numVertexVal );
+	for( size_t i=0 ; i<numVertexVal ; ++i )
+    vertex(i).setIndex(i);
+	
+	std::vector<size_t> vLabel(numVertexVal);
+	std::vector<double> pos(dimension);
+	std::vector<size_t> cellName,vertexName;
+	// Read information about vertices
+	for( size_t i=0 ; i<numVertexVal ; ++i ) {
+		size_t tmp;
+		IN >> tmp;
+		vertexName.push_back(tmp);
+		if (tmp!=vertex(i).index()) {
+			std::cerr << "Tissue::readMGXTriInit() Expecting consecutive indices"
+								<< " in file." << std::endl;
+			exit(EXIT_FAILURE);
+		}
+		for( size_t dim=0 ; dim<dimension ; ++dim )
+			IN >> pos[dim];
+		vertex(i).setPosition(pos);
+		IN >> vLabel[i];
+		std::string sTmp;
+		IN >> sTmp;
+		//Check sTmp==j?
+	}
+	
+	// Read vertex connectivity and create walls
+	size_t wallIndex=0;
+	for( size_t i=0 ; i<numVertexVal ; ++i ) {
+		size_t indexVal;
+		IN >> indexVal;
+		if (i!=indexVal) {
+			std::cerr << "Tissue::readMGXTriInit() Expecting consecutive indices"
+								<< " in file when reading connectivity." << std::endl;
+			exit(EXIT_FAILURE);
+		}
+		size_t numVertexNeigh;
+		IN >> numVertexNeigh;
+		for( size_t k=0 ; k<numVertexNeigh ; ++k ) {
+			size_t j;
+			IN >> j;
+			if (i<j) {
+				Wall tmpWall;
+				tmpWall.setIndex(wallIndex);
+				tmpWall.setVertex(vertexP(i),vertexP(j));
+				tmpWall.setLength(tmpWall.lengthFromVertexPosition());
+				tmpWall.setCell(background(),background());//temporary, generate cells below
+				addWall(tmpWall);
+				vertex(i).addWall(wallP(wallIndex));
+				vertex(j).addWall(wallP(wallIndex));
+			}
+		}
+	}
+	IN.close();
+		
+	// Generate cells (assuming triangeles)
+	
+
+	// Mark wall boundaries and indices
+	//for (size_t i=0; i<numWall(); ++i) {
+	//if (wall(i).cell1().variable(0)==wall.cell2().variable(0)) {
+	//	wall(i).addVariable(1);
+	//}
+	//else {
+	//	wall(i).addVariable(0);
+	//}
+	//}
+	if (verbose) {
+		std::cerr << numCell() << " cells and " << numVertex() 
+							<< " vertices and " << numWall() << " walls extracted by "
+							<< "readMGXTriInit()" << std::endl;
+	}
+	sortCellWallAndCellVertex();
+	checkConnectivity(verbose);
+	
+	return;
 }
 
 void Tissue::readModel(std::ifstream &IN,int verbose) {
