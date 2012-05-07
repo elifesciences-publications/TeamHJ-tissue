@@ -2942,9 +2942,13 @@ derivs(Tissue &T,
     double Yc=parameter(2);
     double Zc=parameter(3);
     DataMatrix position(1,vertexData[vertexIndex]);
-    double d2=(position[0][0]-Xc)*(position[0][0]-Xc)+(position[0][1]-Yc)*(position[0][1]-Yc)+(position[0][2]-Zc)*(position[0][2]-Zc);
+    double d2=(position[0][0]-Xc)*(position[0][0]-Xc)+
+      (position[0][1]-Yc)*(position[0][1]-Yc)+
+      (position[0][2]-Zc)*(position[0][2]-Zc);
     if( d2 < Radius*Radius ){
-      vertexData[vertexIndex][2]=Zc-std::sqrt(Radius*Radius-(position[0][0]-Xc)*(position[0][0]-Xc)-(position[0][1]-Yc)*(position[0][1]-Yc));
+      vertexData[vertexIndex][2]= Zc - std::sqrt(Radius*Radius-(position[0][0]-Xc)*
+						 (position[0][0]-Xc)-(position[0][1]-Yc)*
+						 (position[0][1]-Yc));
     }
   }
 }
@@ -2956,9 +2960,11 @@ void VertexFromBall::update(Tissue &T,
 			    DataMatrix &vertexData,
 			    double h)
 {
-  setParameter(1,parameter(1)+h*parameter(4));
-  setParameter(2,parameter(2)+h*parameter(5));
-  setParameter(3,parameter(3)+h*parameter(6));
+  if( numParameter()>4 ) {
+    setParameter(1,parameter(1)+h*parameter(4));
+    setParameter(2,parameter(2)+h*parameter(5));
+    setParameter(3,parameter(3)+h*parameter(6));
+  }
 }
 
 
