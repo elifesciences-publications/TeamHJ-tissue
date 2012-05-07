@@ -602,19 +602,27 @@ class VertexFromForce : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
-//-------------------------------------------------
 ///
 /// @brief Updates position of vertices assuming that they are constrained with a ball from above
 ///
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// VertexFromBall 4  1 1
+/// VertexFromBall 4 0
 /// Radius Xc Yc Zc
-/// arbitrary
 /// @endverbatim
 /// 
+/// or
 ///
+/// @verbatim
+/// VertexFromBall 7 0
+/// Radius Xc Yc Zc dXc dYc dZc
+/// @endverbatim
+///
+/// where radius is the size of the 'ball' pushing at the tissue, Xc,Yc,Zc is the center 
+/// of the ball, and the optional dXc,dYc,dZc are the rates for moving the ball along the different
+/// directions (the movement is defined in the update function).
+/// 
 class VertexFromBall : public BaseReaction {
   
  public:
@@ -646,6 +654,18 @@ class VertexFromBall : public BaseReaction {
 	      DataMatrix &cellDerivs,
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
+
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+  
 };
 
 //-------------------------------------------------

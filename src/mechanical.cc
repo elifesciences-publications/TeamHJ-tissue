@@ -2893,11 +2893,14 @@ VertexFromBall(std::vector<double> &paraValue,
 {  
   //Do some checks on the parameters and variable indeces
   //
-  if( paraValue.size()!=4 ) {
+  if( paraValue.size()!=4 && paraValue.size()!=7 ) {
     std::cerr << "VertexFromBall::"
 	      << "VertexFromBall() "
-	      << "Puts a fixed ball(sphere) of a given radius (radius) in a given position (x,y,z) on top of meriestem "
-	      << "4 parameters needed: radius, x, y, z" << std::endl;
+	      << "Puts a fixed ball(sphere) of a given radius (radius) in a given "
+	      << "position (x,y,z) on top of meriestem "
+	      << "4 parameters used in static condition: radius, x, y, z." << std::endl
+	      << "7 parameters used in dynamic condition: radius, x, y, z, dx, dy, dz."
+	      << std::endl;
     exit(0);
   }
   if( indValue.size() != 0 ) {
@@ -2944,6 +2947,18 @@ derivs(Tissue &T,
       vertexData[vertexIndex][2]=Zc-std::sqrt(Radius*Radius-(position[0][0]-Xc)*(position[0][0]-Xc)-(position[0][1]-Yc)*(position[0][1]-Yc));
     }
   }
+}
+
+
+void VertexFromBall::update(Tissue &T,
+			    DataMatrix &cellData,
+			    DataMatrix &wallData,
+			    DataMatrix &vertexData,
+			    double h)
+{
+  setParameter(1,parameter(1)+h*parameter(4));
+  setParameter(2,parameter(2)+h*parameter(5));
+  setParameter(3,parameter(3)+h*parameter(6));
 }
 
 
