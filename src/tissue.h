@@ -196,14 +196,25 @@ class Tissue {
   ///
   void readMerryInit(const char *initFile,int verbose=0);
   ///
-  /// @brief Reads an initial tissue configuration from MGX format
+  /// @brief Reads an initial tissue configuration from MGX triangular mesh format
   ///
   /// Reads an initial tissue configuration from the file initFile. It 
   /// assumes that the format is the format provided by the MGX software,
-	/// by saving the cell format after segmentation (before makeCell).
+	/// by saving the cell format after segmentation on triangulat mesh
+	/// (before makeCell).
   /// See the function implementation for the format.
   ///
-  void readMGXTriInit(const char *initFile,int verbose=0);
+  void readMGXTriCellInit(const char *initFile,int verbose=0);
+  ///
+  /// @brief Reads an initial tissue configuration from MGX triangular mesh vtu format
+  ///
+  /// Reads an initial tissue configuration from the file initFile. It 
+  /// assumes that the format is the format provided by the MGX software,
+	/// by saving the cell format after segmentation on triangulated mesh
+	/// (before makeCell) and using the vtu format.
+  /// See the function implementation for the format.
+  ///
+  void readMGXTriVtuInit(const char *initFile,int verbose=0);
   ///
   /// @brief Opens the file modelFile and then calls readModel(std::ifstream&,int)
   ///

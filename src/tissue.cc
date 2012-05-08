@@ -730,11 +730,11 @@ void Tissue::readMerryInit( const char *initFile, int verbose )
 	checkConnectivity(verbose);
 }
 
-void Tissue::readMGXTriInit( const char *initFile, int verbose ) 
+void Tissue::readMGXTriCellInit( const char *initFile, int verbose ) 
 {
   std::ifstream IN(initFile);
   if( !IN ) {
-    std::cerr << "Tissue::readMGXTriInit(char*) - "
+    std::cerr << "Tissue::readMGXTriCellInit(char*) - "
 							<< "Cannot open file " << initFile 
 							<< std::endl; 
 		exit(EXIT_FAILURE);
@@ -769,6 +769,142 @@ void Tissue::readMGXTriInit( const char *initFile, int verbose )
 	
 	// Read vertex connectivity and create walls
 	size_t wallIndex=0;
+	for( size_t i=0 ; i<numVertexVal ; ++i ) {
+		size_t indexVal;
+		IN >> indexVal;
+		if (i!=indexVal) {
+			std::cerr << "Tissue::readMGXTriInit() Expecting consecutive indices"
+								<< " in file when reading connectivity." << std::endl;
+			exit(EXIT_FAILURE);
+		}
+		size_t numVertexNeigh;
+		IN >> numVertexNeigh;
+		for( size_t k=0 ; k<numVertexNeigh ; ++k ) {
+			size_t j;
+			IN >> j;
+			if (i<j) {
+				Wall tmpWall;
+				tmpWall.setIndex(wallIndex);
+				tmpWall.setVertex(vertexP(i),vertexP(j));
+				tmpWall.setLength(tmpWall.lengthFromVertexPosition());
+				tmpWall.setCell(background(),background());//temporary, generate cells below
+				addWall(tmpWall);
+				vertex(i).addWall(wallP(wallIndex));
+				vertex(j).addWall(wallP(wallIndex));
+			}
+		}
+	}
+	IN.close();
+		
+	// Generate cells (assuming triangeles)
+	
+
+	// Mark wall boundaries and indices
+	//for (size_t i=0; i<numWall(); ++i) {
+	//if (wall(i).cell1().variable(0)==wall.cell2().variable(0)) {
+	//	wall(i).addVariable(1);
+	//}
+	//else {
+	//	wall(i).addVariable(0);
+	//}
+	//}
+	if (verbose) {
+		std::cerr << numCell() << " cells and " << numVertex() 
+							<< " vertices and " << numWall() << " walls extracted by "
+							<< "readMGXTriInit()" << std::endl;
+	}
+	sortCellWallAndCellVertex();
+	checkConnectivity(verbose);
+	
+	return;
+}
+
+void Tissue::readMGXTriVtuInit( const char *initFile, int verbose ) 
+{
+  std::ifstream IN(initFile);
+  if( !IN ) {
+    std::cerr << "Tissue::readMGXTriVtuInit(char*) - "
+							<< "Cannot open file " << initFile 
+							<< std::endl; 
+		exit(EXIT_FAILURE);
+	}
+  unsigned int numVertexVal,dimension=3,dim;//assuming always 3
+  IN >> numVertexVal;
+	IN >> dim;
+	assert (dim==dimension);
+
+  setNumVertex( numVertexVal );
+
+	std::vector<double> pos(dimension);
+	//std::vector<size_t> cellName,vertexName;
+	// Read information about vertices, positions first and label next
+	for( size_t i=0 ; i<numVertexVal ; ++i ) {
+    vertex(i).setIndex(i);
+    vertex(i).setId(i);
+		for( size_t dim=0 ; dim<dimension ; ++dim ) {
+			IN >> pos[dim];
+		}
+		vertex(i).setPosition(pos);
+	}
+	size_t numVtmp,numLtmp;
+	IN >> numVtmp;
+	if (numVtmp != numVertexVal) {
+    std::cerr << "Tissue::readMGXTriVtuInit(char*) - "
+							<< "Number of vertex positions not same as vertex labels." 
+							<< std::endl; 
+		exit(EXIT_FAILURE);
+	}
+	IN >> numLtmp;
+	assert (numLtmp==1);
+	std::vector<size_t> vLabel(numVertexVal);
+	for( size_t i=0 ; i<numVertexVal ; ++i ) {
+		IN >> vLabel[i];
+	}
+	// Read cell connectivity
+	size_t numCellVal,numCellVertex;
+	IN >> numCellVal;
+
+	setNumCell( numCellVal );
+
+	IN >> numCellVertex;
+	if (numCellVertex != 3) {
+    std::cerr << "Tissue::readMGXTriVtuInit(char*) - "
+							<< "Number of vertex per cell expected to be 3."
+							<< std::endl; 
+		exit(EXIT_FAILURE);
+	}	
+	for( size_t i=0 ; i<numCellVal ; ++i ) {
+		std::vector<size_t> cellV(numCellVertex);
+		cell(i).setIndex(i);
+		cell(i).setId(i);
+		for( size_t k=0 ; k<numCellVertex ; ++k ) {
+			IN >> cellV[k];
+			cell(i).addVertex(vertexP(cellV[k]));
+			vertex(cellV[k]).addCell(cellP(i));
+		}
+	}
+	
+	// Read cell label
+	size_t numCtmp;
+	IN >> numCtmp;
+	if (numCtmp != numCellVal) {
+    std::cerr << "Tissue::readMGXTriVtuInit(char*) - "
+							<< "Number of cell connections (vertex) not same as cell labels." 
+							<< std::endl; 
+		exit(EXIT_FAILURE);
+	}
+	IN >> numLtmp;
+	assert (numLtmp==1);
+	for( size_t i=0 ; i<numCellVal ; ++i ) {
+		size_t cellLabel;
+		IN >> cellLabel;
+		cell(i).addVariable(cellLabel);
+	}
+	size_t wallIndex=0;
+	// Create walls from cells and their vertex connections
+	for( size_t i=0 ; i<numCellVal ; ++i ) {
+
+
 	for( size_t i=0 ; i<numVertexVal ; ++i ) {
 		size_t indexVal;
 		IN >> indexVal;
