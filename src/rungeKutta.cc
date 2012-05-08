@@ -618,19 +618,19 @@ void RK4::simulate(size_t verbose)
     ytWall(Nw),dytWall(Nw),dymWall(Nw),
     ytVertex(Nw),dytVertex(Nw),dymVertex(Nw);
   //Resize each vector
-  size_t Ncvar=T_->cell(0).numVariable();
+  //size_t Ncvar=T_->cell(0).numVariable();
   for( size_t i=0 ; i<Nc ; ++i ) {
     ytCell[i].resize(cellData_[i].size());
     dytCell[i].resize(cellData_[i].size());
     dymCell[i].resize(cellData_[i].size());
   }
-  size_t Nwvar=T_->wall(0).numVariable()+1;
+  //size_t Nwvar=T_->wall(0).numVariable()+1;
   for( size_t i=0 ; i<Nw ; ++i ) {
     ytWall[i].resize(wallData_[i].size());
     dytWall[i].resize(wallData_[i].size());
     dymWall[i].resize(wallData_[i].size());
   }
-  size_t Nvvar=T_->vertex(0).numPosition();
+  //size_t Nvvar=T_->vertex(0).numPosition();
   for( size_t i=0 ; i<Nv ; ++i ) {
     ytVertex[i].resize(vertexData_[i].size());
     dytVertex[i].resize(vertexData_[i].size());
