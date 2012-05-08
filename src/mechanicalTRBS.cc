@@ -855,13 +855,14 @@ derivs(Tissue &T,
           {
             cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStrain[0][Istrain];
             cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStrain[1][Istrain];
+            cellData[cellIndex][variableIndex(2,0)+2]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
           }
         if (dimension==3)
           {
             cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStrain[0][Istrain];
             cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStrain[1][Istrain];
             cellData[cellIndex][variableIndex(2,0)+2]=eigenVectorStrain[2][Istrain];
-            // cellData[cellIndex][3]=10*maximalStrainValue;  //NOTE maximal Strain and Stress Values can be used - this is an option
+            cellData[cellIndex][variableIndex(2,0)+3]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
           }
       }
 
@@ -871,13 +872,14 @@ derivs(Tissue &T,
 	  {
 	    cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStress[0][Istress];
 	    cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStress[1][Istress];
+            cellData[cellIndex][variableIndex(3,0)+2]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
 	  }
 	if (dimension==3)
 	  {
 	    cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStress[0][Istress];
 	    cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStress[1][Istress];
 	    cellData[cellIndex][variableIndex(3,0)+2]=eigenVectorStress[2][Istress];
-	    // cellData[cellIndex][3]=10*maximalStressValue;   //NOTE maximal Strain and Stress Values can be used this is an option
+            cellData[cellIndex][variableIndex(3,0)+3]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
 	  }
       }
   }      
@@ -2225,18 +2227,18 @@ derivs(Tissue &T,
      
     
 
-        VertexFromTRBScenterTriangulationMT::
-          VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue, 
-                                              std::vector< std::vector<size_t> > 
-                                              &indValue ) 
-        {  
-          // Do some checks on the parameters and variable indeces
-          if( paraValue.size()!=4 ) {
-            std::cerr << "VertexFromTRBScenterTriangulationMT::"
-                      << "VertexFromTRBScenterTriangulationMT() "
+VertexFromTRBScenterTriangulationMT::
+VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue, 
+                                    std::vector< std::vector<size_t> > 
+                                    &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=4 ) {
+    std::cerr << "VertexFromTRBScenterTriangulationMT::"
+              << "VertexFromTRBScenterTriangulationMT() "
               << "Uses four parameters young modulus and poisson coefficients in "
 	      << "longitudinal (MT) and transverse directions." << std::endl;
-	      
+    
     exit(0);
   }
   if( (indValue.size()!=2 && indValue.size()!=4) || 
@@ -3199,14 +3201,14 @@ derivs(Tissue &T,
           {
             cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStrain[0][Istrain];
             cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStrain[1][Istrain];
+            cellData[cellIndex][variableIndex(2,0)+2]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
           }
         if (dimension==3)
           {
             cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStrain[0][Istrain];
             cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStrain[1][Istrain];
             cellData[cellIndex][variableIndex(2,0)+2]=eigenVectorStrain[2][Istrain];
-            cellData[cellIndex][variableIndex(2,0)+3]=maximalStrainValue;
-            // cellData[cellIndex][3]=10*maximalStrainValue;  //NOTE maximal Strain and Stress Values can be used - this is an option
+            cellData[cellIndex][variableIndex(2,0)+3]=maximalStrainValue; //maximal Strain Value is stored after its eigenvector
           }
       }
 
@@ -3216,15 +3218,15 @@ derivs(Tissue &T,
 	  {
 	    cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStress[0][Istress];
 	    cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStress[1][Istress];
+            cellData[cellIndex][variableIndex(3,0)+2]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
 	  }
 	if (dimension==3)
 	  {
 	    cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStress[0][Istress];
 	    cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStress[1][Istress];
 	    cellData[cellIndex][variableIndex(3,0)+2]=eigenVectorStress[2][Istress];
-            cellData[cellIndex][variableIndex(3,0)+11]=maximalStressValue;
-	    // cellData[cellIndex][3]=10*maximalStressValue;   //NOTE maximal Strain and Stress Values can be used this is an option
-	  }
+            cellData[cellIndex][variableIndex(3,0)+3]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
+          }
       }
   }      
 }     
@@ -3306,21 +3308,23 @@ VertexFromTRBScenterTriangulationConcentrationHillMT(std::vector<double> &paraVa
 	      << " poisson coefficient_Trans, K_hill, and n_hill.\n";
     exit(0);
   }
-  // if( indValue.size()!=2 || indValue[0].size()!=2 || indValue[1].size()!=1 ) { 
-  if( (indValue.size()!=2 && indValue.size()!=4) || 
+  
+  if( (indValue.size()!=2 && indValue.size()!=6) || 
       indValue[0].size()!=3 || indValue[1].size()!=1 ||
-      (indValue.size()==4 && (indValue[2].size()!=0 && indValue[2].size()!=1)) ||
-      (indValue.size()==4 && (indValue[3].size()!=0 && indValue[3].size()!=1)) 
+      (indValue.size()==6 && (indValue[2].size()!=0 && indValue[2].size()!=1)) ||
+      (indValue.size()==6 && (indValue[3].size()!=0 && indValue[3].size()!=1)) ||
+      (indValue.size()==6 && (indValue[4].size()!=0 && indValue[3].size()!=1)) ||
+      (indValue.size()==6 && (indValue[5].size()!=0 && indValue[3].size()!=1)) 
       ) { 
     std::cerr << "VertexFromTRBScenterTriangulationConcentrationHillMT::"
 	      << "VertexFromTRBScenterTriangulationConcentrationHillMT() "
 	      << "Wall length and concentration indices and MT direction initial index given in first level." << std::endl
 	      << "Start of additional Cell variable indices (center(x,y,z) "
 	      << "L_1,...,L_n, n=num vertex) is given in second level (typically at end)." 
-              << "Optionally two additional levels can be given where the strain and stress "
-	      << "directions can be stored at given indices. If index given at third level, "
+              << "Optionally four additional levels can be given where the strain, 2nd strain, stress and 2nd stress "
+	      << "directions/values(dx dy dz value) can be stored at given indices. If index given at third level, "
               << "strain direction will be stored starting at this (cell) variable index, "
-	      << "and for fourth level stress will be stored."
+	      << "for fourth 2nd strain , for fifth level stress and for sixth level 2nd stress will be stored."
 	      << std::endl;
     exit(0);
   }
@@ -4146,6 +4150,27 @@ derivs(Tissue &T,
       // std::cerr<<"maximal Strain direction "<< eigenVectorStrain[0][Istrain] <<" "<< eigenVectorStrain[1][Istrain] <<" "<< eigenVectorStrain[2][Istrain] <<std::endl;  
       // std::cerr<<"maximal Strain value "<< maximalStrainValue <<std::endl;  
       
+      // 2nd maximalstrain direction/value
+      double maximalStrainValue2;
+      int Istrain2,Istrain3;
+      if (Istrain==0) {
+        Istrain2=1;
+        Istrain3=2;
+      }
+      if (Istrain==1) {
+        Istrain2=0;
+        Istrain3=2;
+      }
+      if (Istrain==2) {
+        Istrain2=0;
+        Istrain3=1;
+      }
+      if(StrainCellGlobal[Istrain3][Istrain3]>StrainCellGlobal[Istrain2][Istrain2]) {
+        Istrain2=Istrain3;
+      }
+      maximalStrainValue2=StrainCellGlobal[Istrain2][Istrain2];
+
+
       // STRESS:
       
       double eigenVectorStress[3][3]={{1,0,0},{0,1,0},{0,0,1}};
@@ -4227,6 +4252,27 @@ derivs(Tissue &T,
       // std::cerr<<"maximal Stress direction "<< eigenVectorStress[0][Istress] <<" "<< eigenVectorStress[1][Istress] <<" "<< eigenVectorStress[2][Istress] <<std::endl;  
       // std::cerr<<"maximal Stress value "<< maximalStressValue <<std::endl;  
       
+      // 2nd maximalstress direction/value
+      double maximalStressValue2;
+      int Istress2,Istress3;
+      if (Istress==0) {
+        Istress2=1;
+        Istress3=2;
+      }
+      if (Istress==1) {
+        Istress2=0;
+        Istress3=2;
+      }
+      if (Istress==2) {
+        Istress2=0;
+        Istress3=1;
+      }
+      if(StressCellGlobal[Istress3][Istress3]>StressCellGlobal[Istress2][Istress2]) {
+        Istress2=Istress3;
+      }
+      maximalStressValue2=StressCellGlobal[Istress2][Istress2];
+
+      
       // storing normal dirrection to  strain in cellData  ????????? not ready YET
      
       // normal to the cell plane in global direction is Zcurrent[], vector product gives the perpendicular strain direction
@@ -4252,38 +4298,70 @@ derivs(Tissue &T,
       // }
       
 
-      if (numVariableIndexLevel()==4 && numVariableIndex(2) ) {// storing maximal strain
+      if (numVariableIndexLevel()==6 && numVariableIndex(2) ) {// storing maximal strain
         if (dimension==2)
           {
             cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStrain[0][Istrain];
             cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStrain[1][Istrain];
+            cellData[cellIndex][variableIndex(2,0)+2]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
           }
         if (dimension==3)
           {
             cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStrain[0][Istrain];
             cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStrain[1][Istrain];
             cellData[cellIndex][variableIndex(2,0)+2]=eigenVectorStrain[2][Istrain];
-            cellData[cellIndex][variableIndex(2,0)+3]=maximalStrainValue;
-            // cellData[cellIndex][3]=10*maximalStrainValue;  //NOTE maximal Strain and Stress Values can be used - this is an option
+            cellData[cellIndex][variableIndex(2,0)+3]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
+          }
+      }
+      
+      if (numVariableIndexLevel()==6 && numVariableIndex(3) ) {//storing 2nd maximal strain
+        if (dimension==2)
+          {
+            cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStrain[0][Istrain2];
+            cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStrain[1][Istrain2];
+            cellData[cellIndex][variableIndex(3,0)+2]=maximalStrainValue2;  //maximal Strain Value is stored after its eigenvector
+          }
+        if (dimension==3)
+          {
+            cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStrain[0][Istrain2];
+            cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStrain[1][Istrain2];
+            cellData[cellIndex][variableIndex(3,0)+2]=eigenVectorStrain[2][Istrain2];
+            cellData[cellIndex][variableIndex(3,0)+3]=maximalStrainValue2;  //maximal Strain Value is stored after its eigenvector
           }
       }
 
-
-      if (numVariableIndexLevel()==4 && numVariableIndex(3) ) { // storing maximal stress
+      if (numVariableIndexLevel()==6 && numVariableIndex(4) ) { // storing maximal stress
 	if (dimension==2)
 	  {
-	    cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStress[0][Istress];
-	    cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStress[1][Istress];
+	    cellData[cellIndex][variableIndex(4,0)]  =eigenVectorStress[0][Istress];
+	    cellData[cellIndex][variableIndex(4,0)+1]=eigenVectorStress[1][Istress];
+            cellData[cellIndex][variableIndex(4,0)+2]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
 	  }
 	if (dimension==3)
 	  {
-	    cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStress[0][Istress];
-	    cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStress[1][Istress];
-	    cellData[cellIndex][variableIndex(3,0)+2]=eigenVectorStress[2][Istress];
-            cellData[cellIndex][variableIndex(3,0)+3]=maximalStressValue;
-	    // cellData[cellIndex][3]=10*maximalStressValue;   //NOTE maximal Strain and Stress Values can be used this is an option
+	    cellData[cellIndex][variableIndex(4,0)]  =eigenVectorStress[0][Istress];
+	    cellData[cellIndex][variableIndex(4,0)+1]=eigenVectorStress[1][Istress];
+	    cellData[cellIndex][variableIndex(4,0)+2]=eigenVectorStress[2][Istress];
+            cellData[cellIndex][variableIndex(4,0)+3]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
 	  }
       }
+
+      if (numVariableIndexLevel()==6 && numVariableIndex(5) ) { // storing maximal stress
+	if (dimension==2)
+	  {
+	    cellData[cellIndex][variableIndex(5,0)]  =eigenVectorStress[0][Istress2];
+	    cellData[cellIndex][variableIndex(5,0)+1]=eigenVectorStress[1][Istress2];
+            cellData[cellIndex][variableIndex(5,0)+2]=maximalStressValue2;  //maximal Stress Value is stored after its eigenvector
+	  }
+	if (dimension==3)
+	  {
+	    cellData[cellIndex][variableIndex(5,0)]  =eigenVectorStress[0][Istress2];
+	    cellData[cellIndex][variableIndex(5,0)+1]=eigenVectorStress[1][Istress2];
+	    cellData[cellIndex][variableIndex(5,0)+2]=eigenVectorStress[2][Istress2];
+            cellData[cellIndex][variableIndex(5,0)+3]=maximalStressValue2;  //maximal Stress Value is stored after its eigenvector
+	  }
+      }
+
   }      
 }     
 
