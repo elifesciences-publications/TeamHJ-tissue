@@ -291,14 +291,19 @@ class VertexFromTRBSMT : public BaseReaction {
 /// L_ij-index MT_cellIndex
 /// InternalVarStartIndex
 /// or
-/// VertexFromTRBScenterTriangulationMT 4 4 2 1 1/0 1/0
-/// Y_modulus_Longitudinal P_coeff_Longitudinal Y_modulus_Transverse P_coeff_Transverse 
+/// VertexFromTRBScenterTriangulationMT 4 6 2 1 1/0 1/0 1/0 1/0
+/// Y_modulus_Longitudinal P_coeff_Longitudinal 
+/// Y_modulus_Transverse P_coeff_Transverse 
 /// L_ij-index MT_cellIndex
 /// InternalVarStartIndex
 /// optional index for storing strain
+/// optional index for storing 2nd strain
 /// optional index for storing stress
+/// optional index for storing 2nd stress
 /// @endverbatim
-///
+/// In case of storing strain/stress direction/value, in 3(2) dimensions, 
+/// strain/stress values will be stored after  2(3) components of vectors.  
+
 class VertexFromTRBScenterTriangulationMT : public BaseReaction {
   
  public:
