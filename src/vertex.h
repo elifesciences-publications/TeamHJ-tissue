@@ -202,6 +202,15 @@ class Vertex {
   /// @return 1 if boundary and 0 otherwise.
   ///
   int isBoundary(Cell *background) const;
+  ///
+  /// @brief Checks if the vertex is neighbor (via a wall) with the supplied vertex (pointer)
+  ///
+  /// This function checks all walls of the vertex to see if the supplied vertex is the
+  /// 'other' vertex for the wall.
+  ///
+  /// @return -1 if not neighbors and the wall index for the neighbor vertex (in list) if neighbor
+  ///  
+  int isNeighborViaWall(Vertex *v) const;
   
   ///
   /// @brief Calculate stress direction for the vertex from stresses in the connected walls.

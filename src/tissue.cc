@@ -904,31 +904,35 @@ void Tissue::readMGXTriVtuInit( const char *initFile, int verbose )
   size_t wallIndex=0;
   // Create walls from cells and their vertex connections
   for( size_t i=0 ; i<numCellVal ; ++i ) {    
-    
-    //for( size_t k=0 ; k<numVertexNeigh ; ++k ) {
-    //size_t j;
-    //IN >> j;
-    //if (i<j) {
-    //	Wall tmpWall;
-    //	tmpWall.setIndex(wallIndex);
-    //	tmpWall.setVertex(vertexP(i),vertexP(j));
-    //	tmpWall.setLength(tmpWall.lengthFromVertexPosition());
-    //	tmpWall.setCell(background(),background());//temporary, generate cells below
-    //	addWall(tmpWall);
-    //	vertex(i).addWall(wallP(wallIndex));
-    //	vertex(j).addWall(wallP(wallIndex));
-    //}
-    //}
+    // Check potential wall for all permutations of vertex pairs (assuming triangles)
+    assert (cell(i).numVertex()==3);
+    for (size_t k=0; k<cell(i).numVertex(); ++k) {
+      for (size_t kk=k+1; kk<cell(i).numVertex(); ++kk) {
+	int vertexWallK = cell(i).vertex(k)->isNeighborViaWall(cell(i).vertex(kk));
+	if ( vertexWallK != -1 ) {
+	  // Wall exist, just check it has an appropriate cell connected and add the cell
+	  size_t vertexWallI = static_cast<size_t>(vertexWallK);
+	  cell(i).vertex(k)->wall(vertexWallI)->setCell2( cellP(i) );
+	  cell(i).addWall( cell(i).vertex(k)->wall(vertexWallI) );
+	}
+	else {
+	  // Create a new wall
+	  Wall tmpWall;
+	  tmpWall.setIndex(wallIndex);
+	  tmpWall.setVertex(vertexP(cell(i).vertex(k)->index()),
+			    vertexP(cell(i).vertex(kk)->index()));
+	  tmpWall.setLength(tmpWall.lengthFromVertexPosition());
+	  tmpWall.setCell(cellP(i),background());
+	  addWall(tmpWall);
+	  vertex(cell(i).vertex(k)->index()).addWall(wallP(wallIndex));
+	  vertex(cell(i).vertex(kk)->index()).addWall(wallP(wallIndex));
+	  cell(i).addWall(wallP(wallIndex));
+	  ++wallIndex;
+	}
+      }
+    }
   }
-  // Mark wall boundaries and indices
-  //for (size_t i=0; i<numWall(); ++i) {
-  //if (wall(i).cell1().variable(0)==wall.cell2().variable(0)) {
-  //	wall(i).addVariable(1);
-  //}
-  //else {
-  //	wall(i).addVariable(0);
-  //}
-  //}
+  
   if (verbose) {
     std::cerr << numCell() << " cells and " << numVertex() 
 	      << " vertices and " << numWall() << " walls extracted by "

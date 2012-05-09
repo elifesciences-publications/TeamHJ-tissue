@@ -72,6 +72,14 @@ int Vertex::isBoundary(Cell *background) const
   return 0;
 }
 
+int Vertex::isNeighborViaWall(Vertex *v) const
+{
+  for (size_t wI=0; wI<numWall(); ++wI)
+    if (wall_[wI]->hasVertex(v))
+      return wI;
+  return -1;
+}
+
 void Vertex::calculateStressDirection(DataMatrix &vertexData,
 				      DataMatrix &wallData, 
 				      std::vector<size_t> &wallForceIndexes)
