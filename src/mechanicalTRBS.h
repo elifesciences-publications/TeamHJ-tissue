@@ -232,8 +232,15 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 /// VertexFromTRBSMT 4 1 2
 /// Y_modulus_Longitudinal P_coeff_Longitudinal Y_modulus_Transverse P_coeff_Transverse 
 /// L_ij-index MT_cellIndex
+/// or
+/// VertexFromTRBSMT 4 3 2 0/1/2 0/1/2
+/// Y_modulus_Longitudinal P_coeff_Longitudinal Y_modulus_Transverse P_coeff_Transverse 
+/// L_ij-index MT_cellIndex
+/// optional index(indices) for storing strain(strain and 2nd strain)
+/// optional index(indices) for storing stress(stress and 2nd stress)
 /// @endverbatim
-///
+/// In case of storing strain/stress direction/value, in 3(2) dimensions, 
+/// strain/stress values will be stored after  2(3) components of vectors.  
 ///
 class VertexFromTRBSMT : public BaseReaction {
   
