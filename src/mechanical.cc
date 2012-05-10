@@ -3017,9 +3017,9 @@ derivs(Tissue &T,
       (position[0][1]-Yc)*(position[0][1]-Yc)+
       (position[0][2]-Zc)*(position[0][2]-Zc);
     if( d2 < Radius*Radius ){
-      vertexDerivs[vertexIndex][0]+=Kforce*(Radius-std::sqrt(d2))*(Radius-std::sqrt(d2))*(position[0][0]-Xc)/std::sqrt(d2);
-      vertexDerivs[vertexIndex][1]+=Kforce*(Radius-std::sqrt(d2))*(Radius-std::sqrt(d2))*(position[0][1]-Yc)/std::sqrt(d2);
-      vertexDerivs[vertexIndex][2]+=Kforce*(Radius-std::sqrt(d2))*(Radius-std::sqrt(d2))*(position[0][2]-Zc)/std::sqrt(d2);
+      vertexDerivs[vertexIndex][0]+=Kforce*(Radius-std::sqrt(d2))*std::sqrt(Radius-std::sqrt(d2))*(position[0][0]-Xc)/std::sqrt(d2);
+      vertexDerivs[vertexIndex][1]+=Kforce*(Radius-std::sqrt(d2))*std::sqrt(Radius-std::sqrt(d2))*(position[0][1]-Yc)/std::sqrt(d2);
+      vertexDerivs[vertexIndex][2]+=Kforce*(Radius-std::sqrt(d2))*std::sqrt(Radius-std::sqrt(d2))*(position[0][2]-Zc)/std::sqrt(d2);
     }
   }
 }
