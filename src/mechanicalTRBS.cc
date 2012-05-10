@@ -1174,6 +1174,8 @@ initiate(Tissue &T,
   }
 }
 
+
+
 VertexFromTRBSMT::
 VertexFromTRBSMT(std::vector<double> &paraValue, 
 	       std::vector< std::vector<size_t> > 
@@ -1184,14 +1186,26 @@ VertexFromTRBSMT(std::vector<double> &paraValue,
     std::cerr << "VertexFromTRBSMT::"
 	      << "VertexFromTRBSMT() "
 	      << "Uses four parameters young modulus and poisson coefficients in "
-	      << "longitudinal and transverse directions." << std::endl;
+	      << "longitudinal (MT) and transverse directions." << std::endl;
     exit(0);
   }
-  if( indValue.size()!=1 || indValue[0].size()!=2 ) { 
+
+  if( (indValue.size()!=1 && indValue.size()!=3) ||
+      indValue[0].size()!=2 ||
+      (indValue.size()==3 && (indValue[1].size()!=0 && indValue[1].size()!=1 && indValue[1].size()!=2)) ||
+      (indValue.size()==3 && (indValue[2].size()!=0 && indValue[2].size()!=1 && indValue[2].size()!=2)) 
+      ) { 
     std::cerr << "VertexFromTRBSMT::"
 	      << "VertexFromTRBSMT() "
-	      << "Wall length index and cell MT direction start index"
-	      << "given at first level." << std::endl;
+	      << "Wall length index and cell MT direction start index given in first level"
+              << std::endl
+              << "Optionally two additional levels can be given where the strain and 2nd strain" 
+              << "directions/values(dx dy dz value) can be stored at given indices at second level."
+              << "If no index given at second level, strain will not be stored, if one index given strain will be stored"
+              << "and if two indices are given maximal and 2nd strain direction values will be stored at first and second"
+              << "indices at second level respectively"
+	      << "this is the same for storing stress at 3rd level"
+	      << std::endl;
     exit(0);
   }
   
@@ -1366,19 +1380,19 @@ derivs(Tissue &T,
 
       // Aniso vector in current shape in global coordinate system
       double AnisoCurrGlob[3];
-      // AnisoCurrGlob[0] = cellData[cellIndex][variableIndex(0,1)];
-      // AnisoCurrGlob[1] = cellData[cellIndex][variableIndex(0,1)+1];
-      // AnisoCurrGlob[2] = cellData[cellIndex][variableIndex(0,1)+2];
+      AnisoCurrGlob[0] = cellData[cellIndex][variableIndex(0,1)];
+      AnisoCurrGlob[1] = cellData[cellIndex][variableIndex(0,1)+1];
+      AnisoCurrGlob[2] = cellData[cellIndex][variableIndex(0,1)+2];
      
       // static aniso direction
       // AnisoCurrGlob[0] =1;
       // AnisoCurrGlob[1] =0;
       // AnisoCurrGlob[2] =0;
 
-      // dynamic aniso direction      
-      AnisoCurrGlob[0] =cellData[cellIndex][0];
-      AnisoCurrGlob[1] =cellData[cellIndex][1];
-      AnisoCurrGlob[2] =cellData[cellIndex][2];
+      // // dynamic aniso direction      
+      // AnisoCurrGlob[0] =cellData[cellIndex][0];
+      // AnisoCurrGlob[1] =cellData[cellIndex][1];
+      // AnisoCurrGlob[2] =cellData[cellIndex][2];
 
       //std::cerr<< "cell "<< cellIndex<< std::endl;
       //std::cerr<<position[0][0]<<"  "<<position[0][1]<<"  "<<position[0][2]<< std::endl;
@@ -1489,7 +1503,7 @@ derivs(Tissue &T,
         AnisoRestLocal[1]=AnisoRestLocal[1]/AnisoMeasure;        
       }
       
-      //---- Anisotropic Correction-------------------------------
+      //Anisotropic Correction is based on difference between Lam Coefficients of Longitudinal and Transverse dirrections:
       double deltaLam=AnisoMeasure*(lambdaL-lambdaT);
       double deltaMio=AnisoMeasure*(mioL-mioT);
       
@@ -1526,7 +1540,8 @@ derivs(Tissue &T,
 
 
 
-      // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STRESS TENSOR (BEGIN) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      
+      // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STRAIN and STRESS TENSOR (BEGIN) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       
       // deformation gradiant tensor F =Sigma i=1,2,3 Di x Qi
       // strain tensor in resting shape E=0.5(FtF-I)
@@ -1658,9 +1673,6 @@ derivs(Tissue &T,
 
 
 
-
-      // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STRESS TENSOR (END) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
       //Shape vectors in Current shape (counterclockwise ordering of nodes/edges)     ShapeVectorCurrent[3][3]  calculated above   
       //.............................. ( or clockwise ordering of nodes/edges)
           
@@ -1670,9 +1682,6 @@ derivs(Tissue &T,
       
       double StrainTensor[3][3];
       //1
-
-
-      //     FOR TEST
       StrainTensor[0][0]=StrainAlmansi[0][0];
       StrainTensor[1][0]=StrainAlmansi[1][0];
       StrainTensor[0][1]=StrainAlmansi[0][1];
@@ -1740,8 +1749,10 @@ derivs(Tissue &T,
       // std::cerr <<" Sxx  "<< StrainTensor[0][0] <<" Sxy  "<< StrainTensor[0][1] <<" Sxz  "<< StrainTensor[0][2] << std::endl
       //           <<" Syx  "<< StrainTensor[1][0] <<" Syy  "<< StrainTensor[1][1] <<" Syz  "<< StrainTensor[1][2] << std::endl
       //           <<" Szx  "<< StrainTensor[2][0] <<" Szy  "<< StrainTensor[2][1] <<" Szz  "<< StrainTensor[2][2] << std::endl <<std::endl;
+
+      // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STRAIN and STRESS TENSORS (END) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     
-      // // eigenvalue/eigenvectors of averaged strain tensor in global coordinate system. (Jacobi method)
+      // eigenvalues/eigenvectors of strain tensor in global coordinate system. (Jacobi method)
       
       double eigenVectorStrain[3][3]={{1,0,0},{0,1,0},{0,0,1}};
       double pivot=1;
@@ -1819,23 +1830,7 @@ derivs(Tissue &T,
           }
         }
       }
-
-
-
-
-
-      // maximal strain direction for REVERSE calculation of strain
-      // double maximalStrainValue=-StressTensor[0][0];
-      // I=0;
-      // if (-StrainTensor[1][1]>maximalStrainValue) {
-      //   maximalStrainValue=-StrainTensor[1][1];
-      //   I=1;
-      // }
-      // if (-StrainTensor[2][2]>maximalStrainValue) {
-      //   maximalStrainValue=-StrainTensor[2][2];
-      //   I=2;
-      // }
-      
+   
       
       // maximal strain direction
       double maximalStrainValue=StrainTensor[0][0];
@@ -1853,10 +1848,30 @@ derivs(Tissue &T,
       // std::cerr<<"maximal Strain direction "<< eigenVectorStrain[0][Istrain] <<" "<< eigenVectorStrain[1][Istrain] <<" "<< eigenVectorStrain[2][Istrain] <<std::endl;  
       // std::cerr<<"maximal Strain value "<< maximalStrainValue <<std::endl;  
       
+      // 2nd maximalstrain direction/value
+      double maximalStrainValue2;
+      int Istrain2,Istrain3;
+      if (Istrain==0) {
+        Istrain2=1;
+        Istrain3=2;
+      }
+      if (Istrain==1) {
+        Istrain2=0;
+        Istrain3=2;
+      }
+      if (Istrain==2) {
+        Istrain2=0;
+        Istrain3=1;
+      }
+      if(StrainTensor[Istrain3][Istrain3]>StrainTensor[Istrain2][Istrain2]) {
+        Istrain2=Istrain3;
+      }
+      maximalStrainValue2=StrainTensor[Istrain2][Istrain2];
+     
       
 
 
-      // eigenvalue/eigenvectors of averaged stress tensor in global coordinate system. (Jacobi method)
+      // eigenvalue/eigenvectors of  stress tensor in global coordinate system. (Jacobi method)
       
       double eigenVectorStress[3][3]={{1,0,0},{0,1,0},{0,0,1}};
       pivot=1;
@@ -1940,70 +1955,117 @@ derivs(Tissue &T,
       // std::cerr<<"maximal Stress direction "<< eigenVectorStress[0][Istress] <<" "<< eigenVectorStress[1][Istress] <<" "<< eigenVectorStress[2][Istress] <<std::endl;  
       // std::cerr<<"maximal Stress value "<< maximalStressValue <<std::endl;  
       
+      // 2nd maximalstress direction/value
+      double maximalStressValue2;
+      int Istress2,Istress3;
+      if (Istress==0) {
+        Istress2=1;
+        Istress3=2;
+      }
+      if (Istress==1) {
+        Istress2=0;
+        Istress3=2;
+      }
+      if (Istress==2) {
+        Istress2=0;
+        Istress3=1;
+      }
+      if(StressTensor[Istress3][Istress3]>StressTensor[Istress2][Istress2]) {
+        Istress2=Istress3;
+      }
+      maximalStressValue2=StressTensor[Istress2][Istress2];
       
+      // // storing normal dirrection to  strain in cellData
       
+      // // normal to the cell plane in global direction is Zcurrent[], vector product gives the perpendicular strain direction
+      // double PerpStrain[3];
+      // PerpStrain[0]=Zcurrent[1]*eigenVectorStrain[2][Istrain]-Zcurrent[2]*eigenVectorStrain[1][Istrain];
+      // PerpStrain[1]=Zcurrent[2]*eigenVectorStrain[0][Istrain]-Zcurrent[0]*eigenVectorStrain[2][Istrain];
+      // PerpStrain[2]=Zcurrent[0]*eigenVectorStrain[1][Istrain]-Zcurrent[1]*eigenVectorStrain[0][Istrain];
+      // temp=std::sqrt(PerpStrain[0]*PerpStrain[0]+PerpStrain[1]*PerpStrain[1]+PerpStrain[2]*PerpStrain[2]);     
       
+      // if(std::abs(temp)>0.001){ // if aniso vector is not perpendicular to the cell plane
+      //   if (dimension==2)
+      //     {
+      //       cellData[cellIndex][0]=PerpStrain[0];        
+      //       cellData[cellIndex][1]=PerpStrain[1];
+      //     }
+      //   if (dimension==3)
+      //     {
+      //       cellData[cellIndex][0]=PerpStrain[0];
+      //       cellData[cellIndex][1]=PerpStrain[1];
+      //       cellData[cellIndex][2]=PerpStrain[2];
+      //       // cellData[cellIndex][3]=10*maximalStrainValue;  //NOTE maximal Strain and Stress Values should be used somewhere this is an option
+      //     }
+      // }
       
-      
-      // storing normal dirrection to  strain in cellData
-      
-      // normal to the cell plane in global direction is Zcurrent[], vector product gives the perpendicular strain direction
-      double PerpStrain[3];
-      PerpStrain[0]=Zcurrent[1]*eigenVectorStrain[2][Istrain]-Zcurrent[2]*eigenVectorStrain[1][Istrain];
-      PerpStrain[1]=Zcurrent[2]*eigenVectorStrain[0][Istrain]-Zcurrent[0]*eigenVectorStrain[2][Istrain];
-      PerpStrain[2]=Zcurrent[0]*eigenVectorStrain[1][Istrain]-Zcurrent[1]*eigenVectorStrain[0][Istrain];
-      temp=std::sqrt(PerpStrain[0]*PerpStrain[0]+PerpStrain[1]*PerpStrain[1]+PerpStrain[2]*PerpStrain[2]);     
-      
-      if(std::abs(temp)>0.001){ // if aniso vector is not perpendicular to the cell plane
+
+      // storing   strain/stress direction/value in cellData
+      if (numVariableIndexLevel()==3 && (numVariableIndex(1)==1 || numVariableIndex(1)==2) ) {// storing maximal strain
         if (dimension==2)
           {
-            cellData[cellIndex][0]=PerpStrain[0];        
-            cellData[cellIndex][1]=PerpStrain[1];
+            cellData[cellIndex][variableIndex(1,0)]  =eigenVectorStrain[0][Istrain];
+            cellData[cellIndex][variableIndex(1,0)+1]=eigenVectorStrain[1][Istrain];
+            cellData[cellIndex][variableIndex(1,0)+2]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
           }
         if (dimension==3)
           {
-            cellData[cellIndex][0]=PerpStrain[0];
-            cellData[cellIndex][1]=PerpStrain[1];
-            cellData[cellIndex][2]=PerpStrain[2];
-            // cellData[cellIndex][3]=10*maximalStrainValue;  //NOTE maximal Strain and Stress Values should be used somewhere this is an option
+            cellData[cellIndex][variableIndex(1,0)]  =eigenVectorStrain[0][Istrain];
+            cellData[cellIndex][variableIndex(1,0)+1]=eigenVectorStrain[1][Istrain];
+            cellData[cellIndex][variableIndex(1,0)+2]=eigenVectorStrain[2][Istrain];
+            cellData[cellIndex][variableIndex(1,0)+3]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
           }
       }
       
-      // storing maximal strain in cellData
-      // if (dimension==2)
-      //   {
-      //     cellData[cellIndex][0]=eigenVectorStrain[0][Istrain];
-      //     cellData[cellIndex][1]=eigenVectorStrain[1][Istrain];
-      //   }
-      // if (dimension==3)
-      //   {
-      //     cellData[cellIndex][0]=eigenVectorStrain[0][Istrain];
-      //     cellData[cellIndex][1]=eigenVectorStrain[1][Istrain];
-      //     cellData[cellIndex][2]=eigenVectorStrain[2][Istrain];
-      //     // cellData[cellIndex][3]=10*maximalStrainValue;  //NOTE maximal Strain and Stress Values should be used somewhere this is an option
-      //   }
+      if (numVariableIndexLevel()==3 && numVariableIndex(1)==2 ) {//storing 2nd maximal strain
+        if (dimension==2)
+          {
+            cellData[cellIndex][variableIndex(1,1)]  =eigenVectorStrain[0][Istrain2];
+            cellData[cellIndex][variableIndex(1,1)+1]=eigenVectorStrain[1][Istrain2];
+            cellData[cellIndex][variableIndex(1,1)+2]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
+          }
+        if (dimension==3)
+          {
+            cellData[cellIndex][variableIndex(1,1)]  =eigenVectorStrain[0][Istrain2];
+            cellData[cellIndex][variableIndex(1,1)+1]=eigenVectorStrain[1][Istrain2];
+            cellData[cellIndex][variableIndex(1,1)+2]=eigenVectorStrain[2][Istrain2];
+            cellData[cellIndex][variableIndex(1,1)+3]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
+          }
+      }
+
+      if (numVariableIndexLevel()==3 && (numVariableIndex(2)==1 || numVariableIndex(2)==2)) { // storing maximal stress
+	if (dimension==2)
+	  {
+	    cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStress[0][Istress];
+	    cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStress[1][Istress];
+            cellData[cellIndex][variableIndex(2,0)+2]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
+	  }
+	if (dimension==3)
+	  {
+	    cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStress[0][Istress];
+	    cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStress[1][Istress];
+	    cellData[cellIndex][variableIndex(2,0)+2]=eigenVectorStress[2][Istress];
+            cellData[cellIndex][variableIndex(2,0)+3]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
+	  }
+      }
+
+      if (numVariableIndexLevel()==3 && numVariableIndex(2)==2 ) { // storing 2nd maximal stress
+	if (dimension==2)
+	  {
+	    cellData[cellIndex][variableIndex(2,1)]  =eigenVectorStress[0][Istress2];
+	    cellData[cellIndex][variableIndex(2,1)+1]=eigenVectorStress[1][Istress2];
+            cellData[cellIndex][variableIndex(2,1)+2]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
+	  }
+	if (dimension==3)
+	  {
+	    cellData[cellIndex][variableIndex(2,1)]  =eigenVectorStress[0][Istress2];
+	    cellData[cellIndex][variableIndex(2,1)+1]=eigenVectorStress[1][Istress2];
+	    cellData[cellIndex][variableIndex(2,1)+2]=eigenVectorStress[2][Istress2];
+            cellData[cellIndex][variableIndex(2,1)+3]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
+	  }
+      }
       
-      
-      
-      
-      // storing maximal stress in cellData
-      // if (dimension==2)
-      //   {
-      //     cellData[cellIndex][0]=eigenVectorStress[0][Istress];
-      //     cellData[cellIndex][1]=eigenVectorStress[1][Istress];
-      //   }
-      // if (dimension==3)
-      //   {
-      //     cellData[cellIndex][0]=eigenVectorStress[0][Istress];
-      //     cellData[cellIndex][1]=eigenVectorStress[1][Istress];
-      //     cellData[cellIndex][2]=eigenVectorStress[2][Istress];
-      //     // cellData[cellIndex][3]=10*maximalStressValue;  //NOTE maximal Strain and Stress Values should be used somewhere this is an option
-      //   }
-      
-      
-      
-      
-      
+            
       //---- Anisotropic Correction Force-------------------------------
       double deltaF[3][3];
       double  Rcirc2=(0.25*length[0]*length[1]*length[2]/Area)*(0.25*length[0]*length[1]*length[2]/Area);  // square of radius of circumscribed circle in current shape
@@ -2243,7 +2305,7 @@ VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue,
   }
     
   if( (indValue.size()!=2 && indValue.size()!=6) || 
-      indValue[0].size()!=3 || indValue[1].size()!=1 ||
+      indValue[0].size()!=2 || indValue[1].size()!=1 ||
       (indValue.size()==6 && (indValue[2].size()!=0 && indValue[2].size()!=1)) ||
       (indValue.size()==6 && (indValue[3].size()!=0 && indValue[3].size()!=1)) ||
       (indValue.size()==6 && (indValue[4].size()!=0 && indValue[4].size()!=1)) ||
@@ -3246,14 +3308,14 @@ derivs(Tissue &T,
           {
             cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStrain[0][Istrain];
             cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStrain[1][Istrain];
-            cellData[cellIndex][variableIndex(2,0)+2]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(2,0)+4]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
           }
         if (dimension==3)
           {
             cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStrain[0][Istrain];
             cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStrain[1][Istrain];
             cellData[cellIndex][variableIndex(2,0)+2]=eigenVectorStrain[2][Istrain];
-            cellData[cellIndex][variableIndex(2,0)+3]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(2,0)+4]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
           }
       }
       
@@ -3262,14 +3324,14 @@ derivs(Tissue &T,
           {
             cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStrain[0][Istrain2];
             cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStrain[1][Istrain2];
-            cellData[cellIndex][variableIndex(3,0)+2]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(3,0)+4]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
           }
         if (dimension==3)
           {
             cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStrain[0][Istrain2];
             cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStrain[1][Istrain2];
             cellData[cellIndex][variableIndex(3,0)+2]=eigenVectorStrain[2][Istrain2];
-            cellData[cellIndex][variableIndex(3,0)+3]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(3,0)+4]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
           }
       }
 
@@ -3278,14 +3340,14 @@ derivs(Tissue &T,
 	  {
 	    cellData[cellIndex][variableIndex(4,0)]  =eigenVectorStress[0][Istress];
 	    cellData[cellIndex][variableIndex(4,0)+1]=eigenVectorStress[1][Istress];
-            cellData[cellIndex][variableIndex(4,0)+2]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(4,0)+4]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
 	  }
 	if (dimension==3)
 	  {
 	    cellData[cellIndex][variableIndex(4,0)]  =eigenVectorStress[0][Istress];
 	    cellData[cellIndex][variableIndex(4,0)+1]=eigenVectorStress[1][Istress];
 	    cellData[cellIndex][variableIndex(4,0)+2]=eigenVectorStress[2][Istress];
-            cellData[cellIndex][variableIndex(4,0)+3]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(4,0)+4]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
 	  }
       }
 
@@ -3294,14 +3356,14 @@ derivs(Tissue &T,
 	  {
 	    cellData[cellIndex][variableIndex(5,0)]  =eigenVectorStress[0][Istress2];
 	    cellData[cellIndex][variableIndex(5,0)+1]=eigenVectorStress[1][Istress2];
-            cellData[cellIndex][variableIndex(5,0)+2]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(5,0)+4]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
 	  }
 	if (dimension==3)
 	  {
 	    cellData[cellIndex][variableIndex(5,0)]  =eigenVectorStress[0][Istress2];
 	    cellData[cellIndex][variableIndex(5,0)+1]=eigenVectorStress[1][Istress2];
 	    cellData[cellIndex][variableIndex(5,0)+2]=eigenVectorStress[2][Istress2];
-            cellData[cellIndex][variableIndex(5,0)+3]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(5,0)+4]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
 	  }
       }
 
