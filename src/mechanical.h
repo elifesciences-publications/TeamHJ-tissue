@@ -604,6 +604,7 @@ class VertexFromForce : public BaseReaction {
 
 ///
 /// @brief Updates position of vertices assuming that a ball is moving with a given velocity vector into the ball
+///The force applied outward respect to ball proportional to (overlap)^(3/2)
 ///
 /// In a model file the reaction is defined as
 ///
