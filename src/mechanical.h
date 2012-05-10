@@ -603,20 +603,20 @@ class VertexFromForce : public BaseReaction {
 };
 
 ///
-/// @brief Updates position of vertices assuming that they are constrained with a ball from above
+/// @brief Updates position of vertices assuming that a ball is moving with a given velocity vector into the ball
 ///
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// VertexFromBall 4 0
-/// Radius Xc Yc Zc
+/// VertexFromBall 5 0
+/// Radius Xc Yc Zc Kforce
 /// @endverbatim
 /// 
 /// or
 ///
 /// @verbatim
-/// VertexFromBall 7 0
-/// Radius Xc Yc Zc dXc dYc dZc
+/// VertexFromBall 8 0
+/// Radius Xc Yc Zc Kforce dXc dYc dZc
 /// @endverbatim
 ///
 /// where radius is the size of the 'ball' pushing at the tissue, Xc,Yc,Zc is the center 
