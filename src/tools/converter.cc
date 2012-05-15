@@ -150,4 +150,6 @@ int main(int argc,char *argv[]) {
     std::cerr << "Warning: main() - Format " << outputFormat << " not recognized. "
 	      << "No outputwritten." << std::endl;
       }
+  if (verboseFlag) {
+    std::cerr << "All done!" << std::endl;
 }
