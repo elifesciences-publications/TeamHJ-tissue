@@ -1706,7 +1706,7 @@ derivs(Tissue &T,
       // std::cerr<< "test1 "<<testRatio1<<std::endl;
       // double testRatio2=StressTensor[1][1]*(1-2*StrainTensor[1][1])*(1-2*StrainTensor[1][1])/((mioT*StrainTensor[1][1]+lambdaT*trE*(1-2*StrainTensor[1][1]))*(Area/restingArea));
       // std::cerr<< "test2 "<<testRatio2<<std::endl;
-         std::cerr<< "trE1 "<<trE<<std::endl;
+      // std::cerr<< "trE1 "<<trE<<std::endl;
       // std::cerr<< "trE2 "<<Egreen[0][0]+Egreen[1][1]<<std::endl;
       // std::cerr<< "mioT "<<mioT<<std::endl;
       // std::cerr<< "Area "<<Area<<std::endl;
