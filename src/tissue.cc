@@ -897,6 +897,11 @@ void Tissue::readMGXTriVtuInit( const char *initFile, int verbose )
   for( size_t i=0 ; i<numCellVal ; ++i ) {
     size_t cellLabel;
     IN >> cellLabel;
+    // Add direction in front of variables
+    cell(i).addVariable(1);
+    cell(i).addVariable(0);
+    cell(i).addVariable(0);
+    cell(i).addVariable(1);
     cell(i).addVariable(cellLabel);
   }
   IN.close();
