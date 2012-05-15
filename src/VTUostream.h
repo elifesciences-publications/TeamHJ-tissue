@@ -70,6 +70,8 @@ class VTUostream
 {
 public:
 
+  enum Cell_type{ POLYGON = 7, TRIANGLE = 5};
+  
   VTUostream();
   VTUostream(std::ostream& o);
   ~VTUostream() {close();}
@@ -130,12 +132,12 @@ public:
 protected:
   // cell and wall geometry for walls as line segments
   void write_cell_point_geometry(Tissue const& t);
-  void write_cell_geometry(Tissue const& t);
+  void write_cell_geometry(Tissue const& t, Cell_type ct = POLYGON);
   void write_wall_point_geometry(Tissue const& t);
   void write_wall_geometry(Tissue const& t);
   // cell and wall geometry for 2D walls
   void write_cell_point_geometry2(Tissue const& t);
-  void write_cell_geometry2(Tissue const& t);
+  void write_cell_geometry2(Tissue const& t, Cell_type ct = POLYGON);
   void write_wall_point_geometry2(Tissue const& t, std::vector<Vertex*> & verts);
   void write_wall_geometry2(Tissue const& t, std::vector<Vertex*> const& verts);
 

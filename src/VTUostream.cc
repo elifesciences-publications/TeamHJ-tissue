@@ -53,9 +53,21 @@ VTUostream::VTUostream(std::ostream& o) : m_os(&o), D(WALL_RELATIVE_THICKNESS)
 
 void VTUostream::write_cells(Tissue const& t)
 {
+    typedef std::vector<Cell>::const_iterator CellIter;
+    std::vector<Cell> const& cells = t.cell();
+    CellIter cit, cend;
+    bool triangles = true;
+    for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
+    {
+        if (cit->numVertex() != 3)
+          triangles = false;
+    }
     write_piece_header(t.numVertex(), t.numCell());
     write_cell_point_geometry(t);
-    write_cell_geometry(t);
+    if(triangles)
+      write_cell_geometry(t, VTUostream::TRIANGLE);
+    else
+      write_cell_geometry(t, VTUostream::POLYGON);
     write_cell_data_header("Scalars=\"cell variable 4\" Vectors=\"cell vector\"");
     write_cell_data(t);
     write_cell_data_footer();
@@ -69,12 +81,21 @@ void VTUostream::write_cells2(Tissue const& t)
     std::vector<Cell> const& cells = t.cell();
     int npts = 0;
     CellIter cit, cend;
+    bool triangles = true;
     for (cit = cells.begin(), cend = cells.end(); cit != cend; ++cit)
-        npts += cit->numVertex();
+    {
+      int nvrt = cit->numVertex();
+      if(nvrt != 3)
+        triangles = false;
+       npts += nvrt;
+    }
 
     write_piece_header(npts, t.numCell());
     write_cell_point_geometry2(t);
-    write_cell_geometry2(t);
+    if(triangles)
+      write_cell_geometry2(t, VTUostream::TRIANGLE);
+    else
+      write_cell_geometry2(t, VTUostream::POLYGON);
     write_cell_data_header("Scalars=\"cell variable 4\" Vectors=\"cell vector\"");
     write_cell_data(t);
     write_cell_data_footer();
@@ -186,7 +207,7 @@ void VTUostream::write_cell_point_geometry(Tissue const& t)
 }
 //-----------------------------------------------------------------------------
 
-void VTUostream::write_cell_geometry(Tissue const& t)
+void VTUostream::write_cell_geometry(Tissue const& t, Cell_type ct)
 {
     typedef std::vector<Cell>::const_iterator CellIter;
     std::vector<Cell> const& cells = t.cell();
@@ -249,7 +270,7 @@ void VTUostream::write_cell_geometry(Tissue const& t)
     << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
     for (size_t i = 0; i < t.numCell(); ++i)
     {
-        *m_os << 7 << " ";
+        *m_os << ct << " ";
     }
     *m_os << "\n";
     //*/
@@ -572,7 +593,7 @@ void VTUostream::write_cell_point_geometry2(Tissue const& t)
 }
 //-----------------------------------------------------------------------------
 
-void VTUostream::write_cell_geometry2(Tissue const& t)
+void VTUostream::write_cell_geometry2(Tissue const& t, Cell_type ct)
 {
     typedef std::vector<Cell>::const_iterator CellIter;
     std::vector<Cell> const& cells = t.cell();
@@ -605,7 +626,7 @@ void VTUostream::write_cell_geometry2(Tissue const& t)
     << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
     for (size_t i = 0; i < t.numCell(); ++i)
     {
-        *m_os << 7 << " ";
+        *m_os << ct << " ";
     }
     *m_os << "\n";
     *m_os << "</DataArray>\n"
