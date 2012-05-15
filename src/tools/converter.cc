@@ -22,39 +22,39 @@ int main(int argc,char *argv[]) {
   //Command line handling
   myConfig::registerOption("input_format", 1);
   myConfig::registerOption("output_format", 1);
-  //myConfig::registerOption("rk2", 0);
   myConfig::registerOption("help", 0);
-  myConfig::registerOption("merry_init", 0);
   myConfig::registerOption("verbose", 1);
   
-  //myConfig::initConfig(argc, argv, configFile);
+  myConfig::initConfig(argc, argv);
   
   if (myConfig::getBooleanValue("help")) {
     std::cerr << std::endl 
-	      << "Usage: " << argv[0] << " initFile > outputFile" << std::endl;
-    std::cerr << "Additional flags are:" << std::endl;
+	      << "Usage: " << argv[0] << " initFile > outputFile" << std::endl << std::endl;
+    std::cerr << "Additional flags are:" << std::endl << std::endl;
     std::cerr << "-input_format format - Sets format in input file." << std::endl
-	      << "Available input formats are tissue (default), "
-	      << "organism (organism file assuming spheres and only position+radii), " 
-	      << "voronoi (voronoi format from qhull output), "
-	      << "MGXTriVtu (MGX exported mesh in vtu format, before making cells), " 
-	      << "MGXCellVtu (MGX exported mesh in vtu format, after making cells [TO COME]), " 
-	      << "merryProj (Montpellier (openAlea) format [now obselete?])." 
+	      << "Available input formats are:" << std::endl
+	      << "tissue (default), " << std::endl
+	      << "organism (organism file assuming spheres and only position+radii), " << std::endl 
+	      << "voronoi (voronoi format from qhull output), " << std::endl
+	      << "MGXTriVtu (MGX exported mesh in vtu format, before making cells), " << std::endl 
+	      << "MGXCellVtu (MGX exported mesh in vtu format, after making cells [TO COME]), " << std::endl
+	      << "merryProj (Montpellier (openAlea) format [now obselete?])." << std::endl
 	      << std::endl;
     std::cerr << "-output_format format - Sets format for output of"
 	      << " state in specified file format. " << std::endl 
-	      << "Available output formats are tissue (default), "
-	      << "triTissue (tissue with central triangulation), "
-	      << "fem (Pawel's FEM simulation format), "
-	      << "organism (organism init file including neighborhood), " 
-	      << "vtu1 (vtk format with single wall compartment variables), " 
-	      << "vtu2 (vtk format with two wall compartment variables)."
+	      << "Available output formats are:" << std::endl 
+	      << "tissue (default), " << std::endl
+	      << "triTissue (tissue with central triangulation), " << std::endl
+	      << "fem (Pawel's FEM simulation format), " << std::endl
+	      << "organism (organism init file including neighborhood), " << std::endl 
+	      << "vtu1 (vtk format with single wall compartment variables), " << std::endl
+	      << "vtu2 (vtk format with two wall compartment variables)." << std::endl
 	      << std::endl;
     std::cerr << "-verbose flag - Set flag for verbose (flag=1, default) more verbose (2) or "
-	      << "silent (0) output mode to stderr." << std::endl; 
-    std::cerr << "-help - Shows this message." << std::endl;
+	      << "silent (0) output mode to stderr." << std::endl << std::endl; 
+    std::cerr << "-help - Shows this message." << std::endl << std::endl;
     exit(EXIT_FAILURE);
-  } else if (myConfig::argc() != 3 ) {
+  } else if (myConfig::argc() != 2 ) {
     std::cerr << "Type '" << argv[0] << " -help' for usage." << std::endl;
     exit(EXIT_FAILURE);
   }

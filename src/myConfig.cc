@@ -20,16 +20,28 @@ myConfig *myConfig::instance_ = NULL;
 
 myConfig::myConfig(int argc, char *argv[], const std::string &file)
 {
-	parseFile(file);
-	parseCommandLine(argc, argv);
+  parseFile(file);
+  parseCommandLine(argc, argv);
+}
+
+myConfig::myConfig(int argc, char *argv[])
+{
+  parseCommandLine(argc, argv);
 }
 
 std::vector<std::string> myConfig::initConfig(int argc, char *argv[], 
-																							const std::string &file)
+					      const std::string &file)
 {
-	if (instance_ == NULL)
-		instance_ = new myConfig(argc, argv, file);
-	return argv_;
+  if (instance_ == NULL)
+    instance_ = new myConfig(argc, argv, file);
+  return argv_;
+}
+
+std::vector<std::string> myConfig::initConfig(int argc, char *argv[])
+{
+  if (instance_ == NULL)
+    instance_ = new myConfig(argc, argv);
+  return argv_;
 }
 
 void myConfig::registerOption(const std::string &key, size_t arguments)

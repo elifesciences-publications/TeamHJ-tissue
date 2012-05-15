@@ -19,17 +19,17 @@
 #include "myMath.h"
 
 Tissue::Tissue() {  
-  cell_.reserve(100000);
-  wall_.reserve(100000);
-  vertex_.reserve(100000);
+  cell_.reserve(200000);
+  wall_.reserve(200000);
+  vertex_.reserve(200000);
   Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
   background_ = tmpCell;
 }
 
 Tissue::Tissue( const Tissue & tissueCopy ) {
-  cell_.reserve(100000);
-  wall_.reserve(100000);
-  vertex_.reserve(100000);
+  cell_.reserve(200000);
+  wall_.reserve(200000);
+  vertex_.reserve(200000);
   Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
   background_ = tmpCell;
 }
@@ -38,9 +38,9 @@ Tissue::Tissue( const std::vector<Cell> &cellVal,
 		const std::vector<Wall> &wallVal,
 		const std::vector<Vertex> &vertexVal ) {
   
-  cell_.reserve(100000);
-  wall_.reserve(100000);
-  vertex_.reserve(100000);
+  cell_.reserve(200000);
+  wall_.reserve(200000);
+  vertex_.reserve(200000);
 
   Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
   background_ = tmpCell;
@@ -50,9 +50,9 @@ Tissue::Tissue( const std::vector<Cell> &cellVal,
 }
 
 Tissue::Tissue( const char *initFile, int verbose ) {
-  cell_.reserve(100000);
-  wall_.reserve(100000);
-  vertex_.reserve(100000);
+  cell_.reserve(200000);
+  wall_.reserve(200000);
+  vertex_.reserve(200000);
 
   Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
   background_ = tmpCell;
@@ -62,9 +62,9 @@ Tissue::Tissue( const char *initFile, int verbose ) {
 
 Tissue::Tissue( std::string initFile, int verbose ) 
 {
-  cell_.reserve(100000);
-  wall_.reserve(100000);
-  vertex_.reserve(100000);
+  cell_.reserve(200000);
+  wall_.reserve(200000);
+  vertex_.reserve(200000);
 	
   Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
   background_ = tmpCell;
@@ -78,9 +78,9 @@ Tissue::Tissue( DataMatrix &cellData,
 								std::vector< std::vector<size_t> > &wallVertex,
 								int verbose)
 {
-  cell_.reserve(100000);
-  wall_.reserve(100000);
-  vertex_.reserve(100000);
+  cell_.reserve(200000);
+  wall_.reserve(200000);
+  vertex_.reserve(200000);
 	
   Cell tmpCell(static_cast<size_t>(-1),static_cast<std::string>("Background"));
   background_ = tmpCell;

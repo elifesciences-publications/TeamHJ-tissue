@@ -70,8 +70,8 @@ class myConfig
 	/// key2 arg21 arg22 ...
 	/// ...  ...
 	/// @endverbatim
-	static std::vector<std::string> initConfig(int argc, char *argv[], 
-																						 const std::string &file);
+	static std::vector<std::string> initConfig(int argc, char *argv[], const std::string &file);
+	static std::vector<std::string> initConfig(int argc, char *argv[]);
 
 	///
 	/// @brief Registers an option to the application.
@@ -112,6 +112,7 @@ class myConfig
 	// Private constructor and destructor.
 	myConfig();
 	myConfig(int argc, char *argv[], const std::string &file);
+	myConfig(int argc, char *argv[]);
 
 	// Private functions hidden for readability.
 	void parseFile(const std::string &file);
