@@ -152,4 +152,5 @@ int main(int argc,char *argv[]) {
       }
   if (verboseFlag) {
     std::cerr << "All done!" << std::endl;
+  }
 }
