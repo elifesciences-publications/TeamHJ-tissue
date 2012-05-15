@@ -120,7 +120,7 @@ class Cell {
   ///
   /// @brief Returns a wall pointer from position k in the vector
   ///
-  inline Wall* wall( size_t k );
+  inline Wall* wall( size_t k ) const;
   ///
   /// @brief Returns a reference to the wall at position k in the vector
   ///
@@ -136,7 +136,7 @@ class Cell {
   ///
   /// @brief Returns a vertex pointer from position v in the vector
   ///
-  inline Vertex* vertex( size_t v );
+  inline Vertex* vertex( size_t v ) const;
   ///
   /// @brief Returns true if the cell has the vertex
   ///
@@ -148,7 +148,7 @@ class Cell {
   ///
   /// @brief Returns variable i from the variable vector
   ///
-  inline double variable(size_t i);
+  inline double variable(size_t i) const;
   ///
   /// @brief Sets the id (name) string
   ///
@@ -284,8 +284,8 @@ class Cell {
   ///
   /// Uses a cross-product rule to define the center of mass of the cell. Works
   /// only if the cell vertices are sorted/cyclic. The vertex
-  /// positions used are taken from the vertices directly. The volume is returned
-  /// and also stored in a volume variable in the Cell.
+  /// positions used are taken from the vertices directly. The cell center
+  /// position is returned in a vector.
   ///
   /// @see volume()
   ///
@@ -402,7 +402,7 @@ inline const std::vector<Wall*> & Cell::wall() const
   return wall_; 
 }
 
-inline Wall* Cell::wall( size_t k ) 
+inline Wall* Cell::wall( size_t k ) const 
 { 
   return wall_[k]; 
 }
@@ -424,7 +424,7 @@ inline const std::vector<Vertex*> & Cell::vertex() const
   return vertex_; 
 }
 
-inline Vertex* Cell::vertex( size_t v ) 
+inline Vertex* Cell::vertex( size_t v ) const
 { 
   return vertex_[v]; 
 }
@@ -441,7 +441,7 @@ inline const std::vector<double> & Cell::variable() const
   return variable_; 
 }
 
-inline double Cell::variable(size_t i) 
+inline double Cell::variable(size_t i) const 
 { 
   return variable_[i];
 }

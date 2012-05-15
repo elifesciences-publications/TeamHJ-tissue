@@ -27,6 +27,8 @@ LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi
 #Sourcefiles etc.
 SIM_SRC = simulator/simulator.cc
 SIM_OBJ = $(SIM_SRC:.cc=.o)
+CONV_SRC = tools/converter.cc
+CONV_OBJ = $(CONV_SRC:.cc=.o)
 SRC_DIR = ./
 SRCS := $(wildcard $(SRC_DIR:/=/*.cc))
 OBJS = $(SRCS:.cc=.o)
@@ -34,13 +36,19 @@ DEP = makedep.rule
 
 #Binaries
 SIMULATOR = ../bin/simulator
+CONVERTER = ../bin/converter
 
-all: $(SIMULATOR)
+all: $(SIMULATOR) $(CONVERTER)
 
 $(SIMULATOR): $(OBJS) $(SIM_OBJ)
 	$(CXX) $(SIM_OBJ) $(OBJS) $(LDFLAGS) -o $(SIMULATOR) 
 
+$(CONVERTER): $(OBJS) $(CONV_OBJ)
+	$(CXX) $(CONV_OBJ) $(OBJS) $(LDFLAGS) -o $(CONVERTER) 
+
 $(SIM_OBJ) : $(SIM_SRC)
+
+$(CONV_OBJ) : $(CONV_SRC)
 
 # pull in dependency info for *existing* .o files
 -include $(OBJS:.o=.d)
@@ -69,8 +77,8 @@ gprof:
 clean:
 	rm -f $(OBJS)
 	rm -f $(SIM_OBJ)
-	rm -f $(OPT_OBJ)
+	rm -f $(CONV_OBJ)
 	rm -f $(SIMULATOR)
-	rm -f $(OPTIMIZER)
+	rm -f $(CONVERTER)
 	rm -f *.d
 	rm -f */*.d

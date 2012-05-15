@@ -302,16 +302,49 @@ class Tissue {
   ///
   void readModel(std::ifstream &IN,int verbose=0);
   ///
-  /// @brief Creates a tissue from a vector of sphere data
+  /// @brief Reads data from organism sphere format and creates a tissue
   ///
-  /// Caveat: not fully tested.
+  /// Reads data in an organism sphere format and generates a tissue via createTissueFromSpheres()
+  /// The assumed format is:
+  /// @verbatim
+  /// N_cell N_var
+  /// x y [z] r
+  /// ...
+  /// @endverbatim
+  ///
+  /// where the data must only contain the positional information at the moment (N_var=3,4).
+  /// Also the function assumes the rFac to be set to 1.
+  ///
+  /// @see createTissueFromSpheres()
+  ///
+  void readSphereInit( const char *initFile, int verbose=0); 
+  ///
+  /// @brief Creates a tissue from a vector of sphere data read by readSphereInit()
+  ///
+  /// @note Caveat: not fully tested. 
+  ///
+  /// @see readSphereInit(const char*,int)
   ///
   void createTissueFromSpheres(DataMatrix &y,
 			       double rFac=1.0, int verbose=0);
   ///
-  /// @brief Creates a tissue from Voronoi data
+  /// @brief Reads data in voronoi format and creates a tissue
   ///
-  /// Caveat: not fully tested.
+  /// Reads voronoi output from qhull? and generates a tissue via createTissueFromVoronoi()
+  /// The assumed format is:
+  /// @verbatim
+  /// to be completed...
+  /// @endverbatim
+  ///
+  /// @see createTissueFromVoronoi()
+  ///
+  void readVoronoiInit( const char *initFile, int verbose=0); 
+  ///
+  /// @brief Creates a tissue from Voronoi data read by readVoronoiInit()
+  ///
+  /// @note Caveat: not fully tested.
+  ///
+  /// @see readVoronoiInit(const char*,int verbose)
   ///
   void createTissueFromVoronoi(DataMatrix &vertexPos,
 			       std::vector< std::vector<size_t> > &cellVertex,
@@ -730,12 +763,34 @@ class Tissue {
 					size_t col, std::vector<size_t> &cellMax,
 					std::vector<size_t> &flag );
   
-  //Print functions
-  void printInit(std::ostream &os=std::cout);
+  // Print functions ----------------------------------------
+  ///
+  /// @brief print standard tissue init format
+  ///  
+  void printInit(std::ostream &os=std::cout) const;
+  ///
+  /// @brief print standard tissue init format using variable values from provided data matrices
+  ///  
   void printInit(DataMatrix &cellData,
 		 DataMatrix &wallData,
 		 DataMatrix &vertexData,
 		 std::ostream &os);
+  /// 
+  /// @brief Prints init in Pawels FEM format
+  ///
+  /// Prints the current state in Pawels FEM init format using vertex data and
+  /// tissue connections.
+  ///
+  void printInitFem(std::ostream &os) const;
+  /// 
+  /// @brief Prints init in a triangulated tissue format
+  ///
+  /// Prints the current state in a triangulated tissue format using cell, wall, and vertex data
+  /// and tissue connections. It will do this in a triangulation with a vertex at the center of each
+  /// cell.
+  /// It triangulates using the cell center calculated by the vertex positions.
+  ///
+  void printInitTri(std::ostream &os);
   void printVertex(std::ostream &os=std::cout);
   void printWall(std::ostream &os=std::cout);
   void printVertexAndCell(std::ostream &os=std::cout);

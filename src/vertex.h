@@ -113,7 +113,7 @@ class Vertex {
   ///
   /// @see position()
   ///
-  inline double position(size_t d);
+  inline double position(size_t d) const;
   
   ///
   /// @brief Sets the index variable
@@ -242,7 +242,7 @@ inline Cell* Vertex::cell( size_t k ) { return cell_[k]; }
 inline const std::vector<Wall*> & Vertex::wall() const { return wall_; }
 inline Wall* Vertex::wall( size_t k ) const { return wall_[k]; }
 inline const std::vector<double> & Vertex::position() const { return position_; }
-inline double Vertex::position(size_t d) { return position_[d]; }
+inline double Vertex::position(size_t d) const { return position_[d]; }
 inline void Vertex::setIndex( size_t value ) { index_ = value; }
 inline void Vertex::setCell( size_t index,Cell* val ) { cell_[index]=val; }
 inline void Vertex::setCell( std::vector<Cell*> &val ) { cell_=val; }

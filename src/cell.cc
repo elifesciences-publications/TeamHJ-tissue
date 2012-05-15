@@ -504,7 +504,7 @@ void Cell::sortWallAndVertex(Tissue &T) {
 	//					<< wall(i)->vertex2()->index() << std::endl; 
 }
 
-double Cell::calculateVolume( size_t signFlag ) 
+double Cell::calculateVolume( size_t signFlag )
 {	
   assert( numVertex() );	
   size_t dimension = vertex(0)->numPosition();
@@ -556,7 +556,7 @@ double Cell::calculateVolume( size_t signFlag )
   }
 }
 
-double Cell::calculateVolume( DataMatrix 				                                  &vertexData, size_t signFlag ) 
+double Cell::calculateVolume( DataMatrix &vertexData, size_t signFlag ) 
 {	
   assert( numVertex() );
   size_t dimension = vertex(0)->numPosition();
@@ -632,47 +632,47 @@ calculateVolumeCenterTriangulation( DataMatrix
 
 std::vector<double> Cell::positionFromVertex() 
 {
-	assert( numVertex() );
-	size_t dimension=vertex(0)->numPosition();
-	std::vector<double> pos(dimension, 0);
-	if (dimension==2) {
-		double area = calculateVolume(1);
-		
-		for (size_t i=0; i<numVertex(); ++i) {
-			size_t ii = (i+1)%(numVertex());
-			double factor = vertex(i)->position(0)*vertex(ii)->position(1)-
-				vertex(ii)->position(0)*vertex(i)->position(1);
-			for (size_t d=0; d<dimension; ++d) {
-				pos[d] += factor*(vertex(i)->position(d)+vertex(ii)->position(d));
-			}
-		}
-		for (size_t d=0; d<dimension; ++d)
-			pos[d] /= 6*area;
-	}
-	else if (dimension==3) {
-		double sumWallLength=0.0;
-		for (size_t w=0; w<numWall(); ++w) {
-			double wallLength=0.0;
-			for (size_t d=0; d<dimension; ++d)
-				wallLength += (wall(w)->vertex1()->position(d) -
-											 wall(w)->vertex2()->position(d) ) *
-					(wall(w)->vertex1()->position(d) -
-					 wall(w)->vertex2()->position(d) );
-			wallLength = std::sqrt(wallLength);
-			sumWallLength += wallLength;
-			for (size_t d=0; d<dimension; ++d)
-				pos[d] += 0.5 * (wall(w)->vertex1()->position(d) +
-												 wall(w)->vertex2()->position(d) ) * wallLength;
-		}
-		for (size_t d=0; d<dimension; ++d)
-			pos[d] /= sumWallLength;
-	}
-	else {
-		std::cerr << "Cell::positionFromVertex() only implemented for two and"
-							<< " three dimensions" << std::endl;
-		exit(-1);
-	}
-	return pos;
+  assert( numVertex() );
+  size_t dimension=vertex(0)->numPosition();
+  std::vector<double> pos(dimension, 0);
+  if (dimension==2) {
+    double area = calculateVolume(1);
+    
+    for (size_t i=0; i<numVertex(); ++i) {
+      size_t ii = (i+1)%(numVertex());
+      double factor = vertex(i)->position(0)*vertex(ii)->position(1)-
+	vertex(ii)->position(0)*vertex(i)->position(1);
+      for (size_t d=0; d<dimension; ++d) {
+	pos[d] += factor*(vertex(i)->position(d)+vertex(ii)->position(d));
+      }
+    }
+    for (size_t d=0; d<dimension; ++d)
+      pos[d] /= 6*area;
+  }
+  else if (dimension==3) {
+    double sumWallLength=0.0;
+    for (size_t w=0; w<numWall(); ++w) {
+      double wallLength=0.0;
+      for (size_t d=0; d<dimension; ++d)
+	wallLength += (wall(w)->vertex1()->position(d) -
+		       wall(w)->vertex2()->position(d) ) *
+	  (wall(w)->vertex1()->position(d) -
+	   wall(w)->vertex2()->position(d) );
+      wallLength = std::sqrt(wallLength);
+      sumWallLength += wallLength;
+      for (size_t d=0; d<dimension; ++d)
+	pos[d] += 0.5 * (wall(w)->vertex1()->position(d) +
+			 wall(w)->vertex2()->position(d) ) * wallLength;
+    }
+    for (size_t d=0; d<dimension; ++d)
+      pos[d] /= sumWallLength;
+  }
+  else {
+    std::cerr << "Cell::positionFromVertex() only implemented for two and"
+	      << " three dimensions" << std::endl;
+    exit(-1);
+  }
+  return pos;
 }
 
 std::vector<double> Cell::

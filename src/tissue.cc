@@ -735,88 +735,88 @@ void Tissue::readMGXTriCellInit( const char *initFile, int verbose )
   std::ifstream IN(initFile);
   if( !IN ) {
     std::cerr << "Tissue::readMGXTriCellInit(char*) - "
-							<< "Cannot open file " << initFile 
-							<< std::endl; 
-		exit(EXIT_FAILURE);
-	}
+	      << "Cannot open file " << initFile 
+	      << std::endl; 
+    exit(EXIT_FAILURE);
+  }
   unsigned int numVertexVal,dimension=3;//assuming always 3
   IN >> numVertexVal;
   setNumVertex( numVertexVal );
-	for( size_t i=0 ; i<numVertexVal ; ++i )
+  for( size_t i=0 ; i<numVertexVal ; ++i )
     vertex(i).setIndex(i);
-	
-	std::vector<size_t> vLabel(numVertexVal);
-	std::vector<double> pos(dimension);
-	std::vector<size_t> cellName,vertexName;
-	// Read information about vertices
-	for( size_t i=0 ; i<numVertexVal ; ++i ) {
-		size_t tmp;
-		IN >> tmp;
-		vertexName.push_back(tmp);
-		if (tmp!=vertex(i).index()) {
-			std::cerr << "Tissue::readMGXTriInit() Expecting consecutive indices"
-								<< " in file." << std::endl;
-			exit(EXIT_FAILURE);
-		}
-		for( size_t dim=0 ; dim<dimension ; ++dim )
-			IN >> pos[dim];
-		vertex(i).setPosition(pos);
-		IN >> vLabel[i];
-		std::string sTmp;
-		IN >> sTmp;
-		//Check sTmp==j?
-	}
-	
-	// Read vertex connectivity and create walls
-	size_t wallIndex=0;
-	for( size_t i=0 ; i<numVertexVal ; ++i ) {
-		size_t indexVal;
-		IN >> indexVal;
-		if (i!=indexVal) {
-			std::cerr << "Tissue::readMGXTriInit() Expecting consecutive indices"
-								<< " in file when reading connectivity." << std::endl;
-			exit(EXIT_FAILURE);
-		}
-		size_t numVertexNeigh;
-		IN >> numVertexNeigh;
-		for( size_t k=0 ; k<numVertexNeigh ; ++k ) {
-			size_t j;
-			IN >> j;
-			if (i<j) {
-				Wall tmpWall;
-				tmpWall.setIndex(wallIndex);
-				tmpWall.setVertex(vertexP(i),vertexP(j));
-				tmpWall.setLength(tmpWall.lengthFromVertexPosition());
-				tmpWall.setCell(background(),background());//temporary, generate cells below
-				addWall(tmpWall);
-				vertex(i).addWall(wallP(wallIndex));
-				vertex(j).addWall(wallP(wallIndex));
-			}
-		}
-	}
-	IN.close();
-		
-	// Generate cells (assuming triangeles)
-	
-
-	// Mark wall boundaries and indices
-	//for (size_t i=0; i<numWall(); ++i) {
-	//if (wall(i).cell1().variable(0)==wall.cell2().variable(0)) {
-	//	wall(i).addVariable(1);
-	//}
-	//else {
-	//	wall(i).addVariable(0);
-	//}
-	//}
-	if (verbose) {
-		std::cerr << numCell() << " cells and " << numVertex() 
-							<< " vertices and " << numWall() << " walls extracted by "
-							<< "readMGXTriInit()" << std::endl;
-	}
-	sortCellWallAndCellVertex();
-	checkConnectivity(verbose);
-	
-	return;
+  
+  std::vector<size_t> vLabel(numVertexVal);
+  std::vector<double> pos(dimension);
+  std::vector<size_t> cellName,vertexName;
+  // Read information about vertices
+  for( size_t i=0 ; i<numVertexVal ; ++i ) {
+    size_t tmp;
+    IN >> tmp;
+    vertexName.push_back(tmp);
+    if (tmp!=vertex(i).index()) {
+      std::cerr << "Tissue::readMGXTriInit() Expecting consecutive indices"
+		<< " in file." << std::endl;
+      exit(EXIT_FAILURE);
+    }
+    for( size_t dim=0 ; dim<dimension ; ++dim )
+      IN >> pos[dim];
+    vertex(i).setPosition(pos);
+    IN >> vLabel[i];
+    std::string sTmp;
+    IN >> sTmp;
+    //Check sTmp==j?
+  }
+  
+  // Read vertex connectivity and create walls
+  size_t wallIndex=0;
+  for( size_t i=0 ; i<numVertexVal ; ++i ) {
+    size_t indexVal;
+    IN >> indexVal;
+    if (i!=indexVal) {
+      std::cerr << "Tissue::readMGXTriInit() Expecting consecutive indices"
+		<< " in file when reading connectivity." << std::endl;
+      exit(EXIT_FAILURE);
+    }
+    size_t numVertexNeigh;
+    IN >> numVertexNeigh;
+    for( size_t k=0 ; k<numVertexNeigh ; ++k ) {
+      size_t j;
+      IN >> j;
+      if (i<j) {
+	Wall tmpWall;
+	tmpWall.setIndex(wallIndex);
+	tmpWall.setVertex(vertexP(i),vertexP(j));
+	tmpWall.setLength(tmpWall.lengthFromVertexPosition());
+	tmpWall.setCell(background(),background());//temporary, generate cells below
+	addWall(tmpWall);
+	vertex(i).addWall(wallP(wallIndex));
+	vertex(j).addWall(wallP(wallIndex));
+      }
+    }
+  }
+  IN.close();
+  
+  // Generate cells (assuming triangeles)
+  
+  
+  // Mark wall boundaries and indices
+  //for (size_t i=0; i<numWall(); ++i) {
+  //if (wall(i).cell1().variable(0)==wall.cell2().variable(0)) {
+  //	wall(i).addVariable(1);
+  //}
+  //else {
+  //	wall(i).addVariable(0);
+  //}
+  //}
+  if (verbose) {
+    std::cerr << numCell() << " cells and " << numVertex() 
+	      << " vertices and " << numWall() << " walls extracted by "
+	      << "readMGXTriInit()" << std::endl;
+  }
+  sortCellWallAndCellVertex();
+  checkConnectivity(verbose);
+  
+  return;
 }
 
 void Tissue::readMGXTriVtuInit( const char *initFile, int verbose ) 
@@ -1033,9 +1033,42 @@ size_t wallFromCellPair(std::vector< std::pair<size_t,size_t> > &wallCell,
   return static_cast<size_t>(-1);
 }
 
+void Tissue::readSphereInit( const char *initFile, int verbose ) 
+{
+  //Read the sphere data 
+  std::ifstream IN(initFile);
+  if( !IN ) {
+    std::cerr << "Tissue::readSphereInit() Cannot open file " << initFile << std::endl; 
+    exit(EXIT_FAILURE);
+  }
+  size_t numCell,numCol;
+  IN >> numCell;
+  IN >> numCol;
+  //If not given asssume only positions and radii in file
+  size_t dimension = numCol-1;
+  if( dimension<2 || dimension>3 ) {
+    std::cerr << "Tissue::readSphereInit() Dimension "
+	      << "(read by number of columns-1 in the file) needs to be 2 or 3." 
+	      << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  std::vector< std::vector<double> > data(numCell);
+  double tmp;
+  for( size_t i=0 ; i<numCell ; ++i ) {
+    data[i].resize( dimension+1 );
+    for( size_t j=0 ; j<data[i].size() ; ++j )
+      IN >> data[i][j];
+    for( size_t j=data[i].size() ; j<numCol ; ++j )
+      IN >> tmp;		
+  }  
+  //Create the tissue from the sphere data
+  double rFac=1.0;
+  createTissueFromSpheres(data,rFac,verbose);  
+}
+
 void Tissue::
 createTissueFromSpheres(DataMatrix &y,
-												double rFac, int verbose) 
+			double rFac, int verbose) 
 {  
   size_t N = y.size();
   if( !N ) return;
@@ -1048,7 +1081,7 @@ createTissueFromSpheres(DataMatrix &y,
   size_t rIndex = y[0].size()-1;
   if( rIndex<2 || rIndex>3 ) {
     std::cerr << "Tissue::createTissueFromSpheres()"
-							<< "Only allowed for 2D and 3D.\n";
+	      << "Only allowed for 2D and 3D.\n";
     exit(0);
   }
   //Get cell-cell neighbors which also defines the walls
@@ -1060,19 +1093,19 @@ createTissueFromSpheres(DataMatrix &y,
       r = y[i][rIndex] + y[j][rIndex];
       d=0.;
       for( size_t dim=0 ; dim<rIndex ; dim++ )
-				d += (y[i][dim]-y[j][dim])*(y[i][dim]-y[j][dim]);
+	d += (y[i][dim]-y[j][dim])*(y[i][dim]-y[j][dim]);
       d = std::sqrt( d );
       
       if( d<=r*rFac ) {
         //Add cell-cell neighbors
         cellCellNeighbor[i].push_back(j);
         cellCellNeighbor[j].push_back(i);
-				cellWall[i].push_back( numWall );
-				cellWall[j].push_back( numWall );
-				wallCell.push_back( std::pair<size_t,size_t>(i,j) );
+	cellWall[i].push_back( numWall );
+	cellWall[j].push_back( numWall );
+	wallCell.push_back( std::pair<size_t,size_t>(i,j) );
         numWall++;
-				if( verbose>1 )
-					std::cerr << "Wall between cells " << i << "," << j << std::endl;
+	if( verbose>1 )
+	  std::cerr << "Wall between cells " << i << "," << j << std::endl;
       }
     }
   }
@@ -1081,176 +1114,176 @@ createTissueFromSpheres(DataMatrix &y,
   //
   std::vector< std::pair<size_t,size_t> > 
     wallVertex(numWall,std::pair<size_t,size_t> (static_cast<size_t>(-1),
-																								 static_cast<size_t>(-1)));
+						 static_cast<size_t>(-1)));
   std::vector< std::vector<size_t> > cellVertex(N),vertexCell,vertexWall;
   for(size_t i1=0 ; i1<N ; ++i1 ) {
     for(size_t k1=0 ; k1<cellCellNeighbor[i1].size() ; ++k1 ) {
       size_t i2=cellCellNeighbor[i1][k1]; 
       if( true ) { //if( i2>i1 ) { //For not double checking
-				//get vector of common neighbors
-				std::vector<size_t> common;
-				for(size_t k2=k1+1 ; k2<cellCellNeighbor[i1].size() ; ++k2 ) {
-					size_t i3=cellCellNeighbor[i1][k2]; 
-					std::vector<size_t>::iterator it32 = 
-						find(cellCellNeighbor[i2].begin(),
-								 cellCellNeighbor[i2].end(),i3);
-					//if( i3>i2 && it32 != cellCellNeighbor[i2].end() ) //common found
-					if( true && it32 != cellCellNeighbor[i2].end() ) //common found
-						common.push_back(i3);
-				}
-				//std::cerr << common.size() << " common indeces found for cells "
-				//  << i1 << " " << i2 << " ( ";
-				//for(size_t tmp=0 ; tmp<common.size() ; ++tmp )
-				//std::cerr << common[tmp] << " ";
-				//std::cerr << ")" << std::endl;
-				//Check pairwise for neighbors (to identify 4-verteces)
-				std::vector< std::pair<size_t,size_t> > pairs;
-				std::vector<size_t> commonMarkedForPair(common.size());	
-				for(size_t c1=0 ; c1<common.size() ; ++c1 )
-					for(size_t c2=c1+1 ; c2<common.size() ; ++c2 ) {
-						std::vector<size_t>::iterator cit = 
-							find(cellCellNeighbor[common[c1]].begin(),
-									 cellCellNeighbor[common[c1]].end(),common[c2]);
-						if( cit != cellCellNeighbor[common[c1]].end() ) {//pair found
-							pairs.push_back(std::pair<size_t,size_t>(common[c1],common[c2]));
-							commonMarkedForPair[c1]++;
-							commonMarkedForPair[c2]++;
-						}
-					}	
-				//Add all 3-vertex
-				for(size_t c=0 ; c<common.size() ; ++c )
-					if( commonMarkedForPair[c]==0 ) {
-						std::vector<size_t> tmpVec(3);
-						tmpVec[0]=i1;tmpVec[1]=i2;tmpVec[2]=common[c];
-						size_t addFlag=1;
-						for( size_t v=0 ; v<vertexCell.size() ; ++v ) {
-							std::vector<size_t>::iterator cit0 = 
-								find(vertexCell[v].begin(),
-										 vertexCell[v].end(),tmpVec[0]);
-							std::vector<size_t>::iterator cit1 = 
-								find(vertexCell[v].begin(),
-										 vertexCell[v].end(),tmpVec[1]);
-							std::vector<size_t>::iterator cit2 = 
-								find(vertexCell[v].begin(),
-										 vertexCell[v].end(),tmpVec[2]);
-							if( cit0 != vertexCell[v].end() &&
-									cit1 != vertexCell[v].end() &&
-									cit2 != vertexCell[v].end() ) {//vertex already found
-								addFlag=0;
-								break;
-							}
-						}
-						if( addFlag ) {
-							vertexCell.push_back(tmpVec);
-							vertexWall.push_back(std::vector<size_t>(0));
-							for( size_t iTmp=0 ; iTmp<tmpVec.size() ; ++iTmp )
-								cellVertex[tmpVec[iTmp]].push_back(numVertex);
-							for( size_t iTmp=0 ; iTmp<tmpVec.size() ; ++iTmp )
-								for( size_t jTmp=iTmp+1 ; jTmp<tmpVec.size() ; ++jTmp ) {
-									size_t wallTmp = wallFromCellPair(wallCell,tmpVec[iTmp],tmpVec[jTmp]);
-									if( wallTmp<numWall ) {
-										if( wallVertex[wallTmp].first>numWall )
-											wallVertex[wallTmp].first = numVertex;
-										else if( wallVertex[wallTmp].second>numWall )
-											wallVertex[wallTmp].second = numVertex;
-										else
-											std::cerr << "Warning, trying to add a third "
-																<< "vertex to wall " << wallTmp 
-																<< std::endl; 
-										vertexWall[vertexWall.size()-1].push_back(wallTmp);
-									}
-								}
-							if( verbose>1 )
-								std::cerr << "3-vertex for " << i1 << " " << i2 << " "
-													<< common[c] << " added" << std::endl;
-							numVertex++;
-							num3Vertex++;
-						}
-					}	
-					else if( commonMarkedForPair[c]==1 ) {
-						size_t i3Tmp=common[c],i4Tmp=common[c],tmpCount=0;
-						for(size_t p=0 ; p<pairs.size() ; ++p )
-							if( pairs[p].first==i3Tmp ) {
-								i4Tmp=pairs[p].second;
-								tmpCount++;
-							}
-							else if( pairs[p].second==i3Tmp ) {
-								i4Tmp=pairs[p].first;
-								tmpCount++;
-							}
-						//if( tmpCount==1 && i3Tmp<i4Tmp ) {
-						if( tmpCount==1 && true ) {
-							std::vector<size_t> tmpVec(4);
-							tmpVec[0]=i1;tmpVec[1]=i2;tmpVec[2]=i3Tmp;tmpVec[3]=i4Tmp;
-							size_t addFlag=1;
-							for( size_t v=0 ; v<vertexCell.size() ; ++v ) {
-								std::vector<size_t>::iterator cit0 = 
-									find(vertexCell[v].begin(),
-											 vertexCell[v].end(),tmpVec[0]);
-								std::vector<size_t>::iterator cit1 = 
-									find(vertexCell[v].begin(),
-											 vertexCell[v].end(),tmpVec[1]);
-								std::vector<size_t>::iterator cit2 = 
-									find(vertexCell[v].begin(),
-											 vertexCell[v].end(),tmpVec[2]);
-								std::vector<size_t>::iterator cit3 = 
-									find(vertexCell[v].begin(),
-											 vertexCell[v].end(),tmpVec[3]);
-								if( cit0 != vertexCell[v].end() &&
-										cit1 != vertexCell[v].end() &&
-										cit2 != vertexCell[v].end() &&
-										cit3 != vertexCell[v].end() ) {//vertex already found
-									addFlag=0;
-									break;
-								}
-							}
-							if( addFlag ) {
-								vertexCell.push_back(tmpVec);
-								vertexWall.push_back(std::vector<size_t>(0));
-								for( size_t iTmp=0 ; iTmp<tmpVec.size() ; ++iTmp )
-									cellVertex[tmpVec[iTmp]].push_back(numVertex);
-								for( size_t iTmp=0 ; iTmp<tmpVec.size() ; ++iTmp )
-									for( size_t jTmp=iTmp+1 ; jTmp<tmpVec.size() ; ++jTmp ) {
-										size_t wallTmp = wallFromCellPair(wallCell,tmpVec[iTmp],tmpVec[jTmp]);
-										if( wallTmp<numWall ) {
-											if( wallVertex[wallTmp].first>numWall )
-												wallVertex[wallTmp].first = numVertex;
-											else if( wallVertex[wallTmp].second>numWall )
-												wallVertex[wallTmp].second = numVertex;
-											else
-												std::cerr << "Warning, trying to add a third "
-																	<< "vertex to wall " << wallTmp 
-																	<< std::endl; 
-											vertexWall[vertexWall.size()-1].push_back(wallTmp);
-										}
-										else
-											std::cerr << "Warning found cell pair without wall"
-																<< std::endl;
-									}
-								
-								if( verbose>1 )
-									std::cerr << "4-vertex for " << i1 << " " << i2 << " "
-														<< i3Tmp << " " << i4Tmp << " added" 
-														<< std::endl;
-								numVertex++;
-								num4Vertex++;
-								//std::cerr << "vertexCell:" << std::endl;
-								//for( size_t iTmp=0 ; iTmp<vertexCell.size() ; ++iTmp ) {
-								//for( size_t jTmp=0 ; jTmp<vertexCell[iTmp].size() ; ++jTmp )
-								//  std::cerr << vertexCell[iTmp][jTmp] << " ";
-								//std::cerr << std::endl;
-								//}
-							}
-						}
-						else if( tmpCount != 1 ) {
-							std::cerr << "Plausibel 4-vertex does not match pairs"
-												<< std::endl;
-						}
-					}
-					else {
-						std::cerr << "Warning: possible 5-vertex found..." 
-											<< std::endl;
-					}
+	//get vector of common neighbors
+	std::vector<size_t> common;
+	for(size_t k2=k1+1 ; k2<cellCellNeighbor[i1].size() ; ++k2 ) {
+	  size_t i3=cellCellNeighbor[i1][k2]; 
+	  std::vector<size_t>::iterator it32 = 
+	    find(cellCellNeighbor[i2].begin(),
+		 cellCellNeighbor[i2].end(),i3);
+	  //if( i3>i2 && it32 != cellCellNeighbor[i2].end() ) //common found
+	  if( true && it32 != cellCellNeighbor[i2].end() ) //common found
+	    common.push_back(i3);
+	}
+	//std::cerr << common.size() << " common indeces found for cells "
+	//  << i1 << " " << i2 << " ( ";
+	//for(size_t tmp=0 ; tmp<common.size() ; ++tmp )
+	//std::cerr << common[tmp] << " ";
+	//std::cerr << ")" << std::endl;
+	//Check pairwise for neighbors (to identify 4-verteces)
+	std::vector< std::pair<size_t,size_t> > pairs;
+	std::vector<size_t> commonMarkedForPair(common.size());	
+	for(size_t c1=0 ; c1<common.size() ; ++c1 )
+	  for(size_t c2=c1+1 ; c2<common.size() ; ++c2 ) {
+	    std::vector<size_t>::iterator cit = 
+	      find(cellCellNeighbor[common[c1]].begin(),
+		   cellCellNeighbor[common[c1]].end(),common[c2]);
+	    if( cit != cellCellNeighbor[common[c1]].end() ) {//pair found
+	      pairs.push_back(std::pair<size_t,size_t>(common[c1],common[c2]));
+	      commonMarkedForPair[c1]++;
+	      commonMarkedForPair[c2]++;
+	    }
+	  }	
+	//Add all 3-vertex
+	for(size_t c=0 ; c<common.size() ; ++c )
+	  if( commonMarkedForPair[c]==0 ) {
+	    std::vector<size_t> tmpVec(3);
+	    tmpVec[0]=i1;tmpVec[1]=i2;tmpVec[2]=common[c];
+	    size_t addFlag=1;
+	    for( size_t v=0 ; v<vertexCell.size() ; ++v ) {
+	      std::vector<size_t>::iterator cit0 = 
+		find(vertexCell[v].begin(),
+		     vertexCell[v].end(),tmpVec[0]);
+	      std::vector<size_t>::iterator cit1 = 
+		find(vertexCell[v].begin(),
+		     vertexCell[v].end(),tmpVec[1]);
+	      std::vector<size_t>::iterator cit2 = 
+		find(vertexCell[v].begin(),
+		     vertexCell[v].end(),tmpVec[2]);
+	      if( cit0 != vertexCell[v].end() &&
+		  cit1 != vertexCell[v].end() &&
+		  cit2 != vertexCell[v].end() ) {//vertex already found
+		addFlag=0;
+		break;
+	      }
+	    }
+	    if( addFlag ) {
+	      vertexCell.push_back(tmpVec);
+	      vertexWall.push_back(std::vector<size_t>(0));
+	      for( size_t iTmp=0 ; iTmp<tmpVec.size() ; ++iTmp )
+		cellVertex[tmpVec[iTmp]].push_back(numVertex);
+	      for( size_t iTmp=0 ; iTmp<tmpVec.size() ; ++iTmp )
+		for( size_t jTmp=iTmp+1 ; jTmp<tmpVec.size() ; ++jTmp ) {
+		  size_t wallTmp = wallFromCellPair(wallCell,tmpVec[iTmp],tmpVec[jTmp]);
+		  if( wallTmp<numWall ) {
+		    if( wallVertex[wallTmp].first>numWall )
+		      wallVertex[wallTmp].first = numVertex;
+		    else if( wallVertex[wallTmp].second>numWall )
+		      wallVertex[wallTmp].second = numVertex;
+		    else
+		      std::cerr << "Warning, trying to add a third "
+				<< "vertex to wall " << wallTmp 
+				<< std::endl; 
+		    vertexWall[vertexWall.size()-1].push_back(wallTmp);
+		  }
+		}
+	      if( verbose>1 )
+		std::cerr << "3-vertex for " << i1 << " " << i2 << " "
+			  << common[c] << " added" << std::endl;
+	      numVertex++;
+	      num3Vertex++;
+	    }
+	  }	
+	  else if( commonMarkedForPair[c]==1 ) {
+	    size_t i3Tmp=common[c],i4Tmp=common[c],tmpCount=0;
+	    for(size_t p=0 ; p<pairs.size() ; ++p )
+	      if( pairs[p].first==i3Tmp ) {
+		i4Tmp=pairs[p].second;
+		tmpCount++;
+	      }
+	      else if( pairs[p].second==i3Tmp ) {
+		i4Tmp=pairs[p].first;
+		tmpCount++;
+	      }
+	    //if( tmpCount==1 && i3Tmp<i4Tmp ) {
+	    if( tmpCount==1 && true ) {
+	      std::vector<size_t> tmpVec(4);
+	      tmpVec[0]=i1;tmpVec[1]=i2;tmpVec[2]=i3Tmp;tmpVec[3]=i4Tmp;
+	      size_t addFlag=1;
+	      for( size_t v=0 ; v<vertexCell.size() ; ++v ) {
+		std::vector<size_t>::iterator cit0 = 
+		  find(vertexCell[v].begin(),
+		       vertexCell[v].end(),tmpVec[0]);
+		std::vector<size_t>::iterator cit1 = 
+		  find(vertexCell[v].begin(),
+		       vertexCell[v].end(),tmpVec[1]);
+		std::vector<size_t>::iterator cit2 = 
+		  find(vertexCell[v].begin(),
+		       vertexCell[v].end(),tmpVec[2]);
+		std::vector<size_t>::iterator cit3 = 
+		  find(vertexCell[v].begin(),
+		       vertexCell[v].end(),tmpVec[3]);
+		if( cit0 != vertexCell[v].end() &&
+		    cit1 != vertexCell[v].end() &&
+		    cit2 != vertexCell[v].end() &&
+		    cit3 != vertexCell[v].end() ) {//vertex already found
+		  addFlag=0;
+		  break;
+		}
+	      }
+	      if( addFlag ) {
+		vertexCell.push_back(tmpVec);
+		vertexWall.push_back(std::vector<size_t>(0));
+		for( size_t iTmp=0 ; iTmp<tmpVec.size() ; ++iTmp )
+		  cellVertex[tmpVec[iTmp]].push_back(numVertex);
+		for( size_t iTmp=0 ; iTmp<tmpVec.size() ; ++iTmp )
+		  for( size_t jTmp=iTmp+1 ; jTmp<tmpVec.size() ; ++jTmp ) {
+		    size_t wallTmp = wallFromCellPair(wallCell,tmpVec[iTmp],tmpVec[jTmp]);
+		    if( wallTmp<numWall ) {
+		      if( wallVertex[wallTmp].first>numWall )
+			wallVertex[wallTmp].first = numVertex;
+		      else if( wallVertex[wallTmp].second>numWall )
+			wallVertex[wallTmp].second = numVertex;
+		      else
+			std::cerr << "Warning, trying to add a third "
+				  << "vertex to wall " << wallTmp 
+				  << std::endl; 
+		      vertexWall[vertexWall.size()-1].push_back(wallTmp);
+		    }
+		    else
+		      std::cerr << "Warning found cell pair without wall"
+				<< std::endl;
+		  }
+		
+		if( verbose>1 )
+		  std::cerr << "4-vertex for " << i1 << " " << i2 << " "
+			    << i3Tmp << " " << i4Tmp << " added" 
+			    << std::endl;
+		numVertex++;
+		num4Vertex++;
+		//std::cerr << "vertexCell:" << std::endl;
+		//for( size_t iTmp=0 ; iTmp<vertexCell.size() ; ++iTmp ) {
+		//for( size_t jTmp=0 ; jTmp<vertexCell[iTmp].size() ; ++jTmp )
+		//  std::cerr << vertexCell[iTmp][jTmp] << " ";
+		//std::cerr << std::endl;
+		//}
+	      }
+	    }
+	    else if( tmpCount != 1 ) {
+	      std::cerr << "Plausibel 4-vertex does not match pairs"
+			<< std::endl;
+	    }
+	  }
+	  else {
+	    std::cerr << "Warning: possible 5-vertex found..." 
+		      << std::endl;
+	  }
       } 
     }
   }
@@ -1277,8 +1310,8 @@ createTissueFromSpheres(DataMatrix &y,
       tmpVec[1]=wallCell[wallI].second;
       vertexCell.push_back(tmpVec);
       if( verbose>1 )
-				std::cerr << "Adding vertex " << numVertex << " to wall (first) "
-									<< wallI << std::endl;
+	std::cerr << "Adding vertex " << numVertex << " to wall (first) "
+		  << wallI << std::endl;
       numVertex++;
       num2Vertex++;
     }
@@ -1293,8 +1326,8 @@ createTissueFromSpheres(DataMatrix &y,
       tmpVec[1]=wallCell[wallI].second;
       vertexCell.push_back(tmpVec);
       if( verbose>1 )
-				std::cerr << "Adding vertex " << numVertex << " to wall (second) "
-									<< wallI << std::endl;
+	std::cerr << "Adding vertex " << numVertex << " to wall (second) "
+		  << wallI << std::endl;
       numVertex++;
       num2Vertex++;
     }
@@ -1306,8 +1339,8 @@ createTissueFromSpheres(DataMatrix &y,
     size_t numTwoVertex=0;
     for( size_t vertexI=0 ; vertexI<cellVertex[cellI].size() ; ++vertexI ) {
       if( vertexCell[ cellVertex[cellI][vertexI] ].size() == 2 ) {
-				numTwoVertex++;
-				twoVertexList.push_back( cellVertex[cellI][vertexI] );
+	numTwoVertex++;
+	twoVertexList.push_back( cellVertex[cellI][vertexI] );
       }
     }
     if( numTwoVertex == 2 && twoVertexList[0] != twoVertexList[1] ) {
@@ -1325,24 +1358,24 @@ createTissueFromSpheres(DataMatrix &y,
       wallVertex[wallI].first = twoVertexList[0];
       wallVertex[wallI].second = twoVertexList[1];
       if( verbose )
-				std::cerr << "Wall " << wallI << " added in cell " << cellI 
-									<< " (" << wallCell[wallI].second << ") between vertices " 
-									<< twoVertexList[0] << " and "
-									<< twoVertexList[1] << std::endl;
+	std::cerr << "Wall " << wallI << " added in cell " << cellI 
+		  << " (" << wallCell[wallI].second << ") between vertices " 
+		  << twoVertexList[0] << " and "
+		  << twoVertexList[1] << std::endl;
     }
   }
   
   std::cerr << N << " cells " << numWall << " walls and " << numVertex
-						<< " vertices defined (" << num2Vertex << " 2v, " 
-						<< num3Vertex << " 3v, " << num4Vertex << " 4v)"
-						<< std::endl << std::endl;
+	    << " vertices defined (" << num2Vertex << " 2v, " 
+	    << num3Vertex << " 3v, " << num4Vertex << " 4v)"
+	    << std::endl << std::endl;
   
   //Fill the tissue with cells, walls and verteces
   //
   if( verbose )
     std::cerr << "Tissue::createTissueFromSpheres() "
-							<< "Creating the tissue." 
-							<< std::endl;    
+	      << "Creating the tissue." 
+	      << std::endl;    
   setNumCell( N );
   setNumWall( numWall );
   setNumVertex( numVertex );
@@ -1366,10 +1399,10 @@ createTissueFromSpheres(DataMatrix &y,
       cell2 = &cell(wallCell[i].second);
     else
       cell2 = &background_;
-		
+    
     wall(i).setCell(cell1,cell2);
     wall(i).setVertex(&vertex(wallVertex[i].first),
-											&vertex(wallVertex[i].second));
+		      &vertex(wallVertex[i].second));
   }
   for( size_t i=0 ; i<(this->numVertex()) ; i++ ) {
     vertex(i).setIndex(i);
@@ -1381,7 +1414,7 @@ createTissueFromSpheres(DataMatrix &y,
     std::vector<double> pos(dimension);
     for( size_t j=0 ; j<vertexCell[i].size() ; j++ )
       for( size_t d=0 ; d<dimension ; d++ )
-				pos[d] += y[vertexCell[i][j]][d];
+	pos[d] += y[vertexCell[i][j]][d];
     for( size_t d=0 ; d<dimension ; d++ )
       pos[d] /= static_cast<double>( vertexCell[i].size() );
     vertex(i).setPosition(pos);
@@ -1390,13 +1423,13 @@ createTissueFromSpheres(DataMatrix &y,
   //
   if( verbose )
     std::cerr << "Tissue::createTissueFromSpheres() "
-							<< "Setting wall lengths from vertex positions." 
-							<< std::endl;
+	      << "Setting wall lengths from vertex positions." 
+	      << std::endl;
   setWallLengthFromVertexPosition();
   
   //Check that the tissue is ok
-	checkConnectivity(verbose);
-
+  checkConnectivity(verbose);
+  
   //std::cerr << "CellWall:" << std::endl;
   //for(size_t i=0 ; i<cellWall.size() ; ++i ) {
   //std::cerr << i << " - ";
@@ -1435,336 +1468,380 @@ createTissueFromSpheres(DataMatrix &y,
   //}  
 }
 
-void Tissue::createTissueFromVoronoi(DataMatrix &vertexPos,
-																		 std::vector< std::vector<size_t> > &cellVertexTmp,
-																		 int verbose) 
+void Tissue::readVoronoiInit( const char *initFile, int verbose ) 
 {
-	std::vector< std::vector<size_t> > cellVertex(cellVertexTmp.size()),
-		cellWall(cellVertexTmp.size()),vertexCell(vertexPos.size());
-	size_t boundaryIndex = static_cast<size_t>(-1);
-	std::set<size_t> boundaryNeighVertex;
-	//Convert cellVertexTmp to cellVertex by adding additional vertices
-	//at boundary and lower each index by one
-	//
-	for( size_t i=0 ; i<cellVertexTmp.size() ; ++i ) {
-		for( size_t k=0 ; k<cellVertexTmp[i].size() ; ++k ) {
-			size_t vI1=static_cast<size_t>(cellVertexTmp[i][k]-1);
-			size_t vI2=static_cast<size_t>(cellVertexTmp[i][(k+1)%cellVertexTmp[i].size()]-1);
-			cellVertex[i].push_back( vI1 );
-			if( vI2==boundaryIndex && vI1 != boundaryIndex ) {
-				boundaryNeighVertex.insert(vI1);
-			}				
-			if( vI1==boundaryIndex ) {
-				cellVertex[i].push_back( vI1 );
-				if( vI2 != boundaryIndex )
-					boundaryNeighVertex.insert(vI2);
-			}
-			else
-				vertexCell[vI1].push_back(i);
-		}
-	}
-	std::cerr << "cellVertexTmp converted\n";
-	//Add new vertices at the boundary
-	//
-	size_t numOldVertex=vertexPos.size();
-	size_t numNewVertex=boundaryNeighVertex.size();
-	vertexPos.resize(vertexPos.size()+numNewVertex,vertexPos[0]);
-	vertexCell.resize(vertexPos.size());
-	size_t kCount=0;
-	for( std::set<size_t>::iterator k=boundaryNeighVertex.begin() ; 
-			 k!=boundaryNeighVertex.end() ; ++k ) {
-		for( size_t i=0 ; i<cellVertex.size() ; ++i ) {
-			for( size_t j=0 ; j<cellVertex[i].size() ; ++j ) {
-				if( *k==cellVertex[i][j] ) {
-					size_t jPlus=(j+1)%cellVertex[i].size();
-					size_t jMinus = j!=0 ? j-1 : cellVertex[i].size()-1; 
-					if( cellVertex[i][jPlus]==boundaryIndex ) {
-						cellVertex[i][jPlus]=numOldVertex+kCount;
-						vertexCell[numOldVertex+kCount].push_back(i);
-					}
-					else if( cellVertex[i][jMinus]==boundaryIndex ) {
-						cellVertex[i][jMinus]=numOldVertex+kCount;
-						vertexCell[numOldVertex+kCount].push_back(i);
-					}
-				}
-			}
-		}
-		++kCount;
-	}
-	std::cerr << "New vertices added\n";
-	//Create walls
-	//
-	std::vector< std::vector<size_t> > vertexWall( vertexCell.size() );
-	std::vector< std::pair<size_t,size_t> > wallCell,wallVertex;
-	for( size_t i=0 ; i<cellVertex.size() ; ++i ) {
-		for( size_t j=0 ; j<cellVertex[i].size() ; ++j ) {
-			size_t jPlus=(j+1)%cellVertex[i].size();
-			size_t vI1=cellVertex[i][j];
-			size_t vI2=cellVertex[i][jPlus];
-			//First check if it is a boundary wall (new wall)
-			if( vI1>=numOldVertex && vI2>=numOldVertex ) {
-				cellWall[i].push_back(wallCell.size());
-				std::pair<size_t,size_t> tmpPair(i,boundaryIndex);
-				wallCell.push_back(tmpPair);
-				vertexWall[vI1].push_back(wallVertex.size());
-				vertexWall[vI2].push_back(wallVertex.size());
-				tmpPair.first=vI1;
-				tmpPair.second=vI2;
-				wallVertex.push_back(tmpPair);
-			}
-			else {
-				//Check if already in wall
-				size_t inWallFlag=0;
-				for( size_t k=0 ; k<wallVertex.size() ; ++k ) {
-					if( ( wallVertex[k].first==vI1 && wallVertex[k].second==vI2 ) ||
-							( wallVertex[k].first==vI2 && wallVertex[k].second==vI1 ) ) {
-						++inWallFlag;
-						if( wallCell[k].first != wallCell[k].second ) {
-							std::cerr << "Tissue::createInitFromVoronoi() Wall not"
-												<< " marked for additional cell." << std::endl;
-							exit(-1);
-						}
-						wallCell[k].second=i;
-						cellWall[i].push_back(k);
-					}
-				}
-				if( !inWallFlag ) {
-					//New wall, set one cell and two vertices
-					cellWall[i].push_back(wallCell.size());
-					std::pair<size_t,size_t> tmpPair(i,i);
-					wallCell.push_back(tmpPair);
-					vertexWall[vI1].push_back(wallVertex.size());
-					vertexWall[vI2].push_back(wallVertex.size());
-					tmpPair.first=vI1;
-					tmpPair.second=vI2;
-					wallVertex.push_back(tmpPair);
-				}
-				else if( inWallFlag>1 ) {
-					std::cerr << "Tissue::createInitFromVoronoi() Vertices in"
-										<< " multiple (>2) walls." << std::endl;
-					exit(-1);
-				}
-			}
-		}
-	}//for i (adding walls)
-	std::cerr << "New walls added\n";
-	assert( cellWall.size() == cellVertex.size() );
-	assert( wallCell.size() == wallVertex.size() );
-	assert( vertexCell.size() == vertexWall.size() );
-	assert( vertexCell.size() == vertexPos.size() );
+  //Read the voronoi output data
+  std::ifstream IN(initFile);
+  if( !IN ) {
+    std::cerr << "Tissue::readVoronoiInit() Cannot open file " << initFile << std::endl; 
+    exit(EXIT_FAILURE);
+  }
+  size_t dimension, numVertex,numCell;
+  int tmpI=0;
+  double tmpD=0.0;
+  //Read header information
+  IN >> dimension;
+  assert(dimension==2 || dimension==3);
+  IN >> numVertex;
+  --numVertex;
+  IN >> numCell;
+  IN >> tmpI;
+  for( size_t j=0 ; j<dimension ; ++j )
+    IN >> tmpD;
+  
+  //Read vertexPositions
+  std::vector< std::vector<double> > vertexPos(numVertex);
+  for( size_t i=0 ; i<vertexPos.size() ; ++i ) {
+    vertexPos[i].resize(dimension);
+    for( size_t j=0 ; j<dimension ; ++j )
+      IN >> vertexPos[i][j];
+  }
+  
+  //Read cellVertex connections
+  std::vector< std::vector<size_t> > cellVertex(numCell);
+  size_t numCellVertex=0;
+  for( size_t i=0 ; i<cellVertex.size() ; ++i ) {
+    IN >> numCellVertex;
+    cellVertex[i].resize(numCellVertex);
+    for( size_t j=0 ; j<numCellVertex ; ++j )
+      IN >> cellVertex[i][j];
+  }  
+  // Create the tissue from the data and print the init
+  //
+  Tissue T;
+  createTissueFromVoronoi(vertexPos,cellVertex,verbose);  
+}
 
-// 	std::cerr << "cellVertex and cellWall:" << std::endl;
-// 	for( size_t i=0 ; i<cellVertex.size() ; ++i ) {
-// 		std::cerr << i << " (" << cellVertex[i].size() << ") ";
-// 		for( size_t k=0 ; k<cellVertex[i].size() ; ++k )
-// 			std::cerr << cellVertex[i][k] << " ";
-// 		std::cerr << " (" << cellWall[i].size() << ") ";		
-// 		for( size_t k=0 ; k<cellWall[i].size() ; ++k )
-// 			std::cerr << cellWall[i][k] << " ";
-// 		std::cerr << std::endl;
-// 	}
-// 	std::cerr << "vertexCell and vertexWall:" << std::endl;
-// 	for( size_t i=0 ; i<vertexCell.size() ; ++i ) {
-// 		std::cerr << i << " (" << vertexCell[i].size() << ") "; 
-// 		for( size_t k=0 ; k<vertexCell[i].size() ; ++k )
-// 			std::cerr << vertexCell[i][k] << " ";
-// 		std::cerr << " (" << vertexWall[i].size() << ") ";
-// 		for( size_t k=0 ; k<vertexWall[i].size() ; ++k )
-// 			std::cerr << vertexWall[i][k] << " ";
-// 		std::cerr << std::endl;
-// 	}
-// 	std::cerr << "wallCell and wallVertex:" << std::endl;
-// 	for( size_t i=0 ; i<wallCell.size() ; ++i ) {
-// 		std::cerr << i << "  "; 
-// 		std::cerr << wallCell[i].first << " " << wallCell[i].second 
-// 							<< "  ";
-// 		std::cerr << wallVertex[i].first << " " << wallVertex[i].second;
-// 		std::cerr << std::endl;
-// 	}
-	
-	//Extract possible positions for the new vertices
-	for( size_t i=numOldVertex ; i<vertexPos.size() ; ++i ) {
-		std::cerr << i << std::endl;
-		size_t foundWallFlag=0;
-		size_t falseCell1=0,falseCell2=0;
-		size_t wallI=0,cellI=0;
-		//Identify wall
-		for( size_t k=0 ; k<vertexWall[i].size() ; ++k )
-			if( wallCell[ vertexWall[i][k] ].first != boundaryIndex &&
-					wallCell[ vertexWall[i][k] ].second != boundaryIndex ) {
-				++foundWallFlag;
-				wallI = vertexWall[i][k];
-				falseCell1 = wallCell[ vertexWall[i][k] ].first;
-				falseCell2 = wallCell[ vertexWall[i][k] ].second;
-			}
-		if( foundWallFlag != 1 ) {
-			std::cerr << "Tissue::createInitFromVoronoi() Multiple ("
-								<< foundWallFlag << ") walls found for vertex" 
-								<< std::endl;
-			exit(-1);
-		}
-		//Extract vertex at other end
-		assert( wallVertex[wallI].first==i || wallVertex[wallI].second==i );
-		size_t vertexI = wallVertex[wallI].first==i ? 
-			wallVertex[wallI].second : wallVertex[wallI].first; 
-		
-		//Find cell not connected to previous wall
-		size_t foundCellFlag=0;
-		for( size_t k=0 ; k<vertexCell[vertexI].size() ; ++k )
-			if( vertexCell[vertexI][k] != falseCell1 && 
-					vertexCell[vertexI][k] != falseCell2 ) {
-				++foundCellFlag;				
-				cellI = vertexCell[vertexI][k];
-			}
-		if( foundCellFlag != 1 ) {
-			std::cerr << "Tissue::createInitFromVoronoi() Multiple ("
-								<< foundCellFlag << ") cells found for vertex " 
-								<< vertexI << std::endl;
-			std::cerr << falseCell1 << " " << falseCell2 << std::endl;
-			exit(-1);
-		}
-		std::vector<double> cellPos( vertexPos[0].size() );
-		if( !cellVertex[cellI].size() ) {
-			std::cerr << "No vertices defined for chosen cell" << std::endl;
-			exit(-1);
-		}
-		for( size_t k=0 ; k<cellVertex[cellI].size() ; ++k )
-			for( size_t d=0 ; d<cellPos.size() ; ++d )
-				cellPos[d] += vertexPos[cellVertex[cellI][k]][d];
-		for( size_t d=0 ; d<cellPos.size() ; ++d )
-			cellPos[d] /= cellVertex[cellI].size();
-
-		//Extract direction and normalize
-		std::vector<double> direction(cellPos.size());
-		double norm=0.0;
-		for( size_t d=0 ; d<cellPos.size() ; ++d ) {
-			direction[d] = vertexPos[vertexI][d]-cellPos[d];
-			norm += direction[d]*direction[d];
-		}
-		if( norm<=0.0 ) {
-			std::cerr << "Tissue::createInitFromVoronoi() Direction "
-								<< "without length (" << norm << ")" << std::endl; 
-			exit(-1);
-		}
-		norm = std::sqrt(norm);
-		if( norm<=0.0 ) {
-			std::cerr << "Tissue::createInitFromVoronoi() Direction "
-								<< "without length (" << norm << ")" << std::endl; 
-			exit(-1);
-		}
-		for( size_t d=0 ; d<cellPos.size() ; ++d )
-			direction[d] /= norm;
-		//Set new vertex position
-		double length=1.0;
-		for( size_t d=0 ; d<cellPos.size() ; ++d )
-			vertexPos[i][d] = vertexPos[vertexI][d] + length*direction[d];
+void Tissue::createTissueFromVoronoi(DataMatrix &vertexPos,
+				     std::vector< std::vector<size_t> > &cellVertexTmp,
+				     int verbose) 
+{
+  std::vector< std::vector<size_t> > cellVertex(cellVertexTmp.size()),
+    cellWall(cellVertexTmp.size()),vertexCell(vertexPos.size());
+  size_t boundaryIndex = static_cast<size_t>(-1);
+  std::set<size_t> boundaryNeighVertex;
+  //Convert cellVertexTmp to cellVertex by adding additional vertices
+  //at boundary and lower each index by one
+  //
+  for( size_t i=0 ; i<cellVertexTmp.size() ; ++i ) {
+    for( size_t k=0 ; k<cellVertexTmp[i].size() ; ++k ) {
+      size_t vI1=static_cast<size_t>(cellVertexTmp[i][k]-1);
+      size_t vI2=static_cast<size_t>(cellVertexTmp[i][(k+1)%cellVertexTmp[i].size()]-1);
+      cellVertex[i].push_back( vI1 );
+      if( vI2==boundaryIndex && vI1 != boundaryIndex ) {
+	boundaryNeighVertex.insert(vI1);
+      }				
+      if( vI1==boundaryIndex ) {
+	cellVertex[i].push_back( vI1 );
+	if( vI2 != boundaryIndex )
+	  boundaryNeighVertex.insert(vI2);
+      }
+      else
+	vertexCell[vI1].push_back(i);
+    }
+  }
+  std::cerr << "cellVertexTmp converted\n";
+  //Add new vertices at the boundary
+  //
+  size_t numOldVertex=vertexPos.size();
+  size_t numNewVertex=boundaryNeighVertex.size();
+  vertexPos.resize(vertexPos.size()+numNewVertex,vertexPos[0]);
+  vertexCell.resize(vertexPos.size());
+  size_t kCount=0;
+  for( std::set<size_t>::iterator k=boundaryNeighVertex.begin() ; 
+       k!=boundaryNeighVertex.end() ; ++k ) {
+    for( size_t i=0 ; i<cellVertex.size() ; ++i ) {
+      for( size_t j=0 ; j<cellVertex[i].size() ; ++j ) {
+	if( *k==cellVertex[i][j] ) {
+	  size_t jPlus=(j+1)%cellVertex[i].size();
+	  size_t jMinus = j!=0 ? j-1 : cellVertex[i].size()-1; 
+	  if( cellVertex[i][jPlus]==boundaryIndex ) {
+	    cellVertex[i][jPlus]=numOldVertex+kCount;
+	    vertexCell[numOldVertex+kCount].push_back(i);
+	  }
+	  else if( cellVertex[i][jMinus]==boundaryIndex ) {
+	    cellVertex[i][jMinus]=numOldVertex+kCount;
+	    vertexCell[numOldVertex+kCount].push_back(i);
+	  }
 	}
-	
-	//Create the tissue
-	assert( cellWall.size() == cellVertex.size() );
-	assert( wallCell.size() == wallVertex.size() );
-	assert( vertexCell.size() == vertexWall.size() );
-	assert( vertexCell.size() == vertexPos.size() );
-	setNumCell( cellWall.size() );
-	setNumWall( wallCell.size() );
-	setNumVertex( vertexCell.size() );
-	for( size_t i=0 ; i<numCell() ; ++i ) {
-		cell(i).setIndex(i);
-		for( size_t k=0 ; k<cellWall[i].size() ; ++k )
-			cell(i).addWall( &wall(cellWall[i][k]) );
-		for( size_t k=0 ; k<cellVertex[i].size() ; ++k )
-			cell(i).addVertex( &vertex(cellVertex[i][k]) );
+      }
+    }
+    ++kCount;
+  }
+  std::cerr << "New vertices added\n";
+  //Create walls
+  //
+  std::vector< std::vector<size_t> > vertexWall( vertexCell.size() );
+  std::vector< std::pair<size_t,size_t> > wallCell,wallVertex;
+  for( size_t i=0 ; i<cellVertex.size() ; ++i ) {
+    for( size_t j=0 ; j<cellVertex[i].size() ; ++j ) {
+      size_t jPlus=(j+1)%cellVertex[i].size();
+      size_t vI1=cellVertex[i][j];
+      size_t vI2=cellVertex[i][jPlus];
+      //First check if it is a boundary wall (new wall)
+      if( vI1>=numOldVertex && vI2>=numOldVertex ) {
+	cellWall[i].push_back(wallCell.size());
+	std::pair<size_t,size_t> tmpPair(i,boundaryIndex);
+	wallCell.push_back(tmpPair);
+	vertexWall[vI1].push_back(wallVertex.size());
+	vertexWall[vI2].push_back(wallVertex.size());
+	tmpPair.first=vI1;
+	tmpPair.second=vI2;
+	wallVertex.push_back(tmpPair);
+      }
+      else {
+	//Check if already in wall
+	size_t inWallFlag=0;
+	for( size_t k=0 ; k<wallVertex.size() ; ++k ) {
+	  if( ( wallVertex[k].first==vI1 && wallVertex[k].second==vI2 ) ||
+	      ( wallVertex[k].first==vI2 && wallVertex[k].second==vI1 ) ) {
+	    ++inWallFlag;
+	    if( wallCell[k].first != wallCell[k].second ) {
+	      std::cerr << "Tissue::createInitFromVoronoi() Wall not"
+			<< " marked for additional cell." << std::endl;
+	      exit(-1);
+	    }
+	    wallCell[k].second=i;
+	    cellWall[i].push_back(k);
+	  }
 	}
-	for( size_t i=0 ; i<numVertex() ; ++i ) {
-		vertex(i).setIndex(i);
-		for( size_t k=0 ; k<vertexCell[i].size() ; ++k )
-			vertex(i).addCell( &cell(vertexCell[i][k]) );
-		for( size_t k=0 ; k<vertexWall[i].size() ; ++k )
-			vertex(i).addWall( &wall(vertexWall[i][k]) );
+	if( !inWallFlag ) {
+	  //New wall, set one cell and two vertices
+	  cellWall[i].push_back(wallCell.size());
+	  std::pair<size_t,size_t> tmpPair(i,i);
+	  wallCell.push_back(tmpPair);
+	  vertexWall[vI1].push_back(wallVertex.size());
+	  vertexWall[vI2].push_back(wallVertex.size());
+	  tmpPair.first=vI1;
+	  tmpPair.second=vI2;
+	  wallVertex.push_back(tmpPair);
 	}
-	for( size_t i=0 ; i<numWall() ; ++i ) {
-		wall(i).setIndex(i);
-		if( wallCell[i].first == static_cast<size_t>(-1) )
-			wall(i).setCell(background(),&cell(wallCell[i].second));
-		else if( wallCell[i].second == static_cast<size_t>(-1) )
-			wall(i).setCell(&cell(wallCell[i].first),background());
-		else
-			wall(i).setCell(&cell(wallCell[i].first),&cell(wallCell[i].second));
-		wall(i).setVertex( &vertex(wallVertex[i].first),&vertex(wallVertex[i].second) );
+	else if( inWallFlag>1 ) {
+	  std::cerr << "Tissue::createInitFromVoronoi() Vertices in"
+		    << " multiple (>2) walls." << std::endl;
+	  exit(-1);
 	}
-	
-// 	std::cerr << "cellVertex and cellWall:" << std::endl;
-// 	for( size_t i=0 ; i<cellVertex.size() ; ++i ) {
-// 		std::cerr << i << "," << cell(i).index() << " (" << cellVertex[i].size() << ","
-// 							<< cell(i).numVertex() << ") ";
-// 		for( size_t k=0 ; k<cellVertex[i].size() ; ++k )
-// 			std::cerr << cellVertex[i][k] << "," << cell(i).vertex(k)->index()
-// 								<< " ";
-// 		std::cerr << " (" << cellWall[i].size() << ","
-// 							<< cell(i).numWall() << ") ";
-// 		for( size_t k=0 ; k<cellWall[i].size() ; ++k )
-// 			std::cerr << cellWall[i][k] << "," << cell(i).wall(k)->index()
-// 								<< " ";
-// 		std::cerr << std::endl;
-// 	}
-// 	std::cerr << "vertexCell and vertexWall:" << std::endl;
-// 	for( size_t i=0 ; i<vertexCell.size() ; ++i ) {
-// 		std::cerr << i << "," << vertex(i).index() << " (" 
-// 							<< vertexCell[i].size() << "," 
-// 							<< vertex(i).numCell() << ") ";
-// 		for( size_t k=0 ; k<vertexCell[i].size() ; ++k )
-// 			std::cerr << vertexCell[i][k] << "," << vertex(i).cell(k)->index()
-// 								<< " ";
-// 		std::cerr << " (" << vertexWall[i].size() << "," 
-// 							<< vertex(i).numWall() << ") ";
-// 		for( size_t k=0 ; k<vertexWall[i].size() ; ++k )
-// 			std::cerr << vertexWall[i][k] << "," << vertex(i).wall(k)->index()
-// 								<< " ";
-// 		std::cerr << std::endl;
-// 	}
-// 	std::cerr << "wallCell and wallVertex:" << std::endl;
-// 	for( size_t i=0 ; i<wallCell.size() ; ++i ) {
-// 		std::cerr << i << "," << wall(i).index() << "  "; 
-// 		std::cerr << wallCell[i].first << "," << wall(i).cell1()->index()
-// 							<< " " << wallCell[i].second << "," 
-// 							<< wall(i).cell2()->index() << "  ";
-// 		std::cerr << wallVertex[i].first << "," << wall(i).vertex1()->index()
-// 							<< " " << wallVertex[i].second << "," 
-// 							<< wall(i).vertex2()->index() << "  ";
-		
-// 		std::cerr << std::endl;
-// 	}
-
-	//Set positions for the vertices
-	assert( numVertex()==vertexPos.size() );
-	for( size_t i=0 ; i<numVertex() ; ++i )
-		vertex(i).setPosition(vertexPos[i]);
-
-	//Get the wall lengths from teh vertex positions
-	setWallLengthFromVertexPosition();
-	
-	std::cerr << "Checking tissue" << std::endl;
-	checkConnectivity(verbose);
-	std::cerr << "Tissue created" << std::endl;
-	DataMatrix cellData( numCell() ),
-		cellDeriv( numCell() ),wallData( numWall() ),wallDeriv( numWall() ),
-		vertexData( numVertex() ),vertexDeriv( numVertex() );
-	removeEpidermalCells(cellData,wallData,vertexData,cellDeriv,wallDeriv,
-			     vertexDeriv);
-	std::cerr << "Checking tissue after first removal" << std::endl;
-	checkConnectivity(verbose);
-	std::cerr << "Tisue created" << std::endl;
-	removeEpidermalCells(cellData,wallData,vertexData,cellDeriv,wallDeriv,
-			     vertexDeriv);
-	std::cerr << "Checking tissue after second removal" << std::endl;
-	checkConnectivity(verbose);
-	std::cerr << "Tisue created" << std::endl;
-	removeEpidermalCells(cellData,wallData,vertexData,cellDeriv,wallDeriv,
-			     vertexDeriv);
-	std::cerr << "Checking tissue after third removal" << std::endl;
-	checkConnectivity(verbose);
-	std::cerr << "Tisue created" << std::endl;
-
+      }
+    }
+  }//for i (adding walls)
+  std::cerr << "New walls added\n";
+  assert( cellWall.size() == cellVertex.size() );
+  assert( wallCell.size() == wallVertex.size() );
+  assert( vertexCell.size() == vertexWall.size() );
+  assert( vertexCell.size() == vertexPos.size() );
+  
+  // 	std::cerr << "cellVertex and cellWall:" << std::endl;
+  // 	for( size_t i=0 ; i<cellVertex.size() ; ++i ) {
+  // 		std::cerr << i << " (" << cellVertex[i].size() << ") ";
+  // 		for( size_t k=0 ; k<cellVertex[i].size() ; ++k )
+  // 			std::cerr << cellVertex[i][k] << " ";
+  // 		std::cerr << " (" << cellWall[i].size() << ") ";		
+  // 		for( size_t k=0 ; k<cellWall[i].size() ; ++k )
+  // 			std::cerr << cellWall[i][k] << " ";
+  // 		std::cerr << std::endl;
+  // 	}
+  // 	std::cerr << "vertexCell and vertexWall:" << std::endl;
+  // 	for( size_t i=0 ; i<vertexCell.size() ; ++i ) {
+  // 		std::cerr << i << " (" << vertexCell[i].size() << ") "; 
+  // 		for( size_t k=0 ; k<vertexCell[i].size() ; ++k )
+  // 			std::cerr << vertexCell[i][k] << " ";
+  // 		std::cerr << " (" << vertexWall[i].size() << ") ";
+  // 		for( size_t k=0 ; k<vertexWall[i].size() ; ++k )
+  // 			std::cerr << vertexWall[i][k] << " ";
+  // 		std::cerr << std::endl;
+  // 	}
+  // 	std::cerr << "wallCell and wallVertex:" << std::endl;
+  // 	for( size_t i=0 ; i<wallCell.size() ; ++i ) {
+  // 		std::cerr << i << "  "; 
+  // 		std::cerr << wallCell[i].first << " " << wallCell[i].second 
+  // 							<< "  ";
+  // 		std::cerr << wallVertex[i].first << " " << wallVertex[i].second;
+  // 		std::cerr << std::endl;
+  // 	}
+  
+  //Extract possible positions for the new vertices
+  for( size_t i=numOldVertex ; i<vertexPos.size() ; ++i ) {
+    std::cerr << i << std::endl;
+    size_t foundWallFlag=0;
+    size_t falseCell1=0,falseCell2=0;
+    size_t wallI=0,cellI=0;
+    //Identify wall
+    for( size_t k=0 ; k<vertexWall[i].size() ; ++k )
+      if( wallCell[ vertexWall[i][k] ].first != boundaryIndex &&
+	  wallCell[ vertexWall[i][k] ].second != boundaryIndex ) {
+	++foundWallFlag;
+	wallI = vertexWall[i][k];
+	falseCell1 = wallCell[ vertexWall[i][k] ].first;
+	falseCell2 = wallCell[ vertexWall[i][k] ].second;
+      }
+    if( foundWallFlag != 1 ) {
+      std::cerr << "Tissue::createInitFromVoronoi() Multiple ("
+		<< foundWallFlag << ") walls found for vertex" 
+		<< std::endl;
+      exit(-1);
+    }
+    //Extract vertex at other end
+    assert( wallVertex[wallI].first==i || wallVertex[wallI].second==i );
+    size_t vertexI = wallVertex[wallI].first==i ? 
+      wallVertex[wallI].second : wallVertex[wallI].first; 
+    
+    //Find cell not connected to previous wall
+    size_t foundCellFlag=0;
+    for( size_t k=0 ; k<vertexCell[vertexI].size() ; ++k )
+      if( vertexCell[vertexI][k] != falseCell1 && 
+	  vertexCell[vertexI][k] != falseCell2 ) {
+	++foundCellFlag;				
+	cellI = vertexCell[vertexI][k];
+      }
+    if( foundCellFlag != 1 ) {
+      std::cerr << "Tissue::createInitFromVoronoi() Multiple ("
+		<< foundCellFlag << ") cells found for vertex " 
+		<< vertexI << std::endl;
+      std::cerr << falseCell1 << " " << falseCell2 << std::endl;
+      exit(-1);
+    }
+    std::vector<double> cellPos( vertexPos[0].size() );
+    if( !cellVertex[cellI].size() ) {
+      std::cerr << "No vertices defined for chosen cell" << std::endl;
+      exit(-1);
+    }
+    for( size_t k=0 ; k<cellVertex[cellI].size() ; ++k )
+      for( size_t d=0 ; d<cellPos.size() ; ++d )
+	cellPos[d] += vertexPos[cellVertex[cellI][k]][d];
+    for( size_t d=0 ; d<cellPos.size() ; ++d )
+      cellPos[d] /= cellVertex[cellI].size();
+    
+    //Extract direction and normalize
+    std::vector<double> direction(cellPos.size());
+    double norm=0.0;
+    for( size_t d=0 ; d<cellPos.size() ; ++d ) {
+      direction[d] = vertexPos[vertexI][d]-cellPos[d];
+      norm += direction[d]*direction[d];
+    }
+    if( norm<=0.0 ) {
+      std::cerr << "Tissue::createInitFromVoronoi() Direction "
+		<< "without length (" << norm << ")" << std::endl; 
+      exit(-1);
+    }
+    norm = std::sqrt(norm);
+    if( norm<=0.0 ) {
+      std::cerr << "Tissue::createInitFromVoronoi() Direction "
+		<< "without length (" << norm << ")" << std::endl; 
+      exit(-1);
+    }
+    for( size_t d=0 ; d<cellPos.size() ; ++d )
+      direction[d] /= norm;
+    //Set new vertex position
+    double length=1.0;
+    for( size_t d=0 ; d<cellPos.size() ; ++d )
+      vertexPos[i][d] = vertexPos[vertexI][d] + length*direction[d];
+  }
+  
+  //Create the tissue
+  assert( cellWall.size() == cellVertex.size() );
+  assert( wallCell.size() == wallVertex.size() );
+  assert( vertexCell.size() == vertexWall.size() );
+  assert( vertexCell.size() == vertexPos.size() );
+  setNumCell( cellWall.size() );
+  setNumWall( wallCell.size() );
+  setNumVertex( vertexCell.size() );
+  for( size_t i=0 ; i<numCell() ; ++i ) {
+    cell(i).setIndex(i);
+    for( size_t k=0 ; k<cellWall[i].size() ; ++k )
+      cell(i).addWall( &wall(cellWall[i][k]) );
+    for( size_t k=0 ; k<cellVertex[i].size() ; ++k )
+      cell(i).addVertex( &vertex(cellVertex[i][k]) );
+  }
+  for( size_t i=0 ; i<numVertex() ; ++i ) {
+    vertex(i).setIndex(i);
+    for( size_t k=0 ; k<vertexCell[i].size() ; ++k )
+      vertex(i).addCell( &cell(vertexCell[i][k]) );
+    for( size_t k=0 ; k<vertexWall[i].size() ; ++k )
+      vertex(i).addWall( &wall(vertexWall[i][k]) );
+  }
+  for( size_t i=0 ; i<numWall() ; ++i ) {
+    wall(i).setIndex(i);
+    if( wallCell[i].first == static_cast<size_t>(-1) )
+      wall(i).setCell(background(),&cell(wallCell[i].second));
+    else if( wallCell[i].second == static_cast<size_t>(-1) )
+      wall(i).setCell(&cell(wallCell[i].first),background());
+    else
+      wall(i).setCell(&cell(wallCell[i].first),&cell(wallCell[i].second));
+    wall(i).setVertex( &vertex(wallVertex[i].first),&vertex(wallVertex[i].second) );
+  }
+  
+  // 	std::cerr << "cellVertex and cellWall:" << std::endl;
+  // 	for( size_t i=0 ; i<cellVertex.size() ; ++i ) {
+  // 		std::cerr << i << "," << cell(i).index() << " (" << cellVertex[i].size() << ","
+  // 							<< cell(i).numVertex() << ") ";
+  // 		for( size_t k=0 ; k<cellVertex[i].size() ; ++k )
+  // 			std::cerr << cellVertex[i][k] << "," << cell(i).vertex(k)->index()
+  // 								<< " ";
+  // 		std::cerr << " (" << cellWall[i].size() << ","
+  // 							<< cell(i).numWall() << ") ";
+  // 		for( size_t k=0 ; k<cellWall[i].size() ; ++k )
+  // 			std::cerr << cellWall[i][k] << "," << cell(i).wall(k)->index()
+  // 								<< " ";
+  // 		std::cerr << std::endl;
+  // 	}
+  // 	std::cerr << "vertexCell and vertexWall:" << std::endl;
+  // 	for( size_t i=0 ; i<vertexCell.size() ; ++i ) {
+  // 		std::cerr << i << "," << vertex(i).index() << " (" 
+  // 							<< vertexCell[i].size() << "," 
+  // 							<< vertex(i).numCell() << ") ";
+  // 		for( size_t k=0 ; k<vertexCell[i].size() ; ++k )
+  // 			std::cerr << vertexCell[i][k] << "," << vertex(i).cell(k)->index()
+  // 								<< " ";
+  // 		std::cerr << " (" << vertexWall[i].size() << "," 
+  // 							<< vertex(i).numWall() << ") ";
+  // 		for( size_t k=0 ; k<vertexWall[i].size() ; ++k )
+  // 			std::cerr << vertexWall[i][k] << "," << vertex(i).wall(k)->index()
+  // 								<< " ";
+  // 		std::cerr << std::endl;
+  // 	}
+  // 	std::cerr << "wallCell and wallVertex:" << std::endl;
+  // 	for( size_t i=0 ; i<wallCell.size() ; ++i ) {
+  // 		std::cerr << i << "," << wall(i).index() << "  "; 
+  // 		std::cerr << wallCell[i].first << "," << wall(i).cell1()->index()
+  // 							<< " " << wallCell[i].second << "," 
+  // 							<< wall(i).cell2()->index() << "  ";
+  // 		std::cerr << wallVertex[i].first << "," << wall(i).vertex1()->index()
+  // 							<< " " << wallVertex[i].second << "," 
+  // 							<< wall(i).vertex2()->index() << "  ";
+  
+  // 		std::cerr << std::endl;
+  // 	}
+  
+  //Set positions for the vertices
+  assert( numVertex()==vertexPos.size() );
+  for( size_t i=0 ; i<numVertex() ; ++i )
+    vertex(i).setPosition(vertexPos[i]);
+  
+  //Get the wall lengths from the vertex positions
+  setWallLengthFromVertexPosition();
+  
+  std::cerr << "Checking tissue" << std::endl;
+  checkConnectivity(verbose);
+  std::cerr << "Tissue created" << std::endl;
+  DataMatrix cellData( numCell() ),
+    cellDeriv( numCell() ),wallData( numWall() ),wallDeriv( numWall() ),
+    vertexData( numVertex() ),vertexDeriv( numVertex() );
+  removeEpidermalCells(cellData,wallData,vertexData,cellDeriv,wallDeriv,
+		       vertexDeriv);
+  std::cerr << "Checking tissue after first removal" << std::endl;
+  checkConnectivity(verbose);
+  std::cerr << "Tisue created" << std::endl;
+  removeEpidermalCells(cellData,wallData,vertexData,cellDeriv,wallDeriv,
+		       vertexDeriv);
+  std::cerr << "Checking tissue after second removal" << std::endl;
+  checkConnectivity(verbose);
+  std::cerr << "Tisue created" << std::endl;
+  removeEpidermalCells(cellData,wallData,vertexData,cellDeriv,wallDeriv,
+		       vertexDeriv);
+  std::cerr << "Checking tissue after third removal" << std::endl;
+  checkConnectivity(verbose);
+  std::cerr << "Tisue created" << std::endl;
+  
 }
 
 void Tissue::copyState(DataMatrix &cellData, DataMatrix &wallData, DataMatrix &vertexData)
@@ -3821,7 +3898,7 @@ findPeaksGradientAscent( DataMatrix &cellData,
   return static_cast<unsigned int>(cellMax.size());
 }
 
-void Tissue::printInit(std::ostream &os) {
+void Tissue::printInit(std::ostream &os) const {
   
   // Increase resolution to max for doubles
   unsigned int oldPrecision = os.precision(); 
@@ -3944,6 +4021,230 @@ void Tissue::printInit(DataMatrix &cellData,
     os << std::endl;
   }  
   os.precision(oldPrecision);	
+}
+
+void Tissue::printInitFem(std::ostream &os) const
+{
+  // Increase resolution 
+  unsigned int oldPrecision = os.precision(); 
+  os.precision(20);
+  //std::cerr << "Tissue::printInit(): old precision: " << oldPrecision << " new " 
+  //				<< os.precision() << std::endl;	
+  
+  //Print the vertex positions
+  size_t numV=numVertex();
+  os << numV << " nodes" << std::endl;
+  for (size_t i=0; i<numV; ++i) {
+    os << i << " : ";
+    for (size_t j=0; j<vertex(i).numPosition(); ++j )
+      os << vertex(i).position(j) << " ";
+    os << std::endl;
+  }
+  //os << std::endl;
+  
+  //Print cell connection data
+  size_t numC=numCell();
+  os << numC << " faces" << std::endl;
+  for (size_t i=0; i<numC; ++i) {
+    os << i << " : ";
+    size_t numV=cell(i).numVertex();
+    os << numV << ", ";
+    for (size_t k=0; k<numV; ++k)
+      os << cell(i).vertex(k)->index() << " ";
+    os << std::endl;
+  }
+  os.precision(oldPrecision);
+}
+
+void Tissue::printInitTri(std::ostream &os)
+{
+  // Increase resolution 
+  unsigned int oldPrecision = os.precision(); 
+  os.precision(20);
+  //std::cerr << "Tissue::printInitTri(): old precision: " << oldPrecision << " new " 
+  //	    << os.precision() << std::endl;	
+
+  // Create data structure for triangulated tissue.
+  //
+  size_t numC=0; //added below
+  size_t numW=numWall(); //appended below
+  size_t numV=numVertex()+numCell(); //all
+  std::vector<size_t> cellIndexStart(numCell());
+  std::vector<size_t> wallIndexStart(numCell());
+  for( size_t i=0 ; i<numCell() ; ++i ) {
+    numC += cell(i).numWall();
+    numW += cell(i).numVertex();
+    if (i==0) {
+      cellIndexStart[i] = numCell();
+      wallIndexStart[i] = numWall();
+    }
+    else {
+      cellIndexStart[i] = cellIndexStart[i-1]+cell(i-1).numWall()-1;
+      wallIndexStart[i] = wallIndexStart[i-1]+cell(i-1).numWall();
+    }
+  }
+  DataMatrix c(numC);
+  DataMatrix w(numW);
+  DataMatrix v(numV);
+  for (size_t i=0; i<numVertex(); ++i) {
+    v[i] = vertex(i).position();
+  }
+  std::vector< std::pair<size_t,size_t> > cellNeigh(numW); // Wall connections to cells
+  std::vector< std::pair<size_t,size_t> > vertexNeigh(numW); // Wall connections to vertices
+
+  std::vector<double> wallTmpData(1+wall(0).numVariable(),0.0);
+  //size_t D=vertex(0).numPosition(); //dimension
+
+  for (size_t i=0; i<numCell(); ++i) {
+    size_t numCellVar = cell(i).numVariable();
+    // Add central vertex with position
+    size_t vI = numVertex()+i;
+    v[vI].resize(v[0].size());
+    for (size_t d=0; d<v[vI].size(); ++d) {
+      v[vI] = cell(i).positionFromVertex(); // Getting the central position of the cell
+    }
+    for (size_t k=0; k<cell(i).numWall(); ++k) {
+      // add cell data in correct cell      
+      if (k==0) {
+	// old index used
+	c[i].resize(numCellVar); 
+	for( size_t j=0; j<numCellVar; ++j) {
+	  c[i][j] = cell(i).variable(j);
+	}
+      }
+      else {
+	// new index for the rest (and store same cell data)
+	size_t ii = cellIndexStart[i]+k-1; 
+	c[ii].resize(numCellVar); 
+	for( size_t j=0; j<numCellVar; ++j) {
+	  c[ii][j] = cell(i).variable(j);
+	}
+      }
+      // update current walls including neighborhood
+      size_t wI = cell(i).wall(k)->index();
+      // temporary wall data should store length and variables 
+      w[wI].resize( 1+wall(wI).numVariable() );
+      w[wI][0] = wall(wI).length();
+      for (size_t j=0; j<wall(wI).numVariable(); ++j) {
+	w[wI][1+j] = wall(wI).variable(j);
+      }
+      // vertex neighbors stay the same
+      vertexNeigh[wI].first = cell(i).vertex(k)->index();
+      if (k<cell(i).numVertex()-1) {
+	vertexNeigh[wI].second = cell(i).vertex(k+1)->index();
+      }
+      else {
+	vertexNeigh[wI].second = cell(i).vertex(0)->index();
+      }
+      // first find current cell as neighbor
+      if (cell(i).wall(k)->cell1()->index() == i) {
+	if (k==0) {
+	  cellNeigh[wI].first = i;
+	}
+	else {
+	  cellNeigh[wI].first = cellIndexStart[i]+k-1;
+	}
+      }
+      else if (cell(i).wall(k)->cell2()->index() == i) {
+	if (k==0) {
+	  cellNeigh[wI].second = i;
+	}
+	else {
+	  cellNeigh[wI].second = cellIndexStart[i]+k-1;
+	}
+      }
+      else {
+	std::cerr << "Tissue::printInitTri() Error: Cell wall not"
+		  << "connected to cell." << std::endl;
+	exit(EXIT_FAILURE);
+      }
+      // also recognize if the wall is connected to background
+      if (cell(i).wall(k)->cell1() == background() ) {
+	cellNeigh[wI].first = size_t(-1);
+      }
+      else if (cell(i).wall(k)->cell2() == background() ) {
+	cellNeigh[wI].second = size_t(-1);
+      }
+
+      // add new wall between vertex and central vertex
+      wI = wallIndexStart[i]+k;
+      vertexNeigh[wI].first = cell(i).vertex(k)->index();
+      vertexNeigh[wI].second = vI;
+      // Calculate length of new wall from vertex positions
+      double length=0.0;
+      size_t vII = vertexNeigh[wI].first;
+      for (size_t d=0; d<v[vI].size(); ++d) {
+	length += (v[vI][d]-v[vII][d])*(v[vI][d]-v[vII][d]);
+      }
+      length = std::sqrt(length);
+      wallTmpData[0] = length;
+      w[wI] = wallTmpData;// length + 0s for the rest of the wall variables.      
+      if (k==0) {
+	cellNeigh[wI].first = cellIndexStart[i]+
+	  cell(i).numWall()-2; // last from added list of new cells
+	cellNeigh[wI].second = cell(i).index(); //i
+      }
+      else {
+	cellNeigh[wI].first = cellNeigh[wI-1].second; // second from prev wall (going around)
+	cellNeigh[wI].second = cellIndexStart[i]+k-1; // from added list of new cells
+      }
+    }
+  }
+  
+  // Print the init file with the new data
+  //
+  os << numC << " " << numW << " " << numV << std::endl;
+  
+  // Print the connectivity from walls
+  for( size_t i=0 ; i<numW ; ++i ) {
+    os << i << " "; // index
+    if (cellNeigh[i].first<numC) { // cell neighbors
+      os << cellNeigh[i].first << " ";
+    }
+    else {
+      os << "-1 ";
+    }
+    if (cellNeigh[i].second<numC) {
+      os << cellNeigh[i].second << " "; 
+    }
+    else {
+      os << "-1 ";
+    }
+    os << vertexNeigh[i].first << " " << vertexNeigh[i].second << std::endl; // vertex neighbors
+  }
+  os << std::endl;
+  
+  // Print the vertex positions
+  os << numV << " " << v[0].size() << std::endl;
+  for( size_t i=0 ; i<numV ; ++i ) {
+    for( size_t j=0 ; j<v[i].size() ; ++j )
+      os << v[i][j] << " ";
+    os << std::endl;
+  }
+  os << std::endl;
+  
+  // Print wall data
+  os << numW << " 1 " << w[0].size()-1 << std::endl;
+  for( size_t i=0 ; i<numW ; ++i ) {
+    assert( wa[i].size() );
+    for( size_t j=0 ; j<w[i].size() ; ++j )
+      os << w[i][j] << " ";
+    os << std::endl;
+  }
+  os << std::endl;
+  
+  // Print cell data
+  os << numC << " " << c[0].size() << std::endl;
+  if( c[0].size() ) {
+    for( size_t i=0 ; i<numC ; ++i ) {
+      assert( c[i].size() );
+      for( size_t j=0 ; j<c[i].size() ; ++j )
+	os << c[i][j] << " ";
+      os << std::endl;
+    }
+    os << std::endl;
+  }  
+  os.precision(oldPrecision);
 }
 
 void Tissue::printVertex(std::ostream &os) {
