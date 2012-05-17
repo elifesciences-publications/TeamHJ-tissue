@@ -976,7 +976,6 @@ void Tissue::readMGXTriMeshInit( const char *initFile, int verbose )
 	      << "not '" << tmpString << " " << tmpInt << "'." << std::endl;
     exit(EXIT_FAILURE);
   }
-  std::cerr << "Tissue::readMGXTriMeshInit() Test header: '" << tmpString << " " << tmpInt << "'" << std::endl;
   IN >> tmpString;
   size_t dimension;
   IN >> dimension;
@@ -985,14 +984,12 @@ void Tissue::readMGXTriMeshInit( const char *initFile, int verbose )
 	      << "not '" << tmpString << " " << dimension << "'." << std::endl;
     exit(EXIT_FAILURE);
   }
-  std::cerr << "Tissue::readMGXTriMeshInit() Test header: '" << tmpString << " " << dimension << "'" << std::endl;
   IN >> tmpString;
   if (tmpString != "Vertices") { 
     std::cerr << "Tissue::readMGXTriMeshInit Expecting 'Vertices' on third line of file, "
 	      << "not '" << tmpString << "'." << std::endl;
     exit(EXIT_FAILURE);
   }
-  std::cerr << "Tissue::readMGXTriMeshInit() Test header: '" << tmpString << "'" << std::endl;
 
   // Read and create vertices and store labels
   //
@@ -1018,10 +1015,9 @@ void Tissue::readMGXTriMeshInit( const char *initFile, int verbose )
 	      << "not '" << tmpString << "'." << std::endl;
     exit(EXIT_FAILURE);
   }
-  std::cerr << "Tissue::readMGXTriMeshInit() Test header: '" << tmpString << "'" << std::endl;
 
   // Read cell (triangle) connectivity and cell labels
-  //
+  // NOTE: In this format the vertex indices start at 1 (not zero).
   size_t numCellVal,numCellVertex=3;// Assuming triangles in this file
   IN >> numCellVal;
   setNumCell( numCellVal );
@@ -1032,10 +1028,12 @@ void Tissue::readMGXTriMeshInit( const char *initFile, int verbose )
     //cell(i).setId(i);
     for( size_t k=0 ; k<numCellVertex ; ++k ) {
       IN >> cellV[k];
+      cellV[k]--;//Since vertex indices in this list starts from one.
       cell(i).addVertex(vertexP(cellV[k]));
       vertex(cellV[k]).addCell(cellP(i));
     }
-    size_t cellLabel;
+
+    int cellLabel;
     IN >> cellLabel;
     // Add direction in front of variables
     cell(i).addVariable(1);
@@ -1044,6 +1042,14 @@ void Tissue::readMGXTriMeshInit( const char *initFile, int verbose )
     cell(i).addVariable(1);
     cell(i).addVariable(cellLabel);
   }
+
+  IN >> tmpString;
+  if (tmpString != "End") { 
+    std::cerr << "Tissue::readMGXTriMeshInit Expecting 'End' on final line after reading cells, "
+	      << "not '" << tmpString << "'." << std::endl;
+    //exit(EXIT_FAILURE);
+  }
+
   IN.close();
   
   // Create walls from cells and their vertex connections
@@ -1070,12 +1076,15 @@ void Tissue::readMGXTriMeshInit( const char *initFile, int verbose )
 	  tmpWall.setLength(tmpWall.lengthFromVertexPosition());
 	  tmpWall.setCell(cellP(i),background());
 	  // Add variable indicating if boundary between cell labels (proper wall=1)
-	  if (vLabel[tmpWall.vertex1()->index()] == -1 && vLabel[tmpWall.vertex1()->index()] == -1) {
-	    tmpWall.addVariable(1.0);
-	  }
-	  else {
-	    tmpWall.addVariable(0.0);
-	  }
+	  //if (vLabel[tmpWall.vertex1()->index()] == -1 && vLabel[tmpWall.vertex1()->index()] == -1) {
+	  //tmpWall.addVariable(2.0);
+	  //}
+	  //else if (vLabel[tmpWall.vertex1()->index()] == -1 && vLabel[tmpWall.vertex1()->index()] == -1) {
+	  //tmpWall.addVariable(1.0);
+	  //}
+	  //else {
+	  //tmpWall.addVariable(0.0);
+	  //}
 	  addWall(tmpWall);
 	  vertex(cell(i).vertex(k)->index()).addWall(wallP(wallIndex));
 	  vertex(cell(i).vertex(kk)->index()).addWall(wallP(wallIndex));
@@ -1085,11 +1094,21 @@ void Tissue::readMGXTriMeshInit( const char *initFile, int verbose )
       }
     }
   }
+  // Add variable indicating if boundary between cell labels (proper wall=1)
+  for (size_t i=0; i<numWall(); ++i) {
+    if (wall(i).cell1() == background() || wall(i).cell2() == background() 
+	|| wall(i).cell1()->variable(4) != wall(i).cell2()->variable(4)) {
+      wall(i).addVariable(1.0);
+    }
+    else {
+      wall(i).addVariable(0.0);
+    }
+  }
   
   if (verbose) {
     std::cerr << numCell() << " cells and " << numVertex() 
 	      << " vertices and " << numWall() << " walls extracted by "
-	      << "readMGXTriInit()" << std::endl;
+	      << "readMGXTriMeshInit()" << std::endl;
   }
   sortCellWallAndCellVertex();
   checkConnectivity(verbose);
