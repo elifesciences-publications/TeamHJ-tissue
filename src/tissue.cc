@@ -4252,6 +4252,76 @@ void Tissue::printInitTri(std::ostream &os)
   os.precision(oldPrecision);
 }
 
+void Tissue::printInitOrganism(std::ostream &os)
+{
+  // Increase resolution 
+  unsigned int oldPrecision = os.precision(); 
+  os.precision(20);
+  //std::cerr << "Tissue::printInit(): old precision: " << oldPrecision << " new " 
+  //				<< os.precision() << std::endl;	
+  
+  //Print the cell
+  size_t numC=numCell();
+  size_t numVar = cell(0).numVariable();
+  size_t dimension = vertex(0).numPosition();
+  os << numC << " " << numVar+dimension+1 << std::endl;
+  for (size_t i=0; i<numC; ++i) {
+    std::vector<double> posTmp = cell(i).positionFromVertex();
+    if (posTmp.size()!=dimension) {
+      std::cerr << "Tissue::printInitOrganism() Wrong number of positional variables: "
+		<< posTmp.size() << ", expecting " << dimension << std::endl;
+      exit(EXIT_FAILURE);
+    }
+    for (size_t d=0; d<dimension; ++d) {
+      os << posTmp[d] << " ";
+    }
+    os << cell(i).volume() << " ";
+    for (size_t j=0; j<cell(i).numVariable(); ++j )
+      os << cell(i).variable(j) << " ";
+    os << std::endl;
+  }
+  os << std::endl;
+  
+  //Print cell connection data
+  os << numC << " 1" << std::endl;//assuming connections and areas stored
+  for (size_t i=0; i<numC; ++i) {
+    if (cell(i).index() != i) {
+      std::cerr << "Tissue::printInitOrganism() Assumes cell indices are same as position in cell vector."
+		<< std::endl << "For cell at position " << i << " the index is " << cell(i).index() 
+		<< "." << std::endl; 
+      exit(EXIT_FAILURE);
+    }
+    os << i << " ";
+    size_t numW=cell(i).numWall();
+    // Collect real neighbors
+    std::vector<size_t> kList,jList;
+    for (size_t k=0; k<numW; ++k) {
+      if (cell(i).wall(k)->cell1()->index()==cell(i).index()) {
+	if (cell(i).wall(k)->cell2()!=background()) {
+	  kList.push_back(k);
+	  jList.push_back(cell(i).wall(k)->cell2()->index());
+	}
+      }
+      else if (cell(i).wall(k)->cell2()->index()==cell(i).index()) {
+	if (cell(i).wall(k)->cell1()!=background()) {
+	  kList.push_back(k);
+	  jList.push_back(cell(i).wall(k)->cell2()->index());
+	}
+      }
+    }
+    // Print
+    os << kList.size() << " ";
+    for (size_t k=0; k<jList.size(); ++k) {
+      os << jList[k] << " ";
+    }
+    for (size_t k=0; k<kList.size(); ++k) {
+      os << cell(i).wall(kList[k])->length() << " ";
+    }    
+    os << std::endl;
+  }
+  os.precision(oldPrecision);
+}
+
 void Tissue::printVertex(std::ostream &os) {
   
   for( size_t i=0 ; i<numVertex() ; ++i )

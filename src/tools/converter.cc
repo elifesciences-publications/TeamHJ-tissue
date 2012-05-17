@@ -133,18 +133,24 @@ int main(int argc,char *argv[]) {
     }
     T.printInit(std::cout);
   }
-  else if (inputFormat.compare("triTissue")==0) {
+  else if (outputFormat.compare("triTissue")==0) {
     if (verboseFlag) {
       std::cerr << "Printing output using triangulated tissue format." 
 		<< std::endl;
     }
     T.printInitTri(std::cout);
   }
-  else if (inputFormat.compare("fem")==0) {
+  else if (outputFormat.compare("fem")==0) {
     if (verboseFlag) {
       std::cerr << "Printing output using fem format." << std::endl;
     }
     T.printInitFem(std::cout);
+  }
+  else if (outputFormat.compare("organism")==0) {
+    if (verboseFlag) {
+      std::cerr << "Printing output using organism format (init + neigh)." << std::endl;
+    }
+    T.printInitOrganism(std::cout);
   }
   else {
     std::cerr << "Warning: main() - Format " << outputFormat << " not recognized. "

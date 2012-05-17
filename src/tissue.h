@@ -216,6 +216,16 @@ class Tissue {
   ///
   void readMGXTriVtuInit(const char *initFile,int verbose=0);
   ///
+  /// @brief Reads an initial tissue configuration from MGX cell mesh format
+  ///
+  /// Reads an initial tissue configuration from the file initFile. It 
+  /// assumes that the format is the format provided by the MGX software,
+  /// by exporting to the mesh format after segmentation on triangulated mesh 
+  /// and after makeCell.
+  /// See the function implementation for the format.
+  ///
+  void readMGXCellMeshInit(const char *initFile,int verbose=0, int skipCenter=1);
+  ///
   /// @brief Opens the file modelFile and then calls readModel(std::ifstream&,int)
   ///
   /// @see Tissue::readModel(std::ifstream&,int)
@@ -791,6 +801,15 @@ class Tissue {
   /// It triangulates using the cell center calculated by the vertex positions.
   ///
   void printInitTri(std::ostream &os);
+  ///
+  /// @brief Prints init state in organism init format together with wall areas 
+  ///
+  /// Creates a file in organism init format together
+  /// with cell neighbor information (usually .neigh file for organism) in a single file.
+  ///
+  /// @see http://dev.thep.lu.se/organism
+  /// 
+  void printInitOrganism(std::ostream &os);
   void printVertex(std::ostream &os=std::cout);
   void printWall(std::ostream &os=std::cout);
   void printVertexAndCell(std::ostream &os=std::cout);
