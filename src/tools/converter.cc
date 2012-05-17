@@ -36,6 +36,7 @@ int main(int argc,char *argv[]) {
 	      << "tissue (default), " << std::endl
 	      << "organism (organism file assuming spheres and only position+radii), " << std::endl 
 	      << "voronoi (voronoi format from qhull output), " << std::endl
+	      << "MGXTriMesh (MGX exported mesh in mesh format, before making cells), " << std::endl 
 	      << "MGXTriVtu (MGX exported mesh in vtu format, before making cells), " << std::endl 
 	      << "MGXCellVtu (MGX exported mesh in vtu format, after making cells [TO COME]), " << std::endl
 	      << "merryProj (Montpellier (openAlea) format [now obselete?])." << std::endl
@@ -94,6 +95,13 @@ int main(int argc,char *argv[]) {
 		<< std::endl;
     }
     T.readVoronoiInit(initFile.c_str(),verboseFlag);
+  }
+  else if (inputFormat.compare("MGXTriMesh")==0) {
+    if (verboseFlag) {
+      std::cerr << "Reading init from file " << initFile << " assuming MGXTriMesh format." 
+		<< std::endl;
+    }
+    T.readMGXTriMeshInit(initFile.c_str(),verboseFlag);
   }
   else if (inputFormat.compare("MGXTriVtu")==0) {
     if (verboseFlag) {

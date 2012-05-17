@@ -210,11 +210,21 @@ class Tissue {
   ///
   /// Reads an initial tissue configuration from the file initFile. It 
   /// assumes that the format is the format provided by the MGX software,
-  /// by saving the cell format after segmentation on triangulated mesh
-  /// (before makeCell) and using the vtu format.
+  /// by saving the vtu ascii format after segmentation on triangulated mesh
+  /// (before makeCell).
   /// See the function implementation for the format.
   ///
   void readMGXTriVtuInit(const char *initFile,int verbose=0);
+  ///
+  /// @brief Reads an initial tissue configuration from MGX triangular mesh (mesh) format
+  ///
+  /// Reads an initial tissue configuration from the file initFile. It 
+  /// assumes that the format is the format provided by the MGX software,
+  /// by saving the mesh format after segmentation on triangulated mesh
+  /// (before makeCell).
+  /// See the function implementation for the format.
+  ///
+  void readMGXTriMeshInit( const char *initFile, int verbose=0);
   ///
   /// @brief Reads an initial tissue configuration from MGX cell mesh format
   ///
