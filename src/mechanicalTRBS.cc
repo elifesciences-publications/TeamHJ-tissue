@@ -3419,14 +3419,14 @@ derivs(Tissue &T,
           {
             cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStrain[0][Istrain2];
             cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStrain[1][Istrain2];
-            cellData[cellIndex][variableIndex(3,0)+4]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(3,0)+3]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
           }
         if (dimension==3)
           {
             cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStrain[0][Istrain2];
             cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStrain[1][Istrain2];
             cellData[cellIndex][variableIndex(3,0)+2]=eigenVectorStrain[2][Istrain2];
-            cellData[cellIndex][variableIndex(3,0)+4]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(3,0)+3]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
           }
       }
 
@@ -3435,14 +3435,14 @@ derivs(Tissue &T,
 	  {
 	    cellData[cellIndex][variableIndex(4,0)]  =eigenVectorStress[0][Istress];
 	    cellData[cellIndex][variableIndex(4,0)+1]=eigenVectorStress[1][Istress];
-            cellData[cellIndex][variableIndex(4,0)+4]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(4,0)+3]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
 	  }
 	if (dimension==3)
 	  {
 	    cellData[cellIndex][variableIndex(4,0)]  =eigenVectorStress[0][Istress];
 	    cellData[cellIndex][variableIndex(4,0)+1]=eigenVectorStress[1][Istress];
 	    cellData[cellIndex][variableIndex(4,0)+2]=eigenVectorStress[2][Istress];
-            cellData[cellIndex][variableIndex(4,0)+4]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(4,0)+3]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
 	  }
       }
 
@@ -3451,14 +3451,14 @@ derivs(Tissue &T,
 	  {
 	    cellData[cellIndex][variableIndex(5,0)]  =eigenVectorStress[0][Istress2];
 	    cellData[cellIndex][variableIndex(5,0)+1]=eigenVectorStress[1][Istress2];
-            cellData[cellIndex][variableIndex(5,0)+4]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(5,0)+3]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
 	  }
 	if (dimension==3)
 	  {
 	    cellData[cellIndex][variableIndex(5,0)]  =eigenVectorStress[0][Istress2];
 	    cellData[cellIndex][variableIndex(5,0)+1]=eigenVectorStress[1][Istress2];
 	    cellData[cellIndex][variableIndex(5,0)+2]=eigenVectorStress[2][Istress2];
-            cellData[cellIndex][variableIndex(5,0)+4]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(5,0)+3]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
 	  }
       }
 
@@ -4520,7 +4520,7 @@ derivs(Tissue &T,
           {
             cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStrain[0][Istrain];
             cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStrain[1][Istrain];
-            cellData[cellIndex][variableIndex(2,0)+2]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(2,0)+3]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
           }
         if (dimension==3)
           {
@@ -4536,7 +4536,7 @@ derivs(Tissue &T,
           {
             cellData[cellIndex][variableIndex(3,0)]  =eigenVectorStrain[0][Istrain2];
             cellData[cellIndex][variableIndex(3,0)+1]=eigenVectorStrain[1][Istrain2];
-            cellData[cellIndex][variableIndex(3,0)+2]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(3,0)+3]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
           }
         if (dimension==3)
           {
@@ -4552,7 +4552,7 @@ derivs(Tissue &T,
 	  {
 	    cellData[cellIndex][variableIndex(4,0)]  =eigenVectorStress[0][Istress];
 	    cellData[cellIndex][variableIndex(4,0)+1]=eigenVectorStress[1][Istress];
-            cellData[cellIndex][variableIndex(4,0)+2]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(4,0)+3]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
 	  }
 	if (dimension==3)
 	  {
@@ -4568,7 +4568,7 @@ derivs(Tissue &T,
 	  {
 	    cellData[cellIndex][variableIndex(5,0)]  =eigenVectorStress[0][Istress2];
 	    cellData[cellIndex][variableIndex(5,0)+1]=eigenVectorStress[1][Istress2];
-            cellData[cellIndex][variableIndex(5,0)+2]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(5,0)+3]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
 	  }
 	if (dimension==3)
 	  {
