@@ -929,12 +929,12 @@ void Tissue::readMGXTriVtuInit( const char *initFile, int verbose )
 	  tmpWall.setLength(tmpWall.lengthFromVertexPosition());
 	  tmpWall.setCell(cellP(i),background());
 	  // Add variable indicating if boundary between cell labels (proper wall=1)
-	  if (vLabel[tmpWall.vertex1()->index()] == -1 && vLabel[tmpWall.vertex1()->index()] == -1) {
-	    tmpWall.addVariable(1.0);
-	  }
-	  else {
-	    tmpWall.addVariable(0.0);
-	  }
+	  //if (vLabel[tmpWall.vertex1()->index()] == -1 && vLabel[tmpWall.vertex1()->index()] == -1) {
+	  //tmpWall.addVariable(1.0);
+	  //}
+	  //else {
+	  //tmpWall.addVariable(0.0);
+	  //}
 	  addWall(tmpWall);
 	  vertex(cell(i).vertex(k)->index()).addWall(wallP(wallIndex));
 	  vertex(cell(i).vertex(kk)->index()).addWall(wallP(wallIndex));
@@ -944,7 +944,18 @@ void Tissue::readMGXTriVtuInit( const char *initFile, int verbose )
       }
     }
   }
+  // Add variable indicating if boundary between cell labels (proper wall=1)
+  for (size_t i=0; i<numWall(); ++i) {
+    if (wall(i).cell1() == background() || wall(i).cell2() == background() 
+	|| wall(i).cell1()->variable(4) != wall(i).cell2()->variable(4)) {
+      wall(i).addVariable(1.0);
+    }
+    else {
+      wall(i).addVariable(0.0);
+    }
+  }
   
+
   if (verbose) {
     std::cerr << numCell() << " cells and " << numVertex() 
 	      << " vertices and " << numWall() << " walls extracted by "
