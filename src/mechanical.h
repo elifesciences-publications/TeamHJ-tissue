@@ -603,6 +603,69 @@ class VertexFromForce : public BaseReaction {
 };
 
 ///
+/// @brief Updates list of vertices with a given force applied where the force is 
+/// linearly increased from zero across a given time span (deltaT)
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// VertexFromForce 1/2/3(dimension+1) 1 (no of vertices)
+/// Force component(s) deltaT
+/// 1st vertex index
+/// 2nd vertex index
+/// ...
+/// @endverbatim
+/// 
+///
+class VertexFromForceLinear : public BaseReaction {
+  
+ private:
+
+  double timeFactor_;
+
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  VertexFromForceLinear(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+};
+
+///
 /// @brief Updates position of vertices assuming that a ball is moving with a given velocity vector into the ball
 ///The force applied outward respect to ball proportional to (overlap)^(3/2)
 ///

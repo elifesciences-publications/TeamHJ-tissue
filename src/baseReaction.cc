@@ -152,6 +152,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromCellPlaneTriangular(paraValue, indValue);
   else if(idValue=="VertexFromForce")
     return new VertexFromForce(paraValue,indValue);
+  else if(idValue=="VertexFromForceLinear")
+    return new VertexFromForceLinear(paraValue,indValue);
   else if(idValue=="VertexFromBall")
     return new VertexFromBall(paraValue,indValue);
   else if (idValue == "DebugReaction")

@@ -2885,6 +2885,85 @@ derivs(Tissue &T,
   }
 }
 
+VertexFromForceLinear::
+VertexFromForceLinear(std::vector<double> &paraValue, 
+		       std::vector< std::vector<size_t> > 
+		       &indValue ) 
+{  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()<2 || paraValue.size()>4 ) {
+    std::cerr << "VertexFromForceLinear::"
+	      << "VertexFromForceLinear() "
+	      << "Uses a force vector that should be in one (x), two (x,y) or three (x,y,z) "
+	      << "dimensions plus a deltaT that sets the time the linear increase is applied." 
+	      << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() < 1 ) {
+    std::cerr << "VertexFromForceLinear::"
+	      << "VertexFromForceLinear() "
+	      << "List of vertex indices given in first level." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexFromForceLinear");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "F_x";
+  if (numParameter()==2)
+    tmp[1] = "deltaT";
+  else if (numParameter()==3) {
+    tmp[1] = "F_y";
+    tmp[2] = "deltaT";
+  }
+  else {
+    tmp[1] = "F_y";
+    tmp[2] = "F_z";
+    tmp[3] = "deltaT";
+  }
+  timeFactor_=0.0;
+  setParameterId( tmp );
+}
+
+void VertexFromForceLinear::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  //Do the update for each vertex in the list given.
+  for (size_t k=0 ; k<numVariableIndex(0); ++k) {
+    size_t i = variableIndex(0,k);
+    assert(i<vertexData.size());
+    for (size_t d=0; d<vertexData[i].size(); ++d)
+      if( numParameter()>d )
+	vertexDerivs[i][d] += timeFactor_*parameter(d);
+  }
+}
+
+void VertexFromForceLinear::update(Tissue &T,
+				   DataMatrix &cellData,
+				   DataMatrix &wallData,
+				   DataMatrix &vertexData,
+				   double h)
+{
+  if (timeFactor_ < parameter(numParameter()-1) ) {
+    timeFactor_ += h/parameter(numParameter()-1);
+  }
+  if (timeFactor_ >1.0)
+    timeFactor_=1.0;
+}
+
+
 // old version
 // VertexFromBall::
 // VertexFromBall(std::vector<double> &paraValue, 
