@@ -106,6 +106,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromCellPressure(paraValue,indValue);
   else if(idValue=="VertexFromCellPressurecenterTriangulation")
     return new VertexFromCellPressurecenterTriangulation(paraValue,indValue);
+else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
+    return new VertexFromCellPressurecenterTriangulationLinear(paraValue,indValue);
   else if(idValue=="VertexFromCellPressureVolumeNormalized")
     return new VertexFromCellPressureVolumeNormalized(paraValue,indValue);
   else if(idValue=="VertexFromCellPressureThresholdFromMaxPos")
@@ -156,6 +158,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromForceLinear(paraValue,indValue);
   else if(idValue=="VertexFromBall")
     return new VertexFromBall(paraValue,indValue);
+else if(idValue=="VertexFromExternalWall")
+    return new VertexFromExternalWall(paraValue,indValue);
   else if (idValue == "DebugReaction")
     return new DebugReaction(paraValue, indValue);
   
