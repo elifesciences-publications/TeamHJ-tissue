@@ -110,7 +110,9 @@ class VertexFromCellPressurecenterTriangulation : public BaseReaction {
 /// @note Maybe it should rather be normal to the wall in the plane of the triangle?
 ///
 class VertexFromCellPressurecenterTriangulationLinear : public BaseReaction {
-  
+ private:
+
+  double timeFactor_; 
  public:
   
   ///
@@ -140,6 +142,16 @@ class VertexFromCellPressurecenterTriangulationLinear : public BaseReaction {
 	      DataMatrix &cellDerivs,
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
 };
 
 
@@ -660,7 +672,7 @@ class VertexFromForce : public BaseReaction {
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// VertexFromForce 1/2/3(dimension+1) 1 (no of vertices)
+/// VertexFromForceLinear 1/2/3(dimension+1) 1 (no of vertices)
 /// Force component(s) deltaT
 /// 1st vertex index
 /// 2nd vertex index
