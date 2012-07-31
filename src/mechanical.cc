@@ -85,6 +85,11 @@ derivs(Tissue &T,
   }
 }
 
+
+
+
+
+
 VertexFromCellPressurecenterTriangulation::
 VertexFromCellPressurecenterTriangulation(std::vector<double> &paraValue, 
 					  std::vector< std::vector<size_t> > 
@@ -202,6 +207,143 @@ derivs(Tissue &T,
     }
   }
 }
+
+VertexFromCellPressurecenterTriangulationLinear::
+VertexFromCellPressurecenterTriangulationLinear(std::vector<double> &paraValue, 
+					  std::vector< std::vector<size_t> > 
+					  &indValue ) 
+{  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=3 || (paraValue[1] != 0.0 && paraValue[1] != 1.0) ) {
+    std::cerr << "VertexFromCellPressurecenterTriangulationLinear::"
+	      << "VertexFromCellPressurecenterTriangulationLinear() "
+	      << "Uses three parameters K_force and normalizeVolumeFlag (= 0 or 1)" 
+              << "and deltaT that sets the time the linear increase is applied.\n";
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+    std::cerr << "VertexFromCellPressurecenterTriangulationLinear::"
+	      << "VertexFromCellPressurecenterTriangulationLinear() " << std::endl
+	      << "Start of additional Cell variable indices (center(x,y,z) "
+	      << "L_1,...,L_n, n=num vertex) is given in first level." 
+	      << std::endl;    
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexFromCellPressurecenterTriangulationLinear");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "K_force";
+  tmp[1] = "f_V_norm";
+  tmp[1] = "deltaT";
+  timeFactor_=0.0;
+  setParameterId( tmp );
+}
+
+void VertexFromCellPressurecenterTriangulationLinear::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  //Do the update for each vertex via each wall in each cell
+  size_t numCells = T.numCell();
+  size_t dimension = T.vertex(0).numPosition(); 
+  std::vector<double> cellCenter(dimension);
+
+  //Assumming vertices and walls are sorted
+  //
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {
+    Cell &tmpCell = T.cell(cellI);
+ 
+    for (size_t d=0; d<dimension; ++d) {
+      cellCenter[d] = cellData[cellI][variableIndex(0,0)+d];
+    }
+    
+    for (size_t k = 0; k < tmpCell.numVertex(); ++k) {
+      size_t v1I = tmpCell.vertex(k)->index();
+      size_t v2I = tmpCell.vertex((k + 1) % (tmpCell.numVertex()))->index();
+      std::vector<double> x0(dimension),dx(dimension);
+      double dxNorm = 0.0;
+      for( size_t d=0 ; d<dimension ; ++d ) {
+	x0[d] = 0.5*(vertexData[v1I][d] + vertexData[v2I][d]);
+	// Caveat: This is  normal to the wall in the triangle plane
+	dx[d] = x0[d]-cellCenter[d];
+      }
+      double wallLength = 0.0;
+      double wallFactor = 0.0; // dx.wallVector/wallVector^2 for making dx perpendicular to the wall 
+      std::vector<double> wallVector(dimension);
+ 
+     for( size_t d=0 ; d<dimension ; ++d ) {
+       wallVector[d]=vertexData[v1I][d] - vertexData[v2I][d];
+       wallLength +=wallVector[d]*wallVector[d];
+      }
+      if (wallLength>0.0) {
+	wallLength = std::sqrt(wallLength);
+      }
+      else {
+	std::cerr << "VertexFromCellPressurecenterTriangulationLinear::derivs() "
+		  << "Strange wall length." << std::endl;
+      }
+      wallFactor= ( dx[0]*wallVector[0]
+                    +dx[1]*wallVector[1]
+                    +dx[2]*wallVector[2])/(wallLength*wallLength);
+      for( size_t d=0 ; d<dimension ; ++d ) {
+        
+        dx[d]=dx[d]-wallFactor*wallVector[d];
+	dxNorm += dx[d]*dx[d];
+      }
+      if (dxNorm>0.0) {
+	dxNorm = std::sqrt(dxNorm);
+	double dxInv = 1.0/dxNorm;
+	for( size_t d=0 ; d<dimension ; ++d ) {
+	  dx[d] = dx[d]*dxInv;
+	}
+      }
+      else {
+	std::cerr << "VertexFromCellPressurecenterTriangulationLinear::derivs() "
+		  << "Force direction undetermined." << std::endl;
+      }
+      double factor = 0.5 * timeFactor_ * parameter(0);
+      if (parameter(1) == 1)
+        {
+          //NOTE maybe this one should be calculated using the central mesh vertex?
+          double cellVolume = tmpCell.calculateVolume(vertexData);                                   factor /= std::fabs(cellVolume);         
+        }
+       factor *= wallLength;    
+      for( size_t d=0 ; d<dimension ; ++d ) {
+	vertexDerivs[v1I][d] += factor * dx[d];
+	vertexDerivs[v2I][d] += factor * dx[d];	
+      }
+    }
+  }
+}
+
+void VertexFromCellPressurecenterTriangulationLinear::update(Tissue &T,
+				   DataMatrix &cellData,
+				   DataMatrix &wallData,
+				   DataMatrix &vertexData,
+				   double h)
+{
+  if (timeFactor_ < 1.0 ) {
+    timeFactor_ += h/parameter(numParameter()-1);
+  }
+  if (timeFactor_ >1.0)
+    timeFactor_=1.0;
+  //cellData[0][12]=timeFactor_*parameter(0);
+}
+
+
 
 VertexFromCellPressureVolumeNormalized::
 VertexFromCellPressureVolumeNormalized(std::vector<double> &paraValue, 
@@ -2742,18 +2884,22 @@ derivs(Tissue &T,
   }
 }
 
+
 VertexFromCellPlaneTriangular::
 VertexFromCellPlaneTriangular(std::vector<double> &paraValue,
 			      std::vector< std::vector<size_t> > &indValue)
 {
-  if (paraValue.size() != 2) {
-    std::cerr << "VertexFromCellPlaneTriangular::VertexFromCellPlaneTriangular() " 
-	      << "Uses two parameters: k_force and areaFlag" << std::endl;
+  if (paraValue.size() != 3 && paraValue.size() !=6) {
+    std::cerr << "VertexFromCellPlaneTriangular::VertexFromCellPlaneTriangular()" 
+	      << " Uses three parameters: k_force, areaFlag(0/1 without/with area-constant"
+              << " pressure) and Zplane(reference for volume) or six parameters: k_force, areaFlag (2/3 without/with area-pressure"
+              << " increase with area decrease), Zplane, equilibrium volume,volume" 
+              << " decrease factor and pressure increase factor." << std::endl;
     exit(EXIT_FAILURE);
   }
-  if (paraValue[1]!=0.0 && paraValue[1]!=1.0) {
+  if (paraValue[1]!=0.0 && paraValue[1]!=1.0 && paraValue[1]!=2.0 && paraValue[1]!=3.0) {
     std::cerr << "VertexFromCellPlaneTriangular::VertexFromCellPlaneTriangular() " 
-	      << "areaFlag must be zero (no area included) or one (area included)." << std::endl;
+	      << "areaFlag must be zero/two (no area included) or one/three (area included)." << std::endl;
     exit(EXIT_FAILURE);
   }
   if (indValue.size() != 0) {
@@ -2770,7 +2916,13 @@ VertexFromCellPlaneTriangular(std::vector<double> &paraValue,
   std::vector<std::string> tmp(numParameter());
   tmp[0] = "k_force";
   tmp[1] = "areaFlag";
-  
+  tmp[2] = "Zplane";
+
+  if (paraValue.size() == 6){
+  tmp[3] = "V0";
+  tmp[4] = "Vfactor";
+  tmp[5] = "Pfactor";
+  }
   setParameterId(tmp);
 }
 
@@ -2789,45 +2941,156 @@ derivs(Tissue &T,
 	      << "Only implemented for three dimensions." << std::endl;
     exit(EXIT_FAILURE);
   }
-  for (size_t n = 0; n < T.numCell(); ++n) {
-    Cell cell = T.cell(n);
-    if (cell.numVertex()!=3) {
-      std::cerr << "VertexFromCellPlaneTriangular::VertexFromCellPlaneTriangular() " 
-		<< "Only implemented for triangular cells." << std::endl;
-      exit(EXIT_FAILURE);
-    }
-    std::vector<double> normal = cell.getNormalTriangular(vertexData);
-    double norm=0.0;
-    for (size_t d=0; d<dimension; ++d)
-      norm += normal[d]*normal[d];
-    if (norm != 1.0) {
-      norm = std::sqrt(norm);
-      assert(norm>0.0);
-      double normFac = 1.0/norm; 
-      for (size_t d=0; d<dimension; ++d)
-	normal[d] *= normFac;
-    }
+
+  if (parameter(1) == 2 || parameter(1) == 3){
     
-    // Get the cell size
-    double A=1.0;
-    if (parameter(1)==1.0)
-      A = cell.calculateVolume(vertexData)/cell.numVertex();
     
-    double coeff = parameter(0) * A;
-    //update the vertex derivatives
-    for (size_t k=0; k<cell.numVertex(); ++k) {
-      double vCoeff=coeff;
-      //if (cell.vertex(k)->isBoundary(T.background()))
-      //vCoeff *= 1.5;
-      for (size_t d=0; d<dimension; ++d) {
-	vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
+    double totalVolume=0;  
+    size_t numCell = cellData.size();
+    assert (numCell==T.numCell());  
+    
+    
+    
+    for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) { 
+      Cell cell = T.cell(cellIndex);
+      if (cell.numVertex()!=3) {
+        std::cerr << "VertexFromCellPlaneTriangular::VertexFromCellPlaneTriangular() " 
+                  << "Only implemented for triangular cells." << std::endl;
+        exit(EXIT_FAILURE);
       }
-    }	
-    // For saving normals in direction used for test plotting
-    //for (size_t d=0; d<dimension; ++d)
-    //cellData[cell.index()][d] = normal[d];
+      size_t v1 = T.cell(cellIndex).vertex(0)->index();
+      size_t v2 = T.cell(cellIndex).vertex(1)->index();
+      size_t v3 = T.cell(cellIndex).vertex(2)->index();
+      DataMatrix position(3,vertexData[v1]);
+      position[1] = vertexData[v2];
+      position[2] = vertexData[v3];
+      
+      std::vector<double> normal = cell.getNormalTriangular(vertexData);
+      double norm=0.0;
+      for (size_t d=0; d<dimension; ++d)
+        norm += normal[d]*normal[d];
+      if (norm != 1.0) {
+        norm = std::sqrt(norm);
+        assert(norm>0.0);
+        double normFac = 1.0/norm; 
+        for (size_t d=0; d<dimension; ++d)
+          normal[d] *= normFac;
+      }
+      double A= cell.calculateVolume(vertexData)*normal[2];
+      totalVolume += A*(((position[0][2]+position[1][2]+position[2][2])/3)-parameter(2));
+    }
+    
+
+    for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) { 
+      Cell cell = T.cell(cellIndex);
+      
+      std::vector<double> normal = cell.getNormalTriangular(vertexData);
+      double norm=0.0;
+      for (size_t d=0; d<dimension; ++d)
+        norm += normal[d]*normal[d];
+      if (norm != 1.0) {
+        norm = std::sqrt(norm);
+        assert(norm>0.0);
+        double normFac = 1.0/norm; 
+        for (size_t d=0; d<dimension; ++d)
+          normal[d] *= normFac;
+      }
+      
+      // Get the cell size
+      double A=1.0;
+      if (parameter(1)==3.0)
+        A = cell.calculateVolume(vertexData)/cell.numVertex();
+      
+      double coeff =((parameter(5)-1)*parameter(0)*totalVolume/((parameter(4)-1)*parameter(3))
+                     +(parameter(4)-parameter(5))*parameter(0)/(parameter(4)-1))* A;
+      //update the vertex derivatives
+      for (size_t k=0; k<cell.numVertex(); ++k) {
+        double vCoeff=coeff;
+        //if (cell.vertex(k)->isBoundary(T.background()))
+        //vCoeff *= 1.5;
+        for (size_t d=0; d<dimension; ++d) {
+          vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
+        }
+      }	
+    }
+  }
+  
+  if (parameter(1) == 0 || parameter(1) ==1 ){
+    double totalVolume=0;  
+    size_t numCell = cellData.size();
+    assert (numCell==T.numCell());  
+    for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) { 
+      Cell cell = T.cell(cellIndex);
+      if (cell.numVertex()!=3) {
+        std::cerr << "VertexFromCellPlaneTriangular::VertexFromCellPlaneTriangular() " 
+                  << "Only implemented for triangular cells." << std::endl;
+        exit(EXIT_FAILURE);
+      }
+      size_t v1 = T.cell(cellIndex).vertex(0)->index();
+      size_t v2 = T.cell(cellIndex).vertex(1)->index();
+      size_t v3 = T.cell(cellIndex).vertex(2)->index();
+      DataMatrix position(3,vertexData[v1]);
+      position[1] = vertexData[v2];
+      position[2] = vertexData[v3];
+      
+      std::vector<double> normal = cell.getNormalTriangular(vertexData);
+      double norm=0.0;
+      for (size_t d=0; d<dimension; ++d)
+        norm += normal[d]*normal[d];
+      if (norm != 1.0) {
+        norm = std::sqrt(norm);
+        assert(norm>0.0);
+        double normFac = 1.0/norm; 
+        for (size_t d=0; d<dimension; ++d)
+          normal[d] *= normFac;
+      }
+      double A= cell.calculateVolume(vertexData)*normal[2];
+      totalVolume += A*(((position[0][2]+position[1][2]+position[2][2])/3)-parameter(2));
+    }
+    
+    std:: cerr<<"total Volume:  "<<totalVolume<<std::endl;
+    for (size_t n = 0; n < T.numCell(); ++n) { 
+      Cell cell = T.cell(n);
+      if (cell.numVertex()!=3) {
+        std::cerr << "VertexFromCellPlaneTriangular::VertexFromCellPlaneTriangular() " 
+                  << "Only implemented for triangular cells." << std::endl;
+        exit(EXIT_FAILURE);
+      }
+      std::vector<double> normal = cell.getNormalTriangular(vertexData);
+      double norm=0.0;
+      for (size_t d=0; d<dimension; ++d)
+        norm += normal[d]*normal[d];
+      if (norm != 1.0) {
+        norm = std::sqrt(norm);
+        assert(norm>0.0);
+        double normFac = 1.0/norm; 
+        for (size_t d=0; d<dimension; ++d)
+          normal[d] *= normFac;
+      }
+      
+      // Get the cell size
+      double A=1.0;
+      if (parameter(1)==1.0)
+        A = cell.calculateVolume(vertexData)/cell.numVertex();
+      
+      double coeff = parameter(0) * A;
+      //update the vertex derivatives
+      for (size_t k=0; k<cell.numVertex(); ++k) {
+          double vCoeff=coeff;
+          //if (cell.vertex(k)->isBoundary(T.background()))
+          //vCoeff *= 1.5;
+          for (size_t d=0; d<dimension; ++d) {
+            vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
+          }
+      }	
+      // For saving normals in direction used for test plotting
+      //for (size_t d=0; d<dimension; ++d)
+      //cellData[cell.index()][d] = normal[d];
+    }    
   }
 }
+
+
 
 VertexFromForce::
 VertexFromForce(std::vector<double> &paraValue, 
@@ -2948,6 +3211,7 @@ derivs(Tissue &T,
       if( numParameter()>d )
 	vertexDerivs[i][d] += timeFactor_*parameter(d);
   }
+ 
 }
 
 void VertexFromForceLinear::update(Tissue &T,
@@ -2956,12 +3220,23 @@ void VertexFromForceLinear::update(Tissue &T,
 				   DataMatrix &vertexData,
 				   double h)
 {
-  if (timeFactor_ < parameter(numParameter()-1) ) {
+  if (timeFactor_ < 1.0 ) {
     timeFactor_ += h/parameter(numParameter()-1);
   }
   if (timeFactor_ >1.0)
     timeFactor_=1.0;
+  cellData[0][12]=timeFactor_*parameter(0);
 }
+// 				   double h)
+// {
+//   if (timeFactor_ < parameter(numParameter()-1) ) {
+//     timeFactor_ += h/parameter(numParameter()-1);
+//   }
+//   if (timeFactor_ >1.0)
+//     timeFactor_=1.0;
+//   cellData[0][12]=h;//timeFactor_*parameter(0);
+// }
+
 
 
 // old version
@@ -3114,6 +3389,99 @@ void VertexFromBall::update(Tissue &T,
     setParameter(1,parameter(1)+h*parameter(5));
     setParameter(2,parameter(2)+h*parameter(6));
     setParameter(3,parameter(3)+h*parameter(7));
+  }
+}
+
+VertexFromExternalWall::
+VertexFromExternalWall(std::vector<double> &paraValue, 
+		       std::vector< std::vector<size_t> > 
+		       &indValue ) 
+{  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=12 ) {
+    std::cerr << "VertexFromExternalWall::"
+	      << "VertexFromExternalWall()"
+	      << "Puts a wall in a given point(x,y,z) with a given normal vector(nx,ny,nz)"
+              << "with a given height beween zmin and zmax around meriestem and  moves it"
+              << "toward meristem with a given velocity vector(dx,dy,dz)"
+	      << "12 parameters used:x0, y0, z0, nx, ny, nz, zmin, zmax, dx, dy, dz, Kforce" << std::endl
+              << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 0 ) {
+    std::cerr << "VertexFromExternalWall::"
+	      << "VertexFromExternalWall() "
+	      << "No variable indices used." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexFromExternalWall");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "x0";
+  tmp[1] = "y0";
+  tmp[2] = "z0";
+  tmp[3] = "nx";
+  tmp[4] = "ny";
+  tmp[5] = "nz";
+  tmp[6] = "zmin";
+  tmp[7] = "zmax";
+  tmp[8] = "dx";
+  tmp[9] = "dy";
+  tmp[10] = "dz";
+  tmp[11] = "Kforce";
+
+  setParameterId( tmp );
+}
+
+void VertexFromExternalWall::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  //Do the update for each vertex .
+  size_t numVertex = T.numVertex();
+  for (size_t vertexIndex=0 ; vertexIndex<numVertex; ++vertexIndex) {
+    double X0=parameter(0);
+    double Y0=parameter(1);
+    double Z0=parameter(2);
+    double nx=parameter(3);
+    double ny=parameter(4);
+    double nz=parameter(5);
+    double Zmin=parameter(6);
+    double Zmax=parameter(7);
+    double Kforce=parameter(11);
+    DataMatrix position(1,vertexData[vertexIndex]);
+    double d=(nx*position[0][0]+ny*position[0][1]+nz*position[0][2]-nx*X0-ny*Y0-nz*Z0)/std::sqrt(nx*nx+ny*ny+nz*nz);
+    if( d < 0 && position[0][2] > Zmin && position[0][2] < Zmax ){
+      vertexDerivs[vertexIndex][0]+=Kforce*(-d)*std::sqrt(-d)*nx/std::sqrt(nx*nx+ny*ny+nz*nz);
+      vertexDerivs[vertexIndex][1]+=Kforce*(-d)*std::sqrt(-d)*ny/std::sqrt(nx*nx+ny*ny+nz*nz);
+      vertexDerivs[vertexIndex][2]+=Kforce*(-d)*std::sqrt(-d)*nz/std::sqrt(nx*nx+ny*ny+nz*nz);
+    }
+  }
+}
+
+
+void VertexFromExternalWall::update(Tissue &T,
+			    DataMatrix &cellData,
+			    DataMatrix &wallData,
+			    DataMatrix &vertexData,
+			    double h)
+{
+  if( numParameter()>5 ) {
+    setParameter(0,parameter(0)+h*parameter(8));
+    setParameter(1,parameter(1)+h*parameter(9));
+    setParameter(2,parameter(2)+h*parameter(10));
   }
 }
 
