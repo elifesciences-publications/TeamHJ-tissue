@@ -12,12 +12,66 @@
 #include"baseReaction.h"
 #include<cmath>
 
-//!Sets positional derivatives to zero for vertices in specified region  
+///
+/// @brief Sets positional derivatives to zero for vertices in specified region  
+///
+/// A threshold is specified in a specific dimension and vertices on either side of this
+/// is not updated.
+///
+/// In the model file, the reaction is specified as:
+///
+/// @verbatim
+/// VertexNoUpdateFromPosition 2 1 1 
+/// threshold directionFlag
+/// vertexPositionIndex
+/// @endverbatim
+///
+/// where threshold sets the threshold in the dimension (x,y,z) specified with vertexPositionIndex
+/// and directionFlag is set to 1 if vertices above the threshold are to be kept fixed and -1
+/// for vertices below the threshold.
+///
+/// @note This function sets the derivatives to zero, which means it has to be provided after
+/// reactions that update the vertex derivatives.
+/// 
 class VertexNoUpdateFromPosition : public BaseReaction {
   
  public:
   
   VertexNoUpdateFromPosition(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > 
+			     &indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+///
+/// @brief Sets positional derivatives to zero for vertices with listed indices
+///
+/// A list of vertex indices are specified for which vertex positions are not updated.
+///
+/// In the model file, the reaction is specified as:
+///
+/// @verbatim
+/// VertexNoUpdateFromIndex 0 1 N 
+/// vertexIndex1 [vertexIndex2...vertexIndexN]
+/// @endverbatim
+///
+/// where the list if indices are the vertices not to be updated.
+///
+/// @note This function sets the derivatives to zero, which means it has to be provided after
+/// reactions that update the vertex derivatives.
+/// 
+class VertexNoUpdateFromIndex : public BaseReaction {
+  
+ public:
+  
+  VertexNoUpdateFromIndex(std::vector<double> &paraValue, 
 			     std::vector< std::vector<size_t> > 
 			     &indValue );
   

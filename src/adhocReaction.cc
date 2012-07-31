@@ -75,6 +75,55 @@ derivs(Tissue &T,
 	vertexDerivs[i][d] = 0.0;
 }
 
+VertexNoUpdateFromIndex::
+VertexNoUpdateFromIndex(std::vector<double> &paraValue, 
+			   std::vector< std::vector<size_t> > 
+			   &indValue ) {
+  
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=0 ) {
+    std::cerr << "VertexNoUpdateFromIndex::"
+	      << "VertexNoUpdateFromIndex() "
+	      << "Uses no parameters."
+	      << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() < 1 ) {
+    std::cerr << "VertexNoUpdateFromIndex::"
+	      << "VertexNoUpdateFromIndex() "
+	      << "Vertex indices in first level." << std::endl;
+    exit(0);
+  }
+  // Set the variable values
+  //
+  setId("VertexNoUpdateFromIndex");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  //
+}
+
+void VertexNoUpdateFromIndex::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  //Check the cancelation for vertices with given indices
+  size_t dimension = vertexData[0].size();
+  for( size_t i=0 ; i<numVariableIndex(0) ; ++i ) {
+    size_t k = variableIndex(0,i);
+    assert( k < vertexData.size() );
+    for( size_t d=0 ; d<dimension ; ++d )
+      vertexDerivs[k][d] = 0.0;
+  }
+}
+
 VertexNoUpdateBoundary::
 VertexNoUpdateBoundary(std::vector<double> &paraValue, 
 		       std::vector< std::vector<size_t> > 

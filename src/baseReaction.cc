@@ -229,6 +229,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   //adhocReaction.h,adhocReaction.cc
   else if(idValue=="VertexNoUpdateFromPosition")
     return new VertexNoUpdateFromPosition(paraValue,indValue); 
+  else if(idValue=="VertexNoUpdateFromIndex")
+    return new VertexNoUpdateFromIndex(paraValue,indValue); 
   else if(idValue=="VertexNoUpdateBoundary")
     return new VertexNoUpdateBoundary(paraValue,indValue); 
   else if(idValue=="VertexTranslateToMax")
