@@ -93,6 +93,57 @@ class VertexFromCellPressurecenterTriangulation : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+///
+/// @brief Updates vertices from a cell pressure potential linearly increasing in a given time span
+///
+/// This function determines the direction of the pressure force term
+/// is from the position of the central mesh cell vertex to the center of the wall. 
+/// Applies a force proportional to the pressure (parameter(0)) and the 
+/// size of the wall.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// VertexFromCellPressurecenterTriangulationLinear 3 1 1
+/// P A_flag deltaT
+/// @endverbatim
+/// @note Maybe it should rather be normal to the wall in the plane of the triangle?
+///
+class VertexFromCellPressurecenterTriangulationLinear : public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  VertexFromCellPressurecenterTriangulationLinear(std::vector<double> &paraValue, 
+					    std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
+
 //!Updates vertices from a cell pressure potential
 class VertexFromCellPressureVolumeNormalized : public BaseReaction {
   
@@ -732,7 +783,70 @@ class VertexFromBall : public BaseReaction {
   
 };
 
-//-------------------------------------------------
+
+///
+/// @brief Updates position of vertices assuming that an external wall is moving with a given velocity vector 
+/// toward the meristem
+/// The force applied outward respect to wall proportional to (overlap)^(3/2)
+///
+/// In a model file the reaction is defined as
+
+/// @verbatim
+/// VertexFromExternalWall 12 0
+/// X0 Y0 Z0 nx ny nz Zmin Zmax dXc dYc dZc Kforce
+/// @endverbatim
+///
+/// where n is the normal vector to the 'wall' pushing at the tissue, X0,Y0,Z0 is a point on the wall
+/// and dXc,dYc,dZc are the rates for moving the wall along the different
+/// directions (the movement is defined in the update function).
+/// 
+class VertexFromExternalWall : public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  VertexFromExternalWall(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+  
+};
+
+
+
 
 
 // Do not use this reaction. Restricted area (unless you are a developer).
