@@ -233,15 +233,15 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 /// Y_modulus_Longitudinal P_coeff_Longitudinal Y_modulus_Transverse P_coeff_Transverse 
 /// L_ij-index MT_cellIndex
 /// or
-/// VertexFromTRBSMT 4 3 2 0/1/2 0/1/2
+/// VertexFromTRBSMT 4 3 2 0/1/2/3 0/1/2
 /// Y_modulus_Longitudinal P_coeff_Longitudinal Y_modulus_Transverse P_coeff_Transverse 
 /// L_ij-index MT_cellIndex
-/// optional index(indices) for storing strain(strain and 2nd strain)
-/// optional index(indices) for storing stress(stress and 2nd stress)
+/// optional index(indices) for storing strain(strain(1), perpendicular to strain(2) and 2nd strain(3))
+/// optional index(indices) for storing stress(stress(1) and 2nd stress(2))
 /// @endverbatim
 /// In case of storing strain/stress direction/value, in 3(2) dimensions, 
-/// strain/stress values will be stored after  2(3) components of vectors.  
-///
+/// strain/stress values will be stored after  (3) components of vectors.  
+/// The value for perpendicular strain is maximal strain value.
 class VertexFromTRBSMT : public BaseReaction {
   
  public:
@@ -298,18 +298,17 @@ class VertexFromTRBSMT : public BaseReaction {
 /// L_ij-index MT_cellIndex
 /// InternalVarStartIndex
 /// or
-/// VertexFromTRBScenterTriangulationMT 4 6 2 1 1/0 1/0 1/0 1/0
+/// VertexFromTRBScenterTriangulationMT 4 4 2 1 0/1/2/3 0/1/2
 /// Y_modulus_Longitudinal P_coeff_Longitudinal 
 /// Y_modulus_Transverse P_coeff_Transverse 
 /// L_ij-index MT_cellIndex
 /// InternalVarStartIndex
-/// optional index for storing strain
-/// optional index for storing 2nd strain
-/// optional index for storing stress
-/// optional index for storing 2nd stress
+/// optional index for storing strain(0: no strain, 1: strain, 2: strain/perpendicular strain, 3: strain/perpendicular strain/2nd strain)
+/// optional index for storing stress(0: no stress, 1: stress, 2: stress/2nd stress)
 /// @endverbatim
 /// In case of storing strain/stress direction/value, in 3(2) dimensions, 
-/// strain/stress values will be stored after  2(3) components of vectors.  
+/// strain/stress values will be stored after (3) components of vectors.
+/// The value for perpendicular strain is maximal strain value.  
 
 class VertexFromTRBScenterTriangulationMT : public BaseReaction {
   
