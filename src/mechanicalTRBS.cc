@@ -1293,7 +1293,7 @@ derivs(Tissue &T,
     length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
     length[2] = T.wall(w3).lengthFromVertexPosition(vertexData);
     
-    // Lame coefficients based on plane strain (can be defined out of loop)
+    // Lame coefficients based on plane strain (poisson<0.5)
     double lambdaL=youngL*poissonL/((1+poissonL)*(1-2*poissonL));
     double mioL=youngL/(2*(1+poissonL));
     double lambdaT=youngT*poissonT/((1+poissonT)*(1-2*poissonT));
@@ -1305,7 +1305,7 @@ derivs(Tissue &T,
       // double deltaLam=AnisoMeasure*(lambdaL-lambdaT);
       // double deltaMio=AnisoMeasure*(mioL-mioT);
 
-    // paper Delin. in  this case a factor 1/2 should be multiplied by all mio's below 
+    // paper Delin.  
     // double lambdaL=youngL*poissonL/(1-poissonL*poissonL);
     // double mioL=youngL/(1+poissonL);
     // double lambdaT=youngT*poissonT/(1-poissonT*poissonT);
@@ -1658,18 +1658,13 @@ derivs(Tissue &T,
       deltaS[0][1]=(deltaLam/2)*(trE*directAniso[0][1]     )+(deltaMio)*(Eaa[0][1]+aaE[0][1]);
       deltaS[1][1]=(deltaLam/2)*(trE*directAniso[1][1]+atEa)+(deltaMio)*(Eaa[1][1]+aaE[1][1]);
 
-      // for the old force
-      // deltaS[0][0]=deltaLam*(trE*directAniso[0][0]+atEa)+(deltaMio)*(Eaa[0][0]+aaE[0][0])-(deltaLam+2*deltaMio)*atEa*directAniso[0][0];
-      // deltaS[1][0]=deltaLam*(trE*directAniso[1][0]     )+(deltaMio)*(Eaa[1][0]+aaE[1][0])-(deltaLam+2*deltaMio)*atEa*directAniso[1][0];
-      // deltaS[0][1]=deltaLam*(trE*directAniso[0][1]     )+(deltaMio)*(Eaa[0][1]+aaE[0][1])-(deltaLam+2*deltaMio)*atEa*directAniso[0][1];
-      // deltaS[1][1]=deltaLam*(trE*directAniso[1][1]+atEa)+(deltaMio)*(Eaa[1][1]+aaE[1][1])-(deltaLam+2*deltaMio)*atEa*directAniso[1][1];
+      // based on Delin. paper and 0<poisson<0.5
+      // deltaS[0][0]=deltaLam*(trE*directAniso[0][0]+atEa)+(2*deltaMio)*(Eaa[0][0]+aaE[0][0])-(deltaLam+2*deltaMio)*atEa*directAniso[0][0];
+      // deltaS[1][0]=deltaLam*(trE*directAniso[1][0]     )+(2*deltaMio)*(Eaa[1][0]+aaE[1][0])-(deltaLam+2*deltaMio)*atEa*directAniso[1][0];
+      // deltaS[0][1]=deltaLam*(trE*directAniso[0][1]     )+(2*deltaMio)*(Eaa[0][1]+aaE[0][1])-(deltaLam+2*deltaMio)*atEa*directAniso[0][1];
+      // deltaS[1][1]=deltaLam*(trE*directAniso[1][1]+atEa)+(2*deltaMio)*(Eaa[1][1]+aaE[1][1])-(deltaLam+2*deltaMio)*atEa*directAniso[1][1];
      
-      // double deltaS[2][2]; // with factor 1/2 for deltaMio
-      // deltaS[0][0]=deltaLam*(trE*directAniso[0][0]+atEa)+(deltaMio/2)*(Eaa[0][0]+aaE[0][0])-(deltaLam+deltaMio)*atEa*directAniso[0][0];
-      // deltaS[1][0]=deltaLam*(trE*directAniso[1][0]     )+(deltaMio/2)*(Eaa[1][0]+aaE[1][0])-(deltaLam+deltaMio)*atEa*directAniso[1][0];
-      // deltaS[0][1]=deltaLam*(trE*directAniso[0][1]     )+(deltaMio/2)*(Eaa[0][1]+aaE[0][1])-(deltaLam+deltaMio)*atEa*directAniso[0][1];
-      // deltaS[1][1]=deltaLam*(trE*directAniso[1][1]+atEa)+(deltaMio/2)*(Eaa[1][1]+aaE[1][1])-(deltaLam+deltaMio)*atEa*directAniso[1][1];
-
+     
 
       double deltaSFt[2][2];
       deltaSFt[0][0]=deltaS[0][0]*DeformGrad[0][0]+deltaS[0][1]*DeformGrad[0][1];
@@ -2312,14 +2307,17 @@ derivs(Tissue &T,
             derI1[i][j]=0.5*derIprim1[i][j];
             derI4[i][j]=0.5*derIprim4[i][j];
             derI5[i][j]=0.25*derIprim5[i][j]-0.5*derIprim4[i][j];
-          }   
-        for ( int i=0 ; i<3 ; ++i ) 
+          } 
+        // for ( int i=0 ; i<3 ; ++i )   // this is the energy correction based on Deling. paper
+        //   for ( int j=0 ; j<3 ; ++j )
+        //     deltaF[i][j]=(-deltaLam*(I4*derI1[i][j]+I1*derI4[i][j])-2*deltaMio*derI5[i][j]+(2*deltaMio+deltaLam)*I4*derI4[i][j])*restingArea;
+        
+        for ( int i=0 ; i<3 ; ++i )  // this is the energy correction based on my calculation(equipartitioning energy)
           for ( int j=0 ; j<3 ; ++j )
-            deltaF[i][j]=(-deltaLam*(I1*derI4[i][j]+I4*derI1[i][j])/2-deltaMio*derI5[i][j])*restingArea;
-            //deltaF[i][j]=(-deltaLam*(I4*derI1[i][j]+I1*derI4[i][j])-2*deltaMio*derI5[i][j]+(2*deltaMio+deltaLam)*I4*derI4[i][j])*restingArea;
-        //deltaF[i][j]=(-deltaLam*(I4*derI1[i][j]+I1*derI4[i][j])-deltaMio*derI5[i][j]+(deltaMio+deltaLam)*I4*derI4[i][j])*restingArea;
-        //std::cerr <<"force " << deltaF[0][0]<< std::endl;
-        //3    
+            deltaF[i][j]=(-(deltaLam/2)*(I4*derI1[i][j]+I1*derI4[i][j])-deltaMio*derI5[i][j])*restingArea;
+        
+        
+
         //Forces of vertices   
         double Force[3][3];                                           
     
@@ -2548,8 +2546,6 @@ derivs(Tissue &T,
       // double lambdaT=youngT*poissonT/(1-poissonT*poissonT);
       // double mioT=youngT/(1+poissonT);
       
-
-
       // Area of the element (using Heron's formula)                                      
       double restingArea=std::sqrt( ( restingLength[0]+restingLength[1]+restingLength[2])*
                                     (-restingLength[0]+restingLength[1]+restingLength[2])*
