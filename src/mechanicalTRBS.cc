@@ -1,3 +1,4 @@
+
 //
 // Filename     : mechanicalTRBS.cc
 // Description  : Classes describing updates due to mechanical triangular biquadratic springs
@@ -2535,20 +2536,20 @@ derivs(Tissue &T,
 			     (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
 
             
-      // Lame coefficients based on plane strain
+      // Lame coefficients based on plane strain (for 3D 0<poisson<0.5)
       double lambdaL=youngL*poissonL/((1+poissonL)*(1-2*poissonL));
       double mioL=youngL/(2*(1+poissonL));
       double lambdaT=youngT*poissonT/((1+poissonT)*(1-2*poissonT));
       double mioT=youngT/(2*(1+poissonT));
     
-
+      // Lame coefficients based on delin. paper (for 2D 0<poisson<1)
       // double lambdaL=youngL*poissonL/(1-poissonL*poissonL);
       // double mioL=youngL/(1+poissonL);
       // double lambdaT=youngT*poissonT/(1-poissonT*poissonT);
       // double mioT=youngT/(1+poissonT);
       
 
-      double mc=2;  // for correction on mio and deltaMio
+
       // Area of the element (using Heron's formula)                                      
       double restingArea=std::sqrt( ( restingLength[0]+restingLength[1]+restingLength[2])*
                                     (-restingLength[0]+restingLength[1]+restingLength[2])*
@@ -2580,15 +2581,15 @@ derivs(Tissue &T,
     cotan[2] = 1.0/std::tan(Angle[2]);    
     //the force is calculated based on Transverse coefficients
     //Longitudinal coefficients are considered in deltaF
-    tensileStiffness[0]=(2*cotan[2]*cotan[2]*(lambdaT+mc*mioT)+mc*mioT)*temp;
-    tensileStiffness[1]=(2*cotan[0]*cotan[0]*(lambdaT+mc*mioT)+mc*mioT)*temp;
-    tensileStiffness[2]=(2*cotan[1]*cotan[1]*(lambdaT+mc*mioT)+mc*mioT)*temp;
+    tensileStiffness[0]=(2*cotan[2]*cotan[2]*(lambdaT+2*mioT)+2*mioT)*temp;
+    tensileStiffness[1]=(2*cotan[0]*cotan[0]*(lambdaT+2*mioT)+2*mioT)*temp;
+    tensileStiffness[2]=(2*cotan[1]*cotan[1]*(lambdaT+2*mioT)+2*mioT)*temp;
     
     //Angular Stiffness
     std::vector<double> angularStiffness(3);
-    angularStiffness[0]=(2*cotan[1]*cotan[2]*(lambdaT+mc*mioT)-mc*mioT)*temp;                          
-    angularStiffness[1]=(2*cotan[0]*cotan[2]*(lambdaT+mc*mioT)-mc*mioT)*temp;
-    angularStiffness[2]=(2*cotan[0]*cotan[1]*(lambdaT+mc*mioT)-mc*mioT)*temp;
+    angularStiffness[0]=(2*cotan[1]*cotan[2]*(lambdaT+2*mioT)-2*mioT)*temp;                          
+    angularStiffness[1]=(2*cotan[0]*cotan[2]*(lambdaT+2*mioT)-2*mioT)*temp;
+    angularStiffness[2]=(2*cotan[0]*cotan[1]*(lambdaT+2*mioT)-2*mioT)*temp;
     
     //Calculate biquadratic strains  
     std::vector<double> Delta(3);
@@ -2851,16 +2852,24 @@ derivs(Tissue &T,
       B2[1][1]=LeftCauchy[1][0]*LeftCauchy[0][1]+LeftCauchy[1][1]*LeftCauchy[1][1];
 
       double Sigma[2][2]; // true stress tensor (isotropic term) based on lambdaT and mioT
-      Sigma[0][0]=(Area/restingArea)*((lambdaT*trE-mioT/2)*LeftCauchy[0][0]+(mioT/2)*B2[0][0]);
-      Sigma[1][0]=(Area/restingArea)*((lambdaT*trE-mioT/2)*LeftCauchy[1][0]+(mioT/2)*B2[1][0]);
-      Sigma[0][1]=(Area/restingArea)*((lambdaT*trE-mioT/2)*LeftCauchy[0][1]+(mioT/2)*B2[0][1]);
-      Sigma[1][1]=(Area/restingArea)*((lambdaT*trE-mioT/2)*LeftCauchy[1][1]+(mioT/2)*B2[1][1]);
+      Sigma[0][0]=(Area/restingArea)*((lambdaT*trE-mioT)*LeftCauchy[0][0]+(mioT)*B2[0][0]);
+      Sigma[1][0]=(Area/restingArea)*((lambdaT*trE-mioT)*LeftCauchy[1][0]+(mioT)*B2[1][0]);
+      Sigma[0][1]=(Area/restingArea)*((lambdaT*trE-mioT)*LeftCauchy[0][1]+(mioT)*B2[0][1]);
+      Sigma[1][1]=(Area/restingArea)*((lambdaT*trE-mioT)*LeftCauchy[1][1]+(mioT)*B2[1][1]);
 
-      double deltaS[2][2];
-      deltaS[0][0]=deltaLam*(trE*directAniso[0][0]+atEa)+(deltaMio/2)*(Eaa[0][0]+aaE[0][0])-(deltaLam+deltaMio)*atEa*directAniso[0][0];
-      deltaS[1][0]=deltaLam*(trE*directAniso[1][0]     )+(deltaMio/2)*(Eaa[1][0]+aaE[1][0])-(deltaLam+deltaMio)*atEa*directAniso[1][0];
-      deltaS[0][1]=deltaLam*(trE*directAniso[0][1]     )+(deltaMio/2)*(Eaa[0][1]+aaE[0][1])-(deltaLam+deltaMio)*atEa*directAniso[0][1];
-      deltaS[1][1]=deltaLam*(trE*directAniso[1][1]+atEa)+(deltaMio/2)*(Eaa[1][1]+aaE[1][1])-(deltaLam+deltaMio)*atEa*directAniso[1][1];
+
+
+      // double deltaS[2][2]; // based on Delin. paper
+      // deltaS[0][0]=deltaLam*(trE*directAniso[0][0]+atEa)+(2*deltaMio)*(Eaa[0][0]+aaE[0][0])-(deltaLam+2*deltaMio)*atEa*directAniso[0][0];
+      // deltaS[1][0]=deltaLam*(trE*directAniso[1][0]     )+(2*deltaMio)*(Eaa[1][0]+aaE[1][0])-(deltaLam+2*deltaMio)*atEa*directAniso[1][0];
+      // deltaS[0][1]=deltaLam*(trE*directAniso[0][1]     )+(2*deltaMio)*(Eaa[0][1]+aaE[0][1])-(deltaLam+2*deltaMio)*atEa*directAniso[0][1];
+      // deltaS[1][1]=deltaLam*(trE*directAniso[1][1]+atEa)+(2*deltaMio)*(Eaa[1][1]+aaE[1][1])-(deltaLam+2*deltaMio)*atEa*directAniso[1][1];
+
+      double deltaS[2][2]; // based on  equipartitioning
+      deltaS[0][0]=(deltaLam/2)*(trE*directAniso[0][0]+atEa)+(deltaMio)*(Eaa[0][0]+aaE[0][0]);
+      deltaS[1][0]=(deltaLam/2)*(trE*directAniso[1][0]     )+(deltaMio)*(Eaa[1][0]+aaE[1][0]);
+      deltaS[0][1]=(deltaLam/2)*(trE*directAniso[0][1]     )+(deltaMio)*(Eaa[0][1]+aaE[0][1]);
+      deltaS[1][1]=(deltaLam/2)*(trE*directAniso[1][1]+atEa)+(deltaMio)*(Eaa[1][1]+aaE[1][1]);
 
       double deltaSFt[2][2];
       deltaSFt[0][0]=deltaS[0][0]*DeformGrad[0][0]+deltaS[0][1]*DeformGrad[0][1];
@@ -2966,12 +2975,12 @@ derivs(Tissue &T,
         //           <<" LeftCauchy yx  "<< LeftCauchy[1][0] <<" LeftCauchy yy  "<< LeftCauchy[1][1] << std::endl;
       //}
 
-      if (wallindex==16){ 
-        std::cerr <<"stress tensor in global coordinate system" << std::endl;
-        std::cerr <<" Sxx  "<< StressTensor[0][0] <<" Sxy  "<< StressTensor[0][1] <<" Sxz  "<< StressTensor[0][2] << std::endl
-                  <<" Syx  "<< StressTensor[1][0] <<" Syy  "<< StressTensor[1][1] <<" Syz  "<< StressTensor[1][2] << std::endl
-                  <<" Szx  "<< StressTensor[2][0] <<" Szy  "<< StressTensor[2][1] <<" Szz  "<< StressTensor[2][2] << std::endl <<std::endl;
-      }
+      // if (wallindex==16){ 
+      //   std::cerr <<"stress tensor in global coordinate system" << std::endl;
+      //   std::cerr <<" Sxx  "<< StressTensor[0][0] <<" Sxy  "<< StressTensor[0][1] <<" Sxz  "<< StressTensor[0][2] << std::endl
+      //             <<" Syx  "<< StressTensor[1][0] <<" Syy  "<< StressTensor[1][1] <<" Syz  "<< StressTensor[1][2] << std::endl
+      //             <<" Szx  "<< StressTensor[2][0] <<" Szy  "<< StressTensor[2][1] <<" Szz  "<< StressTensor[2][2] << std::endl <<std::endl;
+      // }
 
       // accumulating strain and stress tensors and normal to cell plane vector to be averaged later
       for (int r=0 ; r<3 ; r++) 
@@ -3128,9 +3137,14 @@ derivs(Tissue &T,
             derI4[i][j]=0.5*derIprim4[i][j];
             derI5[i][j]=0.25*derIprim5[i][j]-0.5*derIprim4[i][j];
           }   
-        for ( int i=0 ; i<3 ; ++i ) 
+        // for ( int i=0 ; i<3 ; ++i )   // this is the energy correction based on Deling. paper
+        //   for ( int j=0 ; j<3 ; ++j )
+        //     deltaF[i][j]=(-deltaLam*(I4*derI1[i][j]+I1*derI4[i][j])-2*deltaMio*derI5[i][j]+(2*deltaMio+deltaLam)*I4*derI4[i][j])*restingArea;
+
+        for ( int i=0 ; i<3 ; ++i )  // this is the energy correction based on my calculation(equipartitioning energy)
           for ( int j=0 ; j<3 ; ++j )
-            deltaF[i][j]=(-deltaLam*(I4*derI1[i][j]+I1*derI4[i][j])-mc*deltaMio*derI5[i][j]+(mc*deltaMio+deltaLam)*I4*derI4[i][j])*restingArea;
+            deltaF[i][j]=(-(deltaLam/2)*(I4*derI1[i][j]+I1*derI4[i][j])-deltaMio*derI5[i][j])*restingArea;
+
    
         //Forces of vertices   
         double Force[3][3];                                           
