@@ -230,12 +230,12 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 ///
 /// @verbatim
 /// VertexFromTRBSMT 4 1 2
-/// Y_modulus_Longitudinal P_coeff_Longitudinal Y_modulus_Transverse P_coeff_Transverse 
-/// L_ij-index MT_cellIndex
+/// Y_modulus_Matrix Y_modulus_Fibre Poisson_Longit. P_coeff_Trans. Matrix-Fiber-flag 
+/// L_ij-index MT_cellIndex anisotropyIndex
 /// or
 /// VertexFromTRBSMT 4 3 2 0/1/2/3 0/1/2
-/// Y_modulus_Longitudinal P_coeff_Longitudinal Y_modulus_Transverse P_coeff_Transverse 
-/// L_ij-index MT_cellIndex
+/// Y_modulus_Matrix Y_modulus_Fibre Poisson_Longit. P_coeff_Trans. Matrix-Fiber-flag 
+/// L_ij-index MT_cellIndex anisotropyIndex
 /// optional index(indices) for storing strain(strain(1), perpendicular to strain(2) and 2nd strain(3))
 /// optional index(indices) for storing stress(stress(1) and 2nd stress(2))
 /// @endverbatim
