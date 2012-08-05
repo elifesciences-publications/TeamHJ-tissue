@@ -1183,11 +1183,12 @@ VertexFromTRBSMT(std::vector<double> &paraValue,
 	       &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
-  if( paraValue.size()!=4 ) {
+  if( paraValue.size()!=5 ) {
     std::cerr << "VertexFromTRBSMT::"
 	      << "VertexFromTRBSMT() "
-	      << "Uses four parameters young modulus and poisson coefficients in "
-	      << "longitudinal (MT) and transverse directions." << std::endl;
+	      << "Uses five parameters young modulus(matrix and fibre) " 
+              << "and poisson coefficients (longitudinal (MT) and transverse directions)"
+	      << "also a flag(1:matrix-fibre model, 0: otherwise) " << std::endl;
     exit(0);
   }
 
@@ -1221,14 +1222,31 @@ VertexFromTRBSMT(std::vector<double> &paraValue,
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
+  
+
   // Set the parameter identities
   std::vector<std::string> tmp( numParameter() );
-  tmp[0] = "Y_mod_L";// Longitudinal components of parameters
-  tmp[1] = "P_ratio_L";
-  tmp[2] = "Y_mod_T";// Transverse components of parameters
-  tmp[3] = "P_ratio_T";
-
+  tmp[0] = "Y_mod_M";   // Matrix Young modulus
+  tmp[1] = "Y_mod_F";   // Fiber Young modulus
+  tmp[2] = "P_ratio_L"; // Longitudinal Poisson ratio
+  tmp[3] = "P_ratio_T"; // Transverse Poisson ratio
+  tmp[4] = "MF flag";
   setParameterId( tmp );
+
+  if( parameter(4)!=0 && parameter(4)!=1) {
+    std::cerr << "VertexFromTRBSMT::"
+	      << "VertexFromTRBSMT() "
+	      << "5th parameter must be 0 or 1(1:matrix-fibre model, 0: otherwise) " << std::endl;
+    exit(0);
+  }
+  
+  if( parameter(2)<0 || parameter(2)>=0.5 || parameter(3)<0 || parameter(3)>=0.5 ) {
+    std::cerr << "VertexFromTRBSMT::"
+ 	      << "VertexFromTRBSMT() "
+ 	      << "poisson ratios must be 0 <= p < 0.5 " << std::endl;
+    exit(0);
+  }
+  
 }
 
 void VertexFromTRBSMT::
@@ -1254,14 +1272,10 @@ derivs(Tissue &T,
 		<< std::endl;
       exit(-1);
     }
-    // double youngL     = parameter(0);//two more parameters here 
-    // double poissonL   = parameter(1);
-    // double youngT     = parameter(2);
-    // double poissonT   = parameter(3);
     
-    double youngFiber = parameter(0);//two more parameters here 
-    double poissonL   = parameter(1);
-    double youngMatrix= parameter(2);
+    double youngMatrix= parameter(0);    
+    double youngFiber = parameter(1); 
+    double poissonL   = parameter(2);    
     double poissonT   = parameter(3);
     
     size_t v1 = T.cell(cellIndex).vertex(0)->index();
@@ -1274,10 +1288,19 @@ derivs(Tissue &T,
     //std::cerr<< "cell "<< cellIndex<< " vertices  "<< v1<<" "<< v2 << " "<< v3 << " walls  "<< w1 <<" "<< w2 << " "<< w3<< std::endl;
     
     double anisotropy = cellData[cellIndex][variableIndex(0,2)]; // cellData[cellIndex][variableIndex(0,2)]=1-s2/s1;
-    double youngL     = youngMatrix+0.5*(1+anisotropy)* youngFiber;
-    double youngT     = youngMatrix+0.5*(1-anisotropy)* youngFiber;
-     
+    
+    double youngL;
+    double youngT;    
 
+    if( parameter(4)==1 ) {
+      youngL = youngMatrix+0.5*(1+anisotropy)* youngFiber;
+      youngT = youngMatrix+0.5*(1-anisotropy)* youngFiber;
+    }    
+    else {
+      youngL = youngMatrix+youngFiber;
+      youngT = youngMatrix;
+    }    
+    
     std::vector<double> restingLength(numWalls);
     restingLength[0] = wallData[w1][wallLengthIndex];
     restingLength[1] = wallData[w2][wallLengthIndex];
