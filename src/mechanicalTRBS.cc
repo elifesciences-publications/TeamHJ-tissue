@@ -1323,8 +1323,8 @@ derivs(Tissue &T,
     double mioT=youngT/(2*(1+poissonT));
     
     //Anisotropic Correction is based on difference between Lam Coefficients of Longitudinal and Transverse dirrections:
-      double deltaLam=(lambdaL-lambdaT);
-      double deltaMio=(mioL-mioT);
+      double deltaLam=lambdaL-lambdaT;
+      double deltaMio=mioL-mioT;
       // double deltaLam=AnisoMeasure*(lambdaL-lambdaT);
       // double deltaMio=AnisoMeasure*(mioL-mioT);
 
@@ -1544,7 +1544,7 @@ derivs(Tissue &T,
       // std::cerr<< "cell "<< cellIndex<<" AnisoMeasure "<< AnisoMeasure<<std::endl;
       
       // choosing a random normalized dirrection for anisotropy if AnisoVector is close to perpendicular to the cell plane
-      if ( AnisoMeasure<0.001) {
+      if ( AnisoMeasure<0.0001) {
         double randomAngle=((rand()%360)*2*3.14159265)/360;
         
         AnisoRestLocal[0]=std::cos(randomAngle);
@@ -1663,10 +1663,10 @@ derivs(Tissue &T,
       B2[1][1]=LeftCauchy[1][0]*LeftCauchy[0][1]+LeftCauchy[1][1]*LeftCauchy[1][1];
 
       double Sigma[2][2]; // true stress tensor (isotropic term) based on lambdaT and mioT
-      Sigma[0][0]=(Area/restingArea)*((lambdaT*trE-mioT)*LeftCauchy[0][0]+(mioT)*B2[0][0]);
-      Sigma[1][0]=(Area/restingArea)*((lambdaT*trE-mioT)*LeftCauchy[1][0]+(mioT)*B2[1][0]);
-      Sigma[0][1]=(Area/restingArea)*((lambdaT*trE-mioT)*LeftCauchy[0][1]+(mioT)*B2[0][1]);
-      Sigma[1][1]=(Area/restingArea)*((lambdaT*trE-mioT)*LeftCauchy[1][1]+(mioT)*B2[1][1]);
+      Sigma[0][0]=(restingArea/Area)*((lambdaT*trE-mioT)*LeftCauchy[0][0]+(mioT)*B2[0][0]);
+      Sigma[1][0]=(restingArea/Area)*((lambdaT*trE-mioT)*LeftCauchy[1][0]+(mioT)*B2[1][0]);
+      Sigma[0][1]=(restingArea/Area)*((lambdaT*trE-mioT)*LeftCauchy[0][1]+(mioT)*B2[0][1]);
+      Sigma[1][1]=(restingArea/Area)*((lambdaT*trE-mioT)*LeftCauchy[1][1]+(mioT)*B2[1][1]);
       
       // double Sigma[2][2]; // true stress tensor (isotropic term) based on lambdaT and mioT
       // Sigma[0][0]=(Area/restingArea)*((lambdaT*trE-mioT/2)*LeftCauchy[0][0]+(mioT/2)*B2[0][0]);
@@ -2108,9 +2108,9 @@ derivs(Tissue &T,
        //     }
        
 
-
-       if (std::abs(maximalStressValue)<0.001) cellData[cellIndex][variableIndex(0,2)]=0;
-       if (std::abs(maximalStressValue)>= 0.001) cellData[cellIndex][variableIndex(0,2)]=1-std::abs(maximalStressValue2/maximalStressValue);
+       // storing a measure for anisotropy in cell vector
+       if (std::abs(maximalStressValue)<0.0001) cellData[cellIndex][variableIndex(0,2)]=0;
+       if (std::abs(maximalStressValue)>= 0.0001) cellData[cellIndex][variableIndex(0,2)]=1-std::abs(maximalStressValue2/maximalStressValue);
 
       // storing   strain/stress direction/value in cellData
       if (numVariableIndexLevel()==3 && (numVariableIndex(1)==1 || numVariableIndex(1)==2 || numVariableIndex(1)==3) ) {// storing maximal strain
@@ -2149,14 +2149,16 @@ derivs(Tissue &T,
           {
             cellData[cellIndex][variableIndex(1,1)]  =PerpStrain[0];
             cellData[cellIndex][variableIndex(1,1)+1]=PerpStrain[1];
-            cellData[cellIndex][variableIndex(1,1)+3]=Area/restingArea;//maximalStrainValue;  // maximal Strain Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(1,1)+3]=maximalStrainValue;//maximal Strain Value is stored after its eigenvector
+            //cellData[cellIndex][variableIndex(1,1)+3]=Area/restingArea;
           }
         if (dimension==3)
           {
             cellData[cellIndex][variableIndex(1,1)]  =PerpStrain[0];
             cellData[cellIndex][variableIndex(1,1)+1]=PerpStrain[1];
             cellData[cellIndex][variableIndex(1,1)+2]=PerpStrain[2];
-            cellData[cellIndex][variableIndex(1,1)+3]=Area/restingArea;//maximalStrainValue;  // maximal Strain Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(1,1)+3]=maximalStrainValue;//maximal Strain Value is stored after its eigenvector
+            //cellData[cellIndex][variableIndex(1,1)+3]=Area/restingArea;
           }
       }
 
@@ -2430,23 +2432,25 @@ VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue,
                                     &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
-  if( paraValue.size()!=4 ) {
+  if( paraValue.size()!=5 ) {
     std::cerr << "VertexFromTRBScenterTriangulationMT::"
               << "VertexFromTRBScenterTriangulationMT() "
-              << "Uses four parameters young modulus and poisson coefficients in "
-	      << "longitudinal (MT) and transverse directions." << std::endl;
+              << "Uses five parameters young modulus(matrix and fibre) " 
+              << "and poisson coefficients (longitudinal (MT) and transverse directions)"
+	      << "also a flag(1:matrix-fibre model, 0: otherwise) " << std::endl;
+      
     
     exit(0);
   }
     
   if( (indValue.size()!=2 && indValue.size()!=4) || 
-      indValue[0].size()!=2 || indValue[1].size()!=1 ||
+      indValue[0].size()!=3 || indValue[1].size()!=1 ||
       (indValue.size()==4 && (indValue[2].size()!=0 && indValue[2].size()!=1 && indValue[2].size()!=2 && indValue[2].size()!=3)) ||
       (indValue.size()==4 && (indValue[3].size()!=0 && indValue[3].size()!=1 && indValue[3].size()!=2 ))
       ) { 
     std::cerr << "VertexFromTRBScenterTriangulationMT::"
 	      << "VertexFromTRBScenterTriangulationMT() "
-	      << "Wall length index and MT direction initial index given in first level." 
+	      << "Wall length index and MT direction initial index and anisotropy index given in first level." 
               << std::endl
 	      << "Start of additional Cell variable indices (center(x,y,z) "
 	      << "L_1,...,L_n, n=num vertex) is given in second level (typically at end)." 
@@ -2457,7 +2461,7 @@ VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue,
               << "and if two indices are given maximal and perpendicular strain will be stored and "
               << "if 3 indices are given 2nd strain direction values will be stored at 3rd index"
               << "If no index given at 4th level, stress will not be stored, if one index given stress will be stored"
-              << "and if two indices are given maximal and 2nd stress will be stored at 1st and 2nd index "
+              << "and if two indices are given maximal and 2nd stress will be stored at 1st and 2nd index respectively "
               << std::endl;
     exit(0);
   }
@@ -2471,11 +2475,26 @@ VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue,
   
   // Set the parameter identities
   std::vector<std::string> tmp( numParameter() );
-  tmp[0] = "Y_mod_L";// Longitudinal components of parameters
-  tmp[1] = "P_ratio_L";
-  tmp[2] = "Y_mod_T";// Transverse components of parameters
-  tmp[3] = "P_ratio_T";
+  tmp[0] = "Y_mod_M";   // Matrix Young modulus
+  tmp[1] = "Y_mod_F";   // Fiber Young modulus
+  tmp[2] = "P_ratio_L"; // Longitudinal Poisson ratio
+  tmp[3] = "P_ratio_T"; // Transverse Poisson ratio
+  tmp[4] = "MF flag";
   setParameterId( tmp );
+  
+  if( parameter(4)!=0 && parameter(4)!=1) {
+    std::cerr << "VertexFromTRBScenterTriangulationMT::"
+	      << "VertexFromTRBScenterTriangulationMT() "
+	      << "5th parameter must be 0 or 1(1:matrix-fibre model, 0: otherwise) " << std::endl;
+    exit(0);
+  }
+  
+  if( parameter(2)<0 || parameter(2)>=0.5 || parameter(3)<0 || parameter(3)>=0.5 ) {
+    std::cerr << "VertexFromTRBScenterTriangulationMT::"
+ 	      << "VertexFromTRBScenterTriangulationMT() "
+ 	      << "poisson ratios must be 0 <= p < 0.5 " << std::endl;
+    exit(0);
+  }
 }
 
 void VertexFromTRBScenterTriangulationMT::
@@ -2507,12 +2526,26 @@ derivs(Tissue &T,
 		<< std::endl;
       exit(-1);
     }
-
-    double youngL   = parameter(0);
-    double poissonL = parameter(1);
-    double youngT   = parameter(2);
-    double poissonT = parameter(3);
+    double youngMatrix= parameter(0);    
+    double youngFiber = parameter(1); 
+    double poissonL   = parameter(2);    
+    double poissonT   = parameter(3);
     
+    double anisotropy = cellData[cellIndex][variableIndex(0,2)]; // cellData[cellIndex][variableIndex(0,2)]=1-s2/s1;
+
+    double youngL;
+    double youngT;    
+
+    if( parameter(4)==1 ) {
+      youngL = youngMatrix+0.5*(1+anisotropy)* youngFiber;
+      youngT = youngMatrix+0.5*(1-anisotropy)* youngFiber;
+    }    
+    else {
+      youngL = youngMatrix+youngFiber;
+      youngT = youngMatrix;
+    }    
+
+
     double StrainCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};
     double StressCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};
     double normalGlob[3]={0,0,0};
@@ -2781,9 +2814,12 @@ derivs(Tissue &T,
       }
       
       //Anisotropic Correction is based on difference between Lam Coefficients of Longitudinal and Transverse dirrections:
-      double deltaLam=AnisoMeasure*(lambdaL-lambdaT);
-      double deltaMio=AnisoMeasure*(mioL-mioT);
-      
+      // double deltaLam=AnisoMeasure*(lambdaL-lambdaT);
+      // double deltaMio=AnisoMeasure*(mioL-mioT);
+      double deltaLam=lambdaL-lambdaT;
+      double deltaMio=mioL-mioT;      
+
+
       //Angles between anisotropy vector and shape vectors for calculating the terms like a.Di , teta(k) = acos((dot(Anisorest,Dk))/(norm(Anisorest)*norm(Dk))),
       std::vector<double> teta(3);
       teta[0] = std::acos(  (ShapeVectorResting[0][0]*AnisoRestLocal[0]+ShapeVectorResting[0][1]*AnisoRestLocal[1])/
@@ -2897,10 +2933,10 @@ derivs(Tissue &T,
       deltaSFt[1][1]=deltaS[1][0]*DeformGrad[1][0]+deltaS[1][1]*DeformGrad[1][1];
       
       double deltaSigma[2][2];// true stress tensor (anisotropic correction term)deltaLambda and deltaMio (Longitudinal-Transverse)
-      deltaSigma[0][0]=(Area/restingArea)*(DeformGrad[0][0]*deltaSFt[0][0]+DeformGrad[0][1]*deltaSFt[1][0]);
-      deltaSigma[1][0]=(Area/restingArea)*(DeformGrad[1][0]*deltaSFt[0][0]+DeformGrad[1][1]*deltaSFt[1][0]);
-      deltaSigma[0][1]=(Area/restingArea)*(DeformGrad[0][0]*deltaSFt[0][1]+DeformGrad[0][1]*deltaSFt[1][1]);
-      deltaSigma[1][1]=(Area/restingArea)*(DeformGrad[1][0]*deltaSFt[0][1]+DeformGrad[1][1]*deltaSFt[1][1]);
+      deltaSigma[0][0]=(restingArea/Area)*(DeformGrad[0][0]*deltaSFt[0][0]+DeformGrad[0][1]*deltaSFt[1][0]);
+      deltaSigma[1][0]=(restingArea/Area)*(DeformGrad[1][0]*deltaSFt[0][0]+DeformGrad[1][1]*deltaSFt[1][0]);
+      deltaSigma[0][1]=(restingArea/Area)*(DeformGrad[0][0]*deltaSFt[0][1]+DeformGrad[0][1]*deltaSFt[1][1]);
+      deltaSigma[1][1]=(restingArea/Area)*(DeformGrad[1][0]*deltaSFt[0][1]+DeformGrad[1][1]*deltaSFt[1][1]);
 
       double StressTensor[3][3];
       StressTensor[0][0]=Sigma[0][0]+deltaSigma[0][0];
@@ -3488,9 +3524,13 @@ derivs(Tissue &T,
       maximalStressValue2=StressCellGlobal[Istress2][Istress2];
     
 
+      // storing a measure for anisotropy in cell vector
+      if (std::abs(maximalStressValue)<0.0001) cellData[cellIndex][variableIndex(0,2)]=0;
+      if (std::abs(maximalStressValue)>= 0.0001) cellData[cellIndex][variableIndex(0,2)]=1-std::abs(maximalStressValue2/maximalStressValue);
+
 
      
-      
+      // storing   strain/stress direction/value in cellData
       if (numVariableIndexLevel()==4 && (numVariableIndex(2)==1 || numVariableIndex(2)==2 || numVariableIndex(2)==3) ) {// storing maximal strain
         if (dimension==2)
           {
@@ -3529,6 +3569,7 @@ derivs(Tissue &T,
             cellData[cellIndex][variableIndex(2,1)]  =PerpStrain[0];
             cellData[cellIndex][variableIndex(2,1)+1]=PerpStrain[1];
             cellData[cellIndex][variableIndex(2,1)+3]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
+            //cellData[cellIndex][variableIndex(1,1)+3]=Area/restingArea;
           }
         if (dimension==3)
           {
@@ -3536,6 +3577,7 @@ derivs(Tissue &T,
             cellData[cellIndex][variableIndex(2,1)+1]=PerpStrain[1];
             cellData[cellIndex][variableIndex(2,1)+2]=PerpStrain[2];
             cellData[cellIndex][variableIndex(2,1)+3]=maximalStrainValue;  // maximal Strain Value is stored after its eigenvector
+            //cellData[cellIndex][variableIndex(1,1)+3]=Area/restingArea;
           }
       }
 
