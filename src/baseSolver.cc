@@ -361,6 +361,8 @@ void BaseSolver::print(std::ostream &os)
   //
   // Print cell variables for gnuplot
   //
+
+
   else if( printFlag_==5 ) {
     //Print the cells, first connected vertecis and then variables
     size_t Nc = cellData_.size();
@@ -383,6 +385,27 @@ void BaseSolver::print(std::ostream &os)
     }				
     os << std::endl;
   }
+
+
+else if( printFlag_==50 ) {
+   
+  os << cellData_[0][8] << " " << cellData_[0][3] <<" " << cellData_[0][12] << std::endl;
+
+  }
+
+else if( printFlag_==51 ) {
+    
+  os << vertexData_[2][0] << " " <<vertexData_[2][1] << " " << cellData_[0][3] <<" "<< cellData_[0][7] <<" " << cellData_[0][12] << std::endl;
+
+  }
+
+else if( printFlag_==52 ) {
+    
+  os << cellData_[0][13] << " " <<cellData_[0][14] << " " << cellData_[0][3] <<" "<< cellData_[0][7] <<" " << cellData_[0][12] << std::endl;
+
+  }
+
+
   //
   // Ad hoc and temporary printing functions
   //
