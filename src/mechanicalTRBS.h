@@ -229,11 +229,11 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// VertexFromTRBSMT 4 1 2
+/// VertexFromTRBSMT 5 1 3
 /// Y_modulus_Matrix Y_modulus_Fibre Poisson_Longit. P_coeff_Trans. Matrix-Fiber-flag 
 /// L_ij-index MT_cellIndex anisotropyIndex
 /// or
-/// VertexFromTRBSMT 4 3 2 0/1/2/3 0/1/2
+/// VertexFromTRBSMT 5 3 3 0/1/2/3 0/1/2
 /// Y_modulus_Matrix Y_modulus_Fibre Poisson_Longit. P_coeff_Trans. Matrix-Fiber-flag 
 /// L_ij-index MT_cellIndex anisotropyIndex
 /// optional index(indices) for storing strain(strain(1), perpendicular to strain(2) and 2nd strain(3))
@@ -293,15 +293,14 @@ class VertexFromTRBSMT : public BaseReaction {
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// VertexFromTRBScenterTriangulationMT 4 2 2 1  
-/// Y_modulus_Longitudinal P_coeff_Longitudinal Y_modulus_Transverse P_coeff_Transverse 
-/// L_ij-index MT_cellIndex
+/// VertexFromTRBScenterTriangulationMT 5 2 3 1  
+/// Y_matrix Y_fiber Poisson_Long  Poisson_Trans MF_flag 
+/// L_ij-index MT_cellIndex Anisotropy-Index
 /// InternalVarStartIndex
 /// or
-/// VertexFromTRBScenterTriangulationMT 4 4 2 1 0/1/2/3 0/1/2
-/// Y_modulus_Longitudinal P_coeff_Longitudinal 
-/// Y_modulus_Transverse P_coeff_Transverse 
-/// L_ij-index MT_cellIndex
+/// VertexFromTRBScenterTriangulationMT 5 4 3 1 0/1/2/3 0/1/2
+/// Y_matrix Y_fiber Poisson_Long  Poisson_Trans MF_flag  
+/// L_ij-index MT_cellIndex Anisotropy-Index
 /// InternalVarStartIndex
 /// optional index for storing strain(0: no strain, 1: strain, 2: strain/perpendicular strain, 3: strain/perpendicular strain/2nd strain)
 /// optional index for storing stress(0: no stress, 1: stress, 2: stress/2nd stress)
