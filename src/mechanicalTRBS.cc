@@ -1662,11 +1662,15 @@ derivs(Tissue &T,
       B2[0][1]=LeftCauchy[0][0]*LeftCauchy[0][1]+LeftCauchy[0][1]*LeftCauchy[1][1];
       B2[1][1]=LeftCauchy[1][0]*LeftCauchy[0][1]+LeftCauchy[1][1]*LeftCauchy[1][1];
 
+
+      double areaFactor=restingArea/Area; // 1/detF
+      //double areaFactor=restingArea/Area; // detF
+
       double Sigma[2][2]; // true stress tensor (isotropic term) based on lambdaT and mioT
-      Sigma[0][0]=(restingArea/Area)*((lambdaT*trE-mioT)*LeftCauchy[0][0]+(mioT)*B2[0][0]);
-      Sigma[1][0]=(restingArea/Area)*((lambdaT*trE-mioT)*LeftCauchy[1][0]+(mioT)*B2[1][0]);
-      Sigma[0][1]=(restingArea/Area)*((lambdaT*trE-mioT)*LeftCauchy[0][1]+(mioT)*B2[0][1]);
-      Sigma[1][1]=(restingArea/Area)*((lambdaT*trE-mioT)*LeftCauchy[1][1]+(mioT)*B2[1][1]);
+      Sigma[0][0]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[0][0]+(mioT)*B2[0][0]);
+      Sigma[1][0]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[1][0]+(mioT)*B2[1][0]);
+      Sigma[0][1]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[0][1]+(mioT)*B2[0][1]);
+      Sigma[1][1]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[1][1]+(mioT)*B2[1][1]);
       
       // double Sigma[2][2]; // true stress tensor (isotropic term) based on lambdaT and mioT
       // Sigma[0][0]=(Area/restingArea)*((lambdaT*trE-mioT/2)*LeftCauchy[0][0]+(mioT/2)*B2[0][0]);
@@ -1696,10 +1700,10 @@ derivs(Tissue &T,
       deltaSFt[1][1]=deltaS[1][0]*DeformGrad[1][0]+deltaS[1][1]*DeformGrad[1][1];
       
       double deltaSigma[2][2];// true stress tensor (anisotropic correction term)deltaLambda and deltaMio (Longitudinal-Transverse)
-      deltaSigma[0][0]=(Area/restingArea)*(DeformGrad[0][0]*deltaSFt[0][0]+DeformGrad[0][1]*deltaSFt[1][0]);
-      deltaSigma[1][0]=(Area/restingArea)*(DeformGrad[1][0]*deltaSFt[0][0]+DeformGrad[1][1]*deltaSFt[1][0]);
-      deltaSigma[0][1]=(Area/restingArea)*(DeformGrad[0][0]*deltaSFt[0][1]+DeformGrad[0][1]*deltaSFt[1][1]);
-      deltaSigma[1][1]=(Area/restingArea)*(DeformGrad[1][0]*deltaSFt[0][1]+DeformGrad[1][1]*deltaSFt[1][1]);
+      deltaSigma[0][0]=areaFactor*(DeformGrad[0][0]*deltaSFt[0][0]+DeformGrad[0][1]*deltaSFt[1][0]);
+      deltaSigma[1][0]=areaFactor*(DeformGrad[1][0]*deltaSFt[0][0]+DeformGrad[1][1]*deltaSFt[1][0]);
+      deltaSigma[0][1]=areaFactor*(DeformGrad[0][0]*deltaSFt[0][1]+DeformGrad[0][1]*deltaSFt[1][1]);
+      deltaSigma[1][1]=areaFactor*(DeformGrad[1][0]*deltaSFt[0][1]+DeformGrad[1][1]*deltaSFt[1][1]);
 
       double StressTensor[3][3];
       StressTensor[0][0]=Sigma[0][0]+deltaSigma[0][0];
@@ -2432,12 +2436,13 @@ VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue,
                                     &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
-  if( paraValue.size()!=5 ) {
+  if( paraValue.size()!=6 ) {
     std::cerr << "VertexFromTRBScenterTriangulationMT::"
               << "VertexFromTRBScenterTriangulationMT() "
-              << "Uses five parameters young modulus(matrix and fibre) " 
+              << "Uses six parameters young modulus(matrix and fibre) " 
               << "and poisson coefficients (longitudinal (MT) and transverse directions)"
-	      << "also a flag(1:matrix-fibre model, 0: otherwise) " << std::endl;
+	      << "also 1st flag(1:matrix-fibre model, 0: otherwise) " 
+              << "and 2nd flag(0: plane strain, 1: plane stress) " << std::endl;
       
     
     exit(0);
@@ -2480,12 +2485,19 @@ VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue,
   tmp[2] = "P_ratio_L"; // Longitudinal Poisson ratio
   tmp[3] = "P_ratio_T"; // Transverse Poisson ratio
   tmp[4] = "MF flag";
+  tmp[5] = "Strain-Stress flag";
   setParameterId( tmp );
   
   if( parameter(4)!=0 && parameter(4)!=1) {
     std::cerr << "VertexFromTRBScenterTriangulationMT::"
 	      << "VertexFromTRBScenterTriangulationMT() "
 	      << "5th parameter must be 0 or 1(1:matrix-fibre model, 0: otherwise) " << std::endl;
+    exit(0);
+  }
+  if( parameter(5)!=0 && parameter(5)!=1) {
+    std::cerr << "VertexFromTRBScenterTriangulationMT::"
+	      << "VertexFromTRBScenterTriangulationMT() "
+	      << "6th parameter must be 0 or 1(0:plane strain, 1:plane stress) " << std::endl;
     exit(0);
   }
   
@@ -2589,13 +2601,23 @@ derivs(Tissue &T,
 			     (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
 			     (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
 
-            
-      // Lame coefficients based on plane strain (for 3D 0<poisson<0.5)
-      double lambdaL=youngL*poissonL/((1+poissonL)*(1-2*poissonL));
-      double mioL=youngL/(2*(1+poissonL));
-      double lambdaT=youngT*poissonT/((1+poissonT)*(1-2*poissonT));
-      double mioT=youngT/(2*(1+poissonT));
-    
+      double lambdaL, mioL, lambdaT, mioT;
+      
+      if (parameter(5)==0){      
+        // Lame coefficients based on plane strain (for 3D 0<poisson<0.5)
+        lambdaL=youngL*poissonL/((1+poissonL)*(1-2*poissonL));
+        mioL=youngL/(2*(1+poissonL));
+        lambdaT=youngT*poissonT/((1+poissonT)*(1-2*poissonT));
+        mioT=youngT/(2*(1+poissonT));
+      } 
+      else{      
+        // Lame coefficients based on plane stress (for 3D 0<poisson<0.5)
+        lambdaL=youngL*poissonL/(1-poissonL*poissonL);
+        mioL=youngL/(2*(1+poissonL));
+        lambdaT=youngT*poissonT/(1-poissonT*poissonT);
+        mioT=youngT/(2*(1+poissonT));
+      }
+
       // Lame coefficients based on delin. paper (for 2D 0<poisson<1)
       // double lambdaL=youngL*poissonL/(1-poissonL*poissonL);
       // double mioL=youngL/(1+poissonL);
@@ -2703,7 +2725,7 @@ derivs(Tissue &T,
 
       // Aniso vector in current shape in global coordinate system
       double AnisoCurrGlob[3];
-      AnisoCurrGlob[0] = cellData[cellIndex][variableIndex(0,1)];  // this was written by Henrik, Behruz changed it
+      AnisoCurrGlob[0] = cellData[cellIndex][variableIndex(0,1)];  
       AnisoCurrGlob[1] = cellData[cellIndex][variableIndex(0,1)+1];
       AnisoCurrGlob[2] = cellData[cellIndex][variableIndex(0,1)+2];
      
@@ -2906,11 +2928,14 @@ derivs(Tissue &T,
       B2[0][1]=LeftCauchy[0][0]*LeftCauchy[0][1]+LeftCauchy[0][1]*LeftCauchy[1][1];
       B2[1][1]=LeftCauchy[1][0]*LeftCauchy[0][1]+LeftCauchy[1][1]*LeftCauchy[1][1];
 
+      double areaFactor=restingArea/Area; // 1/detF
+      //double areaFactor=Area/restingArea; // detF
+      
       double Sigma[2][2]; // true stress tensor (isotropic term) based on lambdaT and mioT
-      Sigma[0][0]=(Area/restingArea)*((lambdaT*trE-mioT)*LeftCauchy[0][0]+(mioT)*B2[0][0]);
-      Sigma[1][0]=(Area/restingArea)*((lambdaT*trE-mioT)*LeftCauchy[1][0]+(mioT)*B2[1][0]);
-      Sigma[0][1]=(Area/restingArea)*((lambdaT*trE-mioT)*LeftCauchy[0][1]+(mioT)*B2[0][1]);
-      Sigma[1][1]=(Area/restingArea)*((lambdaT*trE-mioT)*LeftCauchy[1][1]+(mioT)*B2[1][1]);
+      Sigma[0][0]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[0][0]+(mioT)*B2[0][0]);
+      Sigma[1][0]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[1][0]+(mioT)*B2[1][0]);
+      Sigma[0][1]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[0][1]+(mioT)*B2[0][1]);
+      Sigma[1][1]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[1][1]+(mioT)*B2[1][1]);
 
 
 
@@ -2933,10 +2958,10 @@ derivs(Tissue &T,
       deltaSFt[1][1]=deltaS[1][0]*DeformGrad[1][0]+deltaS[1][1]*DeformGrad[1][1];
       
       double deltaSigma[2][2];// true stress tensor (anisotropic correction term)deltaLambda and deltaMio (Longitudinal-Transverse)
-      deltaSigma[0][0]=(restingArea/Area)*(DeformGrad[0][0]*deltaSFt[0][0]+DeformGrad[0][1]*deltaSFt[1][0]);
-      deltaSigma[1][0]=(restingArea/Area)*(DeformGrad[1][0]*deltaSFt[0][0]+DeformGrad[1][1]*deltaSFt[1][0]);
-      deltaSigma[0][1]=(restingArea/Area)*(DeformGrad[0][0]*deltaSFt[0][1]+DeformGrad[0][1]*deltaSFt[1][1]);
-      deltaSigma[1][1]=(restingArea/Area)*(DeformGrad[1][0]*deltaSFt[0][1]+DeformGrad[1][1]*deltaSFt[1][1]);
+      deltaSigma[0][0]=areaFactor*(DeformGrad[0][0]*deltaSFt[0][0]+DeformGrad[0][1]*deltaSFt[1][0]);
+      deltaSigma[1][0]=areaFactor*(DeformGrad[1][0]*deltaSFt[0][0]+DeformGrad[1][1]*deltaSFt[1][0]);
+      deltaSigma[0][1]=areaFactor*(DeformGrad[0][0]*deltaSFt[0][1]+DeformGrad[0][1]*deltaSFt[1][1]);
+      deltaSigma[1][1]=areaFactor*(DeformGrad[1][0]*deltaSFt[0][1]+DeformGrad[1][1]*deltaSFt[1][1]);
 
       double StressTensor[3][3];
       StressTensor[0][0]=Sigma[0][0]+deltaSigma[0][0];
@@ -3568,16 +3593,16 @@ derivs(Tissue &T,
           {
             cellData[cellIndex][variableIndex(2,1)]  =PerpStrain[0];
             cellData[cellIndex][variableIndex(2,1)+1]=PerpStrain[1];
-            cellData[cellIndex][variableIndex(2,1)+3]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
-            //cellData[cellIndex][variableIndex(1,1)+3]=Area/restingArea;
+            //cellData[cellIndex][variableIndex(2,1)+3]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(2,1)+3]=areaRatio;
           }
         if (dimension==3)
           {
             cellData[cellIndex][variableIndex(2,1)]  =PerpStrain[0];
             cellData[cellIndex][variableIndex(2,1)+1]=PerpStrain[1];
             cellData[cellIndex][variableIndex(2,1)+2]=PerpStrain[2];
-            cellData[cellIndex][variableIndex(2,1)+3]=maximalStrainValue;  // maximal Strain Value is stored after its eigenvector
-            //cellData[cellIndex][variableIndex(1,1)+3]=Area/restingArea;
+            //cellData[cellIndex][variableIndex(2,1)+3]=maximalStrainValue;  // maximal Strain Value is stored after its eigenvector
+            cellData[cellIndex][variableIndex(2,1)+3]=areaRatio;
           }
       }
 
