@@ -293,13 +293,13 @@ class VertexFromTRBSMT : public BaseReaction {
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// VertexFromTRBScenterTriangulationMT 5 2 3 1  
-/// Y_matrix Y_fiber Poisson_Long  Poisson_Trans MF_flag 
+/// VertexFromTRBScenterTriangulationMT 6 2 3 1  
+/// Y_matrix Y_fiber Poisson_Long  Poisson_Trans MF_flag strain-stress-flag 
 /// L_ij-index MT_cellIndex Anisotropy-Index
 /// InternalVarStartIndex
 /// or
-/// VertexFromTRBScenterTriangulationMT 5 4 3 1 0/1/2/3 0/1/2
-/// Y_matrix Y_fiber Poisson_Long  Poisson_Trans MF_flag  
+/// VertexFromTRBScenterTriangulationMT 6 4 3 1 0/1/2/3 0/1/2
+/// Y_matrix Y_fiber Poisson_Long  Poisson_Trans MF_flag strain-stress-flag 
 /// L_ij-index MT_cellIndex Anisotropy-Index
 /// InternalVarStartIndex
 /// optional index for storing strain(0: no strain, 1: strain, 2: strain/perpendicular strain, 3: strain/perpendicular strain/2nd strain)
