@@ -594,12 +594,13 @@ class VertexFromCellPlaneSphereCylinderConcentrationHill : public BaseReaction
 /// cell normal component and @f$N_{vertex}@f$ is the number of vertices for the cell.
 /// An additional parameter @f$p_{2}@f$ can be used to not include the area factor if
 /// set to zero (normally it should be set to 1).
+/// as an indication for equilibrium state in case of elastic deformations the function calculates the volume between template and Z=Z0 plane.this volume is not used in calculations so Z0 value can be choosen arbitrarily. 
 ///
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// VertexFromCellPlaneTriangular 2 0
-/// P A_flag
+/// VertexFromCellPlaneTriangular 3 0
+/// P A_flag Z0
 /// @endverbatim
 ///
 ///
