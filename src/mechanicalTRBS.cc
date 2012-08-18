@@ -3217,11 +3217,11 @@ derivs(Tissue &T,
             derI4[i][j]=0.5*derIprim4[i][j];
             derI5[i][j]=0.25*derIprim5[i][j]-0.5*derIprim4[i][j];
           }   
-        // for ( int i=0 ; i<3 ; ++i )   // this is the energy correction based on Deling. paper
+        // for ( int i=0 ; i<3 ; ++i )   //  energy correction based on Deling. paper
         //   for ( int j=0 ; j<3 ; ++j )
         //     deltaF[i][j]=(-deltaLam*(I4*derI1[i][j]+I1*derI4[i][j])-2*deltaMio*derI5[i][j]+(2*deltaMio+deltaLam)*I4*derI4[i][j])*restingArea;
 
-        for ( int i=0 ; i<3 ; ++i )  // this is the energy correction based on my calculation(equipartitioning energy)
+        for ( int i=0 ; i<3 ; ++i )  // energy correction based on equipartitioning energy
           for ( int j=0 ; j<3 ; ++j )
             deltaF[i][j]=(-(deltaLam/2)*(I4*derI1[i][j]+I1*derI4[i][j])-deltaMio*derI5[i][j])*restingArea;
 
@@ -3555,7 +3555,7 @@ derivs(Tissue &T,
 
 
      
-      // storing   strain/stress direction/value in cellData
+      // storing strain/stress direction/value in cellData
       if (numVariableIndexLevel()==4 && (numVariableIndex(2)==1 || numVariableIndex(2)==2 || numVariableIndex(2)==3) ) {// storing maximal strain
         if (dimension==2)
           {
@@ -3593,16 +3593,16 @@ derivs(Tissue &T,
           {
             cellData[cellIndex][variableIndex(2,1)]  =PerpStrain[0];
             cellData[cellIndex][variableIndex(2,1)+1]=PerpStrain[1];
-            //cellData[cellIndex][variableIndex(2,1)+3]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
-            cellData[cellIndex][variableIndex(2,1)+3]=areaRatio;
+            cellData[cellIndex][variableIndex(2,1)+3]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
+            //cellData[cellIndex][variableIndex(2,1)+3]=areaRatio;
           }
         if (dimension==3)
           {
             cellData[cellIndex][variableIndex(2,1)]  =PerpStrain[0];
             cellData[cellIndex][variableIndex(2,1)+1]=PerpStrain[1];
             cellData[cellIndex][variableIndex(2,1)+2]=PerpStrain[2];
-            //cellData[cellIndex][variableIndex(2,1)+3]=maximalStrainValue;  // maximal Strain Value is stored after its eigenvector
-            cellData[cellIndex][variableIndex(2,1)+3]=areaRatio;
+            cellData[cellIndex][variableIndex(2,1)+3]=maximalStrainValue;  // maximal Strain Value is stored after its eigenvector
+            //cellData[cellIndex][variableIndex(2,1)+3]=areaRatio;
           }
       }
 
