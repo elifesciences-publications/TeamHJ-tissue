@@ -1,10 +1,10 @@
-/**
- * Filename     : tissue.h
- * Description  : A class describing a two-dimensional tissue of cells
- * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
- * Created      : April 2006
- * Revision     : $Id$
- */
+//
+// Filename     : tissue.h
+// Description  : A class describing a two-dimensional tissue of cells
+// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+// Created      : April 2006
+// Revision     : $Id$
+//
 #ifndef TISSUE_H
 #define TISSUE_H
 
@@ -820,6 +820,17 @@ class Tissue {
   /// @see http://dev.thep.lu.se/organism
   /// 
   void printInitOrganism(std::ostream &os);
+  ///
+  /// @brief Prints state in ply format
+  ///
+  /// Creates a file in ply format. Ply is the Polygon File Format (or Stanford Triangle Format)
+  /// and is proposed as a simplistic format to transfer geometries between plant modellers
+  /// that use vertex-based simulations.
+  ///
+  /// @see http://en.wikipedia.org/wiki/PLY_(file_format)
+  /// @see http://sainsburyworkshop2012.wikispaces.com
+  /// 
+  void printInitPly(std::ostream &os);
   void printVertex(std::ostream &os=std::cout);
   void printWall(std::ostream &os=std::cout);
   void printVertexAndCell(std::ostream &os=std::cout);

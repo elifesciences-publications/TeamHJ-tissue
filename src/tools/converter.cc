@@ -50,6 +50,7 @@ int main(int argc,char *argv[]) {
 	      << "organism (organism init file including neighborhood), " << std::endl 
 	      << "vtu1 (vtk format with single wall compartment variables), " << std::endl
 	      << "vtu2 (vtk format with two wall compartment variables)." << std::endl
+	      << "ply (ply format for exchange between plant modellers using vertex-based geometries)." << std::endl
 	      << std::endl;
     std::cerr << "-verbose flag - Set flag for verbose (flag=1, default) more verbose (2) or "
 	      << "silent (0) output mode to stderr." << std::endl << std::endl; 
@@ -159,6 +160,12 @@ int main(int argc,char *argv[]) {
       std::cerr << "Printing output using organism format (init + neigh)." << std::endl;
     }
     T.printInitOrganism(std::cout);
+  }
+  else if (outputFormat.compare("ply")==0) {
+    if (verboseFlag) {
+      std::cerr << "Printing output using ply format." << std::endl;
+    }
+    T.printInitPly(std::cout);
   }
   else {
     std::cerr << "Warning: main() - Format " << outputFormat << " not recognized. "
