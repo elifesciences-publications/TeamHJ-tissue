@@ -4530,7 +4530,7 @@ void Tissue::printInitPly(std::ostream &os) {
   os << "end_header" << std::endl;
 
   // Print vertex positions and index
-  os << "comment start of vertex list" << std::endl;
+  //os << "comment start of vertex list" << std::endl;
   for (size_t i=0; i<numVertex(); ++i) {
     for (size_t d=0; d<vertex(i).numPosition(); ++d) {
       os << vertex(i).position(d) << " ";
@@ -4538,7 +4538,7 @@ void Tissue::printInitPly(std::ostream &os) {
     os << vertex(i).index() << std::endl;
   }
   // Print face information, vertex_list, index  and variables
-  os << "comment start of face list" << std::endl;
+  //os << "comment start of face list" << std::endl;
   for (size_t i=0; i<numCell(); ++i) {
     os << cell(i).numVertex() << " ";
     for (size_t k=0; k<cell(i).numVertex(); ++k) {
@@ -4552,7 +4552,7 @@ void Tissue::printInitPly(std::ostream &os) {
      os << std::endl;
   }
   // Print edge information, source, target, index, and variables
-  os << "comment start of edge list" << std::endl;
+  //os << "comment start of edge list" << std::endl;
   for (size_t i=0; i<numWall(); ++i) {
     os << wall(i).vertex1()->index() << " " << wall(i).vertex2()->index() << " ";
     os << wall(i).index() << " ";
