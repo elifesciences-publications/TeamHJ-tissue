@@ -85,8 +85,19 @@ class VertexNoUpdateFromIndex : public BaseReaction {
 };
 
 ///
-/// @brief Sets positional derivatives to zero for vertices at boundary  
+/// @brief Sets positional derivatives to zero for vertices at boundary so that boundary vertices would be restricted from moving in x and/or y ... direction(s) 
 ///
+/// In the model file, the reaction is specified as:
+///
+/// @verbatim
+/// for holding the boundary vertices in all directions:
+/// VertexNoUpdateBoundary 0 0
+/// 
+/// or for holding them only in x and z directions
+/// VertexNoUpdateBoundary 0 1 2
+/// 0 2 
+///
+/// @endverbatim
 class VertexNoUpdateBoundary : public BaseReaction {
   
  public:
