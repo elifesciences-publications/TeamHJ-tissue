@@ -138,6 +138,8 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
     return new PerpendicularWallPressure(paraValue, indValue);
   else if (idValue == "VertexFromCellPlane")
     return new VertexFromCellPlane(paraValue, indValue);
+ else if (idValue == "VertexFromCellPlaneLinear")
+    return new VertexFromCellPlaneLinear(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneSpatial")
     return new VertexFromCellPlaneSpatial(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneConcentrationHill")
@@ -225,6 +227,8 @@ else if(idValue=="VertexFromExternalWall")
   //directionReaction.h, directionUpdate.cc
   else if (idValue == "ContinousMTDirection")
     return new ContinousMTDirection(paraValue, indValue);
+  else if (idValue == "ContinousMTDirection3d")
+    return new ContinousMTDirection3d(paraValue, indValue);
   else if (idValue == "UpdateMTDirection")
     return new UpdateMTDirection(paraValue, indValue);
   else if (idValue == "RotatingDirection")
