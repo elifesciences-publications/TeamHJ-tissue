@@ -459,6 +459,71 @@ class VertexFromCellPlane : public BaseReaction
 	      DataMatrix &vertexDerivs);
 };
 
+
+///
+/// @brief Updates vertices from a 'pressure' term defined to act in the cell normal
+/// direction. The pressure is applied increasingly (... linear in a given time span).
+///
+/// This function calculates the area of a cell and then distribute a force 'outwards'
+/// among the cell vertices. It relies on that the PCA cell planes have been calculated.
+/// A cell contributes to a vertex update with
+///
+/// @f[ \frac{dx_{i}}{dt} = p_{0} A n_{i} / N_{vertex} @f]
+///
+/// where @f$p_{0}@f$ is a 'pressure' parameter, A is the cell area @f$n_{i}@f$ is the 
+/// cell normal component and @f$N_{vertex}@f$ is the number of vertices for the cell.
+/// An additional parameter @f$p_{2}@f$ can be used to not include the area factor if
+/// set to zero (normally it should be set to 1).
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// VertexFromCellPlaneLinear 3 0
+/// P A_flag deltaT
+/// @endverbatim
+///
+/// @see CalculatePCAPlane
+///
+class VertexFromCellPlaneLinear : public BaseReaction
+{
+private:
+  
+  double timeFactor_;
+  
+public:
+  VertexFromCellPlaneLinear(std::vector<double> &paraValue,
+                            std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+  
+};
+
+
+///
+/// @brief Updates vertices from a 'pressure' term defined to act in the cell normal
+/// direction.
+///
+/// This function calculates the area of a cell and then distribute a force 'outwards'
+/// among the cell vertices. It relies on that the PCA cell planes have been calculated.
+/// A cell contributes to a  ...............
+
+
 class VertexFromCellPlaneSpatial : public BaseReaction
 {
  private:
