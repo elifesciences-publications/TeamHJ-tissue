@@ -925,6 +925,65 @@ class VertexFromExternalWall : public BaseReaction {
 
 
 
+///
+/// @brief Calculates change in template volume and its time derivative 
+/// and saves them in the cellData[1][24,25]
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// TemplateVolumeChange 0 0
+///
+/// @endverbatim
+/// 
+///
+// class TemplateVolumeChange : public BaseReaction 
+// {
+  
+//  private:
+
+//   DataMatrix vertexDataRest;
+
+//  public:
+
+//  ///
+//  /// @brief Main constructor
+//  ///
+//  /// This is the main constructor which sets the parameters and variable
+//  /// indices that defines the reaction.
+//  ///
+//  /// @param paraValue vector with parameters
+//  ///
+//  /// @param indValue vector of vectors with variable indices
+//  ///
+//  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+//  ///
+//   TemplateVolumeChange(std::vector<double> &paraValue, 
+// 			 std::vector< std::vector<size_t> > &indValue ); 
+//   void derivs(Tissue &T,
+//               DataMatrix &cellData,
+//               DataMatrix &vertexData,
+//               DataMatrix &vertexDerivs );
+
+//   ///
+//   /// @brief Reaction initiation applied before simulation starts
+//   ///
+//   /// @see BaseReaction::initiate(Tissue &T,...)
+//   ///
+//   void initiate(Tissue &T,
+//                 DataMatrix &vertexData );  
+//   ///
+//   /// @brief Update function for this reaction class
+//   ///
+//   /// @see BaseReaction::update(Tissue &T,...)
+//   ///
+//   void update(Tissue &T,
+//               DataMatrix &cellData,
+// 	      DataMatrix &vertexData,
+//               DataMatrix &vertexDerivs);  
+// };
+
+
 
 
 // Do not use this reaction. Restricted area (unless you are a developer).
