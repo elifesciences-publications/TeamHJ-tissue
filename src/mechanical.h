@@ -936,52 +936,60 @@ class VertexFromExternalWall : public BaseReaction {
 ///
 /// @endverbatim
 /// 
-///
-// class TemplateVolumeChange : public BaseReaction 
-// {
-  
-//  private:
+class TemplateVolumeChange : public BaseReaction 
+{
 
-//   DataMatrix vertexDataRest;
+ private:
 
-//  public:
+  DataMatrix vertexDataRest;
 
-//  ///
-//  /// @brief Main constructor
-//  ///
-//  /// This is the main constructor which sets the parameters and variable
-//  /// indices that defines the reaction.
-//  ///
-//  /// @param paraValue vector with parameters
-//  ///
-//  /// @param indValue vector of vectors with variable indices
-//  ///
-//  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
-//  ///
-//   TemplateVolumeChange(std::vector<double> &paraValue, 
-// 			 std::vector< std::vector<size_t> > &indValue ); 
-//   void derivs(Tissue &T,
-//               DataMatrix &cellData,
-//               DataMatrix &vertexData,
-//               DataMatrix &vertexDerivs );
+ public:
 
-//   ///
-//   /// @brief Reaction initiation applied before simulation starts
-//   ///
-//   /// @see BaseReaction::initiate(Tissue &T,...)
-//   ///
-//   void initiate(Tissue &T,
-//                 DataMatrix &vertexData );  
-//   ///
-//   /// @brief Update function for this reaction class
-//   ///
-//   /// @see BaseReaction::update(Tissue &T,...)
-//   ///
-//   void update(Tissue &T,
-//               DataMatrix &cellData,
-// 	      DataMatrix &vertexData,
-//               DataMatrix &vertexDerivs);  
-// };
+ ///
+ /// @brief Main constructor
+ ///
+ /// This is the main constructor which sets the parameters and variable
+ /// indices that defines the reaction.
+ ///
+ /// @param paraValue vector with parameters
+ ///
+ /// @param indValue vector of vectors with variable indices
+ ///
+ /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+ ///
+  TemplateVolumeChange(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > &indValue ); 
+
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  ///
+  /// @brief Reaction initiation applied before simulation starts
+  ///
+  /// @see BaseReaction::initiate(Tissue &T,...)
+  ///
+  void initiate(Tissue &T,
+                DataMatrix &vertexData );  
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+              DataMatrix &cellData,
+	      DataMatrix &vertexData,
+              DataMatrix &vertexDerivs);  
+};
 
 
 

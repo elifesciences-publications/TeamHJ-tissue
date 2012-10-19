@@ -162,8 +162,8 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
     return new VertexFromBall(paraValue,indValue);
   else if(idValue=="VertexFromExternalWall")
     return new VertexFromExternalWall(paraValue,indValue);
- // else if(idValue=="TemplateVolumeChange")
- //    return new TemplateVolumeChange(paraValue,indValue);
+  else if(idValue=="TemplateVolumeChange")
+    return new TemplateVolumeChange(paraValue,indValue);
   else if (idValue == "DebugReaction")
     return new DebugReaction(paraValue, indValue);
   
@@ -229,8 +229,8 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
   //directionReaction.h, directionUpdate.cc
   else if (idValue == "ContinousMTDirection")
     return new ContinousMTDirection(paraValue, indValue);
-  else if (idValue == "ContinousMTDirection3d")
-    return new ContinousMTDirection3d(paraValue, indValue);
+  //else if (idValue == "ContinousMTDirection3d")
+  //return new ContinousMTDirection3d(paraValue, indValue);
   else if (idValue == "UpdateMTDirection")
     return new UpdateMTDirection(paraValue, indValue);
   else if (idValue == "RotatingDirection")
