@@ -160,8 +160,10 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
     return new VertexFromForceLinear(paraValue,indValue);
   else if(idValue=="VertexFromBall")
     return new VertexFromBall(paraValue,indValue);
-else if(idValue=="VertexFromExternalWall")
+  else if(idValue=="VertexFromExternalWall")
     return new VertexFromExternalWall(paraValue,indValue);
+ // else if(idValue=="TemplateVolumeChange")
+ //    return new TemplateVolumeChange(paraValue,indValue);
   else if (idValue == "DebugReaction")
     return new DebugReaction(paraValue, indValue);
   
