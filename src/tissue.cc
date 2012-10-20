@@ -404,7 +404,7 @@ void Tissue::readInit(std::istream &IN,int verbose) {
 	  wall(i).setVariable(variable);
   }
 
-  //Read cell variables
+  // Read cell variables
   //
   if( verbose )
     std::cerr << "Tissue::readInit(IN) - reading cell variables" << std::endl;
@@ -412,19 +412,18 @@ void Tissue::readInit(std::istream &IN,int verbose) {
   IN >> numCellTmp;
   IN >> numCellVar;
   assert( numCellTmp==numCell() );
-  //assert( numCellVar==0 );
   double var=0.0;
   if( numCellVar )
     for( size_t i=0 ; i<numCell() ; ++i ) {
       for( size_t j=0 ; j<numCellVar ; ++j ) {
-				IN >> var;
-				cell(i).addVariable(var);
+	IN >> var;
+	cell(i).addVariable(var);
       }
     }
-	//Sort all cellWalls and cellVertices to comply with area calculations
-	//and plotting
-	sortCellWallAndCellVertex();
-	checkConnectivity(verbose);
+  //Sort all cellWalls and cellVertices to comply with area calculations
+  //and plotting
+  sortCellWallAndCellVertex();
+  checkConnectivity(verbose);
 }
 
 void Tissue::readInit( const char *initFile, int verbose ) {
@@ -450,291 +449,471 @@ void Tissue::readInit( std::string initFile, int verbose ) {
   readInit(IN,verbose);
 }
 
-void Tissue::readMerryInit( const char *initFile, int verbose ) 
-{
+void Tissue::readInitCenterTri(const char *initFile,int verbose) {
+  
   std::ifstream IN(initFile);
   if( !IN ) {
-    std::cerr << "Tissue::readMerryInit(char*) - "
-							<< "Cannot open file " << initFile 
-							<< std::endl; 
-		exit(EXIT_FAILURE);
-	}
-  unsigned int numVertexVal,dimension;
+    std::cerr << "Tissue::readInitCenterTri(char*,int) - "
+	      << "Cannot open file " << initFile 
+	      << std::endl; 
+    exit(EXIT_FAILURE);
+  }
+
+  unsigned int numCellVal,numWallVal,numVertexVal;
+  //std::string idVal;
+  
+  //IN >> idVal;
+  IN >> numCellVal;
+  IN >> numWallVal;
   IN >> numVertexVal;
-	IN >> dimension;
+
+  //setId( idVal );
+  setNumCell( numCellVal );
+  setNumWall( numWallVal );
   setNumVertex( numVertexVal );
-	for( size_t i=0 ; i<numVertexVal ; ++i )
+
+  assert( numCellVal );
+  assert( numWallVal );
+  assert( numVertexVal );
+  
+  //Set all indeces to the placement in the vectors
+  for( size_t i=0 ; i<numCellVal ; ++i )
+    cell(i).setIndex(i);
+  for( size_t i=0 ; i<numWallVal ; ++i )
+    wall(i).setIndex(i);
+  for( size_t i=0 ; i<numVertexVal ; ++i )
     vertex(i).setIndex(i);
-	
-	std::vector<double> pos(dimension);
-	std::vector<size_t> cellName,vertexName;
-	// Read information about vertices
-	for( size_t i=0 ; i<numVertexVal ; ++i ) {
-		size_t tmp,numVertexCell;
-		IN >> tmp;
-		vertexName.push_back(tmp);
-		for( size_t dim=0 ; dim<dimension ; ++dim )
-			IN >> pos[dim];
-		vertex(i).setPosition(pos);
-		IN >> numVertexCell;
-		for( size_t j=0 ; j<numVertexCell ; ++j ) {
-			size_t tmpCellIndex,cellIndex=numCell(),newCellFlag=1;
-			IN >> tmpCellIndex;
-			for( size_t c=0 ; c<cellName.size() ; ++c ) {
-				if( tmpCellIndex==cellName[c] ) {
-					cellIndex=c;
-					newCellFlag=0;
-					break;
-				}
-			}
-			if( newCellFlag ) {
-				Cell tmpCell(cellIndex,"");
-				cellName.push_back(tmpCellIndex);
-				addCell(tmpCell);
-			}
-			vertex(i).addCell(&(cell(cellIndex)));
-			cell(cellIndex).addVertex(&(vertex(i)));
-		}
-	}
-	// Reading the walls as well
-	size_t numWallVal;
-	IN >> numWallVal;
-	// Store vertexName,vertexIndex pairs in a hash table
-	std::map<size_t,size_t> vertexNameToIndex;
-	for (size_t i=0; i<numVertex(); ++i)
-		vertexNameToIndex[vertexName[i]] = i;
-	
-	for (size_t i=0; i<numWallVal; ++i) {
-		Wall tmpWall;
-		tmpWall.setIndex(i);
-		size_t v1Name,v2Name;
-		IN >> v1Name;
-		IN >> v2Name;
-		if (vertexNameToIndex.find(v1Name) == vertexNameToIndex.end() ||
-				vertexNameToIndex.find(v2Name) == vertexNameToIndex.end() ) {
-			std::cerr << "Tissue::readMerryInit() Vertex read from file (in wall list) not found."
-								<< std::endl;
-			exit(-1);
-		}
-		Vertex *tmpVertex1(vertexP(vertexNameToIndex[v1Name]));
-		Vertex *tmpVertex2(vertexP(vertexNameToIndex[v2Name]));
-		tmpWall.setVertex1(tmpVertex1);
-		tmpWall.setVertex2(tmpVertex2);
-		// Find neighboring cells as well
-		size_t numFoundCell=0;
-		for (size_t c1I=0; c1I<tmpVertex1->numCell(); ++c1I)
-			for (size_t c2I=0; c2I<tmpVertex2->numCell(); ++c2I)
-				if (tmpVertex1->cell(c1I)==tmpVertex2->cell(c2I)) {
-					if (numFoundCell==0) {
-						tmpWall.setCell1(tmpVertex1->cell(c1I));
-					}
-					else if (numFoundCell==1) {
-						tmpWall.setCell2(tmpVertex1->cell(c1I));
-					}
-					++numFoundCell;
-				}
-		if (numFoundCell==1) {
-			tmpWall.setCell2(background());
-			++numFoundCell;
-		}
-		if (numFoundCell!=2) {
-			std::cerr << "Tissue::readMerryInit() Found " << numFoundCell
-								<< " cells for wall " << i << std::endl;
-			std::cerr << "Vertices: " << tmpVertex1->index() << " (" << v1Name << ") " 
-								<< tmpVertex2->index() << " (" << v2Name << ")" << std::endl;
-			for (size_t c1I=0; c1I<tmpVertex1->numCell(); ++c1I)
-				for (size_t c2I=0; c2I<tmpVertex2->numCell(); ++c2I)
-					std::cerr << tmpVertex1->cell(c1I)->index() << " " << tmpVertex2->cell(c2I)->index()
-										<< std::endl;
-			exit(-1);
-		} 
-		// Add the wall to tissue (including pointers from cells and vertices)
-		addWall(tmpWall);
-		Wall *tmpWallP=wallP(numWall()-1);
-		tmpVertex1->addWall(tmpWallP);
-		tmpVertex2->addWall(tmpWallP);
-		if (tmpWallP->cell1()!=background())
-			tmpWallP->cell1()->addWall(tmpWallP);
-		if (tmpWallP->cell2()!=background())
-			tmpWallP->cell2()->addWall(tmpWallP);
-	}
-	IN.close();
-	
-	
-	if( verbose>1 ) {
-		std::cerr << "Vertices:" << std::endl;
-		for (size_t i=0; i<numVertex(); ++i) {
-			std::cerr << vertex(i).index() << "\t";
-			for (size_t dim=0; dim<vertex(i).numPosition(); ++dim)
-				std::cerr << vertex(i).position(dim) << " ";
-			std::cerr << "\t";
-			for (size_t k=0; k<vertex(i).numCell(); ++k)
-				std::cerr << vertex(i).cell(k)->index() << " ";
-			std::cerr << std::endl;
-		}
+  
+  //Read connective topology
+  //
+  if( verbose )
+    std::cerr << "Tissue::readInit(IN) - reading connectivity topology" << std::endl;
+  int wI,c1I,c2I,v1I,v2I;
+  size_t w,c1,c2,v1,v2;
+  for( size_t nW=0 ; nW<numWall() ; ++nW ) {
+    //Read the connections
+    IN >> wI;
+    IN >> c1I;
+    IN >> c2I;
+    IN >> v1I;
+    IN >> v2I;
+    w = static_cast<size_t>(wI);
+    c1 = static_cast<size_t>(c1I);
+    c2 = static_cast<size_t>(c2I);
+    v1 = static_cast<size_t>(v1I);
+    v2 = static_cast<size_t>(v2I);
+    //Assert all data is ok
+    if( verbose>1 ) {
+      std::cerr << wI << " " << c1I << " " << c2I << " " << v1I 
+		<< " " << v2I << std::endl;    
+      std::cerr << w << " " << c1 << " " << c2 << " " << v1 << " " << v2 
+		<< " " << static_cast<size_t>(-1) << std::endl 
+		<< std::endl;
+    }    
+    assert( w==nW );
+    assert( c1==static_cast<size_t>(-1) || c1<numCell() );
+    assert( c2==static_cast<size_t>(-1) || c2<numCell() );
+    assert( v1<numVertex() );
+    assert( v2<numVertex() );
+    //Make the connections by first extracting the pointers
+    Wall *wp = &(wall(w));
+    Vertex *v1p = &(vertex(v1)),*v2p=&(vertex(v2));
+    Cell *c1p,*c2p;
+    if( c1 != static_cast<size_t>(-1) )
+      c1p = &(cell(c1));
+    else
+      c1p = &(background_);
+    if( c2 != static_cast<size_t>(-1) )
+      c2p = &(cell(c2));
+    else
+      c2p = &(background_);
+    //vertex-wall
+    wall(w).setVertex( v1p,v2p );
+    vertex(v1).addWall( wp );
+    vertex(v2).addWall( wp );
+    //cell-wall
+    wall(w).setCell(c1p,c2p);
+    if( c1 != static_cast<size_t>(-1) )
+      cell(c1).addWall( wp );
+    if( c2 != static_cast<size_t>(-1) )
+      cell(c2).addWall( wp );
+    //cell-vertex
+    if( c1 != static_cast<size_t>(-1) ) {
+      if( !cell(c1).hasVertex(v1p) ) {
+				cell(c1).addVertex( v1p );
+				vertex(v1).addCell( c1p );
+      }
+      if( !cell(c1).hasVertex(v2p) ) {
+				cell(c1).addVertex( v2p );
+				vertex(v2).addCell( c1p );
+      }
+    }
+    if( c2 != static_cast<size_t>(-1) ) {
+      if( !cell(c2).hasVertex(v1p) ) {
+				cell(c2).addVertex( v1p );
+				vertex(v1).addCell( c2p );
+      }
+      if( !cell(c2).hasVertex(v2p) ) {
+				cell(c2).addVertex( v2p );
+				vertex(v2).addCell( c2p );
+      }
+    }
+  }
+  //Read vertex positions
+  //
+  if( verbose )
+    std::cerr << "Tissue::readInit(IN) - reading vertex positions" 
+	      << std::endl;
+  size_t numVertexTmp,dimension;
+  IN >> numVertexTmp;
+  IN >> dimension;
+  assert( numVertexTmp==numVertex() );
+  assert( dimension==2 || dimension==3 );
+  if (verbose) {
+    std::cerr << numVertexTmp << "(" << numVertex() << ") vertices in " << dimension << " dimensions." << std::endl;
+  }
 
-		std::cerr << "Cells:" << std::endl;
-		for (size_t i=0; i<numCell(); ++i) {
-			std::cerr << cell(i).index() << " (" << cellName[i] << ")\t";
-			for (size_t k=0; k<cell(i).numVertex(); ++k)
-				std::cerr << cell(i).vertex(k)->index() << " ";
-			std::cerr << std::endl;
-		}
-		std::cerr << "Walls:" << std::endl;
-		for (size_t i=0; i<numWall(); ++i) {
-			std::cerr << wall(i).index() << "\t";
-			std::cerr << wall(i).cell1()->index() << " " << wall(i).cell2()->index()<< " "
-								<< wall(i).vertex1()->index() << " " << wall(i).vertex2()->index()
-								<< std::endl;
-		}
-
-	}
-
-	if (verbose)
-		std::cerr << numCell() << " cells and " << numVertex() 
-							<< " vertices and " << numWall() << " walls extracted by "
-							<< "readMerryInit()" << std::endl;
-	sortCellWallAndCellVertex();
-	checkConnectivity(verbose);
-
-	return;
+  std::vector<double> pos(dimension);
+  for( size_t i=0 ; i<numVertex() ; ++i ) {
+    for( size_t j=0 ; j<dimension ; ++j )
+      IN >> pos[j];
+    vertex(i).setPosition(pos);
+  }
 	
-	// Extract internal walls
-	for (size_t i=0; i<numCell(); ++i) {
-		for (size_t ii=i+1; ii<numCell(); ++ii) {
-			std::vector<Vertex*> commonVertex;
-			for (size_t j=0; j<cell(i).numVertex(); ++j)
-				for (size_t jj=0; jj<cell(ii).numVertex(); ++jj)
-					if (cell(i).vertex(j)==cell(ii).vertex(jj))
-						commonVertex.push_back(cell(i).vertex(j));
-			if (commonVertex.size()==2) {
-				//cell i and ii joined by wall connected to vertices j and jj
-				size_t numWallBefore=numWall();
-				Wall wallTmp;
-				wallTmp.setIndex(numWallBefore);
-				wallTmp.setCell(&cell(i),&cell(ii));
-				wallTmp.setVertex(commonVertex[0],commonVertex[1]);
-				double length=0.0;
-				for (size_t dim=0; dim<commonVertex[0]->numPosition(); ++dim)
-					length += ( commonVertex[0]->position(dim)-commonVertex[1]->position(dim) ) *
-						( commonVertex[0]->position(dim)-commonVertex[1]->position(dim) );
-				length = std::sqrt(length);
-				wallTmp.setLength(length);
-				if( verbose>1 )
-					std::cerr << "wall " << numWallBefore << " added with length "
-										<< wallTmp.length() << " and connected to cells"
-										<< cell(i).index() << "," << cell(ii).index() << " and vertices "
-										<< commonVertex[0]->index() << "," << commonVertex[1]->index()
-										<< std::endl; 
-				addWall(wallTmp);
-				// Add wall to cells and vertices
-				cell(i).addWall( &(wall(numWallBefore)) );
-				cell(ii).addWall( &(wall(numWallBefore)) );
-				commonVertex[0]->addWall( &(wall(numWallBefore)) );
-				commonVertex[1]->addWall( &(wall(numWallBefore)) );
-			}
-		}
-	}
-	// Extract walls towards boundary
-	//assert( c1==static_cast<size_t>(-1) || c1<numCell() );
-	for (size_t i=0; i<numCell(); ++i) {
-		if (cell(i).numVertex() != cell(i).numWall() && cell(i).numVertex()>2 ) {
-			//Sort vertices
-			size_t Nv = cell(i).numVertex();
-			std::vector<double> cellCenter = cell(i).positionFromVertex();
-			std::vector<double> theta(Nv);
-			std::vector<size_t> vI(Nv);
-			for (size_t k=0; k<Nv; ++k) {				
-				vI[k]=k;
-				theta[k] = std::atan2( cell(i).vertex(k)->position(1)-cellCenter[1],
-															 cell(i).vertex(k)->position(0)-cellCenter[0] );
-			}
-			for (size_t k=0; k<Nv; ++k)	
-				for (size_t kk=k+1; kk<Nv; ++kk)				
-					if (theta[kk]<theta[k]) {
-						size_t tmpvI=vI[kk];
-						double tmpTheta=theta[kk];
-						vI[kk]=vI[k];
-						theta[kk]=theta[k];
-						vI[k]=tmpvI;
-						theta[k]=tmpTheta;
-					}
-			for (size_t k=0; k<Nv; ++k) {
-				size_t vI1 = vI[k];
-				size_t vI2 = vI[(k+1)%Nv];
-				//check if neigh vertices has wall inbetween
-				size_t hasWall=0;
-				for (size_t v=0; v<cell(i).vertex(vI1)->numWall(); ++v)
-					for (size_t vv=0; vv<cell(i).vertex(vI2)->numWall(); ++vv)
-						if (cell(i).vertex(vI1)->wall(v) == cell(i).vertex(vI2)->wall(vv) )
-							hasWall++;
-				if (hasWall>1) {
-					std::cerr << "Tissue::readMerryInit() More than one vertex pair are connected "
-										<< "for cell " << i << " (" << cellName[i] << ")" << std::endl;
-					std::cerr << "Vertices: ";
-					for (size_t kk=0; kk<cell(i).numVertex(); ++kk)
-						std::cerr << cell(i).vertex(kk)->index() << " ";
-					std::cerr << std::endl;
-					std::cerr << "Walls: ";
-					for (size_t kk=0; kk<cell(i).numWall(); ++kk)
-						std::cerr << cell(i).wall(kk)->index() << " ";
-					std::cerr << std::endl;					
-					for (size_t v=0; v<cell(i).vertex(vI1)->numWall(); ++v)
-						for (size_t vv=0; vv<cell(i).vertex(vI2)->numWall(); ++vv)
-							if (cell(i).vertex(vI1)->wall(v) == cell(i).vertex(vI2)->wall(vv) )
-								std::cerr << cell(i).vertex(vI1)->wall(v)->index()<< " " 
-													<<  cell(i).vertex(vI2)->wall(vv)->index() << std::endl;
-					exit(-1);
-				}
-				if (!hasWall) {
-					//Add wall between vertices and add cell and bg
-					size_t numWallBefore=numWall();
-					Wall tmpWall;
-					tmpWall.setIndex(numWallBefore);
-					tmpWall.setCell(&cell(i),background());
-					tmpWall.setVertex(cell(i).vertex(vI1),cell(i).vertex(vI2));
-					double length=0.0;
-					for (size_t dim=0; dim<cell(i).vertex(vI1)->numPosition(); ++dim)
-						length += ( cell(i).vertex(vI1)->position(dim)-
-												cell(i).vertex(vI2)->position(dim) ) *
-							( cell(i).vertex(vI1)->position(dim)-
-								cell(i).vertex(vI2)->position(dim) );
-					length = std::sqrt(length);
-					tmpWall.setLength(length);
-					if (verbose>1)
-						std::cerr << "wall " << numWallBefore << " added with length "
-											<< tmpWall.length() << " and connected to cells "
-											<< cell(i).index() << "," << background()->index() 
-											<< " and vertices "
-											<< cell(i).vertex(vI1)->index() << "," 
-											<< cell(i).vertex(vI2)->index()
-											<< std::endl; 
-					addWall(tmpWall);
-					// Add wall to cells and vertices
-					cell(i).addWall( &(wall(numWallBefore)) );
-					cell(i).vertex(vI1)->addWall( &(wall(numWallBefore)) );
-					cell(i).vertex(vI2)->addWall( &(wall(numWallBefore)) );					
-				}
-			}
-		}
-		else {
-			removeCell(i);
-		}
-	}
-	if (verbose)
-		std::cerr << numCell() << " cells and " << numVertex() 
-							<< " vertices and " << numWall() << " walls extracted by "
-							<< "readMerryInit()" << std::endl;
-	checkConnectivity(verbose);
-	sortCellWallAndCellVertex();
-	checkConnectivity(verbose);
+  //Read wall data
+  //
+  if( verbose )
+    std::cerr << "Tissue::readInit(IN) - reading wall data" << std::endl;
+	
+  size_t numWallTmp,numLength,numVar;
+  IN >> numWallTmp;
+  IN >> numLength;
+  IN >> numVar;
+  assert( numWallTmp==numWall() );
+  assert( numLength==1 );
+  if (verbose) {
+    std::cerr << numWallTmp << "(" << numWall() << ") walls." << std::endl;
+  }
+  double length;
+  double value;
+  for (size_t i = 0; i < numWall(); ++i) {
+	  IN >> length;
+	  wall(i).setLength(length);
+	  std::vector<double> variable;
+	  for (size_t j = 0; j < numVar; ++j) {
+	    IN >> value;
+	    variable.push_back(value);
+	  }
+	  wall(i).setVariable(variable);
+  }
+
+  // Read cell variables
+  //
+  if( verbose )
+    std::cerr << "Tissue::readInit(IN) - reading cell variables" << std::endl;
+  size_t numCellTmp,numCellVar;
+  IN >> numCellTmp;
+  IN >> numCellVar;
+  assert( numCellTmp==numCell() );
+  double var=0.0;
+  if( numCellVar )
+    for( size_t i=0 ; i<numCell() ; ++i ) {
+      for( size_t j=0 ; j<numCellVar ; ++j ) {
+	IN >> var;
+	cell(i).addVariable(var);
+      }
+    }
+  //Sort all cellWalls and cellVertices to comply with area calculations
+  //and plotting
+  sortCellWallAndCellVertex();
+  checkConnectivity(verbose);
 }
 
-void Tissue::readMGXTriCellInit( const char *initFile, int verbose ) 
+void Tissue::readInitMerryProj( const char *initFile, int verbose ) 
 {
   std::ifstream IN(initFile);
   if( !IN ) {
-    std::cerr << "Tissue::readMGXTriCellInit(char*) - "
+    std::cerr << "Tissue::readInitMerryProj(char*) - "
+	      << "Cannot open file " << initFile 
+	      << std::endl; 
+    exit(EXIT_FAILURE);
+  }
+  unsigned int numVertexVal,dimension;
+  IN >> numVertexVal;
+  IN >> dimension;
+  setNumVertex( numVertexVal );
+  for( size_t i=0 ; i<numVertexVal ; ++i )
+    vertex(i).setIndex(i);
+  
+  std::vector<double> pos(dimension);
+  std::vector<size_t> cellName,vertexName;
+  // Read information about vertices
+  for( size_t i=0 ; i<numVertexVal ; ++i ) {
+    size_t tmp,numVertexCell;
+    IN >> tmp;
+    vertexName.push_back(tmp);
+    for( size_t dim=0 ; dim<dimension ; ++dim )
+      IN >> pos[dim];
+    vertex(i).setPosition(pos);
+    IN >> numVertexCell;
+    for( size_t j=0 ; j<numVertexCell ; ++j ) {
+      size_t tmpCellIndex,cellIndex=numCell(),newCellFlag=1;
+      IN >> tmpCellIndex;
+      for( size_t c=0 ; c<cellName.size() ; ++c ) {
+	if( tmpCellIndex==cellName[c] ) {
+	  cellIndex=c;
+	  newCellFlag=0;
+	  break;
+	}
+      }
+      if( newCellFlag ) {
+	Cell tmpCell(cellIndex,"");
+	cellName.push_back(tmpCellIndex);
+	addCell(tmpCell);
+      }
+      vertex(i).addCell(&(cell(cellIndex)));
+      cell(cellIndex).addVertex(&(vertex(i)));
+    }
+  }
+  // Reading the walls as well
+  size_t numWallVal;
+  IN >> numWallVal;
+  // Store vertexName,vertexIndex pairs in a hash table
+  std::map<size_t,size_t> vertexNameToIndex;
+  for (size_t i=0; i<numVertex(); ++i)
+    vertexNameToIndex[vertexName[i]] = i;
+  
+  for (size_t i=0; i<numWallVal; ++i) {
+    Wall tmpWall;
+    tmpWall.setIndex(i);
+    size_t v1Name,v2Name;
+    IN >> v1Name;
+    IN >> v2Name;
+    if (vertexNameToIndex.find(v1Name) == vertexNameToIndex.end() ||
+	vertexNameToIndex.find(v2Name) == vertexNameToIndex.end() ) {
+      std::cerr << "Tissue::readInitMerryProj() Vertex read from file (in wall list) not found."
+		<< std::endl;
+      exit(-1);
+    }
+    Vertex *tmpVertex1(vertexP(vertexNameToIndex[v1Name]));
+    Vertex *tmpVertex2(vertexP(vertexNameToIndex[v2Name]));
+    tmpWall.setVertex1(tmpVertex1);
+    tmpWall.setVertex2(tmpVertex2);
+    // Find neighboring cells as well
+    size_t numFoundCell=0;
+    for (size_t c1I=0; c1I<tmpVertex1->numCell(); ++c1I)
+      for (size_t c2I=0; c2I<tmpVertex2->numCell(); ++c2I)
+	if (tmpVertex1->cell(c1I)==tmpVertex2->cell(c2I)) {
+	  if (numFoundCell==0) {
+	    tmpWall.setCell1(tmpVertex1->cell(c1I));
+	  }
+	  else if (numFoundCell==1) {
+	    tmpWall.setCell2(tmpVertex1->cell(c1I));
+	  }
+	  ++numFoundCell;
+	}
+    if (numFoundCell==1) {
+      tmpWall.setCell2(background());
+      ++numFoundCell;
+    }
+    if (numFoundCell!=2) {
+      std::cerr << "Tissue::readInitMerryProj() Found " << numFoundCell
+		<< " cells for wall " << i << std::endl;
+      std::cerr << "Vertices: " << tmpVertex1->index() << " (" << v1Name << ") " 
+		<< tmpVertex2->index() << " (" << v2Name << ")" << std::endl;
+      for (size_t c1I=0; c1I<tmpVertex1->numCell(); ++c1I)
+	for (size_t c2I=0; c2I<tmpVertex2->numCell(); ++c2I)
+	  std::cerr << tmpVertex1->cell(c1I)->index() << " " << tmpVertex2->cell(c2I)->index()
+		    << std::endl;
+      exit(-1);
+    } 
+    // Add the wall to tissue (including pointers from cells and vertices)
+    addWall(tmpWall);
+    Wall *tmpWallP=wallP(numWall()-1);
+    tmpVertex1->addWall(tmpWallP);
+    tmpVertex2->addWall(tmpWallP);
+    if (tmpWallP->cell1()!=background())
+      tmpWallP->cell1()->addWall(tmpWallP);
+    if (tmpWallP->cell2()!=background())
+      tmpWallP->cell2()->addWall(tmpWallP);
+  }
+  IN.close();
+  
+  
+  if( verbose>1 ) {
+    std::cerr << "Vertices:" << std::endl;
+    for (size_t i=0; i<numVertex(); ++i) {
+      std::cerr << vertex(i).index() << "\t";
+      for (size_t dim=0; dim<vertex(i).numPosition(); ++dim)
+	std::cerr << vertex(i).position(dim) << " ";
+      std::cerr << "\t";
+      for (size_t k=0; k<vertex(i).numCell(); ++k)
+	std::cerr << vertex(i).cell(k)->index() << " ";
+      std::cerr << std::endl;
+    }
+    
+    std::cerr << "Cells:" << std::endl;
+    for (size_t i=0; i<numCell(); ++i) {
+      std::cerr << cell(i).index() << " (" << cellName[i] << ")\t";
+      for (size_t k=0; k<cell(i).numVertex(); ++k)
+	std::cerr << cell(i).vertex(k)->index() << " ";
+      std::cerr << std::endl;
+    }
+    std::cerr << "Walls:" << std::endl;
+    for (size_t i=0; i<numWall(); ++i) {
+      std::cerr << wall(i).index() << "\t";
+      std::cerr << wall(i).cell1()->index() << " " << wall(i).cell2()->index()<< " "
+		<< wall(i).vertex1()->index() << " " << wall(i).vertex2()->index()
+		<< std::endl;
+    }
+    
+  }
+  
+  if (verbose)
+    std::cerr << numCell() << " cells and " << numVertex() 
+	      << " vertices and " << numWall() << " walls extracted by "
+	      << "readInitMerryProj()" << std::endl;
+  sortCellWallAndCellVertex();
+  checkConnectivity(verbose);
+  
+  return;
+  
+  // Extract internal walls
+  for (size_t i=0; i<numCell(); ++i) {
+    for (size_t ii=i+1; ii<numCell(); ++ii) {
+      std::vector<Vertex*> commonVertex;
+      for (size_t j=0; j<cell(i).numVertex(); ++j)
+	for (size_t jj=0; jj<cell(ii).numVertex(); ++jj)
+	  if (cell(i).vertex(j)==cell(ii).vertex(jj))
+	    commonVertex.push_back(cell(i).vertex(j));
+      if (commonVertex.size()==2) {
+	//cell i and ii joined by wall connected to vertices j and jj
+	size_t numWallBefore=numWall();
+	Wall wallTmp;
+	wallTmp.setIndex(numWallBefore);
+	wallTmp.setCell(&cell(i),&cell(ii));
+	wallTmp.setVertex(commonVertex[0],commonVertex[1]);
+	double length=0.0;
+	for (size_t dim=0; dim<commonVertex[0]->numPosition(); ++dim)
+	  length += ( commonVertex[0]->position(dim)-commonVertex[1]->position(dim) ) *
+	    ( commonVertex[0]->position(dim)-commonVertex[1]->position(dim) );
+	length = std::sqrt(length);
+	wallTmp.setLength(length);
+	if( verbose>1 )
+	  std::cerr << "wall " << numWallBefore << " added with length "
+		    << wallTmp.length() << " and connected to cells"
+		    << cell(i).index() << "," << cell(ii).index() << " and vertices "
+		    << commonVertex[0]->index() << "," << commonVertex[1]->index()
+		    << std::endl; 
+	addWall(wallTmp);
+	// Add wall to cells and vertices
+	cell(i).addWall( &(wall(numWallBefore)) );
+	cell(ii).addWall( &(wall(numWallBefore)) );
+	commonVertex[0]->addWall( &(wall(numWallBefore)) );
+	commonVertex[1]->addWall( &(wall(numWallBefore)) );
+      }
+    }
+  }
+  // Extract walls towards boundary
+  //assert( c1==static_cast<size_t>(-1) || c1<numCell() );
+  for (size_t i=0; i<numCell(); ++i) {
+    if (cell(i).numVertex() != cell(i).numWall() && cell(i).numVertex()>2 ) {
+      //Sort vertices
+      size_t Nv = cell(i).numVertex();
+      std::vector<double> cellCenter = cell(i).positionFromVertex();
+      std::vector<double> theta(Nv);
+      std::vector<size_t> vI(Nv);
+      for (size_t k=0; k<Nv; ++k) {				
+	vI[k]=k;
+	theta[k] = std::atan2( cell(i).vertex(k)->position(1)-cellCenter[1],
+			       cell(i).vertex(k)->position(0)-cellCenter[0] );
+      }
+      for (size_t k=0; k<Nv; ++k)	
+	for (size_t kk=k+1; kk<Nv; ++kk)				
+	  if (theta[kk]<theta[k]) {
+	    size_t tmpvI=vI[kk];
+	    double tmpTheta=theta[kk];
+	    vI[kk]=vI[k];
+	    theta[kk]=theta[k];
+	    vI[k]=tmpvI;
+	    theta[k]=tmpTheta;
+	  }
+      for (size_t k=0; k<Nv; ++k) {
+	size_t vI1 = vI[k];
+	size_t vI2 = vI[(k+1)%Nv];
+	//check if neigh vertices has wall inbetween
+	size_t hasWall=0;
+	for (size_t v=0; v<cell(i).vertex(vI1)->numWall(); ++v)
+	  for (size_t vv=0; vv<cell(i).vertex(vI2)->numWall(); ++vv)
+	    if (cell(i).vertex(vI1)->wall(v) == cell(i).vertex(vI2)->wall(vv) )
+	      hasWall++;
+	if (hasWall>1) {
+	  std::cerr << "Tissue::readInitMerryProj() More than one vertex pair are connected "
+		    << "for cell " << i << " (" << cellName[i] << ")" << std::endl;
+	  std::cerr << "Vertices: ";
+	  for (size_t kk=0; kk<cell(i).numVertex(); ++kk)
+	    std::cerr << cell(i).vertex(kk)->index() << " ";
+	  std::cerr << std::endl;
+	  std::cerr << "Walls: ";
+	  for (size_t kk=0; kk<cell(i).numWall(); ++kk)
+	    std::cerr << cell(i).wall(kk)->index() << " ";
+	  std::cerr << std::endl;					
+	  for (size_t v=0; v<cell(i).vertex(vI1)->numWall(); ++v)
+	    for (size_t vv=0; vv<cell(i).vertex(vI2)->numWall(); ++vv)
+	      if (cell(i).vertex(vI1)->wall(v) == cell(i).vertex(vI2)->wall(vv) )
+		std::cerr << cell(i).vertex(vI1)->wall(v)->index()<< " " 
+			  <<  cell(i).vertex(vI2)->wall(vv)->index() << std::endl;
+	  exit(-1);
+	}
+	if (!hasWall) {
+	  //Add wall between vertices and add cell and bg
+	  size_t numWallBefore=numWall();
+	  Wall tmpWall;
+	  tmpWall.setIndex(numWallBefore);
+	  tmpWall.setCell(&cell(i),background());
+	  tmpWall.setVertex(cell(i).vertex(vI1),cell(i).vertex(vI2));
+	  double length=0.0;
+	  for (size_t dim=0; dim<cell(i).vertex(vI1)->numPosition(); ++dim)
+	    length += ( cell(i).vertex(vI1)->position(dim)-
+			cell(i).vertex(vI2)->position(dim) ) *
+	      ( cell(i).vertex(vI1)->position(dim)-
+		cell(i).vertex(vI2)->position(dim) );
+	  length = std::sqrt(length);
+	  tmpWall.setLength(length);
+	  if (verbose>1)
+	    std::cerr << "wall " << numWallBefore << " added with length "
+		      << tmpWall.length() << " and connected to cells "
+		      << cell(i).index() << "," << background()->index() 
+		      << " and vertices "
+		      << cell(i).vertex(vI1)->index() << "," 
+		      << cell(i).vertex(vI2)->index()
+		      << std::endl; 
+	  addWall(tmpWall);
+	  // Add wall to cells and vertices
+	  cell(i).addWall( &(wall(numWallBefore)) );
+	  cell(i).vertex(vI1)->addWall( &(wall(numWallBefore)) );
+	  cell(i).vertex(vI2)->addWall( &(wall(numWallBefore)) );					
+	}
+      }
+    }
+    else {
+      removeCell(i);
+    }
+  }
+  if (verbose)
+    std::cerr << numCell() << " cells and " << numVertex() 
+	      << " vertices and " << numWall() << " walls extracted by "
+	      << "Tissue::readInitMerryProj()" << std::endl;
+  checkConnectivity(verbose);
+  sortCellWallAndCellVertex();
+  checkConnectivity(verbose);
+}
+
+void Tissue::readInitMGXTriCell( const char *initFile, int verbose ) 
+{
+  std::ifstream IN(initFile);
+  if( !IN ) {
+    std::cerr << "Tissue::readInitMGXTriCell(char*) - "
 	      << "Cannot open file " << initFile 
 	      << std::endl; 
     exit(EXIT_FAILURE);
@@ -754,7 +933,7 @@ void Tissue::readMGXTriCellInit( const char *initFile, int verbose )
     IN >> tmp;
     vertexName.push_back(tmp);
     if (tmp!=vertex(i).index()) {
-      std::cerr << "Tissue::readMGXTriInit() Expecting consecutive indices"
+      std::cerr << "Tissue::readInitMGXTriCell() Expecting consecutive indices"
 		<< " in file." << std::endl;
       exit(EXIT_FAILURE);
     }
@@ -773,7 +952,7 @@ void Tissue::readMGXTriCellInit( const char *initFile, int verbose )
     size_t indexVal;
     IN >> indexVal;
     if (i!=indexVal) {
-      std::cerr << "Tissue::readMGXTriInit() Expecting consecutive indices"
+      std::cerr << "Tissue::readInitMGXTriCell() Expecting consecutive indices"
 		<< " in file when reading connectivity." << std::endl;
       exit(EXIT_FAILURE);
     }
@@ -811,7 +990,7 @@ void Tissue::readMGXTriCellInit( const char *initFile, int verbose )
   if (verbose) {
     std::cerr << numCell() << " cells and " << numVertex() 
 	      << " vertices and " << numWall() << " walls extracted by "
-	      << "readMGXTriInit()" << std::endl;
+	      << "Tissue::readInitMGXTriCell()" << std::endl;
   }
   sortCellWallAndCellVertex();
   checkConnectivity(verbose);
@@ -819,11 +998,11 @@ void Tissue::readMGXTriCellInit( const char *initFile, int verbose )
   return;
 }
 
-void Tissue::readMGXTriVtuInit( const char *initFile, int verbose ) 
+void Tissue::readInitMGXTriVtu( const char *initFile, int verbose ) 
 {
   std::ifstream IN(initFile);
   if( !IN ) {
-    std::cerr << "Tissue::readMGXTriVtuInit(char*) - "
+    std::cerr << "Tissue::readInitMGXTriVtu(char*) - "
 	      << "Cannot open file " << initFile 
 	      << std::endl; 
     exit(EXIT_FAILURE);
@@ -849,7 +1028,7 @@ void Tissue::readMGXTriVtuInit( const char *initFile, int verbose )
   size_t numVtmp,numLtmp;
   IN >> numVtmp;
   if (numVtmp != numVertexVal) {
-    std::cerr << "Tissue::readMGXTriVtuInit(char*) - "
+    std::cerr << "Tissue::readInitMGXTriVtu(char*) - "
 	      << "Number of vertex positions not same as vertex labels." 
 	      << std::endl; 
     exit(EXIT_FAILURE);
@@ -868,7 +1047,7 @@ void Tissue::readMGXTriVtuInit( const char *initFile, int verbose )
   
   IN >> numCellVertex;
   if (numCellVertex != 3) {
-    std::cerr << "Tissue::readMGXTriVtuInit(char*) - "
+    std::cerr << "Tissue::readInitMGXTriVtu(char*) - "
 	      << "Number of vertex per cell expected to be 3."
 	      << std::endl; 
     exit(EXIT_FAILURE);
@@ -887,7 +1066,7 @@ void Tissue::readMGXTriVtuInit( const char *initFile, int verbose )
   size_t numCtmp;
   IN >> numCtmp;
   if (numCtmp != numCellVal) {
-    std::cerr << "Tissue::readMGXTriVtuInit(char*) - "
+    std::cerr << "Tissue::readInitMGXTriVtu(char*) - "
 	      << "Number of cell connections (vertex) not same as cell labels." 
 	      << std::endl; 
     exit(EXIT_FAILURE);
@@ -967,11 +1146,11 @@ void Tissue::readMGXTriVtuInit( const char *initFile, int verbose )
   return;
 }
 
-void Tissue::readMGXTriMeshInit( const char *initFile, int verbose ) 
+void Tissue::readInitMGXTriMesh( const char *initFile, int verbose ) 
 {
   std::ifstream IN(initFile);
   if( !IN ) {
-    std::cerr << "Tissue::readMGXTriMeshInit(char*) - "
+    std::cerr << "Tissue::readInitMGXTriMesh(char*) - "
 	      << "Cannot open file " << initFile 
 	      << std::endl; 
     exit(EXIT_FAILURE);
@@ -983,7 +1162,7 @@ void Tissue::readMGXTriMeshInit( const char *initFile, int verbose )
   IN >> tmpString;
   IN >> tmpInt;
   if (tmpString != "MeshVersionFormatted" || tmpInt!=1) { 
-    std::cerr << "Tissue::readMGXTriMeshInit Expecting 'MeshVersionFormatted 1' on first line of file, "
+    std::cerr << "Tissue::readInitMGXTriMesh Expecting 'MeshVersionFormatted 1' on first line of file, "
 	      << "not '" << tmpString << " " << tmpInt << "'." << std::endl;
     exit(EXIT_FAILURE);
   }
@@ -991,13 +1170,13 @@ void Tissue::readMGXTriMeshInit( const char *initFile, int verbose )
   size_t dimension;
   IN >> dimension;
   if (tmpString != "Dimension") { 
-    std::cerr << "Tissue::readMGXTriMeshInit Expecting 'Dimension d' on second line of file, "
+    std::cerr << "Tissue::readInitMGXTriMesh Expecting 'Dimension d' on second line of file, "
 	      << "not '" << tmpString << " " << dimension << "'." << std::endl;
     exit(EXIT_FAILURE);
   }
   IN >> tmpString;
   if (tmpString != "Vertices") { 
-    std::cerr << "Tissue::readMGXTriMeshInit Expecting 'Vertices' on third line of file, "
+    std::cerr << "Tissue::readInitMGXTriMesh Expecting 'Vertices' on third line of file, "
 	      << "not '" << tmpString << "'." << std::endl;
     exit(EXIT_FAILURE);
   }
@@ -1022,7 +1201,7 @@ void Tissue::readMGXTriMeshInit( const char *initFile, int verbose )
 
   IN >> tmpString;
   if (tmpString != "Triangles") { 
-    std::cerr << "Tissue::readMGXTriMeshInit Expecting 'Triangles' on line after reading vertices, "
+    std::cerr << "Tissue::readInitMGXTriMesh Expecting 'Triangles' on line after reading vertices, "
 	      << "not '" << tmpString << "'." << std::endl;
     exit(EXIT_FAILURE);
   }
@@ -1056,7 +1235,7 @@ void Tissue::readMGXTriMeshInit( const char *initFile, int verbose )
 
   IN >> tmpString;
   if (tmpString != "End") { 
-    std::cerr << "Tissue::readMGXTriMeshInit Expecting 'End' on final line after reading cells, "
+    std::cerr << "Tissue::readInitMGXTriMesh Expecting 'End' on final line after reading cells, "
 	      << "not '" << tmpString << "'." << std::endl;
     //exit(EXIT_FAILURE);
   }
@@ -1119,7 +1298,7 @@ void Tissue::readMGXTriMeshInit( const char *initFile, int verbose )
   if (verbose) {
     std::cerr << numCell() << " cells and " << numVertex() 
 	      << " vertices and " << numWall() << " walls extracted by "
-	      << "readMGXTriMeshInit()" << std::endl;
+	      << "Tissue::readInitMGXTriMesh()" << std::endl;
   }
   sortCellWallAndCellVertex();
   checkConnectivity(verbose);

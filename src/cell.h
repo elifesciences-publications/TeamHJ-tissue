@@ -266,7 +266,7 @@ class Cell {
   /// 
   /// @see volume()
   ///
-  double calculateVolume( DataMatrix 
+  double calculateVolume( const DataMatrix 
 			  &vertexData, size_t signFlag=0 );
   ///
   /// @brief Calculates the cell volume(area) from the vertex positions using triangles.
@@ -297,7 +297,7 @@ class Cell {
   /// only if the cell vertices are sorted/cyclic. The vertex
   /// positions used are taken from the provided matrix.
   ///
-  std::vector<double> positionFromVertex( DataMatrix &vertexData );	
+  std::vector<double> positionFromVertex( const DataMatrix &vertexData );	
   
   class FailedToFindRandomPositionInCellException
   {  

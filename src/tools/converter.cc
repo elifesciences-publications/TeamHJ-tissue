@@ -102,14 +102,14 @@ int main(int argc,char *argv[]) {
       std::cerr << "Reading init from file " << initFile << " assuming MGXTriMesh format." 
 		<< std::endl;
     }
-    T.readMGXTriMeshInit(initFile.c_str(),verboseFlag);
+    T.readInitMGXTriMesh(initFile.c_str(),verboseFlag);
   }
   else if (inputFormat.compare("MGXTriVtu")==0) {
     if (verboseFlag) {
       std::cerr << "Reading init from file " << initFile << " assuming MGXVtuTri format." 
 		<< std::endl;
     }
-    T.readMGXTriVtuInit(initFile.c_str(),verboseFlag);
+    T.readInitMGXTriVtu(initFile.c_str(),verboseFlag);
   }
   else if (inputFormat.compare("MGXCellVtu")==0) {
     if (verboseFlag) {
@@ -125,7 +125,7 @@ int main(int argc,char *argv[]) {
       std::cerr << "Reading init from file " << initFile << " assuming merryProj format." 
 		<< std::endl;
     }
-    T.readMerryInit(initFile.c_str(),verboseFlag);
+    T.readInitMerryProj(initFile.c_str(),verboseFlag);
   }
   else {
     std::cerr << "Input format " << inputFormat << " not recognized. Use '-help' for allowed formats."

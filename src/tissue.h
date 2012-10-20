@@ -188,13 +188,23 @@ class Tissue {
   ///
   void readInit(std::istream &IN,int verbose=0);
   ///
+  /// @brief reads an init file assuming central vertices/edges are stored in cell data
+  ///
+  /// Very similar to readInit(), with the difference that when cell data is read, it is assumed
+  /// to also store a vertex position (center) and resting lengths for edges to each vertex of
+  /// the cells.
+  ///
+  /// @see Tissue::readInit(std::istream,int)
+  ///
+  void readInitCenterTri(const char *initFile,int verbose=0);
+  ///
   /// @brief Reads an initial tissue configuration in merryproj format
   ///
   /// Reads an initial tissue configuration from the file initFile. It 
   /// assumes that the format is the format provided by the merryproj software.
   /// See the function implementation for the format.
   ///
-  void readMerryInit(const char *initFile,int verbose=0);
+  void readInitMerryProj(const char *initFile,int verbose=0);
   ///
   /// @brief Reads an initial tissue configuration from MGX triangular mesh format
   ///
@@ -204,7 +214,7 @@ class Tissue {
   /// (before makeCell).
   /// See the function implementation for the format.
   ///
-  void readMGXTriCellInit(const char *initFile,int verbose=0);
+  void readInitMGXTriCell(const char *initFile,int verbose=0);
   ///
   /// @brief Reads an initial tissue configuration from MGX triangular mesh vtu format
   ///
@@ -214,7 +224,7 @@ class Tissue {
   /// (before makeCell).
   /// See the function implementation for the format.
   ///
-  void readMGXTriVtuInit(const char *initFile,int verbose=0);
+  void readInitMGXTriVtu(const char *initFile,int verbose=0);
   ///
   /// @brief Reads an initial tissue configuration from MGX triangular mesh (mesh) format
   ///
@@ -224,7 +234,7 @@ class Tissue {
   /// (before makeCell).
   /// See the function implementation for the format.
   ///
-  void readMGXTriMeshInit( const char *initFile, int verbose=0);
+  void readInitMGXTriMesh( const char *initFile, int verbose=0);
   ///
   /// @brief Reads an initial tissue configuration from MGX cell mesh format
   ///
@@ -234,7 +244,7 @@ class Tissue {
   /// and after makeCell.
   /// See the function implementation for the format.
   ///
-  void readMGXCellMeshInit(const char *initFile,int verbose=0, int skipCenter=1);
+  void readInitMGXCellMesh(const char *initFile,int verbose=0, int skipCenter=1);
   ///
   /// @brief Opens the file modelFile and then calls readModel(std::ifstream&,int)
   ///

@@ -115,9 +115,19 @@ protected:
   /// @brief Prints standard tissue init
   ///
   /// Prints the current state in init format using the data matrices.
-  /// It also checks that sizes in data and tissue are equal.
+  /// It also checks that sizes in data and tissue are equal. It will use the number of cell variables from
+  /// tissue, which will then loose information if a center triangulation has been performed.
   ///
   void printInit(std::ostream &os) const;
+  ///
+  /// @brief Prints tissue init with center triangulation stored in cell data
+  ///
+  /// Prints the current state in init format using the data matrices.
+  /// It also checks that sizes in data and tissue are equal. It will use the number of cell variables from
+  /// the data structure, and if no center triangulation has been initiated, it will create one using the 
+  /// current cell centers.
+  ///
+  void printInitCenterTri(std::ostream &os) const;
   /// 
   /// @brief Prints init in Pawels FEM format
   ///

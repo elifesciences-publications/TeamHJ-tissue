@@ -788,13 +788,100 @@ void BaseSolver::printInit(std::ostream &os) const
   }
   os << std::endl;
   
+  //Print cell data (only up to number of variables stored in cells in tissue, i.e. not center triangulated ones)
+  size_t numCellVar = T_->cell(0).numVariable();
+  os << T_->numCell() << " " << numCellVar << std::endl;
+  if( T_->cell(0).numVariable() ) {
+    for( size_t i=0 ; i<T_->numCell() ; ++i ) {
+      assert( cellData_[i].size() );
+      for( size_t j=0 ; j<numCellVar ; ++j )
+	os << cellData_[i][j] << " ";
+      os << std::endl;
+    }
+    os << std::endl;
+  }  
+  os.precision(oldPrecision);
+}
+
+void BaseSolver::printInitCenterTri(std::ostream &os) const
+{
+  assert( T_->numCell()==cellData_.size() && 
+	  T_->numWall()==wallData_.size() &&
+	  T_->numVertex()==vertexData_.size() );
+  
+  // Increase resolution 
+  unsigned int oldPrecision = os.precision(); 
+  os.precision(20);
+  std::cerr << "Tissue::printInit(): old precision: " << oldPrecision << " new " 
+	    << os.precision() << std::endl;	
+  
+  os << T_->numCell() << " " << T_->numWall() << " " << T_->numVertex() << std::endl;
+  
+  //Print the connectivity from walls
+  for( size_t i=0 ; i<T_->numWall() ; ++i ) {
+    os << i << " ";
+    if( T_->wall(i).cell1()->index()<T_->numCell() )
+      os << T_->wall(i).cell1()->index() << " " ;
+    else
+      os << "-1 ";
+    if( T_->wall(i).cell2()->index()<T_->numCell() )
+      os << T_->wall(i).cell2()->index() << " ";
+    else
+      os << "-1 ";
+    os << T_->wall(i).vertex1()->index() 
+       << " " << T_->wall(i).vertex2()->index() << std::endl;
+  }
+  os << std::endl;
+  
+  //Print the vertex positions
+  os << T_->numVertex() << " " << T_->vertex(0).numPosition() << std::endl;
+  for( size_t i=0 ; i<T_->numVertex() ; ++i ) {
+    assert( T_->vertex(i).numPosition()==vertexData_[i].size() );
+    for( size_t j=0 ; j<T_->vertex(i).numPosition() ; ++j )
+      os << vertexData_[i][j] << " ";
+    os << std::endl;
+  }
+  os << std::endl;
+  
+  //Print wall data
+  os << T_->numWall() << " 1 " << wallData_[0].size()-1 << std::endl;
+  for( size_t i=0 ; i<T_->numWall() ; ++i ) {
+    assert( wallData_[i].size() );
+    for( size_t j=0 ; j<wallData_[i].size() ; ++j )
+      os << wallData_[i][j] << " ";
+    os << std::endl;
+  }
+  os << std::endl;
+  
   //Print cell data
-  os << T_->numCell() << " " << T_->cell(0).numVariable() << std::endl;
+  size_t numCellVar = T_->cell(0).numVariable();
+  os << T_->numCell() << " " << numCellVar << std::endl;
   if( T_->cell(0).numVariable() ) {
     for( size_t i=0 ; i<T_->numCell() ; ++i ) {
       assert( cellData_[i].size() );
       for( size_t j=0 ; j<cellData_[i].size() ; ++j )
 	os << cellData_[i][j] << " ";
+      if (cellData_[i].size()==T_->cell(i).numVariable()) {//create new center triangulation data and print (x,y,x,l_i,...)
+	std::vector<double> com(vertexData_[0].size());
+	size_t numInternalWall = T_->cell(i).numVertex();
+	com = T_->cell(i).positionFromVertex(vertexData_);
+	assert(com.size()==3);//Should only be done in 3D
+	// Print com
+	for (size_t d=0; d<com.size(); ++d)
+	  os << com[d] << " ";
+	// Set internal wall lengths to the distance btw com and the vertex
+	for (size_t k=0; k<numInternalWall; ++k) {
+	  Vertex *tmpVertex = T_->cell(i).vertex(k); 
+	  size_t vertexIndex = tmpVertex->index();
+	  double distance = std::sqrt( (com[0]-vertexData_[vertexIndex][0])*
+				       (com[0]-vertexData_[vertexIndex][0])+
+				       (com[1]-vertexData_[vertexIndex][1])*
+				       (com[1]-vertexData_[vertexIndex][1])+
+				       (com[2]-vertexData_[vertexIndex][2])*
+				       (com[2]-vertexData_[vertexIndex][2]) );   
+	  os << distance << " ";
+	}  
+      }
       os << std::endl;
     }
     os << std::endl;
