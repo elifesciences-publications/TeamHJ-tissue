@@ -17,6 +17,7 @@
 #include "mechanical.h"
 #include "mechanicalSpring.h"
 #include "mechanicalTRBS.h"
+#include "centerTriangulation.h"
 #include "network.h"
 
 //#include"massAction.h"
@@ -166,6 +167,11 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
     return new TemplateVolumeChange(paraValue,indValue);
   else if (idValue == "DebugReaction")
     return new DebugReaction(paraValue, indValue);
+  
+  // centerTriangulation.h (.cc)
+  // Reactions related to a center triangulation of cells
+  else if (idValue == "CenterTriangulation::Initiate")
+    return new CenterTriangulation::Initiate(paraValue, indValue);
   
   // mechanicalTRBS.h (.cc)
   // Mechanical updates related to triangular (biquadratic) springs

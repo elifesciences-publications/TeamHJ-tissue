@@ -1,4 +1,3 @@
-
 //
 // Filename     : mechanicalTRBS.cc
 // Description  : Classes describing updates due to mechanical triangular biquadratic springs

@@ -42,6 +42,8 @@ class Cell {
   std::vector<Wall*> wall_;
   std::vector<Vertex*> vertex_;
   std::vector<double> variable_;
+  std::vector<double> centerPosition_;
+  std::vector<double> edgeLength_;
   double volume_;
   size_t mitosisFlag_;
   Wall* directionWall_;
@@ -114,6 +116,18 @@ class Cell {
   ///
   inline size_t numVariable() const;
   ///
+  /// @brief Number of center positions defined in the cell
+  ///
+  /// @see centerPosition()
+  ///
+  inline size_t numCenterPosition() const;
+  ///
+  /// @brief Number of internal edges in the cell
+  ///
+  /// @see edgeLength()
+  ///
+  inline size_t numEdgeLength() const;
+  ///
   /// @brief Returns a reference to the wall vector
   ///
   inline const std::vector<Wall*> & wall() const;
@@ -149,6 +163,47 @@ class Cell {
   /// @brief Returns variable i from the variable vector
   ///
   inline double variable(size_t i) const;
+  ///
+  /// @brief Returns a reference to the center vector
+  ///
+  /// The center vector is used when the cell has a central triangulation
+  /// where the center is the central 'vertex' position (x,y,z). Sofar
+  /// this is used for the triangular spring approach and is implemented for
+  /// three dimensional tissues.
+  ///
+  /// @see namespace CenterTriangulation
+  /// @see Tissue::readInitCenterTri()
+  /// 
+  inline const std::vector<double> & centerPosition() const;
+  ///
+  /// @brief Returns value i (x,y,z) from the center vector
+  ///
+  /// @see center()
+  /// @see namespace CenterTriangulation
+  /// @see Tissue::readInitCenterTri()
+  ///
+  inline double centerPosition(size_t i) const;
+  ///
+  /// @brief Returns a reference to the vector holding internal edge lengths
+  ///
+  /// The internal edge length vector is used when the cell has a central triangulation
+  /// where the center is the central 'vertex' position (x,y,z), and the internal edge lengths are
+  /// resting lengths of internal edges joining the center with all vertices of the cell. Sofar
+  /// this is used for the triangular spring approach and is implemented for a
+  /// three dimensional tissues.
+  ///
+  /// @see namespace CenterTriangulation
+  /// @see Tissue::readInitCenterTri()
+  /// 
+  inline const std::vector<double> & edgeLength() const;
+  ///
+  /// @brief Returns value i (L_i) from the internal edge length vector
+  ///
+  /// @see edgeLength()
+  /// @see namespace CenterTriangulation
+  /// @see Tissue::readInitCenterTri()
+  ///
+  inline double edgeLength(size_t i) const;
   ///
   /// @brief Sets the id (name) string
   ///
@@ -193,6 +248,54 @@ class Cell {
   /// @brief Adds a variable to the end of the vector in a cell
   ///  
   inline void addVariable( double val );
+  ///
+  /// @brief Sets a center position at index in the centerPosition vector
+  ///  
+  /// @see centerPosition()
+  /// @see namespace centerTriangulation
+  /// @see Tissue::readInitCenterTri()
+  ///
+  inline void setCenterPosition( size_t index,double val );
+  ///
+  /// @brief Sets all positions (x,y,z) in the centerPosition vector to the values provided
+  ///  
+  /// @see centerPosition()
+  /// @see namespace centerTriangulation
+  /// @see Tissue::readInitCenterTri()
+  ///
+  void setCenterPosition( std::vector<double> val );
+  ///
+  /// @brief Adds a position to the end of the centerPosition vector in a cell
+  ///  
+  /// @see centerPosition()
+  /// @see namespace centerTriangulation
+  /// @see Tissue::readInitCenterTri()
+  ///
+  inline void addCenterPosition( double val );
+  ///
+  /// @brief Sets a resting length at index in the edgeLength vector
+  ///  
+  /// @see edgeLength()
+  /// @see namespace centerTriangulation
+  /// @see Tissue::readInitCenterTri()
+  ///
+  inline void setEdgeLength( size_t index,double val );
+  ///
+  /// @brief Sets a vector of edge lengths in the edgeLength vector to the values provided
+  ///  
+  /// @see edgeLength()
+  /// @see namespace centerTriangulation
+  /// @see Tissue::readInitCenterTri()
+  ///
+  void setEdgeLength( std::vector<double> val );
+  ///
+  /// @brief Adds an internal edge length to the end of the edgeLength vector in a cell
+  ///  
+  /// @see edgeLength()
+  /// @see namespace centerTriangulation
+  /// @see Tissue::readInitCenterTri()
+  ///
+  inline void addEdgeLength( double val );
   ///
   /// @brief Checks if any of the walls connects to the given cell
   ///
@@ -397,6 +500,16 @@ inline size_t Cell::numVariable() const
   return variable_.size(); 
 }
 
+inline size_t Cell::numCenterPosition() const 
+{ 
+  return centerPosition_.size(); 
+}
+
+inline size_t Cell::numEdgeLength() const 
+{ 
+  return edgeLength_.size(); 
+}
+
 inline const std::vector<Wall*> & Cell::wall() const 
 { 
   return wall_; 
@@ -444,6 +557,26 @@ inline const std::vector<double> & Cell::variable() const
 inline double Cell::variable(size_t i) const 
 { 
   return variable_[i];
+}
+
+inline const std::vector<double> & Cell::centerPosition() const 
+{ 
+  return centerPosition_; 
+}
+
+inline double Cell::centerPosition(size_t i) const 
+{ 
+  return centerPosition_[i];
+}
+
+inline const std::vector<double> & Cell::edgeLength() const 
+{ 
+  return edgeLength_; 
+}
+
+inline double Cell::edgeLength(size_t i) const 
+{ 
+  return edgeLength_[i];
 }
 
 inline void Cell::setId(std::string value) 
@@ -496,6 +629,26 @@ inline void Cell::setVariable( size_t index,double val )
 inline void Cell::addVariable( double val ) 
 {
   variable_.push_back(val);
+}
+
+inline void Cell::setCenterPosition( size_t index,double val ) 
+{
+  centerPosition_[index]=val;
+}
+
+inline void Cell::addCenterPosition( double val ) 
+{
+  centerPosition_.push_back(val);
+}
+
+inline void Cell::setEdgeLength( size_t index,double val ) 
+{
+  edgeLength_[index]=val;
+}
+
+inline void Cell::addEdgeLength( double val ) 
+{
+  edgeLength_.push_back(val);
 }
 
 inline int Cell::isNeighbor( Cell *neighbor ) 

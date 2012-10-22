@@ -616,11 +616,31 @@ void Tissue::readInitCenterTri(const char *initFile,int verbose) {
   IN >> numCellVar;
   assert( numCellTmp==numCell() );
   double var=0.0;
+  if (verbose) {
+    std::cerr << numCellTmp << "(" << numCell() << ") cells with " << numCellVar 
+	      << "variables plus center position and internal edges." << std::endl;
+  }
   if( numCellVar )
     for( size_t i=0 ; i<numCell() ; ++i ) {
+      // read cell variables
       for( size_t j=0 ; j<numCellVar ; ++j ) {
 	IN >> var;
 	cell(i).addVariable(var);
+      }
+      // read center positions for the cell
+      if (dimension!=3) {
+	std::cerr << "Tissue::readInitCenterTri() Center triangulation implemented for three"
+		  << " dimensions only." << std::endl;
+	exit(EXIT_FAILURE);
+      }
+      for (size_t d=0; d<dimension; ++d) {
+	IN >> var;
+	cell(i).addCenterPosition(var);
+      }
+      size_t numInternalEdge = cell(i).numVertex();
+      for (size_t j=0; j<numInternalEdge; ++j) {
+	IN >> var;
+	cell(i).addEdgeLength(var);
       }
     }
   //Sort all cellWalls and cellVertices to comply with area calculations
