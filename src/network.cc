@@ -2218,9 +2218,6 @@ derivs(Tissue &T,
 	wallDerivs[j][awI] += fac;
 	wallDerivs[j][awI+1] += fac;
 	cellDerivs[i][aI] -= fac;
-	// wall-wall diffusion
-	//wallDerivs[j][awI] -= parameter(5)*wallData[j][awI];
-	//wallDerivs[j][awI+1] += parameter(5)*wallData[j][awI];
 	
 	//PIN cycling
 	fac = 0.5*(2. - wallData[j][pwI]*wallData[j][pwI+1] + wallData[j][pwI+1]*wallData[j][pwI+1])*wallData[j][pwI] - 
