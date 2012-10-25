@@ -10,6 +10,7 @@
 #include <set>
 #include "baseSolver.h"
 #include "rungeKutta.h"
+#include "euler.h"
 #include "myConfig.h"
 #include "myFiles.h"
 #include "myTimes.h"
@@ -71,6 +72,8 @@ BaseSolver* BaseSolver::getSolver(Tissue *T, const std::string &file)
     solver = new RK5Adaptive(T,(std::ifstream &) *IN);
   else if (idValue == "RK4")
     solver = new RK4(T,(std::ifstream &) *IN);
+  else if (idValue == "Euler")
+    solver = new Euler(T,(std::ifstream &) *IN);
   else {
     std::cerr << "BaseSolver::BaseSolver() - "
 	      << "Unknown solver: " << idValue << std::endl;

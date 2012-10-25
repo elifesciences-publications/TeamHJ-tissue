@@ -69,6 +69,7 @@ protected:
   ///
   /// @see RK5Adaptive::readParameterFile()
   /// @see RK4::readParameterFile()
+  /// @see Euler::readParameterFile()
   ///
   static BaseSolver* getSolver(Tissue *T, const std::string &file);
   

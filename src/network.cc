@@ -2239,7 +2239,7 @@ derivs(Tissue &T,
 
 	//PIN cycling
 	fac = 0.5*(2. - wallData[j][pwI]*wallData[j][pwI+1] + wallData[j][pwI]*wallData[j][pwI])*wallData[j][pwI+1] - 
-	  cellData[i][pI]*wallData[j][awI];
+	  cellData[i][pI]*wallData[j][awI+1];
 	wallDerivs[j][pwI+1] -= fac;
 	cellDerivs[i][pI] += fac;
       }
