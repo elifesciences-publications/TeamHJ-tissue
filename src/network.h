@@ -485,4 +485,46 @@ class AuxinROPModel3 : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+///
+/// @brief A cell-wall based auxin transport model including PINs and an mutual repression
+/// between PINs at neighboring membranes in adjacent cells
+///
+/// A complete (hopefully) pattern generating auxin model based on cell and wall
+/// compartments. It uses two compartments for each wall and a single for the cells.
+/// Auxin and PIN molecules are updated according to:
+///  
+/// @f[ \frac{A_i}{dt} = p_0 - p_1 A_i + p_2 \sum_{j} (A_{ij}) - p_3 \sum_{j} (A_i) - 
+///  p_4 \sum_{j} (P_{ij} A_i) @f]
+///  
+/// @f[ \frac{dA_{ij}}{dt} = (from above) @f]
+///
+/// @f[ \frac{dP_i}{dt} = p_5 - p_6 P_i + \sum_j (1 - P_{ij}P_{ji}/2 + P_{ji}^2/2)P_{ij} - \sum_j P_i A_{ij} @f] 
+///  
+/// @f[ \frac{dP_{ij}}{dt} = (from above) @f]
+///
+/// In the model file the reaction is given by:
+/// @verbatim
+/// AuxinPINBistabilityModel 7 2 2 2
+/// p_0 ... p_6
+/// ci_auxin ci_PIN
+/// wi_auxin wi_PIN
+/// @endverbatim
+///
+class AuxinPINBistabilityModel : public BaseReaction {
+  
+ public:
+  
+  AuxinPINBistabilityModel(std::vector<double> &paraValue, 
+			   std::vector< std::vector<size_t> > 
+			   &indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
 #endif

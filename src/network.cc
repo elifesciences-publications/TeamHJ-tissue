@@ -2135,3 +2135,122 @@ derivs(Tissue &T,
     }
   }
 }
+
+AuxinPINBistabilityModel::
+AuxinPINBistabilityModel(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=7 ) {
+    std::cerr << "AuxinPINBistabilityModel::"
+	      << "AuxinPINBistabilityModel() "
+	      << "7 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 2 ) {
+    std::cerr << "AuxinPINBistabilityModel::"
+	      << "AuxinPINBistabilityModel() "
+	      << "Two cell variable indices (first row) and two wall variable"
+	      << " indices are used (auxin,PIN)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("AuxinPINBistabilityModel");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "c_IAA";
+  tmp[1] = "d_IAA";
+  tmp[2] = "D_w";
+  tmp[3] = "D_c";
+  tmp[4] = "phi";
+  tmp[5] = "c_PIN";
+  tmp[6] = "d_PIN";
+	
+  setParameterId( tmp );
+}
+
+void AuxinPINBistabilityModel::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);//auxin
+  size_t pI = variableIndex(0,1);//pin
+  size_t awI = variableIndex(1,0);//auxin (wall)
+  size_t pwI = variableIndex(1,1);//pin (membrane/wall)
+
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  awI<wallData[0].size() &&
+	  pwI<wallData[0].size() );
+
+
+  for (size_t i=0; i<numCells; ++i) {
+	  
+    //Production and degradation
+    cellDerivs[i][aI] += parameter(0) - parameter(1)*cellData[i][aI]; //p_0 - p_1 A_i
+    cellDerivs[i][pI] += parameter(5) - parameter(6)*cellData[i][pI]; //p_5 - p_6 P_i
+    
+    //Auxin transport and protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+      // Checks if cell i is first or second neighbor to wall (wall variables are stored as pairs, and membrane
+      // parameters are stored in walls, e.g. wallData[j][pwI] and wallData[j][pwI+1]) 
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
+	// cell-wall transport
+	double fac = parameter(3)*cellData[i][aI] - parameter(2)*wallData[j][awI] +
+	  parameter(4)*cellData[i][aI]*wallData[j][pwI]; //p_3 A_i - p_2 A_ij + p_4 A_i P_ij
+	
+	wallDerivs[j][awI] += fac;
+	wallDerivs[j][awI+1] += fac;
+	cellDerivs[i][aI] -= fac;
+	// wall-wall diffusion
+	//wallDerivs[j][awI] -= parameter(5)*wallData[j][awI];
+	//wallDerivs[j][awI+1] += parameter(5)*wallData[j][awI];
+	
+	//PIN cycling
+	fac = 0.5*(2. - wallData[j][pwI]*wallData[j][pwI+1] + wallData[j][pwI+1]*wallData[j][pwI+1])*wallData[j][pwI] - 
+	  cellData[i][pI]*wallData[j][awI];//(1 - P_ij P_ji + P_ji P_ji) P_ij - P_i A_ij
+	wallDerivs[j][pwI] -= fac;
+	cellDerivs[i][pI] += fac;
+      }
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
+	// cell-wall transport
+	double fac = parameter(3)*cellData[i][aI] - parameter(2)*wallData[j][awI+1] +
+	  parameter(4)*cellData[i][aI]*wallData[j][pwI+1];
+	
+	wallDerivs[j][awI] += fac;
+	wallDerivs[j][awI+1] += fac;
+	cellDerivs[i][aI] -= fac;
+	// wall-wall diffusion
+	//wallDerivs[j][awI+1] -= parameter(5)*wallData[j][awI+1];
+	//wallDerivs[j][awI] += parameter(5)*wallData[j][awI+1];
+
+	//PIN cycling
+	fac = 0.5*(2. - wallData[j][pwI]*wallData[j][pwI+1] + wallData[j][pwI]*wallData[j][pwI])*wallData[j][pwI+1] - 
+	  cellData[i][pI]*wallData[j][awI];
+	wallDerivs[j][pwI+1] -= fac;
+	cellDerivs[i][pI] += fac;
+      }
+      //else {
+      //std::cerr << "AuxinPINBistabilityModel::derivs() Cell-wall neighborhood wrong." 
+      //	  << std::endl;
+      //exit(-1);
+      //}
+    }
+  }
+}

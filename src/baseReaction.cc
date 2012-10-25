@@ -231,6 +231,8 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
     return new AuxinROPModel2(paraValue,indValue); 
   else if(idValue=="AuxinROPModel3")
     return new AuxinROPModel3(paraValue,indValue); 
+  else if(idValue=="AuxinPINBistabilityModel")
+    return new AuxinPINBistabilityModel(paraValue,indValue); 
 
   //directionReaction.h, directionUpdate.cc
   else if (idValue == "ContinousMTDirection")
