@@ -46,18 +46,18 @@ void ContinousMTDirection::derivs(Tissue &T,
 				  DataMatrix &cellDerivs,
 				  DataMatrix &wallDerivs,
 				  DataMatrix &vertexDerivs)
-{
-  size_t dimension=vertexData[0].size();
+{ size_t dimension=vertexData[0].size();
   if (dimension!=2) {
     std::cerr << "ContinuosMTDirection::derivs() Only implemented for two dimensions." << std::endl;
     exit(EXIT_FAILURE);
   }
   size_t target = variableIndex(0, 0);
   size_t real = variableIndex(1, 0);
-  
   double k_rate = parameter(0);
   
+
   for (size_t n = 0; n < T.numCell(); ++n) {
+
     Cell cell = T.cell(n);
     size_t index = cell.index();
     
@@ -68,10 +68,10 @@ void ContinousMTDirection::derivs(Tissue &T,
     
     while (sigma > 0.5 * myMath::pi() || sigma <= -0.5 * myMath::pi()) {
       if (sigma > 0.5 * myMath::pi()) {
-	sigma -= myMath::pi();
+        sigma -= myMath::pi();
       }
       if (sigma <= -0.5 * myMath::pi()) {
-	sigma += myMath::pi();
+        sigma += myMath::pi();
       }
     }
     
@@ -82,10 +82,10 @@ void ContinousMTDirection::derivs(Tissue &T,
     
     while (dsigma > 0.5 * myMath::pi() || dsigma <= -0.5 * myMath::pi()) {
       if (dsigma > 0.5 * myMath::pi()) {
-	dsigma -= myMath::pi();
+        dsigma -= myMath::pi();
       }
       if (dsigma <= -0.5 * myMath::pi()) {
-	dsigma += myMath::pi();
+        dsigma += myMath::pi();
       }
     }
     
@@ -93,10 +93,10 @@ void ContinousMTDirection::derivs(Tissue &T,
     
     while (angle > myMath::pi() || angle <= -myMath::pi()) {
       if (angle > myMath::pi()) {
-	angle -= 2.0 * myMath::pi();
+        angle -= 2.0 * myMath::pi();
       }
       if (angle <= -myMath::pi()) {
-	angle += 2.0 * myMath::pi();
+        angle += 2.0 * myMath::pi();
       }
     }
     
@@ -107,6 +107,104 @@ void ContinousMTDirection::derivs(Tissue &T,
     cellDerivs[index][real + 0] += -y * speed;
     cellDerivs[index][real + 1] += x * speed;
   }
+}
+
+
+ContinousMTDirection3d::ContinousMTDirection3d(std::vector<double> &paraValue,
+					   std::vector< std::vector<size_t> > &indValue)
+{
+  if (paraValue.size() != 1) {
+    std::cerr << "ContinousMTDirection3d::ContinousMTDirection3d() " 
+	      << "Uses one parameter: k_rate" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  if (indValue.size() != 2 || indValue[0].size() != 1 ||  indValue[1].size() != 1) {
+    std::cerr << "ContinousMTDirection3d::ContinousMTDirection() " << std::endl
+	      << "First level gives target direction index (input)." << std::endl
+	      << "Second level gives real direction index." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("ContinousMTDirection3d");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "k_rate";
+  
+  setParameterId(tmp);
+}
+
+void ContinousMTDirection3d::derivs(Tissue &T,
+				  DataMatrix &cellData,
+				  DataMatrix &wallData,
+				  DataMatrix &vertexData,
+				  DataMatrix &cellDerivs,
+				  DataMatrix &wallDerivs,
+				  DataMatrix &vertexDerivs)
+{
+  size_t target = variableIndex(0, 0);
+  size_t real = variableIndex(1, 0);
+  double k_rate = parameter(0);
+  
+
+  for (size_t n = 0; n < T.numCell(); ++n) {
+
+    Cell cell = T.cell(n);
+    size_t index = cell.index();
+    
+    double tmp=std::sqrt( cellData[index][real + 0]*cellData[index][real + 0]+
+                          cellData[index][real + 1]*cellData[index][real + 1]+
+                          cellData[index][real + 2]*cellData[index][real + 2]);
+    if (tmp==0) {
+      cellData[index][real + 0]=1;
+      tmp=1;
+    }
+    cellData[index][real + 0]/=tmp;
+    cellData[index][real + 1]/=tmp;
+    cellData[index][real + 2]/=tmp;
+
+    double x = cellData[index][real + 0];
+    double y = cellData[index][real + 1];
+    double z = cellData[index][real + 2];
+
+    tmp=std::sqrt( cellData[index][target + 0]*cellData[index][target + 0]+
+                   cellData[index][target + 1]*cellData[index][target + 1]+
+                   cellData[index][target + 2]*cellData[index][target + 2]);
+    if (tmp==0) {
+      cellData[index][target + 0]=1;
+      tmp=1;
+    }
+    cellData[index][target + 0]/=tmp;
+    cellData[index][target + 1]/=tmp;
+    cellData[index][target + 2]/=tmp;
+    
+    double tx = cellData[index][target + 0];
+    double ty = cellData[index][target + 1];
+    double tz = cellData[index][target + 2];
+    
+    double inner=tx*x+ty*y+tz*z;
+    if (inner<0){ 
+      cellData[index][real + 0] *=-1;
+      cellData[index][real + 1] *=-1;
+      cellData[index][real + 2] *=-1;
+      x *=-1;
+      y *=-1;
+      z *=-1;     
+    }
+
+    
+    double dx =tx-x;
+    double dy =ty-y;
+    double dz =tz-z;
+    
+    
+    cellDerivs[index][real + 0] +=k_rate * dx;
+    cellDerivs[index][real + 1] +=k_rate * dy;
+    cellDerivs[index][real + 2] +=k_rate * dz;
+  }
+
 }
 
 UpdateMTDirection::UpdateMTDirection(std::vector<double> &paraValue,
