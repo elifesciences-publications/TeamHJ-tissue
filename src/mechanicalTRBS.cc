@@ -1182,17 +1182,21 @@ VertexFromTRBSMT(std::vector<double> &paraValue,
 	       &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
-  if( paraValue.size()!=5 ) {
+  if( paraValue.size()!=8 ) {
     std::cerr << "VertexFromTRBSMT::"
 	      << "VertexFromTRBSMT() "
-	      << "Uses five parameters young modulus(matrix and fibre) " 
-              << "and poisson coefficients (longitudinal (MT) and transverse directions)"
-	      << "also a flag(1:matrix-fibre model, 0: otherwise) " << std::endl;
+              << "Uses eigth parameters: 1,2: young modulus(matrix and fibre) " 
+              << "and 3,4:poisson ratio (longitudinal (MT) and transverse directions)"
+	      << "also 5: 1st flag(1:matrix-fibre model, 0: otherwise) " 
+              << "and 6: 2nd flag(0: plane strain, 1: plane stress) " 
+              << "7th parameter : MT direction angle"
+              << "and 3rd flag(8th parameter); 0:for no feedback or direct feedback by indices,"
+              << "1:for MT direction from 7th parameter TETA, 2:force to Stress,  "
+              << "3: force to Strain ,4:force to perp-strain "<< std::endl;
     exit(0);
   }
 
   if( (indValue.size()!=1 && indValue.size()!=3) ||
-      //indValue[0].size()!=2 ||
       indValue[0].size()!=3 ||
       (indValue.size()==3 && (indValue[1].size()!=0 && indValue[1].size()!=1 && indValue[1].size()!=2 && indValue[1].size()!=3 )) ||
       (indValue.size()==3 && (indValue[2].size()!=0 && indValue[2].size()!=1 && indValue[2].size()!=2)) 
@@ -1230,6 +1234,9 @@ VertexFromTRBSMT(std::vector<double> &paraValue,
   tmp[2] = "P_ratio_L"; // Longitudinal Poisson ratio
   tmp[3] = "P_ratio_T"; // Transverse Poisson ratio
   tmp[4] = "MF flag";
+  tmp[5] = "Strain-Stress flag";
+  tmp[6] = "TETA anisotropy";
+  tmp[7] = "MT update flag";
   setParameterId( tmp );
 
   if( parameter(4)!=0 && parameter(4)!=1) {
@@ -1243,6 +1250,17 @@ VertexFromTRBSMT(std::vector<double> &paraValue,
     std::cerr << "VertexFromTRBSMT::"
  	      << "VertexFromTRBSMT() "
  	      << "poisson ratios must be 0 <= p < 0.5 " << std::endl;
+    exit(0);
+  }
+  if( parameter(7)!=0 && parameter(7)!=1 && parameter(7)!=2 && parameter(7)!=3 && parameter(7)!=4) {
+    std::cerr << " VertexFromTRBScenterTriangulationMT::"
+              << " VertexFromTRBScenterTriangulationMT() "
+              << " 8th parameter must be 0/1/2/3/4"
+              << " 0: for no feedback or direct feedback by indices "
+              << " 1: for MT direction from 7th parameter TETA "
+              << " 2: force to Stress "
+              << " 3: force to S1train "
+              << " 4: force to perp-strain " << std::endl;
     exit(0);
   }
   
@@ -1264,6 +1282,10 @@ derivs(Tissue &T,
   size_t wallLengthIndex = variableIndex(0,0);
   size_t numWalls = 3; // defined only for triangles 
   
+  double TotalVolume=0;
+  double deltaVolume=0;
+
+
   for( size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex ) {
     if( T.cell(cellIndex).numWall() != numWalls ) {
       std::cerr << "VertexFromTRBSMT::derivs() only defined for triangular cells."
@@ -1276,7 +1298,8 @@ derivs(Tissue &T,
     double youngFiber = parameter(1); 
     double poissonL   = parameter(2);    
     double poissonT   = parameter(3);
-    
+    double TETA= parameter(6); 
+
     size_t v1 = T.cell(cellIndex).vertex(0)->index();
     size_t v2 = T.cell(cellIndex).vertex(1)->index();
     size_t v3 = T.cell(cellIndex).vertex(2)->index();
@@ -1295,11 +1318,59 @@ derivs(Tissue &T,
       youngL = youngMatrix+0.5*(1+anisotropy)* youngFiber;
       youngT = youngMatrix+0.5*(1-anisotropy)* youngFiber;
     }    
+    else if( parameter(4)==2 ) {  // matrix-fiber Hill
+      double PP=4;
+      double KK=0.4;
+      youngL = youngMatrix+0.5*(1+(std::pow(anisotropy,PP)/(std::pow(KK,PP)+std::pow(anisotropy,PP))))* youngFiber;
+      youngT = youngMatrix+0.5*(1-(std::pow(anisotropy,PP)/(std::pow(KK,PP)+std::pow(anisotropy,PP))))* youngFiber;
+    }    
     else {
       youngL = youngMatrix+youngFiber;
       youngT = youngMatrix;
     }    
+   
+    double lambdaL, mioL, lambdaT, mioT;
     
+    if (parameter(5)==0){      
+      // Lame coefficients based on plane strain (for 3D 0<poisson<0.5)
+      lambdaL=youngL*poissonL/((1+poissonL)*(1-2*poissonL));
+      mioL=youngL/(2*(1+poissonL));
+      lambdaT=youngT*poissonT/((1+poissonT)*(1-2*poissonT));
+      mioT=youngT/(2*(1+poissonT));
+    } 
+    else{      
+      // Lame coefficients based on plane stress (for 3D 0<poisson<0.5)
+      lambdaL=youngL*poissonL/(1-poissonL*poissonL);
+      mioL=youngL/(2*(1+poissonL));
+      lambdaT=youngT*poissonT/(1-poissonT*poissonT);
+      mioT=youngT/(2*(1+poissonT));
+    }
+    
+    // Lame coefficients based on delin. paper (for 2D 0<poisson<1)
+    // double lambdaL=youngL*poissonL/(1-poissonL*poissonL);
+    // double mioL=youngL/(1+poissonL);
+    // double lambdaT=youngT*poissonT/(1-poissonT*poissonT);
+    // double mioT=youngT/(1+poissonT);
+     
+ 
+    
+    double TotalEnergyIso=0;                      
+    double TotalEnergyAniso=0;
+    double strainZ=0;
+
+    if ( parameter(7)==1 ) {  // aniso direction from TETA 
+      cellData[cellIndex][variableIndex(0,1)]=std::cos(TETA);  
+      cellData[cellIndex][variableIndex(0,1)+1]=std::sin(TETA);
+      cellData[cellIndex][variableIndex(0,1)+2]=0;
+    }
+    
+    // Aniso vector in current shape in global coordinate system
+    double AnisoCurrGlob[3];
+    AnisoCurrGlob[0] = cellData[cellIndex][variableIndex(0,1)];
+    AnisoCurrGlob[1] = cellData[cellIndex][variableIndex(0,1)+1];
+    AnisoCurrGlob[2] = cellData[cellIndex][variableIndex(0,1)+2];
+    
+
     std::vector<double> restingLength(numWalls);
     restingLength[0] = wallData[w1][wallLengthIndex];
     restingLength[1] = wallData[w2][wallLengthIndex];
@@ -1315,24 +1386,13 @@ derivs(Tissue &T,
     length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
     length[2] = T.wall(w3).lengthFromVertexPosition(vertexData);
     
-    // Lame coefficients based on plane strain (poisson<0.5)
-    double lambdaL=youngL*poissonL/((1+poissonL)*(1-2*poissonL));
-    double mioL=youngL/(2*(1+poissonL));
-    double lambdaT=youngT*poissonT/((1+poissonT)*(1-2*poissonT));
-    double mioT=youngT/(2*(1+poissonT));
-    
+  
     //Anisotropic Correction is based on difference between Lam Coefficients of Longitudinal and Transverse dirrections:
-      double deltaLam=lambdaL-lambdaT;
-      double deltaMio=mioL-mioT;
-      // double deltaLam=AnisoMeasure*(lambdaL-lambdaT);
-      // double deltaMio=AnisoMeasure*(mioL-mioT);
-
-    // paper Delin.  
-    // double lambdaL=youngL*poissonL/(1-poissonL*poissonL);
-    // double mioL=youngL/(1+poissonL);
-    // double lambdaT=youngT*poissonT/(1-poissonT*poissonT);
-    // double mioT=youngT/(1+poissonT);
-      
+    double deltaLam=lambdaL-lambdaT;
+    double deltaMio=mioL-mioT;
+    // double deltaLam=AnisoMeasure*(lambdaL-lambdaT);
+    // double deltaMio=AnisoMeasure*(mioL-mioT);
+    
  
     //Resting area of the element (using Heron's formula)                                      
     double restingArea=std::sqrt( ( restingLength[0]+restingLength[1]+restingLength[2])*
@@ -1429,11 +1489,6 @@ derivs(Tissue &T,
       //                                   { 1/Qb ,     -Qa/(Qb*Qc) },       
       //                                   {-1/Qb , (Qa-Qb)/(Qb*Qc) }  };
 
-      // Aniso vector in current shape in global coordinate system
-      double AnisoCurrGlob[3];
-      AnisoCurrGlob[0] = cellData[cellIndex][variableIndex(0,1)];
-      AnisoCurrGlob[1] = cellData[cellIndex][variableIndex(0,1)+1];
-      AnisoCurrGlob[2] = cellData[cellIndex][variableIndex(0,1)+2];
      
       // static aniso direction
       // AnisoCurrGlob[0] =1;
@@ -1631,6 +1686,20 @@ derivs(Tissue &T,
       Egreen[0][1]=0.5*(DeformGrad[0][0]*DeformGrad[0][1]+DeformGrad[1][0]*DeformGrad[1][1]);
       Egreen[1][1]=0.5*(DeformGrad[0][1]*DeformGrad[0][1]+DeformGrad[1][1]*DeformGrad[1][1]-1);
 
+
+      double E2[2][2]; // used for energy calculation only
+      E2[0][0]=Egreen[0][0]*Egreen[0][0]+Egreen[0][1]*Egreen[1][0];
+      E2[1][0]=Egreen[1][0]*Egreen[0][0]+Egreen[1][1]*Egreen[1][0];
+      E2[0][1]=Egreen[0][0]*Egreen[0][1]+Egreen[0][1]*Egreen[1][1];
+      E2[1][1]=Egreen[1][0]*Egreen[0][1]+Egreen[1][1]*Egreen[1][1];
+      
+      double I2=E2[0][0]+E2[1][1]; //trE2 used for energy calculation only
+      
+      
+      double I5=AnisoRestLocal[0]*AnisoRestLocal[0]*E2[0][0]   //atE2a used for energy calculation only
+        +AnisoRestLocal[0]*AnisoRestLocal[1]*(E2[0][1]+E2[1][0])
+        +AnisoRestLocal[1]*AnisoRestLocal[1]*E2[1][1];
+      
       
       double StrainAlmansi[2][2]; // e=0.5(1-B^-1)  True strain tensor
       temp=LeftCauchy[0][0]*LeftCauchy[1][1]-LeftCauchy[1][0]*LeftCauchy[0][1]; // det(B)
@@ -1642,7 +1711,9 @@ derivs(Tissue &T,
       double atEa=AnisoRestLocal[0]*AnisoRestLocal[0]*Egreen[0][0]
                  +AnisoRestLocal[0]*AnisoRestLocal[1]*(Egreen[0][1]+Egreen[1][0])
                  +AnisoRestLocal[1]*AnisoRestLocal[1]*Egreen[1][1];
-      
+
+      double I4=atEa;      
+
       double Eaa[2][2];
       Eaa[0][0]= Egreen[0][0]*directAniso[0][0]+Egreen[0][1]*directAniso[1][0];        
       Eaa[1][0]= Egreen[1][0]*directAniso[0][0]+Egreen[1][1]*directAniso[1][0];        
@@ -1671,12 +1742,7 @@ derivs(Tissue &T,
       Sigma[0][1]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[0][1]+(mioT)*B2[0][1]);
       Sigma[1][1]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[1][1]+(mioT)*B2[1][1]);
       
-      // double Sigma[2][2]; // true stress tensor (isotropic term) based on lambdaT and mioT
-      // Sigma[0][0]=(Area/restingArea)*((lambdaT*trE-mioT/2)*LeftCauchy[0][0]+(mioT/2)*B2[0][0]);
-      // Sigma[1][0]=(Area/restingArea)*((lambdaT*trE-mioT/2)*LeftCauchy[1][0]+(mioT/2)*B2[1][0]);
-      // Sigma[0][1]=(Area/restingArea)*((lambdaT*trE-mioT/2)*LeftCauchy[0][1]+(mioT/2)*B2[0][1]);
-      // Sigma[1][1]=(Area/restingArea)*((lambdaT*trE-mioT/2)*LeftCauchy[1][1]+(mioT/2)*B2[1][1]);
-
+     
       double deltaS[2][2];
       // for equipartition energy correction force
       deltaS[0][0]=(deltaLam/2)*(trE*directAniso[0][0]+atEa)+(deltaMio)*(Eaa[0][0]+aaE[0][0]);
@@ -1690,7 +1756,74 @@ derivs(Tissue &T,
       // deltaS[0][1]=deltaLam*(trE*directAniso[0][1]     )+(2*deltaMio)*(Eaa[0][1]+aaE[0][1])-(deltaLam+2*deltaMio)*atEa*directAniso[0][1];
       // deltaS[1][1]=deltaLam*(trE*directAniso[1][1]+atEa)+(2*deltaMio)*(Eaa[1][1]+aaE[1][1])-(deltaLam+2*deltaMio)*atEa*directAniso[1][1];
      
+      strainZ =1-poissonT*((2*lambdaT*trE+2*mioT*trE)+deltaS[0][0]+deltaS[1][1])/youngT;
+
+      //<<<<<<<<<<<<<<<<<<<isotropic force from stress tensor <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+      // double ss[2][2];//lambda(trE)I+2mioE
+      // ss[0][0]=lambdaT*trE+2*mioT*Egreen[0][0];
+      // ss[0][1]=            2*mioT*Egreen[0][1];
+      // ss[1][0]=            2*mioT*Egreen[1][0];
+      // ss[1][1]=lambdaT*trE+2*mioT*Egreen[1][1];
+
+       
+
+      // double TPK[2][2];// 2nd Piola Kirchhoff stress tensor 
+      // TPK[0][0]=restingArea*(DeformGrad[0][0]*ss[0][0]+DeformGrad[0][1]*ss[1][0]);
+      // TPK[1][0]=restingArea*(DeformGrad[1][0]*ss[0][0]+DeformGrad[1][1]*ss[1][0]);
+      // TPK[0][1]=restingArea*(DeformGrad[0][0]*ss[0][1]+DeformGrad[0][1]*ss[1][1]);
+      // TPK[1][1]=restingArea*(DeformGrad[1][0]*ss[0][1]+DeformGrad[1][1]*ss[1][1]);
+
+      // //deltaFTPKlocal[i][0]= TPK[0][0]*ShapeVectorResting[i][0]+TPK[0][1]*ShapeVectorResting[i][1];
+      // //deltaFTPKlocal[i][1]= TPK[1][0]*ShapeVectorResting[i][0]+TPK[1][1]*ShapeVectorResting[i][1];
      
+      // double deltaFTPKlocal[2][2];
+      // deltaFTPKlocal[0][0]= TPK[0][0]*ShapeVectorResting[0][0]+TPK[0][1]*ShapeVectorResting[0][1];
+      // deltaFTPKlocal[0][1]= TPK[1][0]*ShapeVectorResting[0][0]+TPK[1][1]*ShapeVectorResting[0][1];
+     
+      // double deltaFTPK[2][2]; 
+      // deltaFTPK[0][0]= rotation[0][0]*deltaFTPKlocal[0][0]+rotation[0][1]*deltaFTPKlocal[0][1];
+      // deltaFTPK[0][1]= rotation[1][0]*deltaFTPKlocal[0][0]+rotation[1][1]*deltaFTPKlocal[0][1];
+      // deltaFTPK[0][2]= rotation[2][0]*deltaFTPKlocal[0][0]+rotation[2][1]*deltaFTPKlocal[0][1];
+      //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+      // //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      double TPK[2][2];// 2nd Piola Kirchhoff stress tensor 
+      TPK[0][0]=restingArea*(DeformGrad[0][0]*deltaS[0][0]+DeformGrad[0][1]*deltaS[1][0]);
+      TPK[1][0]=restingArea*(DeformGrad[1][0]*deltaS[0][0]+DeformGrad[1][1]*deltaS[1][0]);
+      TPK[0][1]=restingArea*(DeformGrad[0][0]*deltaS[0][1]+DeformGrad[0][1]*deltaS[1][1]);
+      TPK[1][1]=restingArea*(DeformGrad[1][0]*deltaS[0][1]+DeformGrad[1][1]*deltaS[1][1]);
+
+      //deltaFTPKlocal[i][0]= TPK[0][0]*ShapeVectorResting[i][0]+TPK[0][1]*ShapeVectorResting[i][1];
+      //deltaFTPKlocal[i][1]= TPK[1][0]*ShapeVectorResting[i][0]+TPK[1][1]*ShapeVectorResting[i][1];
+     
+      double deltaFTPKlocal[3][2];
+      deltaFTPKlocal[0][0]= TPK[0][0]*ShapeVectorResting[0][0]+TPK[0][1]*ShapeVectorResting[0][1];
+      deltaFTPKlocal[0][1]= TPK[1][0]*ShapeVectorResting[0][0]+TPK[1][1]*ShapeVectorResting[0][1];
+     
+      deltaFTPKlocal[1][0]= TPK[0][0]*ShapeVectorResting[1][0]+TPK[0][1]*ShapeVectorResting[1][1];
+      deltaFTPKlocal[1][1]= TPK[1][0]*ShapeVectorResting[1][0]+TPK[1][1]*ShapeVectorResting[1][1];
+
+      deltaFTPKlocal[2][0]= TPK[0][0]*ShapeVectorResting[2][0]+TPK[0][1]*ShapeVectorResting[2][1];
+      deltaFTPKlocal[2][1]= TPK[1][0]*ShapeVectorResting[2][0]+TPK[1][1]*ShapeVectorResting[2][1];
+
+
+      double deltaFTPK[3][3]; 
+      deltaFTPK[0][0]= rotation[0][0]*deltaFTPKlocal[0][0]+rotation[0][1]*deltaFTPKlocal[0][1];
+      deltaFTPK[0][1]= rotation[1][0]*deltaFTPKlocal[0][0]+rotation[1][1]*deltaFTPKlocal[0][1];
+      deltaFTPK[0][2]= rotation[2][0]*deltaFTPKlocal[0][0]+rotation[2][1]*deltaFTPKlocal[0][1];
+
+      deltaFTPK[1][0]= rotation[0][0]*deltaFTPKlocal[1][0]+rotation[0][1]*deltaFTPKlocal[1][1];
+      deltaFTPK[1][1]= rotation[1][0]*deltaFTPKlocal[1][0]+rotation[1][1]*deltaFTPKlocal[1][1];
+      deltaFTPK[1][2]= rotation[2][0]*deltaFTPKlocal[1][0]+rotation[2][1]*deltaFTPKlocal[1][1];
+      
+      deltaFTPK[2][0]= rotation[0][0]*deltaFTPKlocal[2][0]+rotation[0][1]*deltaFTPKlocal[2][1];
+      deltaFTPK[2][1]= rotation[1][0]*deltaFTPKlocal[2][0]+rotation[1][1]*deltaFTPKlocal[2][1];
+      deltaFTPK[2][2]= rotation[2][0]*deltaFTPKlocal[2][0]+rotation[2][1]*deltaFTPKlocal[2][1];
+
+
+      // //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 
       double deltaSFt[2][2];
       deltaSFt[0][0]=deltaS[0][0]*DeformGrad[0][0]+deltaS[0][1]*DeformGrad[0][1];
@@ -1860,20 +1993,23 @@ derivs(Tissue &T,
       double pi=3.1415;
       int I,J;
       double RotAngle,Si,Co;
-      while (pivot>0.00001) {
-        pivot=std::abs(StrainTensor[1][0]);
-        I=1;
+      
+      pivot=std::abs(StrainTensor[1][0]);
+      I=1;
+      J=0;
+      if (std::abs(StrainTensor[2][0])>pivot) {
+        pivot=std::abs(StrainTensor[2][0]);
+        I=2;
         J=0;
-        if (std::abs(StrainTensor[2][0])>pivot) {
-          pivot=std::abs(StrainTensor[2][0]);
-          I=2;
-          J=0;
-          }
-        if (std::abs(StrainTensor[2][1])>pivot) {
-          pivot=std::abs(StrainTensor[2][1]);
-          I=2;
-          J=1;
-        }
+      }
+      if (std::abs(StrainTensor[2][1])>pivot) {
+        pivot=std::abs(StrainTensor[2][1]);
+        I=2;
+        J=1;
+      }
+
+      while (pivot>0.00001) {
+      
         if (std::abs(StrainTensor[I][I]-StrainTensor[J][J])<0.00001) {
           RotAngle=pi/4;
         }            
@@ -1930,18 +2066,31 @@ derivs(Tissue &T,
             }
           }
         }
+        pivot=std::abs(StrainTensor[1][0]);
+        I=1;
+        J=0;
+        if (std::abs(StrainTensor[2][0])>pivot) {
+          pivot=std::abs(StrainTensor[2][0]);
+          I=2;
+          J=0;
+        }
+        if (std::abs(StrainTensor[2][1])>pivot) {
+          pivot=std::abs(StrainTensor[2][1]);
+          I=2;
+          J=1;
+        }
       }
-   
+      
       
       // maximal strain direction
       double maximalStrainValue=StrainTensor[0][0];
       int Istrain=0;
-      if (StrainTensor[1][1]>maximalStrainValue) 
+      if (std::abs(StrainTensor[1][1])>std::abs(maximalStrainValue)) 
         {
           maximalStrainValue=StrainTensor[1][1];
           Istrain=1;
         }
-      if (StrainTensor[2][2]>maximalStrainValue) 
+      if (std::abs(StrainTensor[2][2])>std::abs(maximalStrainValue)) 
         {
           maximalStrainValue=StrainTensor[2][2];
           Istrain=2;
@@ -1964,13 +2113,13 @@ derivs(Tissue &T,
         Istrain2=0;
         Istrain3=1;
       }
-      if(StrainTensor[Istrain3][Istrain3]>StrainTensor[Istrain2][Istrain2]) {
+      if(std::abs(StrainTensor[Istrain3][Istrain3])>std::abs(StrainTensor[Istrain2][Istrain2])) {
         Istrain2=Istrain3;
       }
       maximalStrainValue2=StrainTensor[Istrain2][Istrain2];
-     
       
-
+      
+      
 
       // eigenvalue/eigenvectors of  stress tensor in global coordinate system. (Jacobi method)
       
@@ -2019,36 +2168,31 @@ derivs(Tissue &T,
             for(int w=0 ; w<3 ; w++) 
               StressTensor[r][s]=StressTensor[r][s]+tempRot[w][r]*tempStress[w][s];
         
-        for (int r=0 ; r<3 ; r++) {
+        for (int r=0 ; r<3 ; r++) 
           for (int s=0 ; s<3 ; s++) 
-            {
-              tempStress[r][s]=eigenVectorStress[r][s];
-            }
-        }
-	for (size_t ii=0; ii<3; ++ii) {
-	  for (size_t jj=0; jj<3; ++jj) {
+            tempStress[r][s]=eigenVectorStress[r][s];
+                
+	for (size_t ii=0; ii<3; ++ii) 
+	  for (size_t jj=0; jj<3; ++jj) 
 	    eigenVectorStress[ii][jj] = 0.0;
-	  }
-	}
-        for (int r=0 ; r<3 ; r++) {
-          for (int s=0 ; s<3 ; s++) {
-            for(int w=0 ; w<3 ; w++) {
+		
+        for (int r=0 ; r<3 ; r++) 
+          for (int s=0 ; s<3 ; s++) 
+            for(int w=0 ; w<3 ; w++) 
               eigenVectorStress[r][s]=eigenVectorStress[r][s]+tempStress[r][w]*tempRot[w][s];
-            }
-          }
-        }
+        
       }
-      
-      
+        
+        
       // maximal stress direction
       double maximalStressValue=StressTensor[0][0];
       int Istress=0;
-      if (StressTensor[1][1]>maximalStressValue) 
+      if (std::abs(StressTensor[1][1])>std::abs(maximalStressValue)) 
         {
           maximalStressValue=StressTensor[1][1];
           Istress=1;
         }
-      if (StressTensor[2][2]>maximalStressValue) 
+      if (std::abs(StressTensor[2][2])>std::abs(maximalStressValue)) 
         {
           maximalStressValue=StressTensor[2][2];
           Istress=2;
@@ -2059,9 +2203,9 @@ derivs(Tissue &T,
       // std::cerr <<" Sxx  "<< StressTensor[0][0] <<" Sxy  "<< StressTensor[0][1] <<" Sxz  "<< StressTensor[0][2] << std::endl
       //           <<" Syx  "<< StressTensor[1][0] <<" Syy  "<< StressTensor[1][1] <<" Syz  "<< StressTensor[1][2] << std::endl
       //           <<" Szx  "<< StressTensor[2][0] <<" Szy  "<< StressTensor[2][1] <<" Szz  "<< StressTensor[2][2] << std::endl <<std::endl;
-
-
-
+      
+      
+      
       // 2nd maximalstress direction/value
       double maximalStressValue2;
       int Istress2,Istress3;
@@ -2077,7 +2221,7 @@ derivs(Tissue &T,
         Istress2=0;
         Istress3=1;
       }
-      if(StressTensor[Istress3][Istress3]>StressTensor[Istress2][Istress2]) {
+      if(std::abs(StressTensor[Istress3][Istress3])>std::abs(StressTensor[Istress2][Istress2])) {
         Istress2=Istress3;
       }
       maximalStressValue2=StressTensor[Istress2][Istress2];
@@ -2200,151 +2344,261 @@ derivs(Tissue &T,
 	  }
       }
       
+
+
+
+      temp =eigenVectorStrain[0][Istrain]*eigenVectorStress[0][Istress] + 
+        eigenVectorStrain[1][Istrain]*eigenVectorStress[1][Istress] +
+        eigenVectorStrain[2][Istrain]*eigenVectorStress[2][Istress] ;
+      double TetaPerpStress=std::sqrt(1-temp*temp);
+      //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< energy and angles of stress, strain...
+      double TetaStress=std:: acos( eigenVectorStress[0][Istress]/
+                                    std:: sqrt( eigenVectorStress[0][Istress]*eigenVectorStress[0][Istress]+
+                                                eigenVectorStress[1][Istress]*eigenVectorStress[1][Istress] ) );
+      if (eigenVectorStress[0][Istress] < 0 && eigenVectorStress[1][Istress] >= 0 ) 
+        { TetaStress= TetaStress-3.1416;
+        }
+      if (eigenVectorStress[0][Istress] < 0 && eigenVectorStress[1][Istress] < 0 ) 
+        { TetaStress=-TetaStress+3.1416;
+        }
+      if (eigenVectorStress[0][Istress] > 0 && eigenVectorStress[1][Istress] < 0 ) 
+        { TetaStress=-TetaStress;
+        }
+      
+      double TetaStrain=std:: acos( eigenVectorStrain[0][Istrain]/
+                                    std:: sqrt(eigenVectorStrain[0][Istrain]*eigenVectorStrain[0][Istrain]+
+                                               eigenVectorStrain[1][Istrain]*eigenVectorStrain[1][Istrain] ) );
+      if (eigenVectorStrain[0][Istrain] < 0 && eigenVectorStrain[1][Istrain] >= 0 ) 
+        { TetaStrain= TetaStrain-3.1416;
+        }
+      if (eigenVectorStrain[0][Istrain] < 0 && eigenVectorStrain[1][Istrain] < 0 ) 
+        { TetaStrain=-TetaStrain+3.1416;
+        }
+      if (eigenVectorStrain[0][Istrain] > 0 && eigenVectorStrain[1][Istrain] < 0 ) 
+        { TetaStrain=-TetaStrain;
+        }
+      
+
+      double  TetaPerp=std:: acos( PerpStrain[0]/
+                                   std:: sqrt(PerpStrain[0]*PerpStrain[0]+
+                                              PerpStrain[1]*PerpStrain[1] ) );
+      if (PerpStrain[0] < 0 && PerpStrain[1] >= 0 ) 
+        { TetaPerp= TetaPerp-3.1416;
+        }
+      if (PerpStrain[0] < 0 && PerpStrain[1] < 0 ) 
+        { TetaPerp=-TetaPerp+3.1416;
+        }
+      if (PerpStrain[0] > 0 && PerpStrain[1] < 0 ) 
+        { TetaPerp=-TetaPerp;
+        }
+      
+      if (parameter(7)==2){ //MT stress feedback
+        double tempvector[3]={1,0,0};
+        tempvector[0]= cellData[cellIndex][variableIndex(0,1)]  + eigenVectorStress[0][Istress];
+        tempvector[1]= cellData[cellIndex][variableIndex(0,1)+1]+ eigenVectorStress[1][Istress];
+        tempvector[2]= cellData[cellIndex][variableIndex(0,1)+2]+ eigenVectorStress[2][Istress];
+        double tempvectorlength=std::sqrt(tempvector[0]*tempvector[0]+tempvector[1]*tempvector[1]+tempvector[2]*tempvector[2]);
+        // if (tempvectorlength==0) {
+        //   tempvector[0]=1;
+        //double  tempvectorlength=1;
+        // }
+        cellData[cellIndex][variableIndex(0,1)]  =tempvector[0]/tempvectorlength;
+        cellData[cellIndex][variableIndex(0,1)+1]=tempvector[1]/tempvectorlength;
+        cellData[cellIndex][variableIndex(0,1)+2]=tempvector[2]/tempvectorlength;
+      }
+      if (parameter(7)==3){ //MT strain feedback
+        double tempvector[3]={1,0,0};
+        tempvector[0]= cellData[cellIndex][variableIndex(0,1)]  + eigenVectorStrain[0][Istrain];
+        tempvector[1]= cellData[cellIndex][variableIndex(0,1)+1]+ eigenVectorStrain[1][Istrain];
+        tempvector[2]= cellData[cellIndex][variableIndex(0,1)+2]+ eigenVectorStrain[2][Istrain];
+        double tempvectorlength=std::sqrt(tempvector[0]*tempvector[0]+tempvector[1]*tempvector[1]+tempvector[2]*tempvector[2]);
+        // if (tempvectorlength==0) {
+        //   tempvector[0]=1;
+        //double  tempvectorlength=1;
+        // }
+        cellData[cellIndex][variableIndex(0,1)]  =tempvector[0]/tempvectorlength;
+        cellData[cellIndex][variableIndex(0,1)+1]=tempvector[1]/tempvectorlength;
+        cellData[cellIndex][variableIndex(0,1)+2]=tempvector[2]/tempvectorlength;
+      }
+      if (parameter(7)==4){ //MT perpendicular to strain feedback
+        double tempvector[3]={1,0,0};
+        tempvector[0]= cellData[cellIndex][variableIndex(0,1)]  + PerpStrain[0];
+        tempvector[1]= cellData[cellIndex][variableIndex(0,1)+1]+ PerpStrain[1];
+        tempvector[2]= cellData[cellIndex][variableIndex(0,1)+2]+ PerpStrain[2];
+        double tempvectorlength=std::sqrt(tempvector[0]*tempvector[0]+tempvector[1]*tempvector[1]+tempvector[2]*tempvector[2]);
+        // if (tempvectorlength==0) {
+        //   tempvector[0]=1;
+        //double  tempvectorlength=1;
+        // }
+        cellData[cellIndex][variableIndex(0,1)]  =tempvector[0]/tempvectorlength;
+        cellData[cellIndex][variableIndex(0,1)+1]=tempvector[1]/tempvectorlength;
+        cellData[cellIndex][variableIndex(0,1)+2]=tempvector[2]/tempvectorlength;
+      }
+
+
+     
+        
+      //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
             
       //---- Anisotropic Correction Force-------------------------------
       double deltaF[3][3];
-      double  Rcirc2=(0.25*length[0]*length[1]*length[2]/Area)*(0.25*length[0]*length[1]*length[2]/Area);  // square of radius of circumscribed circle in current shape
+     
+      // double  Rcirc2=(0.25*length[0]*length[1]*length[2]/Area)*(0.25*length[0]*length[1]*length[2]/Area);  // square of radius of circumscribed circle in current shape
       
-      double derIprim1[3][3];         // Invariants and their derivatives
-      double derIprim4[3][3];
-      double derIprim5[3][3];
+      // double derIprim1[3][3];         // Invariants and their derivatives
+      // double derIprim4[3][3];
+      // double derIprim5[3][3];
       
-      double DiDm;                    // inner products between shape vectors
-      double DnDr;
-      double DsDp;
+      // double DiDm;                    // inner products between shape vectors
+      // double DnDr;
+      // double DsDp;
       
-      double QiQj;                    // inner products between position vectors of vertices
-      double QrQs;
+      // double QiQj;                    // inner products between position vectors of vertices
+      // double QrQs;
       
-      double aDi;                     // inner products between shape vectors and anisotropy vector(direction)
-      double aDj;
-      double aDm;
-      double aDp;
-      double aDr;
-      double aDs;
-      double aDn;
+      // double aDi;                     // inner products between shape vectors and anisotropy vector(direction)
+      // double aDj;
+      // double aDm;
+      // double aDp;
+      // double aDr;
+      // double aDs;
+      // double aDn;
       
-      temp=restingLength[0];
-      restingLength[0]=restingLength[1];
-      restingLength[1]=restingLength[2];
-      restingLength[2]=temp;
+      // temp=restingLength[0];
+      // restingLength[0]=restingLength[1];
+      // restingLength[1]=restingLength[2];
+      // restingLength[2]=temp;
       
-      temp=length[0];
-      length[0]=length[1];
-      length[1]=length[2];
-      length[2]=temp;
+      // temp=length[0];
+      // length[0]=length[1];
+      // length[1]=length[2];
+      // length[2]=temp;
       
-      //2
+      // //2
       
-      int k;
-      for ( int m=0 ; m<3 ; ++m )
-        {
-          for ( int coor=0 ; coor<3 ; ++coor ) 
-            derIprim1[m][coor]=0;
-          for ( int i=0 ; i<3 ; ++i )
-            {            
-              if ((i==0 && m==1)||(i==1 && m==0)) k=2;
-              if ((i==0 && m==2)||(i==2 && m==0)) k=1;
-              if ((i==1 && m==2)||(i==2 && m==1)) k=0; 
-              if (i!=m) DiDm=-0.5*cotan[k]/restingArea;
-              if (i==m) DiDm=0.25*restingLength[i]*restingLength[i] / (restingArea*restingArea);
-              for ( int coor=0 ; coor<3 ; ++coor ) 
-                derIprim1[m][coor]=derIprim1[m][coor]+2*DiDm*position[m][coor];
-            }
-        }
+      // int k;
+      // for ( int m=0 ; m<3 ; ++m )
+      //   {
+      //     for ( int coor=0 ; coor<3 ; ++coor ) 
+      //       derIprim1[m][coor]=0;
+      //     for ( int i=0 ; i<3 ; ++i )
+      //       {            
+      //         if ((i==0 && m==1)||(i==1 && m==0)) k=2;
+      //         if ((i==0 && m==2)||(i==2 && m==0)) k=1;
+      //         if ((i==1 && m==2)||(i==2 && m==1)) k=0; 
+      //         if (i!=m) DiDm=-0.5*cotan[k]/restingArea;
+      //         if (i==m) DiDm=0.25*restingLength[i]*restingLength[i] / (restingArea*restingArea);
+      //         for ( int coor=0 ; coor<3 ; ++coor ) 
+      //           derIprim1[m][coor]=derIprim1[m][coor]+2*DiDm*position[m][coor];
+      //       }
+      //   }
       
-      double Iprim4=0;
-      for ( int i=0 ; i<3 ; ++i )
-        { 
-          for ( int j=0 ; j<3 ; ++j )
-            {
-              if ((i==0 && j==1)||(i==1 && j==0)) k=2; 
-              if ((i==0 && j==2)||(i==2 && j==0)) k=1; 
-              if ((i==1 && j==2)||(i==2 && j==1)) k=0;  
-              if (i!=j) QiQj=Rcirc2-(length[k]*length[k])*0.5; 
-              if (i==j) QiQj=Rcirc2;              
-              aDi=0.5*cos(teta[i])*restingLength[i]/restingArea;
-              aDj=0.5*cos(teta[j])*restingLength[j]/restingArea;
-              Iprim4=Iprim4+ QiQj*aDi*aDj;
-            }
-        }
+      // double Iprim4=0;
+      // for ( int i=0 ; i<3 ; ++i )
+      //   { 
+      //     for ( int j=0 ; j<3 ; ++j )
+      //       {
+      //         if ((i==0 && j==1)||(i==1 && j==0)) k=2; 
+      //         if ((i==0 && j==2)||(i==2 && j==0)) k=1; 
+      //         if ((i==1 && j==2)||(i==2 && j==1)) k=0;  
+      //         if (i!=j) QiQj=Rcirc2-(length[k]*length[k])*0.5; 
+      //         if (i==j) QiQj=Rcirc2;              
+      //         aDi=0.5*cos(teta[i])*restingLength[i]/restingArea;
+      //         aDj=0.5*cos(teta[j])*restingLength[j]/restingArea;
+      //         Iprim4=Iprim4+ QiQj*aDi*aDj;
+      //       }
+      //   }
       
-        for ( int p=0 ; p<3 ; ++p )
-          {
-            for ( int coor=0 ; coor<3 ; ++coor ) derIprim4[p][coor]=0;
+      //   for ( int p=0 ; p<3 ; ++p )
+      //     {
+      //       for ( int coor=0 ; coor<3 ; ++coor ) derIprim4[p][coor]=0;
             
-            for ( int m=0 ; m<3 ; ++m )
-              {
-                aDm=0.5*cos(teta[m])*restingLength[m]/restingArea;
-                for ( int coor=0 ; coor<3 ; ++coor ) derIprim4[p][coor]=derIprim4[p][coor]+aDm*position[m][coor];
-              }
-            aDp=0.5*cos(teta[p])*restingLength[p]/restingArea;
-            for ( int coor=0 ; coor<3 ; ++coor ) derIprim4[p][coor]=2*aDp*derIprim4[p][coor];
-          }
+      //       for ( int m=0 ; m<3 ; ++m )
+      //         {
+      //           aDm=0.5*cos(teta[m])*restingLength[m]/restingArea;
+      //           for ( int coor=0 ; coor<3 ; ++coor ) derIprim4[p][coor]=derIprim4[p][coor]+aDm*position[m][coor];
+      //         }
+      //       aDp=0.5*cos(teta[p])*restingLength[p]/restingArea;
+      //       for ( int coor=0 ; coor<3 ; ++coor ) derIprim4[p][coor]=2*aDp*derIprim4[p][coor];
+      //     }
         
         
-        for ( int p=0 ; p<3 ; ++p )                                                                             
-          { 
-            for ( int coor=0 ; coor<3 ; ++coor ) derIprim5[p][coor]=0;
-            for ( int n=0 ; n<3 ; ++n )
-              { 
-                for ( int r=0 ; r<3 ; ++r )
-                  { for ( int s=0 ; s<3 ; ++s )
-                      {     
-                        if ((r==0 && s==1)||(r==1 && s==0)) k=2;
-                        if ((r==0 && s==2)||(r==2 && s==0)) k=1;
-                        if ((r==1 && s==2)||(r==2 && s==1)) k=0; 
-                        //if ( s!=r ) QrQs=Rcirc2-(length[k]*length[k])*0.5;
-                        //if ( s==r ) QrQs=Rcirc2;
-                        QrQs=position[r][0]*position[s][0]+position[r][1]*position[s][1]+position[r][2]*position[s][2];
+      //   for ( int p=0 ; p<3 ; ++p )                                                                             
+      //     { 
+      //       for ( int coor=0 ; coor<3 ; ++coor ) derIprim5[p][coor]=0;
+      //       for ( int n=0 ; n<3 ; ++n )
+      //         { 
+      //           for ( int r=0 ; r<3 ; ++r )
+      //             { for ( int s=0 ; s<3 ; ++s )
+      //                 {     
+      //                   if ((r==0 && s==1)||(r==1 && s==0)) k=2;
+      //                   if ((r==0 && s==2)||(r==2 && s==0)) k=1;
+      //                   if ((r==1 && s==2)||(r==2 && s==1)) k=0; 
+      //                   //if ( s!=r ) QrQs=Rcirc2-(length[k]*length[k])*0.5;
+      //                   //if ( s==r ) QrQs=Rcirc2;
+      //                   QrQs=position[r][0]*position[s][0]+position[r][1]*position[s][1]+position[r][2]*position[s][2];
                         
-                        if ((n==0 && r==1)||(n==1 && r==0)) k=2; 
-                        if ((n==0 && r==2)||(n==2 && r==0)) k=1; 
-                        if ((n==1 && r==2)||(n==2 && r==1)) k=0;    
-                        if ( n!=r )  DnDr=-0.5*cotan[k]/restingArea;
-                        if ( n==r )  DnDr=0.25*restingLength[n]*restingLength[n] / (restingArea*restingArea);
+      //                   if ((n==0 && r==1)||(n==1 && r==0)) k=2; 
+      //                   if ((n==0 && r==2)||(n==2 && r==0)) k=1; 
+      //                   if ((n==1 && r==2)||(n==2 && r==1)) k=0;    
+      //                   if ( n!=r )  DnDr=-0.5*cotan[k]/restingArea;
+      //                   if ( n==r )  DnDr=0.25*restingLength[n]*restingLength[n] / (restingArea*restingArea);
                         
-                        if ((s==0 && p==1)||(s==1 && p==0)) k=2; 
-                        if ((s==0 && p==2)||(s==2 && p==0)) k=1; 
-                        if ((s==1 && p==2)||(s==2 && p==1)) k=0;   
-                        if ( s!=p ) DsDp=-0.5*cotan[k]/restingArea;
-                        if ( s==p ) DsDp=0.25*restingLength[s]*restingLength[s] / (restingArea*restingArea);
+      //                   if ((s==0 && p==1)||(s==1 && p==0)) k=2; 
+      //                   if ((s==0 && p==2)||(s==2 && p==0)) k=1; 
+      //                   if ((s==1 && p==2)||(s==2 && p==1)) k=0;   
+      //                   if ( s!=p ) DsDp=-0.5*cotan[k]/restingArea;
+      //                   if ( s==p ) DsDp=0.25*restingLength[s]*restingLength[s] / (restingArea*restingArea);
                         
-                        aDs=0.5*cos(teta[s])*restingLength[s]/restingArea;
-                        aDp=0.5*cos(teta[p])*restingLength[p]/restingArea;
-                        aDr=0.5*cos(teta[r])*restingLength[r]/restingArea;
-                        aDn=0.5*cos(teta[n])*restingLength[n]/restingArea;
+      //                   aDs=0.5*cos(teta[s])*restingLength[s]/restingArea;
+      //                   aDp=0.5*cos(teta[p])*restingLength[p]/restingArea;
+      //                   aDr=0.5*cos(teta[r])*restingLength[r]/restingArea;
+      //                   aDn=0.5*cos(teta[n])*restingLength[n]/restingArea;
                         
-                        for ( int coor=0 ; coor<3 ; ++coor ) 
-                          derIprim5[p][coor] = derIprim5[p][coor] +
-                            2*(DnDr*aDs*aDp+DsDp*aDr*aDn)*QrQs*position[n][coor];
-                      }
-                  }
-              }
-          }		      
+      //                   for ( int coor=0 ; coor<3 ; ++coor ) 
+      //                     derIprim5[p][coor] = derIprim5[p][coor] +
+      //                       2*(DnDr*aDs*aDp+DsDp*aDr*aDn)*QrQs*position[n][coor];
+      //                 }
+      //             }
+      //         }
+      //     }		      
         
-        double derI1[3][3];             // Invariants and their derivatives
-        double derI4[3][3];
-        double derI5[3][3];
+      //   double derI1[3][3];             // Invariants and their derivatives
+      //   double derI4[3][3];
+      //   double derI5[3][3];
         
-        double I1=( Delta[1]*cotan[0]+ Delta[2]*cotan[1]+Delta[0]*cotan[2])/(4*restingArea);
-        double I4=0.5*Iprim4-0.5;
+        // double I1=( Delta[1]*cotan[0]+ Delta[2]*cotan[1]+Delta[0]*cotan[2])/(4*restingArea);
+        // double I4=0.5*Iprim4-0.5;
         
-        for ( int i=0 ; i<3 ; ++i ) 
-          for ( int j=0 ; j<3 ; ++j ) {
-            derI1[i][j]=0.5*derIprim1[i][j];
-            derI4[i][j]=0.5*derIprim4[i][j];
-            derI5[i][j]=0.25*derIprim5[i][j]-0.5*derIprim4[i][j];
-          } 
-        // for ( int i=0 ; i<3 ; ++i )   // this is the energy correction based on Deling. paper
+        // for ( int i=0 ; i<3 ; ++i ) 
+        //   for ( int j=0 ; j<3 ; ++j ) {
+        //     derI1[i][j]=0.5*derIprim1[i][j];
+        //     derI4[i][j]=0.5*derIprim4[i][j];
+        //     derI5[i][j]=0.25*derIprim5[i][j]-0.5*derIprim4[i][j];
+        //   } 
+        // // for ( int i=0 ; i<3 ; ++i )   //  energy correction based on Deling. paper
+        // //   for ( int j=0 ; j<3 ; ++j )
+        // //    deltaF[i][j]=(-deltaLam*(I4*derI1[i][j]+I1*derI4[i][j])-2*deltaMio*derI5[i][j]+(2*deltaMio+deltaLam)*I4*derI4[i][j])*restingArea;
+        
+        // for ( int i=0 ; i<3 ; ++i )  //  energy correction based on equipartitioning 
         //   for ( int j=0 ; j<3 ; ++j )
-        //     deltaF[i][j]=(-deltaLam*(I4*derI1[i][j]+I1*derI4[i][j])-2*deltaMio*derI5[i][j]+(2*deltaMio+deltaLam)*I4*derI4[i][j])*restingArea;
+        //     deltaF[i][j]=(-(deltaLam/2)*(I4*derI1[i][j]+I1*derI4[i][j])-deltaMio*derI5[i][j])*restingArea;
         
-        for ( int i=0 ; i<3 ; ++i )  // this is the energy correction based on my calculation(equipartitioning energy)
+         for ( int i=0 ; i<3 ; ++i )  // from stress tensor(equipartitioning energy)
           for ( int j=0 ; j<3 ; ++j )
-            deltaF[i][j]=(-(deltaLam/2)*(I4*derI1[i][j]+I1*derI4[i][j])-deltaMio*derI5[i][j])*restingArea;
-        
-        
+            deltaF[i][j]=(-deltaFTPK[i][j]);
+      
+        double  I1=trE;
+
+        // energy
+        TotalEnergyIso =( (lambdaT/2)*I1*I1 + mioT*I2 );//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        TotalEnergyAniso =( (deltaLam/2)*I4*I1 + deltaMio*I5 ); //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        // if (parameter(6)==5) {
+        //   TotalEnergyAnisoPlus +=( (deltaLam/2)*I4Plus*I1 + deltaMio*I5Plus )*restingArea; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        //   TotalEnergyAnisoMinus +=( (deltaLam/2)*I4Minus*I1 + deltaMio*I5Minus )*restingArea; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        // }
+        // std::cerr << "energy  "<< energy << std::endl;                    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         //Forces of vertices   
         double Force[3][3];                                           
@@ -2396,9 +2650,33 @@ derivs(Tissue &T,
         vertexDerivs[v3][0]+= Force[2][0];
         vertexDerivs[v3][1]+= Force[2][1];
         vertexDerivs[v3][2]+= Force[2][2];
+
+ 
+
+
+        cellData[cellIndex][19]=TetaPerpStress;
+        cellData[cellIndex][20]= strainZ;
+        //cellData[cellIndex][21]= areaRatio;
+        // cellData[cellIndex][21]= TetaStress;
+        // cellData[cellIndex][22]= TetaStrain; 
+        // cellData[cellIndex][23]= TetaPerp;
+        // cellData[cellIndex][19]= TETA;
+        // cellData[cellIndex][20]=TotalEnergyIso+TotalEnergyAniso;    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        cellData[cellIndex][22]=TotalEnergyIso;                       //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        cellData[cellIndex][23]=TotalEnergyAniso;  
+        
   }
+  size_t numVertices = T.numVertex();
+  for(size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex){ // stimating volume for equilibrium 
+    TotalVolume +=std::sqrt(vertexData[vertexIndex][0]*vertexData[vertexIndex][0] +
+                            vertexData[vertexIndex][1]*vertexData[vertexIndex][1] +
+                            vertexData[vertexIndex][2]*vertexData[vertexIndex][2] );
+  }
+  deltaVolume=TotalVolume-cellData[0][25];
+  cellData[0][25]=TotalVolume;
+  cellData[0][24]=deltaVolume;
 }
-      //1
+       //1
       // int kk;
       // double PrPs;
       // StrainTensor[0][0]=0;
@@ -2418,7 +2696,7 @@ derivs(Tissue &T,
       //         StrainTensor[0][0]=StrainTensor[0][0]+PrPs*ShapeVectorCurrent[r][0]*ShapeVectorCurrent[s][0];  
       //         StrainTensor[0][1]=StrainTensor[0][1]+PrPs*ShapeVectorCurrent[r][0]*ShapeVectorCurrent[s][1];
       //         StrainTensor[1][0]=StrainTensor[1][0]+PrPs*ShapeVectorCurrent[r][1]*ShapeVectorCurrent[s][0];
-      //         StrainTensor[1][1]=StrainTensor[1][1]+PrPs*ShapeVectorCurrent[r][1]*ShapeVectorCurrent[s][1];
+      //         StrainTensor[1][1]=StrainTensor[1][1]+PrPs*ShapeVectorCurrent[r][1]*ShapeVectorCurrent[s][1];4
       //       }
       //   }
       
@@ -3820,12 +4098,28 @@ derivs(Tissue &T,
       youngL = youngMatrix+0.5*(1+anisotropy)* youngFiber;
       youngT = youngMatrix+0.5*(1-anisotropy)* youngFiber;
     }    
+    // else if( parameter(4)==2 ) {  // ad_hoc for trying impact of isotropy on stiffness when MT-stress
+    //   int IND=T.cell(cellIndex).vertex(0)->index();
+    //   if ( (vertexData[IND][0]*vertexData[IND][0]+(vertexData[IND][1]-1)*(vertexData[IND][1]-1)+vertexData[IND][2]*vertexData[IND][2])<0.25) {
+    //     double aaa=(vertexData[IND][0]*vertexData[IND][0]+(vertexData[IND][1]-1)*(vertexData[IND][1]-1)+vertexData[IND][2]*vertexData[IND][2])/0.25;
+    //     double PP=4;
+    //     double KK=0.5;
+    //     youngL = youngMatrix+0.5*(1+(std::pow(aaa,PP)/(std::pow((1-aaa),PP)*std::pow(KK,PP)+std::pow(aaa,PP))))* youngFiber;
+    //     youngT = youngMatrix+0.5*(1-(std::pow(aaa,PP)/(std::pow((1-aaa),PP)*std::pow(KK,PP)+std::pow(aaa,PP))))* youngFiber;
+    //   }
+    //   else {
+    //     youngL = youngMatrix+youngFiber;
+    //     youngT = youngMatrix;
+    //   }
+    // }
+    
     else if( parameter(4)==2 ) {  // matrix-fiber Hill
       double PP=4;
       double KK=0.4;
-      youngL = youngMatrix+0.5*(1+(std::pow(anisotropy,PP)/(std::pow(KK,PP)+std::pow(anisotropy,PP))))* youngFiber;
-      youngT = youngMatrix+0.5*(1-(std::pow(anisotropy,PP)/(std::pow(KK,PP)+std::pow(anisotropy,PP))))* youngFiber;
-    }    
+      youngL = youngMatrix+0.5*(1+(std::pow(anisotropy,PP)/(std::pow((1-anisotropy),PP)*std::pow(KK,PP)+std::pow(anisotropy,PP))))* youngFiber;
+      youngT = youngMatrix+0.5*(1-(std::pow(anisotropy,PP)/(std::pow((1-anisotropy),PP)*std::pow(KK,PP)+std::pow(anisotropy,PP))))* youngFiber;
+    }
+    
     else {
       youngL = youngMatrix+youngFiber;
       youngT = youngMatrix;
@@ -4303,17 +4597,17 @@ derivs(Tissue &T,
       
       // std::cerr<< "cell "<< cellIndex<< " detF :  "<< detF<<"   areaFactor :    "<< areaFactor <<"   1/areaFactor :    "<< 1/areaFactor  << std::endl;
 
-      // double deltaS[2][2]; // based on Delin. paper
-      // deltaS[0][0]=deltaLam*(trE*directAniso[0][0]+atEa)+(2*deltaMio)*(Eaa[0][0]+aaE[0][0])-(deltaLam+2*deltaMio)*atEa*directAniso[0][0];
-      // deltaS[1][0]=deltaLam*(trE*directAniso[1][0]     )+(2*deltaMio)*(Eaa[1][0]+aaE[1][0])-(deltaLam+2*deltaMio)*atEa*directAniso[1][0];
-      // deltaS[0][1]=deltaLam*(trE*directAniso[0][1]     )+(2*deltaMio)*(Eaa[0][1]+aaE[0][1])-(deltaLam+2*deltaMio)*atEa*directAniso[0][1];
-      // deltaS[1][1]=deltaLam*(trE*directAniso[1][1]+atEa)+(2*deltaMio)*(Eaa[1][1]+aaE[1][1])-(deltaLam+2*deltaMio)*atEa*directAniso[1][1];
+      double deltaS[2][2]; // based on Delin. paper
+      deltaS[0][0]=deltaLam*(trE*directAniso[0][0]+atEa)+(2*deltaMio)*(Eaa[0][0]+aaE[0][0])-(deltaLam+2*deltaMio)*atEa*directAniso[0][0];
+      deltaS[1][0]=deltaLam*(trE*directAniso[1][0]     )+(2*deltaMio)*(Eaa[1][0]+aaE[1][0])-(deltaLam+2*deltaMio)*atEa*directAniso[1][0];
+      deltaS[0][1]=deltaLam*(trE*directAniso[0][1]     )+(2*deltaMio)*(Eaa[0][1]+aaE[0][1])-(deltaLam+2*deltaMio)*atEa*directAniso[0][1];
+      deltaS[1][1]=deltaLam*(trE*directAniso[1][1]+atEa)+(2*deltaMio)*(Eaa[1][1]+aaE[1][1])-(deltaLam+2*deltaMio)*atEa*directAniso[1][1];
 
-      double deltaS[2][2]; // based on  equipartitioning
-      deltaS[0][0]=(deltaLam/2)*(trE*directAniso[0][0]+atEa)+(deltaMio)*(Eaa[0][0]+aaE[0][0]);
-      deltaS[1][0]=(deltaLam/2)*(trE*directAniso[1][0]     )+(deltaMio)*(Eaa[1][0]+aaE[1][0]);
-      deltaS[0][1]=(deltaLam/2)*(trE*directAniso[0][1]     )+(deltaMio)*(Eaa[0][1]+aaE[0][1]);
-      deltaS[1][1]=(deltaLam/2)*(trE*directAniso[1][1]+atEa)+(deltaMio)*(Eaa[1][1]+aaE[1][1]);
+      // double deltaS[2][2]; // based on  equipartitioning
+      // deltaS[0][0]=(deltaLam/2)*(trE*directAniso[0][0]+atEa)+(deltaMio)*(Eaa[0][0]+aaE[0][0]);
+      // deltaS[1][0]=(deltaLam/2)*(trE*directAniso[1][0]     )+(deltaMio)*(Eaa[1][0]+aaE[1][0]);
+      // deltaS[0][1]=(deltaLam/2)*(trE*directAniso[0][1]     )+(deltaMio)*(Eaa[0][1]+aaE[0][1]);
+      // deltaS[1][1]=(deltaLam/2)*(trE*directAniso[1][1]+atEa)+(deltaMio)*(Eaa[1][1]+aaE[1][1]);
 
       strainZ +=restingArea*(1-poissonT*((2*lambdaT*trE+2*mioT*trE)+deltaS[0][0]+deltaS[1][1])/youngT);
       //std::cerr<< "cell "<< cellIndex<< " thickness :  " << strainZ << std::endl;
@@ -5090,31 +5384,49 @@ derivs(Tissue &T,
 
       // cos(angle) between Pstrain and MT
       //double TetaPerpMT=std::abs(PerpStrain[0]*cellData[cellIndex][variableIndex(0,1)]+PerpStrain[1]*cellData[cellIndex][variableIndex(0,1)+1]+PerpStrain[2]*cellData[cellIndex][variableIndex(0,1)+2]);
-      double TetaPerpStress=std::abs(PerpStrain[0]*eigenVectorStress[0][Istress]+PerpStrain[1]*eigenVectorStress[1][Istress]+PerpStrain[2]*eigenVectorStress[2][Istress]);
-      
+      temp =eigenVectorStrain[0][Istrain]*eigenVectorStress[0][Istress] + 
+        eigenVectorStrain[1][Istrain]*eigenVectorStress[1][Istress] +
+        eigenVectorStrain[2][Istrain]*eigenVectorStress[2][Istress] ;
+      double TetaPerpStress=std::sqrt(1-temp*temp);
       //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< energy and angles of stress, strain...
-      double TetaStress=std:: acos(eigenVectorStress[0][Istress]/std:: sqrt(eigenVectorStress[0][Istress]*eigenVectorStress[0][Istress]+eigenVectorStress[1][Istress]*eigenVectorStress[1][Istress]));
-      if (eigenVectorStress[1][Istress] < 0) 
-        { TetaStress= -TetaStress+3.1416;
+      double TetaStress=std:: acos( eigenVectorStress[0][Istress]/
+                                    std:: sqrt( eigenVectorStress[0][Istress]*eigenVectorStress[0][Istress]+
+                                                eigenVectorStress[1][Istress]*eigenVectorStress[1][Istress] ) );
+      if (eigenVectorStress[0][Istress] < 0 && eigenVectorStress[1][Istress] >= 0 ) 
+        { TetaStress= TetaStress-3.1416;
         }
-      if (TetaStress>(3*3.1416/4))
-        { TetaStress-=3.1416;
+      if (eigenVectorStress[0][Istress] < 0 && eigenVectorStress[1][Istress] < 0 ) 
+        { TetaStress=-TetaStress+3.1416;
         }
+      if (eigenVectorStress[0][Istress] > 0 && eigenVectorStress[1][Istress] < 0 ) 
+        { TetaStress=-TetaStress;
+        }
+      
+      double TetaStrain=std:: acos( eigenVectorStrain[0][Istrain]/
+                                    std:: sqrt(eigenVectorStrain[0][Istrain]*eigenVectorStrain[0][Istrain]+
+                                               eigenVectorStrain[1][Istrain]*eigenVectorStrain[1][Istrain] ) );
+      if (eigenVectorStrain[0][Istrain] < 0 && eigenVectorStrain[1][Istrain] >= 0 ) 
+        { TetaStrain= TetaStrain-3.1416;
+        }
+      if (eigenVectorStrain[0][Istrain] < 0 && eigenVectorStrain[1][Istrain] < 0 ) 
+        { TetaStrain=-TetaStrain+3.1416;
+        }
+      if (eigenVectorStrain[0][Istrain] > 0 && eigenVectorStrain[1][Istrain] < 0 ) 
+        { TetaStrain=-TetaStrain;
+        }
+      
 
-      double TetaStrain=std:: acos(eigenVectorStrain[0][Istrain]/std:: sqrt(eigenVectorStrain[0][Istrain]*eigenVectorStrain[0][Istrain]+eigenVectorStrain[1][Istrain]*eigenVectorStrain[1][Istrain]));
-      if (eigenVectorStrain[1][Istrain] < 0) 
-        { TetaStrain= -TetaStrain+3.1416;
+      double  TetaPerp=std:: acos( PerpStrain[0]/
+                                   std:: sqrt(PerpStrain[0]*PerpStrain[0]+
+                                              PerpStrain[1]*PerpStrain[1] ) );
+      if (PerpStrain[0] < 0 && PerpStrain[1] >= 0 ) 
+        { TetaPerp= TetaPerp-3.1416;
         }
-      if (TetaStrain>(3*3.1416/4))
-        { TetaStrain-=3.1416;
+      if (PerpStrain[0] < 0 && PerpStrain[1] < 0 ) 
+        { TetaPerp=-TetaPerp+3.1416;
         }
-
-      double  TetaPerp=std:: acos(PerpStrain[0]/std:: sqrt(PerpStrain[0]*PerpStrain[0]+PerpStrain[1]*PerpStrain[1]));
-      if (eigenVectorStress[1][Istress] < 0) 
-        { TetaPerp= -TetaPerp+3.1416;
-        }
-      if (TetaPerp>(3*3.1416/4))
-        { TetaPerp-=3.1416;
+      if (PerpStrain[0] > 0 && PerpStrain[1] < 0 ) 
+        { TetaPerp=-TetaPerp;
         }
       
       if (parameter(7)==2){ //MT stress feedback
@@ -5256,32 +5568,6 @@ initiate(Tissue &T,
     }
   }
 }
-
-
-
-
-
-
-// void TemplateVolumeChange::
-// initiate(Tissue &T,
-// 	 DataMatrix &vertexData)
-// {
-//   size_t dimension=3; //Only implemented for 3D models
-//   assert (dimension==vertexData[0].size());
-
-//   size_t numVertices = VertexData.size();
-//   DataMatrix vertexDataRest(numVertices,dimension);
-  
-//   for (size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex) 
-//     for (size_t d=0; d<dimension; ++d) {
-//       vertexDataRest[vertexIndex][d]=vertexData[vertexIndex][d];
-//   }
-// }
-
-
-
-
-
 
 
 
