@@ -75,8 +75,9 @@ void Euler::simulate(size_t verbose)
   double tiny = 1e-10;
   double printTime=endTime_+tiny;
   double printDeltaTime=endTime_+2.*tiny;
+	int doPrint=1;
   if( numPrint_<=0 )//No printing
-    printFlag_=0;
+    doPrint=0;
   else if( numPrint_==1 ) {//Print last point (default)
   }
   else if( numPrint_==2 ) {//Print first/last point
@@ -99,8 +100,7 @@ void Euler::simulate(size_t verbose)
 	       vertexDerivs_);
     
     //Print if applicable 
-    //if( printFlag_ && t_ >= printTime ) {
-    if( t_ >= printTime ) {
+    if( doPrint && t_ >= printTime ) {
       printTime += printDeltaTime;
       print();
     }
@@ -133,11 +133,10 @@ void Euler::simulate(size_t verbose)
     }
     t_ += h_;
   }
-  //if( printFlag_ ) {
-  if (1) {
+  if( doPrint ) {
     //Update the derivatives
     T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,
-	       vertexDerivs_);
+							 vertexDerivs_);
     print();
   }
   std::cerr << "Simulation done.\n"; 

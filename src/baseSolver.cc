@@ -1127,18 +1127,19 @@ void BaseSolver::printInitTri(std::ostream &os) const
 
 void BaseSolver::printDebug(std::ostream &os) const
 {
-// 	os << yCopy_.size() << "\n";
-// 	size_t startElement = debugCount();
-// 	for (size_t c=startElement; c<startElement+yCopy_.size(); ++c) {
-// 		size_t n = c%yCopy_.size();
-// 		os << yCopy_[n].size() << " " << M() << " " << c-startElement << "\n";
-// 		for (size_t i=0; i<yCopy_[n].size(); i++) {
-// 			for (size_t j=0; j<M(); j++) {
-// 				os << yCopy_[n][i][j] << " ";
-// 			}
-// 			os << "\n";
-// 		}
-// 		os << "\n\n";
-// 	}
+	os << cellDataCopy_.size() << "\n";
+	size_t startElement = debugCount();
+	for (size_t c=startElement; c<startElement+cellDataCopy_.size(); ++c) {
+		size_t n = c%cellDataCopy_.size();
+		os << cellDataCopy_[n].size() << " " << cellDataCopy_[n][c].size() << " " 
+			 << c-startElement << "\n";
+		for (size_t i=0; i<cellDataCopy_[n].size(); i++) {
+			for (size_t j=0; j<cellDataCopy_[n][c].size(); j++) {
+				os << cellDataCopy_[n][i][j] << " ";
+			}
+			os << "\n";
+		}
+		os << "\n\n";
+	}
 }
 

@@ -50,26 +50,40 @@ void RK5Adaptive::simulate(size_t verbose)
   // Check that sizes of permanent data is ok
   //
   if( cellData_.size() && cellData_.size() != cellDerivs_.size() ) {
+		std::cerr << "RK5Adaptive::simulate()"
+							<< " cellDerivs_ resized." << std::endl;
     cellDerivs_.resize( cellData_.size(),cellData_[0]);
   }
   if( wallData_.size() && wallData_.size() != wallDerivs_.size() ) {
+		std::cerr << "RK5Adaptive::simulate()"
+							<< " wallDerivs_ resized." << std::endl;
     wallDerivs_.resize( wallData_.size(),wallData_[0]);
   }
   if( vertexData_.size() && vertexData_.size() != vertexDerivs_.size() ) {
+		std::cerr << "RK5Adaptive::simulate()"
+							<< " vertexDerivs_ resized." << std::endl;
     vertexDerivs_.resize( vertexData_.size(),vertexData_[0]);
   }
   
   // Initiate reactions and direction for those where it is applicable
   T_->initiateReactions(cellData_, wallData_, vertexData_, cellDerivs_, 
-			wallDerivs_, vertexDerivs_);
+												wallDerivs_, vertexDerivs_);
 
-  if (cellData_.size()!=cellDerivs_.size())
+  if (cellData_.size()!=cellDerivs_.size()) {
+		std::cerr << "RK5Adaptive::simulate()"
+							<< " cellDerivs_ resized after reaction initiation." << std::endl;
     cellDerivs_.resize(cellData_.size(),cellDerivs_[0]);
-  if (wallData_.size()!=wallDerivs_.size())
-    wallDerivs_.resize(wallData_.size(),wallDerivs_[0]);
-  if (vertexData_.size()!=vertexDerivs_.size())
+	}
+	if (wallData_.size()!=wallDerivs_.size()) {
+		std::cerr << "RK5Adaptive::simulate()"
+							<< " wallDerivs_ resized after reaction initiation." << std::endl;
+		wallDerivs_.resize(wallData_.size(),wallDerivs_[0]);
+	}
+	if (vertexData_.size()!=vertexDerivs_.size()) {
+		std::cerr << "RK5Adaptive::simulate()"
+							<< " vertexDerivs_ resized after reaction initiation." << std::endl;
     vertexDerivs_.resize(vertexData_.size(),vertexDerivs_[0]);
-  
+  }
   T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, 
 			wallDerivs_, vertexDerivs_);
   
@@ -135,11 +149,12 @@ void RK5Adaptive::simulate(size_t verbose)
   }
   
   // Initiate print times
-  //////////////////////////////////////////////////////////////////////
+  //
   double printTime = endTime_ + tiny;
   double printDeltaTime = endTime_ + 2.0 * tiny;
+	int doPrint = 1;
   if (numPrint_ <= 0) //No printing
-    printFlag_ = 0;
+    doPrint = 0;
   else if (numPrint_ == 1) { // Print last point (default)
   }
   else if (numPrint_ == 2) { //Print first/last point
@@ -185,8 +200,8 @@ void RK5Adaptive::simulate(size_t verbose)
 	  std::fabs(vertexDerivs_[i][j] * h) + tiny;
     }
     // Print if applicable 
-    //if (printFlag_ && t_ >= printTime) {
-    if (t_ >= printTime) {
+    if (doPrint && t_ >= printTime) {
+			//if (t_ >= printTime) {
       printTime += printDeltaTime;
       print();
     }
@@ -220,6 +235,9 @@ void RK5Adaptive::simulate(size_t verbose)
 				wallData_.size() != yScalW.size() ||
 				vertexData_.size() != yScalV.size())
       {
+				std::cerr << "RK5Adaptive::simulate() WARNING"
+									<< " rescaling temporary vectors not adopted for "
+									<< "center triangulation." << std::endl;
 				yScalC.resize(cellData_.size(), yScalC[0]);
 				yScalW.resize(wallData_.size(), yScalW[0]);
 				yScalV.resize(vertexData_.size(), yScalV[0]);
@@ -251,8 +269,7 @@ void RK5Adaptive::simulate(size_t verbose)
     
     // If the end t is passed return (print if applicable)
     if (t_ >= endTime_) {
-      //if (printFlag_) {
-      if (1) {
+      if (doPrint) {
 				// Update the derivatives
 				T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,
 									 vertexDerivs_);
@@ -643,8 +660,9 @@ void RK4::simulate(size_t verbose)
   double tiny = 1e-10;
   double printTime=endTime_+tiny;
   double printDeltaTime=endTime_+2.*tiny;
+	int doPrint=1;
   if( numPrint_<=0 )//No printing
-    printFlag_=0;
+    doPrint=0;
   else if( numPrint_==1 ) {//Print last point (default)
   }
   else if( numPrint_==2 ) {//Print first/last point
@@ -667,8 +685,7 @@ void RK4::simulate(size_t verbose)
 							 vertexDerivs_);
     
     //Print if applicable 
-    //if( printFlag_ && t_ >= printTime ) {
-    if( t_ >= printTime ) {
+    if( doPrint && t_ >= printTime ) {
       printTime += printDeltaTime;
       print();
     }
@@ -715,8 +732,7 @@ void RK4::simulate(size_t verbose)
     }
     t_ += h_;
   }
-  //if( printFlag_ ) {
-  if (1) {
+  if( doPrint ) {
     //Update the derivatives
     T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,
 							 vertexDerivs_);

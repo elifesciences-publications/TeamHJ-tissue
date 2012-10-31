@@ -31,7 +31,7 @@ protected:
   DataMatrix cellDerivs_; 
   DataMatrix wallDerivs_; 
   DataMatrix vertexDerivs_; 
-  std::vector< std::vector<std::vector<double> > > cellDataCopy_;
+  std::vector< DataMatrix > cellDataCopy_;
   double t_;
   double startTime_;
   double endTime_;
