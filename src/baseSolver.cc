@@ -409,11 +409,9 @@ void BaseSolver::print(std::ostream &os)
   else if( printFlag_==52 ) {
     
     os << cellData_[0][13] << " " <<cellData_[0][14] << " " << cellData_[0][3] <<" "<< cellData_[0][7] <<" " << cellData_[0][12] << std::endl;
-    
   }
-  
-  
-  
+
+    
   else if (printFlag_ == 96) {
     size_t dimensions = vertexData_[0].size();
     

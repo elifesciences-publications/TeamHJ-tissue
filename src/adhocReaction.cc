@@ -501,24 +501,24 @@ update(Tissue &T,
 
 InitiateWallLength::
 InitiateWallLength(std::vector<double> &paraValue, 
-									 std::vector< std::vector<size_t> > 
-									 &indValue ) 
+		   std::vector< std::vector<size_t> > 
+		   &indValue ) 
 {
   //
   //Do some checks on the parameters and variable indeces
   //
   if( paraValue.size()!=1 ) {
     std::cerr << "InitiateWallLength::InitiateWallLength() "
-							<< "Uses one parameter, factor. " << std::endl;
+	      << "Uses one parameter, factor. " << std::endl;
     exit(0);
   }
   if( indValue.size() != 0 ) {
     std::cerr << "InitiateWallLength::"
-							<< "InitiateWallLength() "
-							<< "No variable indices used." << std::endl;
+	      << "InitiateWallLength() "
+	      << "No variable indices used." << std::endl;
     exit(0);
   }
-	//
+  //
   //Set the variable values
   //
   setId("InitiateWallLength");
@@ -528,28 +528,28 @@ InitiateWallLength(std::vector<double> &paraValue,
   //Set the parameter identities
   //
   std::vector<std::string> tmp( numParameter() );
-	tmp[0] = "factor";
+  tmp[0] = "factor";
   setParameterId( tmp );
 }
 
 void InitiateWallLength::
 initiate(Tissue &T,
-				 DataMatrix &cellData,
-				 DataMatrix &wallData,
-				 DataMatrix &vertexData)
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData)
 {
-	size_t dimension = vertexData[0].size();
+  size_t dimension = vertexData[0].size();
   size_t numWall = T.numWall();
   
   for (size_t i=0; i<numWall; ++i) {
-		double distance=0.0;
-		size_t v1I=T.wall(i).vertex1()->index();
-		size_t v2I=T.wall(i).vertex2()->index();
-		for (size_t d=0; d<dimension; ++d )
-			distance += (vertexData[v2I][d]-vertexData[v1I][d])*(vertexData[v2I][d]-vertexData[v1I][d]);
-		distance = std::sqrt(distance);
-		wallData[i][0] = parameter(0)*distance;
-	}
+    double distance=0.0;
+    size_t v1I=T.wall(i).vertex1()->index();
+    size_t v2I=T.wall(i).vertex2()->index();
+    for (size_t d=0; d<dimension; ++d )
+      distance += (vertexData[v2I][d]-vertexData[v1I][d])*(vertexData[v2I][d]-vertexData[v1I][d]);
+    distance = std::sqrt(distance);
+    wallData[i][0] = parameter(0)*distance;
+  }
 }
 
 void InitiateWallLength::
