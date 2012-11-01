@@ -229,15 +229,17 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// VertexFromTRBSMT 5 1 3
-/// Y_modulus_Matrix Y_modulus_Fibre Poisson_Longit. P_coeff_Trans. Matrix-Fiber-flag 
+/// VertexFromTRBSMT 8 1 3
+/// Y_modulus_Matrix Y_modulus_Fibre Poisson_Longit. P_coeff_Trans. MF-flag, plane-strain/stress-flag MT-angle MT-feedback-flag 
 /// L_ij-index MT_cellIndex anisotropyIndex
+///
 /// or
-/// VertexFromTRBSMT 5 3 3 0/1/2/3 0/1/2
-/// Y_modulus_Matrix Y_modulus_Fibre Poisson_Longit. P_coeff_Trans. Matrix-Fiber-flag 
+///
+/// VertexFromTRBSMT 8 3 3 0/1/2/3 0/1/2
+/// Y_modulus_Matrix Y_modulus_Fibre Poisson_Longit. P_coeff_Trans. MF-flag, plane-strain/stress-flag MT-angle MT-feedback-flag  
 /// L_ij-index MT_cellIndex anisotropyIndex
-/// optional index(indices) for storing strain(strain(1), perpendicular to strain(2) and 2nd strain(3))
-/// optional index(indices) for storing stress(stress(1) and 2nd stress(2))
+/// optional index for storing strain(0: no strain, 1: strain, 2: strain/perpendicular strain, 3: strain/perpendicular strain/2nd strain)
+/// optional index for storing stress(0: no stress, 1: stress, 2: stress/2nd stress)
 /// @endverbatim
 /// In case of storing strain/stress direction/value, in 3(2) dimensions, 
 /// strain/stress values will be stored after  (3) components of vectors.  
@@ -345,13 +347,14 @@ class VertexFromTRBScenterTriangulationMT : public BaseReaction {
   ///
   /// @see BaseReaction::initiate(Tissue &T,...)
   ///
-  void initiate(Tissue &T,
-		DataMatrix &cellData,
-		DataMatrix &wallData,
-		DataMatrix &vertexData,
-		DataMatrix &cellDerivs,
-		DataMatrix &wallDerivs,
-		DataMatrix &vertexDerivs );  
+  
+// void initiate(Tissue &T,
+// 		DataMatrix &cellData,
+// 		DataMatrix &wallData,
+// 		DataMatrix &vertexData,
+// 		DataMatrix &cellDerivs,
+// 		DataMatrix &wallDerivs,
+// 		DataMatrix &vertexDerivs );  
 };
 
 
