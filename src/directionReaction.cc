@@ -279,7 +279,126 @@ void UpdateMTDirection::update(Tissue &T,
       cellData[i][outIndex+d] *= norm;
   }
 }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+UpdateMTDirectionConcenHill::UpdateMTDirectionConcenHill(std::vector<double> &paraValue,
+				     std::vector< std::vector<size_t> > &indValue)
+{
+  if (paraValue.size() != 3) {
+    std::cerr << "UpdateMTDirectionConcenHill::UpdateMTDirectionConcenHill() " 
+	      << "Uses three parameters: k_rate, k_Hill and n_Hill " << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  if (indValue.size() != 3 || indValue[0].size() != 1 ||  indValue[1].size() != 1 || indValue[2].size() != 1) {
+    std::cerr << "UpdateMTDirectionConcenHill::UpdateMTDirectionConcenHill() " << std::endl
+	      << "First level gives target direction index (input)." << std::endl
+	      << "Second level gives real direction index." << std::endl
+              << "Third level gives concentration(anisotropy) index." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("UpdateMTDirectionConcenHill");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "k_rate";
+  tmp[1] = "k_Hill";
+  tmp[2] = "n_Hill";
+  
+  setParameterId(tmp);
+}
+
+void UpdateMTDirectionConcenHill::initiate(Tissue &T,
+				 DataMatrix &cellData,
+				 DataMatrix &wallData,
+				 DataMatrix &vertexData) 
+{
+  // size_t numCell=cellData.size();
+  // size_t dimension=vertexData[0].size();
+  // size_t inIndex=variableIndex(0,0);
+  // size_t outIndex=variableIndex(1,0);
+  // for (size_t i=0; i<numCell; ++i)
+  //   for (size_t d=0; d<dimension; ++d)
+  //     cellData[i][outIndex+d] = cellData[i][inIndex+d];
+}
+
+void UpdateMTDirectionConcenHill::derivs(Tissue &T,
+			       DataMatrix &cellData,
+			       DataMatrix &wallData,
+			       DataMatrix &vertexData,
+			       DataMatrix &cellDerivs,
+			       DataMatrix &wallDerivs,
+			       DataMatrix &vertexDerivs ) {
+
+  size_t numCell=cellData.size();
+  size_t dimension=vertexData[0].size();
+  size_t inIndex=variableIndex(0,0);
+  size_t outIndex=variableIndex(1,0);
+  size_t concIndex=variableIndex(2,0);
+  if (parameter(0)==0.0)
+    return;
+  for (size_t i=0; i<numCell; ++i) {
+    double kh=parameter(1);
+    double nh=parameter(2);    
+    double ConcFactor=(std::pow(cellData[i][concIndex],nh)/(std::pow(((1-cellData[i][concIndex])*kh),nh)+std::pow(cellData[i][concIndex],nh)));
+    // std::cerr<<i<<" "<< ConcFactor<<std::endl;
+    if (cellData[i][inIndex]*cellData[i][outIndex]+
+        cellData[i][inIndex+1]*cellData[i][outIndex+1]+
+        cellData[i][inIndex+2]*cellData[i][outIndex+2]<0){
+     for (size_t d=0; d<dimension; ++d)
+      cellData[i][outIndex+d] *=-1;
+    }
+    for (size_t d=0; d<dimension; ++d)
+      cellData[i][outIndex+d] += parameter(0)*ConcFactor*(cellData[i][inIndex+d]-cellData[i][outIndex+d]);
+    // Normalize
+    double norm=0.0;
+    for (size_t d=0; d<dimension; ++d)
+      norm += cellData[i][outIndex+d]*cellData[i][outIndex+d];
+    norm = 1.0/std::sqrt(norm);
+    for (size_t d=0; d<dimension; ++d)
+      cellData[i][outIndex+d] *= norm;
+  }
+
+}
+
+void UpdateMTDirectionConcenHill::update(Tissue &T,
+			       DataMatrix &cellData,
+			       DataMatrix &wallData,
+			       DataMatrix &vertexData,
+			       double h) 
+{
+  // size_t numCell=cellData.size();
+  // size_t dimension=vertexData[0].size();
+  // size_t inIndex=variableIndex(0,0);
+  // size_t outIndex=variableIndex(1,0);
+  // size_t concIndex=variableIndex(2,0);
+  // if (parameter(0)==0.0)
+  //   return;
+  // for (size_t i=0; i<numCell; ++i) {
+  //   double kh=parameter(1);
+  //   double nh=parameter(2);    
+  //   double ConcFactor=(std::pow(cellData[i][concIndex],nh)/(std::pow(((1-cellData[i][concIndex])*kh),nh)+std::pow(cellData[i][concIndex],nh)));
+  //   // std::cerr<<i<<" "<< ConcFactor<<std::endl;
+  //   if (cellData[i][inIndex]*cellData[i][outIndex]+
+  //       cellData[i][inIndex+1]*cellData[i][outIndex+1]+
+  //       cellData[i][inIndex+2]*cellData[i][outIndex+2]<0){
+  //    for (size_t d=0; d<dimension; ++d)
+  //     cellData[i][outIndex+d] *=-1;
+  //   }
+  //   for (size_t d=0; d<dimension; ++d)
+  //     cellData[i][outIndex+d] += parameter(0)*ConcFactor*(cellData[i][inIndex+d]-cellData[i][outIndex+d]);
+  //   // Normalize
+  //   double norm=0.0;
+  //   for (size_t d=0; d<dimension; ++d)
+  //     norm += cellData[i][outIndex+d]*cellData[i][outIndex+d];
+  //   norm = 1.0/std::sqrt(norm);
+  //   for (size_t d=0; d<dimension; ++d)
+  //     cellData[i][outIndex+d] *= norm;
+  // }
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 RotatingDirection::RotatingDirection(std::vector<double> &paraValue,
 				     std::vector< std::vector<size_t> > &indValue)
