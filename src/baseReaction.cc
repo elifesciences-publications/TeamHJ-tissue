@@ -165,6 +165,8 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
     return new VertexFromExternalWall(paraValue,indValue);
   else if(idValue=="TemplateVolumeChange")
     return new TemplateVolumeChange(paraValue,indValue);
+  else if(idValue=="CalculateAngleVectors")
+    return new CalculateAngleVectors(paraValue,indValue);
   else if (idValue == "DebugReaction")
     return new DebugReaction(paraValue, indValue);
   
@@ -241,6 +243,8 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
   return new ContinousMTDirection3d(paraValue, indValue);
   else if (idValue == "UpdateMTDirection")
     return new UpdateMTDirection(paraValue, indValue);
+  else if (idValue == "UpdateMTDirectionConcenHill")
+    return new UpdateMTDirectionConcenHill(paraValue, indValue);
   else if (idValue == "RotatingDirection")
     return new RotatingDirection(paraValue, indValue);
   
