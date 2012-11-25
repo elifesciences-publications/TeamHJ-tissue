@@ -117,6 +117,51 @@ class UpdateMTDirection : public BaseReaction
 		    double h);
 };
 
+///
+/// @brief Updates a direction continuosly towards a direction updated for the cell
+///
+/// This function applies the update within the update and moves the
+/// direction toward a given direction using an Euler step directly on the direction vector.
+/// the update rate depends on both a user defined rate and a Hill function of a concentration 
+/// that can be stress or strain anisotropy
+/// It normalizes the vector after the update.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// UpdateMTDirectionConcenHill 3 3 1 1 1
+/// k_rate
+/// k_Hill
+/// n_hill
+/// target index
+/// MT index
+/// concentration(anisotropy) index
+/// @endverbatim
+
+class UpdateMTDirectionConcenHill : public BaseReaction
+{
+ public:
+  UpdateMTDirectionConcenHill(std::vector<double> &paraValue,
+		    std::vector< std::vector<size_t> > &indValue);
+  
+	void initiate(Tissue &T,
+		      DataMatrix &cellData,
+		      DataMatrix &wallData,
+		      DataMatrix &vertexData);
+	void derivs(Tissue &T,
+		    DataMatrix &cellData,
+		    DataMatrix &wallData,
+		    DataMatrix &vertexData,
+		    DataMatrix &cellDerivs,
+		    DataMatrix &wallDerivs,
+		    DataMatrix &vertexDerivs );
+	void update(Tissue &T,
+		    DataMatrix &cellData,
+		    DataMatrix &wallData,
+		    DataMatrix &vertexData,
+		    double h);
+};
+
 
 
 
