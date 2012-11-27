@@ -389,8 +389,8 @@ void BaseSolver::print(std::ostream &os)
     os << std::endl;
   }
 
-//
-  // Ad hoc and temporary printing functions
+  //
+  // Ad hoc and temporary print flags
   //
 
 
