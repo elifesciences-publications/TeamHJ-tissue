@@ -430,7 +430,7 @@ void BaseSolver::print(std::ostream &os)
     
     os << cellData_[0][13] << " " <<cellData_[0][14] << " " << cellData_[0][3] <<" "<< cellData_[0][7] <<" " << cellData_[0][12] << std::endl;
   }
-<<<<<<< .mine
+
   
   else if( printFlag_==56 ) {  // energy landscape for a single element
     
