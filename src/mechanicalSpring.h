@@ -262,10 +262,6 @@ class VertexFromWallSpringMT : public BaseReaction {
 	      DataMatrix &cellDerivs,
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
-  void initiate(Tissue &T,
-		DataMatrix &cellData,
-		DataMatrix &wallData,
-		DataMatrix &vertexData );
 };
 
 ///
@@ -306,7 +302,10 @@ class VertexFromWallSpringMTHistory : public BaseReaction {
   void initiate(Tissue &T,
 		DataMatrix &cellData,
 		DataMatrix &wallData,
-		DataMatrix &vertexData);
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
 };
 
 //!Updates vertices from an asymmetric epidermal wall spring potential

@@ -2283,8 +2283,9 @@ void::Tissue::initiateReactions(DataMatrix &cellData,
 				DataMatrix &wallDeriv,
 				DataMatrix &vertexDeriv ) 
 {
-  for (size_t i=0; i<numReaction(); ++i)
+  for (size_t i=0; i<numReaction(); ++i) {
     reaction(i)->initiate(*this,cellData,wallData,vertexData,cellDeriv,wallDeriv,vertexDeriv);
+  }
 }
 
 void::Tissue::updateReactions(DataMatrix &cellData,

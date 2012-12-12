@@ -67,21 +67,21 @@ void RK5Adaptive::simulate(size_t verbose)
   
   // Initiate reactions and direction for those where it is applicable
   T_->initiateReactions(cellData_, wallData_, vertexData_, cellDerivs_, 
-												wallDerivs_, vertexDerivs_);
+			wallDerivs_, vertexDerivs_);
 
   if (cellData_.size()!=cellDerivs_.size()) {
-		std::cerr << "RK5Adaptive::simulate()"
-							<< " cellDerivs_ resized after reaction initiation." << std::endl;
+    std::cerr << "RK5Adaptive::simulate()"
+	      << " cellDerivs_ resized after reaction initiation." << std::endl;
     cellDerivs_.resize(cellData_.size(),cellDerivs_[0]);
-	}
-	if (wallData_.size()!=wallDerivs_.size()) {
-		std::cerr << "RK5Adaptive::simulate()"
-							<< " wallDerivs_ resized after reaction initiation." << std::endl;
-		wallDerivs_.resize(wallData_.size(),wallDerivs_[0]);
-	}
-	if (vertexData_.size()!=vertexDerivs_.size()) {
-		std::cerr << "RK5Adaptive::simulate()"
-							<< " vertexDerivs_ resized after reaction initiation." << std::endl;
+  }
+  if (wallData_.size()!=wallDerivs_.size()) {
+    std::cerr << "RK5Adaptive::simulate()"
+	      << " wallDerivs_ resized after reaction initiation." << std::endl;
+    wallDerivs_.resize(wallData_.size(),wallDerivs_[0]);
+  }
+  if (vertexData_.size()!=vertexDerivs_.size()) {
+    std::cerr << "RK5Adaptive::simulate()"
+	      << " vertexDerivs_ resized after reaction initiation." << std::endl;
     vertexDerivs_.resize(vertexData_.size(),vertexDerivs_[0]);
   }
   T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, 

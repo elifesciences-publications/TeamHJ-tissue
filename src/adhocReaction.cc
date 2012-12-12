@@ -219,9 +219,12 @@ VertexTranslateToMax(std::vector<double> &paraValue,
 
 void VertexTranslateToMax::
 initiate(Tissue &T,
-	 DataMatrix &cellData,
-	 DataMatrix &wallData,
-	 DataMatrix &vertexData)
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {
   size_t numVertices = T.numVertex();
   size_t posIndex = variableIndex(0,0);
@@ -267,129 +270,143 @@ update(Tissue &T,
 		vertexData[i][posIndex] -= delta;
 }
 
-CenterCOM::CenterCOM(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue) {
-	//Do some checks on the parameters and variable indeces
-	//
-	if (paraValue.size() != 0) {
-		std::cerr << "CenterCOM::CenterCOM() Uses no parameters.\n";
-		std::exit(EXIT_FAILURE);
-	}
-
-	if (indValue.size() != 0) {
-		std::cerr << "CenterCOM::CenterCOM() No variable indices used.\n";
-		std::exit(EXIT_FAILURE);
-	}
-
-	//Set the variable values
-	//
-	setId("CenterCOM");
-	setParameter(paraValue);  
-	setVariableIndex(indValue);
-	
-	//Set the parameter identities
-	//
-	std::vector<std::string> tmp(numParameter());
-	setParameterId(tmp);
+CenterCOM::
+CenterCOM(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue) {
+  //Do some checks on the parameters and variable indeces
+  //
+  if (paraValue.size() != 0) {
+    std::cerr << "CenterCOM::CenterCOM() Uses no parameters.\n";
+    std::exit(EXIT_FAILURE);
+  }
+  
+  if (indValue.size() != 0) {
+    std::cerr << "CenterCOM::CenterCOM() No variable indices used.\n";
+    std::exit(EXIT_FAILURE);
+  }
+  
+  //Set the variable values
+  //
+  setId("CenterCOM");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp(numParameter());
+  setParameterId(tmp);
 }
 
-void CenterCOM::initiate(Tissue &T,
-	DataMatrix &cellData,
-	DataMatrix &wallData,
-	DataMatrix &vertexData)
+void CenterCOM::
+initiate(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs) 
 {
-	update(T, cellData, wallData, vertexData, 0.0);
+  update(T, cellData, wallData, vertexData, 0.0);
 }
 
-void CenterCOM::derivs(Tissue &T,
-	DataMatrix &cellData,
-	DataMatrix &wallData,
-	DataMatrix &vertexData,
-	DataMatrix &cellDerivs,
-	DataMatrix &wallDerivs,
-	DataMatrix &vertexDerivs) 
+void CenterCOM::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs) 
 {
-
+  
 }
 
-void CenterCOM::update(Tissue &T,
-	DataMatrix &cellData,
-	DataMatrix &wallData,
-	DataMatrix &vertexData,
-	double h)
+void CenterCOM::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h)
 {
-	size_t dimension = vertexData[0].size();
-	size_t numVertices = T.numVertex();
-	
-	std::vector<double> com(dimension, 0.0);
-
-	for (size_t i = 0; i < numVertices; ++i) {
-		for (size_t d = 0; d < dimension; ++d) {
-			com[d] += vertexData[i][d];
-		}
-	}
-	
-	for (size_t d = 0; d < dimension; ++d) {
-		com[d] /= numVertices;
-	}
-	
-	for (size_t i = 0; i < numVertices; ++i) {
-		for (size_t d = 0; d < dimension; ++d) {
-			vertexData[i][d] -= com[d];
-		}
-	}
+  size_t dimension = vertexData[0].size();
+  size_t numVertices = T.numVertex();
+  
+  std::vector<double> com(dimension, 0.0);
+  
+  for (size_t i = 0; i < numVertices; ++i) {
+    for (size_t d = 0; d < dimension; ++d) {
+      com[d] += vertexData[i][d];
+    }
+  }
+  
+  for (size_t d = 0; d < dimension; ++d) {
+    com[d] /= numVertices;
+  }
+  
+  for (size_t i = 0; i < numVertices; ++i) {
+    for (size_t d = 0; d < dimension; ++d) {
+      vertexData[i][d] -= com[d];
+    }
+  }
 }
 
-CenterCOMcenterTriangulation::CenterCOMcenterTriangulation(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue) {
-	//Do some checks on the parameters and variable indeces
-	//
-	if (paraValue.size() != 0) {
-		std::cerr << "CenterCOMcenterTriangulation::CenterCOMcenterTriangulation() Uses no parameters.\n";
-		std::exit(EXIT_FAILURE);
-	}
-
-	if (indValue.size() != 1 || indValue[0].size() != 1) {
-		std::cerr << "CenterCOMcenterTriangulation::CenterCOMcenterTriangulation()"
-			  << " Uses one variable index for where cell vertices are stored "
-			  << "(must match TRBScenterTriangulation)." << std::endl;
-		std::exit(EXIT_FAILURE);
-	}
-
-	//Set the variable values
-	//
-	setId("CenterCOMcenterTriangulation");
-	setParameter(paraValue);  
-	setVariableIndex(indValue);
-	
-	//Set the parameter identities
-	//
-	std::vector<std::string> tmp(numParameter());
-	setParameterId(tmp);
+CenterCOMcenterTriangulation::
+CenterCOMcenterTriangulation(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue) {
+  //Do some checks on the parameters and variable indeces
+  //
+  if (paraValue.size() != 0) {
+    std::cerr << "CenterCOMcenterTriangulation::CenterCOMcenterTriangulation() Uses no parameters.\n";
+    std::exit(EXIT_FAILURE);
+  }
+  
+  if (indValue.size() != 1 || indValue[0].size() != 1) {
+    std::cerr << "CenterCOMcenterTriangulation::CenterCOMcenterTriangulation()"
+	      << " Uses one variable index for where cell vertices are stored "
+	      << "(must match TRBScenterTriangulation)." << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+  
+  //Set the variable values
+  //
+  setId("CenterCOMcenterTriangulation");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp(numParameter());
+  setParameterId(tmp);
 }
 
-void CenterCOMcenterTriangulation::initiate(Tissue &T,
-	DataMatrix &cellData,
-	DataMatrix &wallData,
-	DataMatrix &vertexData)
+void CenterCOMcenterTriangulation::
+initiate(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs) 
 {
-	update(T, cellData, wallData, vertexData, 0.0);
+  update(T, cellData, wallData, vertexData, 0.0);
 }
 
-void CenterCOMcenterTriangulation::derivs(Tissue &T,
-	DataMatrix &cellData,
-	DataMatrix &wallData,
-	DataMatrix &vertexData,
-	DataMatrix &cellDerivs,
-	DataMatrix &wallDerivs,
-	DataMatrix &vertexDerivs) 
+void CenterCOMcenterTriangulation::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs) 
 {
-
+  
 }
 
-void CenterCOMcenterTriangulation::update(Tissue &T,
-	DataMatrix &cellData,
-	DataMatrix &wallData,
-	DataMatrix &vertexData,
-	double h)
+void CenterCOMcenterTriangulation::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h)
 {
   size_t dimension = vertexData[0].size();
   size_t numVertices = T.numVertex();
@@ -419,28 +436,28 @@ void CenterCOMcenterTriangulation::update(Tissue &T,
       cellData[i][cellVarIndex+d] -= com[d];
     }
   }
-
+  
 }
 
 CalculatePCAPlane::
 CalculatePCAPlane(std::vector<double> &paraValue, 
-									std::vector< std::vector<size_t> > 
-						 &indValue ) {
+		  std::vector< std::vector<size_t> > 
+		  &indValue ) {
   
-	//
+  //
   // Do some checks on the parameters and variable indeces
   //
   if (paraValue.size()!=1) {
     std::cerr << "CalculatePCAPlane::"
-							<< "CalculatePCAPlane() "
-							<< "Uses one parameter: onlyInUpdateFlag "
-							<< std::endl;
+	      << "CalculatePCAPlane() "
+	      << "Uses one parameter: onlyInUpdateFlag "
+	      << std::endl;
     exit(0);
   }
   if (indValue.size()!=0) {
     std::cerr << "CalculatePCAPlane::"
-							<< "CalculatePCAPlane() "
-							<< "No indices used." << std::endl;
+	      << "CalculatePCAPlane() "
+	      << "No indices used." << std::endl;
     exit(0);
   }
   //Set the variable values
@@ -458,15 +475,18 @@ CalculatePCAPlane(std::vector<double> &paraValue,
 
 void CalculatePCAPlane::
 initiate(Tissue &T,
-				 DataMatrix &cellData,
-				 DataMatrix &wallData,
-				 DataMatrix &vertexData)
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {
-	if (parameter(0)==1.0) {
-		size_t numCell = T.numCell();
-		for (size_t i=0; i<numCell; ++i)
-			T.cell(i).calculatePCAPlane(vertexData);
-	}
+  if (parameter(0)==1.0) {
+    size_t numCell = T.numCell();
+    for (size_t i=0; i<numCell; ++i)
+      T.cell(i).calculatePCAPlane(vertexData);
+  }
 }
 
 void CalculatePCAPlane::
@@ -478,11 +498,11 @@ derivs(Tissue &T,
        DataMatrix &wallDerivs,
        DataMatrix &vertexDerivs ) 
 {
-	if (parameter(0)!=1.0) {
-		size_t numCell = T.numCell();
-		for (size_t i=0; i<numCell; ++i)
-			T.cell(i).calculatePCAPlane(vertexData);
-	}
+  if (parameter(0)!=1.0) {
+    size_t numCell = T.numCell();
+    for (size_t i=0; i<numCell; ++i)
+      T.cell(i).calculatePCAPlane(vertexData);
+  }
 }
 
 void CalculatePCAPlane::
@@ -490,13 +510,13 @@ update(Tissue &T,
        DataMatrix &cellData,
        DataMatrix &wallData,
        DataMatrix &vertexData,
-			 double h)
+       double h)
 {
-	if (parameter(0)==1.0) {
-		size_t numCell = T.numCell();
-		for (size_t i=0; i<numCell; ++i)
-			T.cell(i).calculatePCAPlane(vertexData);
-	}
+  if (parameter(0)==1.0) {
+    size_t numCell = T.numCell();
+    for (size_t i=0; i<numCell; ++i)
+      T.cell(i).calculatePCAPlane(vertexData);
+  }
 }
 
 InitiateWallLength::
@@ -534,9 +554,12 @@ InitiateWallLength(std::vector<double> &paraValue,
 
 void InitiateWallLength::
 initiate(Tissue &T,
-	 DataMatrix &cellData,
-	 DataMatrix &wallData,
-	 DataMatrix &vertexData)
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {
   size_t dimension = vertexData[0].size();
   size_t numWall = T.numWall();
@@ -600,7 +623,10 @@ void InitiateWallMesh::
 initiate(Tissue &T,
 	 DataMatrix &cellData,
 	 DataMatrix &wallData,
-	 DataMatrix &vertexData)
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs)
 {
   size_t dimension = vertexData[0].size();
   size_t numWallOld = T.numWall();
@@ -724,9 +750,12 @@ StrainTest(std::vector<double> &paraValue,
 
 void StrainTest::
 initiate(Tissue &T,
-	 DataMatrix &cellData,
-	 DataMatrix &wallData,
-	 DataMatrix &vertexData)
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
 {
 }
 
@@ -799,10 +828,14 @@ CalculateVertexStressDirection::CalculateVertexStressDirection(std::vector<doubl
   }
 }
 
-void CalculateVertexStressDirection::initiate(Tissue &T,
-					      DataMatrix &cellData,
-					      DataMatrix &wallData,
-					      DataMatrix &vertexData)
+void CalculateVertexStressDirection::
+initiate(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs) 
 {
   if (parameter(0) == 1.0) {
     size_t numVertex = T.numVertex();
@@ -813,13 +846,14 @@ void CalculateVertexStressDirection::initiate(Tissue &T,
   }
 }
 
-void CalculateVertexStressDirection::derivs(Tissue &T,
-					    DataMatrix &cellData,
-					    DataMatrix &wallData,
-					    DataMatrix &vertexData,
-					    DataMatrix &cellDerivs,
-					    DataMatrix &wallDerivs,
-					    DataMatrix &vertexDerivs) 
+void CalculateVertexStressDirection::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs) 
 {
   if (parameter(0) != 1.0) {
     size_t numVertex = T.numVertex();
@@ -829,11 +863,12 @@ void CalculateVertexStressDirection::derivs(Tissue &T,
   }
 }
 
-void CalculateVertexStressDirection::update(Tissue &T,
-					    DataMatrix &cellData,
-					    DataMatrix &wallData,
-					    DataMatrix &vertexData,
-					    double h)
+void CalculateVertexStressDirection::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h)
 {
   if (parameter(0) == 1.0) {
     size_t numVertex = T.numVertex();

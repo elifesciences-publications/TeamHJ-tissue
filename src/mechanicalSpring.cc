@@ -406,18 +406,10 @@ derivs(Tissue &T,
   }
 }
 
-void VertexFromWallSpringMT::
-initiate(Tissue &T,
-				 DataMatrix &cellData,
-				 DataMatrix &wallData,
-				 DataMatrix &vertexData )
-{
-}
-
 VertexFromWallSpringMTSpatial::
 VertexFromWallSpringMTSpatial(std::vector<double> &paraValue, 
-														std::vector< std::vector<size_t> > 
-														&indValue ) 
+			      std::vector< std::vector<size_t> > 
+			      &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
   if( paraValue.size()!=6 ) {
@@ -692,60 +684,63 @@ derivs(Tissue &T,
 
 void VertexFromWallSpringMTHistory::
 initiate(Tissue &T,
-				 DataMatrix &cellData,
-				 DataMatrix &wallData,
-				 DataMatrix &vertexData)
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs)
 {
   //Do the initiation for each wall
   size_t numWalls = T.numWall();
-	size_t directionIndex = variableIndex(0,1);
-	size_t dimension = T.vertex(0).numPosition();
+  size_t directionIndex = variableIndex(0,1);
+  size_t dimension = T.vertex(0).numPosition();
   
   for( size_t i=0 ; i<numWalls ; ++i ) {
     Vertex* v1 = T.wall(i).vertex1();
     Vertex* v2 = T.wall(i).vertex2();
-		
+    
     //Calculate shared factors
     double distance=0.0,c1Norm=0.0,c2Norm=0.0;
-		std::vector<double> n_w(dimension),n_c1(dimension),n_c2(dimension);
+    std::vector<double> n_w(dimension),n_c1(dimension),n_c2(dimension);
     for( size_t d=0 ; d<dimension ; d++ ) {
-			n_w[d] = v2->position(d)-v1->position(d);
-			distance += n_w[d]*n_w[d];
-			if( T.wall(i).cell1() != T.background() && 
-					T.wall(i).cell1()->variable(directionIndex+dimension)>0.5 ) {
-				n_c1[d] = T.wall(i).cell1()->variable(directionIndex+d);
-				c1Norm += n_c1[d]*n_c1[d];
-			}
-			if( T.wall(i).cell2() != T.background() &&
-					T.wall(i).cell2()->variable(directionIndex+dimension)>0.5 ) {
-				n_c2[d] = T.wall(i).cell2()->variable(directionIndex+d);
-				c2Norm += n_c2[d]*n_c2[d];			
-			}
-		}
+      n_w[d] = v2->position(d)-v1->position(d);
+      distance += n_w[d]*n_w[d];
+      if( T.wall(i).cell1() != T.background() && 
+	  T.wall(i).cell1()->variable(directionIndex+dimension)>0.5 ) {
+	n_c1[d] = T.wall(i).cell1()->variable(directionIndex+d);
+	c1Norm += n_c1[d]*n_c1[d];
+      }
+      if( T.wall(i).cell2() != T.background() &&
+	  T.wall(i).cell2()->variable(directionIndex+dimension)>0.5 ) {
+	n_c2[d] = T.wall(i).cell2()->variable(directionIndex+d);
+	c2Norm += n_c2[d]*n_c2[d];			
+      }
+    }
     distance = std::sqrt( distance );
-		c1Norm = std::sqrt( c1Norm );
-		c2Norm = std::sqrt( c2Norm );
-		double c1Fac=0.0,c2Fac=0.0;
-		if( T.wall(i).cell1() != T.background() &&
-				T.wall(i).cell1()->variable(directionIndex+dimension)>0.5 ) {
-			for( size_t d=0 ; d<dimension ; d++ )		
-				c1Fac += n_c1[d]*n_w[d];
-			c1Fac = std::fabs(c1Fac)/(c1Norm*distance);
-		}
-		else
-			c1Fac = 0.5;//1.0;
-		if( T.wall(i).cell2() != T.background() &&
-				T.wall(i).cell2()->variable(directionIndex+dimension)>0.5 ) {
-			for( size_t d=0 ; d<dimension ; d++ )		
-				c2Fac += n_c2[d]*n_w[d];
-			c2Fac = std::fabs(c2Fac)/(c2Norm*distance);
-		}
-		else
-			c2Fac = 0.5;//1.0;
-		
-		wallData[i][variableIndex(1,0)] = parameter(0)+parameter(1) *
-			(2.0-c1Fac-c2Fac);
-	}
+    c1Norm = std::sqrt( c1Norm );
+    c2Norm = std::sqrt( c2Norm );
+    double c1Fac=0.0,c2Fac=0.0;
+    if( T.wall(i).cell1() != T.background() &&
+	T.wall(i).cell1()->variable(directionIndex+dimension)>0.5 ) {
+      for( size_t d=0 ; d<dimension ; d++ )		
+	c1Fac += n_c1[d]*n_w[d];
+      c1Fac = std::fabs(c1Fac)/(c1Norm*distance);
+    }
+    else
+      c1Fac = 0.5;//1.0;
+    if( T.wall(i).cell2() != T.background() &&
+	T.wall(i).cell2()->variable(directionIndex+dimension)>0.5 ) {
+      for( size_t d=0 ; d<dimension ; d++ )		
+	c2Fac += n_c2[d]*n_w[d];
+      c2Fac = std::fabs(c2Fac)/(c2Norm*distance);
+    }
+    else
+      c2Fac = 0.5;//1.0;
+    
+    wallData[i][variableIndex(1,0)] = parameter(0)+parameter(1) *
+      (2.0-c1Fac-c2Fac);
+  }
 }
 
 VertexFromEpidermalWallSpring::

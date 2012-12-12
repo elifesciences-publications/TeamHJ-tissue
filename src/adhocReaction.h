@@ -134,7 +134,10 @@ class VertexTranslateToMax : public BaseReaction {
   void initiate(Tissue &T,
 		DataMatrix &cellData,
 		DataMatrix &wallData,
-		DataMatrix &vertexData);
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
   
   void derivs(Tissue &T,
 	      DataMatrix &cellData,
@@ -154,7 +157,14 @@ class VertexTranslateToMax : public BaseReaction {
 ///
 /// @brief Centers the tissue such that the center of mass is in origo
 ///
-/// The translation is done at each update (i.e. after each ODE integration step)
+/// The translation is done at each update (i.e. after each ODE integration step), mainly for
+/// plotting by keeping the tissue centered.
+///
+/// In a model file the reaction is given by:
+///
+/// @verbatim
+/// CenterCOM 0 0
+/// @endverbatim
 ///  
 class CenterCOM : public BaseReaction
 {
@@ -165,7 +175,10 @@ public:
   void initiate(Tissue &T,
 		DataMatrix &cellData,
 		DataMatrix &wallData,
-		DataMatrix &vertexData);
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);
   
   void derivs(Tissue &T,
 	      DataMatrix &cellData,
@@ -204,9 +217,12 @@ public:
   CenterCOMcenterTriangulation(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue);
 	
   void initiate(Tissue &T,
-		DataMatrix &cellData,
-		DataMatrix &wallData,
-		DataMatrix &vertexData);
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);
   
   void derivs(Tissue &T,
 	      DataMatrix &cellData,
@@ -244,7 +260,10 @@ public:
   void initiate(Tissue &T,
 		DataMatrix &cellData,
 		DataMatrix &wallData,
-		DataMatrix &vertexData);
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
   
   void derivs(Tissue &T,
 	      DataMatrix &cellData,
@@ -277,7 +296,10 @@ public:
   void initiate(Tissue &T,
 		DataMatrix &cellData,
 		DataMatrix &wallData,
-		DataMatrix &vertexData);
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
   
   void derivs(Tissue &T,
 	      DataMatrix &cellData,
@@ -316,7 +338,10 @@ class InitiateWallMesh : public BaseReaction {
   void initiate(Tissue &T,
 		DataMatrix &cellData,
 		DataMatrix &wallData,
-		DataMatrix &vertexData);
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
   
   void derivs(Tissue &T,
 	      DataMatrix &cellData,
@@ -341,7 +366,10 @@ public:
   void initiate(Tissue &T,
 		DataMatrix &cellData,
 		DataMatrix &wallData,
-		DataMatrix &vertexData);
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
 	
   void derivs(Tissue &T,
 	      DataMatrix &cellData,
@@ -354,33 +382,36 @@ public:
 
 class CalculateVertexStressDirection : public BaseReaction
 {
-public:
-	
-	CalculateVertexStressDirection(std::vector<double> &paraValue, 
-		std::vector< std::vector<size_t> > 
-		&indValue );
-	
-	void initiate(Tissue &T,
-		DataMatrix &cellData,
-		DataMatrix &wallData,
-		DataMatrix &vertexData);
-	
-	void derivs(Tissue &T,
+ public:
+  
+  CalculateVertexStressDirection(std::vector<double> &paraValue, 
+				 std::vector< std::vector<size_t> > 
+				 &indValue );
+  
+  void initiate(Tissue &T,
 		DataMatrix &cellData,
 		DataMatrix &wallData,
 		DataMatrix &vertexData,
 		DataMatrix &cellDerivs,
 		DataMatrix &wallDerivs,
 		DataMatrix &vertexDerivs );
-	
-	void update(Tissue &T,
-		DataMatrix &cellData,
-		DataMatrix &wallData,
-		DataMatrix &vertexData,
-		double h);
-
-private:
-	std::vector<size_t> wallForceIndexes_;
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+  
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+  
+ private:
+  std::vector<size_t> wallForceIndexes_;
 };
 
 #endif //ADHOCREACTION_H

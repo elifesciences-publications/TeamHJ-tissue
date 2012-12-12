@@ -958,7 +958,7 @@ class TemplateVolumeChange : public BaseReaction
  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
  ///
   TemplateVolumeChange(std::vector<double> &paraValue, 
-			 std::vector< std::vector<size_t> > &indValue ); 
+		       std::vector< std::vector<size_t> > &indValue ); 
 
   ///
   /// @brief Derivative function for this reaction class
@@ -979,7 +979,12 @@ class TemplateVolumeChange : public BaseReaction
   /// @see BaseReaction::initiate(Tissue &T,...)
   ///
   void initiate(Tissue &T,
-                DataMatrix &vertexData );  
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
   ///
   /// @brief Update function for this reaction class
   ///

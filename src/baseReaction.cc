@@ -31,40 +31,58 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   
   //Growth related updates
   //growth.h,growth.cc
-  if(idValue == "WallGrowthExponentialTruncated")
-    return new WallGrowthExponentialTruncated(paraValue, indValue);
-  else if(idValue == "WallGrowthExponentialStressTruncated")
-    return new WallGrowthExponentialStressTruncated(paraValue, indValue);
-  else if(idValue == "WallGrowthStress")
-    return new WallGrowthStress(paraValue, indValue);
-  else if(idValue == "WallGrowthStresscenterTriangulation")
-    return new WallGrowthStresscenterTriangulation(paraValue, indValue);
-  else if(idValue == "WallGrowthStressSpatial")
-    return new WallGrowthStressSpatial(paraValue, indValue);
-  else if(idValue == "WallGrowthStressSpatialSingle")
-    return new WallGrowthStressSpatialSingle(paraValue, indValue);
-  else if(idValue == "WallGrowthStressConcentrationHill")
-    return new WallGrowthStressConcentrationHill(paraValue, indValue);
-  else if(idValue == "WallGrowthConstantStressEpidermalAsymmetric")
-    return new WallGrowthConstantStressEpidermalAsymmetric(paraValue, indValue);
+  if(idValue == "WallGrowthExponentialTruncated" ) {
+    std::cerr << "Reaction WallGrowthExponentialTruncated has been replaced by WallGrowth::Constant." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  else if(idValue == "WallGrowth::Constant" )
+    return new WallGrowth::Constant(paraValue, indValue);
+  else if(idValue == "WallGrowthExponentialStressTruncated") {
+    std::cerr << "Reaction WallGrowthExponentialStressTruncated "
+	      << "has been replaced by WallGrowth::Stress (setting the stretch_flag to 1 and provide L_th)." 
+	      << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  else if(idValue == "WallGrowthStress" || idValue == "WallGrowth::Stress" )
+    return new WallGrowth::Stress(paraValue, indValue);
+  else if (idValue == "WallGrowthStresscenterTriangulation" ||
+	   idValue == "WallGrowth::CenterTriangulation::Stress" ||
+	   idValue == "CenterTriangulation::WallGrowth::Stress")
+    return new WallGrowth::CenterTriangulation::Stress(paraValue, indValue);
+  else if(idValue == "WallGrowthStressSpatial" || idValue == "WallGrowth::StressSpatial")
+    return new WallGrowth::StressSpatial(paraValue, indValue);
+  else if(idValue == "WallGrowthStressSpatialSingle" || idValue == "WallGrowth::StressSpatialSingle")
+    return new WallGrowth::StressSpatialSingle(paraValue, indValue);
+  else if(idValue == "WallGrowthStressConcentrationHill" || idValue == "WallGrowth::StressConcentrationHill")
+    return new WallGrowth::StressConcentrationHill(paraValue, indValue);
+  else if(idValue == "WallGrowthConstantStressEpidermalAsymmetric" || 
+	  idValue == "WallGrowth::ConstantStressEpidermalAsymmetric")
+    return new WallGrowth::ConstantStressEpidermalAsymmetric(paraValue, indValue);
+  else if (idValue == "WallLengthGrowExperimental") {
+    std::cerr << "Reaction WallLengthGrowExperimental "
+	      << "has been replaced by WallGrowth::Force. Better is to use the WallGrowth::Stress "
+	      << "(setting the stretch_flag to 0 and not provide L_th)." 
+	      << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  else if (idValue == "WallGrowthConstantStress" || 
+	   idValue == "WallGrowthConstantStressConcentrationHill") {
+    std::cerr << "BaseReaction::createReaction() WallGrowthConstantStress* has been "
+	      << "replaced by WallGrowth::Stress*." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  else if (idValue == "WallGrowth::Force")
+    return new WallGrowth::Force(paraValue, indValue);
   else if(idValue == "MoveVertexRadially")
     return new MoveVertexRadially(paraValue, indValue);
   else if(idValue == "MoveVertexRadiallycenterTriangulation")
     return new MoveVertexRadiallycenterTriangulation(paraValue, indValue);
   else if(idValue == "MoveVertexSphereCylinder")
     return new MoveVertexSphereCylinder(paraValue, indValue);
-  else if (idValue == "WallLengthGrowExperimental")
-    return new WallLengthGrowExperimental(paraValue, indValue);
   else if (idValue == "WaterVolumeFromTurgor")
     return new WaterVolumeFromTurgor(paraValue, indValue);
   else if (idValue == "DilutionFromVertexDerivs")
     return new DilutionFromVertexDerivs(paraValue, indValue);
-  else if (idValue == "WallGrowthConstantStress" || 
-	   idValue == "WallGrowthConstantStressConcentrationHill") {
-    std::cerr << "BaseReaction::createReaction() WallGrowthConstantStress* has been "
-	      << "replaced by WallGrowthStress*." << std::endl;
-    exit(-1);
-  }
   
   //Mechanical interactions between vertices
   //mechanicalSpring.h,mechanicalSpring.cc
@@ -165,8 +183,8 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
     return new VertexFromExternalWall(paraValue,indValue);
   else if(idValue=="TemplateVolumeChange")
     return new TemplateVolumeChange(paraValue,indValue);
-  else if(idValue=="CalculateAngleVectors")
-    return new CalculateAngleVectors(paraValue,indValue);
+  //else if(idValue=="CalculateAngleVectors")
+  //return new CalculateAngleVectors(paraValue,indValue);
   else if (idValue == "DebugReaction")
     return new DebugReaction(paraValue, indValue);
   

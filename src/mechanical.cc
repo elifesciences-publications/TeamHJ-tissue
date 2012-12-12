@@ -3704,22 +3704,27 @@ TemplateVolumeChange::TemplateVolumeChange(std::vector<double> &paraValue,
 {
 }
 
-void TemplateVolumeChange:: initiate(Tissue &T,
-                                     DataMatrix &vertexData)
+void TemplateVolumeChange::
+initiate(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs )
 {
   size_t dimension=3; //Only implemented for 3D models
   assert (dimension==vertexData[0].size());
   vertexDataRest.resize(vertexData.size());
   for(size_t i=0 ; i<vertexDataRest.size() ;++i)
     vertexDataRest[i].resize(vertexData[i].size());
-
-
+  
   size_t numVertices = vertexData.size();
 
   for (size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex) 
     for (size_t d=0; d<dimension; ++d) {
       vertexDataRest[vertexIndex][d]=vertexData[vertexIndex][d];
-  }
+    }
 }
 
 void TemplateVolumeChange::
@@ -3729,15 +3734,18 @@ derivs(Tissue &T,
        DataMatrix &vertexData,
        DataMatrix &cellDerivs,
        DataMatrix &wallDerivs,
-       DataMatrix &vertexDerivs ) {
+       DataMatrix &vertexDerivs )
+{
 }
 
-void TemplateVolumeChange:: update(Tissue &T,
-                                   DataMatrix &cellData,
-                                   DataMatrix &vertexData,
-                                   DataMatrix &vertexDerivs)
-{ size_t numVertices = vertexData.size();
-
+void TemplateVolumeChange::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &vertexData,
+       DataMatrix &vertexDerivs)
+{ 
+  size_t numVertices = vertexData.size();
+  
   double VolumeChange=0;
   for(size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex) 
     { VolumeChange += std::sqrt( (vertexData[vertexIndex][0]-vertexDataRest[vertexIndex][0])*
@@ -3752,11 +3760,11 @@ void TemplateVolumeChange:: update(Tissue &T,
   for(size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex) 
     { 
       if (vertexDerivs[0].size()>1)
-      VolumeChangeDerT += std::sqrt( vertexDerivs[vertexIndex][0]*vertexDerivs[vertexIndex][0]+
-                                     vertexDerivs[vertexIndex][1]*vertexDerivs[vertexIndex][1]+
-                                     vertexDerivs[vertexIndex][2]*vertexDerivs[vertexIndex][2]  );
+	VolumeChangeDerT += std::sqrt( vertexDerivs[vertexIndex][0]*vertexDerivs[vertexIndex][0]+
+				       vertexDerivs[vertexIndex][1]*vertexDerivs[vertexIndex][1]+
+				       vertexDerivs[vertexIndex][2]*vertexDerivs[vertexIndex][2]  );
     }
-
+  
   cellData[1][24]=VolumeChange;
   cellData[1][25]=deltaVolumeChange;
   cellData[2][25]=VolumeChangeDerT;

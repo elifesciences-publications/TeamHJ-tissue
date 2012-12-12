@@ -47,7 +47,7 @@ class AuxinModelStress : public BaseReaction {
 ///  
 /// @f[ \frac{dX_i}{dt} = p_8 A_i - p_9 X_i @f]
 ///  
-/// @f[ \frac{dM_i}{dt} = p_{10} \Theta_{L1} - p_{11} M_i @f]
+/// @f[ \frac{dM_i}{dt} = p_{10} \theta_{L1} - p_{11} M_i @f]
 ///  
 /// @f[ P_{in} = \frac{P_i X_n}{(p_3 + \sum_{k}^{neigh} X_k)} @f]
 ///  
@@ -81,12 +81,12 @@ class AuxinModelSimple1 : public BaseReaction {
   feedback from a wall variable. PIN and auxin are updated
   according to:
   
-  dA_i/dt = p0 - p1*A_i +p4*\Sum_{neigh} (A_n-A_i) + 
-  p3*\Sum_{neigh} (P_ni*A_n-P_in*A_i) 
+  dA_i/dt = p0 - p1*A_i +p4*\sum_{neigh} (A_n-A_i) + 
+  p3*\sum_{neigh} (P_ni*A_n-P_in*A_i) 
   
   dP_i/dt = p5 - p6*P_i 
   
-  P_in = P_i*X_in/(p_2+\Sum_{k,neigh}X_ik)
+  P_in = P_i*X_in/(p_2+\sum_{k,neigh}X_ik)
   
   where X_in is the variable in the wall.
   In addition, the column index for auxin, PIN, X (in wall) should be given.
@@ -118,12 +118,12 @@ class AuxinModelSimple1Wall : public BaseReaction {
 ///
 /// PIN and auxin are updated according to:
 ///
-///	dA_i/dt = p0 - p1*A_i +p2*\Sum_{neigh} (A_n-A_i) + 
-///	p3*\Sum_{neigh} (P_ni*A_n-P_in*A_i) 
+///	dA_i/dt = p0 - p1*A_i +p2*\sum_{neigh} (A_n-A_i) + 
+///	p3*\sum_{neigh} (P_ni*A_n-P_in*A_i) 
 ///
 ///	dP_i/dt = p4 - p5*P_i 
 ///
-///	P_in = P_i*X_in/(p_6+\Sum_{k,neigh}X_ik)
+///	P_in = P_i*X_in/(p_6+\sum_{k,neigh}X_ik)
 ///
 ///     k_in = p_7 + p_8/(p_9+A_i)
 ///
@@ -153,14 +153,14 @@ class AuxinModelSimpleStress : public BaseReaction {
 /*!A complete pattern generating auxin model based on only cellular
   compartments. The four molecules are updated according to:
   
-  dA_i/dt = p0*M_i p1 - p2*A_i +p5*\Sum_{neigh} (A_n-A_i) + 
-  p4*\Sum_{neigh} (P_ni*A_n-P_in*A_i) 
+  dA_i/dt = p0*M_i p1 - p2*A_i +p5*\sum_{neigh} (A_n-A_i) + 
+  p4*\sum_{neigh} (P_ni*A_n-P_in*A_i) 
   
   dP_i/dt = p6 - p7*P_i 
   
   dX_i/dt = p8*A_i - p9*X_i
   
-  dM_i/dt = p10*\Theta_L1 - p11*M_i
+  dM_i/dt = p10*\theta_L1 - p11*M_i
   
   In addition, the column index for auxin, PIN, AUX1, PID, X, 
   and M should be given.
@@ -186,14 +186,14 @@ class AuxinModelSimple2 : public BaseReaction {
 /*!A complete pattern generating auxin model based on only cellular
   compartments. The four molecules are updated according to:
   
-  dA_i/dt = p0*M_i p1 - p2*A_i +p5*\Sum_{neigh} (A_n-A_i) + 
-  p4*\Sum_{neigh} (P_ni*A_n-P_in*A_i) 
+  dA_i/dt = p0*M_i p1 - p2*A_i +p5*\sum_{neigh} (A_n-A_i) + 
+  p4*\sum_{neigh} (P_ni*A_n-P_in*A_i) 
   
   dP_i/dt = p6 - p7*P_i 
   
   dX_i/dt = p8*A_i - p9*X_i
   
-  dM_i/dt = p10*\Theta_L1 - p11*M_i
+  dM_i/dt = p10*\theta_L1 - p11*M_i
   
   In addition, the column index for auxin, PIN, AUX1, PID, X, 
   and M should be given.
