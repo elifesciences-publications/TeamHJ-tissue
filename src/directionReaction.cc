@@ -280,6 +280,132 @@ void UpdateMTDirection::update(Tissue &T,
   }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+UpdateMTDirectionEquilibrium::UpdateMTDirectionEquilibrium(std::vector<double> &paraValue,
+				     std::vector< std::vector<size_t> > &indValue)
+{
+  if (paraValue.size() != 3) {
+    std::cerr << "UpdateMTDirectionEquilibrium::UpdateMTDirectionEquilibrium() " 
+	      << "Uses three parameters: k_rate and mechanical equilibrium threshould and stress difference threshold " << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  if (indValue.size() != 4 || indValue[0].size() != 1 ||  indValue[1].size() != 1 || indValue[2].size() != 1|| indValue[3].size() != 2) {
+    std::cerr << "UpdateMTDirectionEquilibrium::UpdateMTDirectionEquilibrium() " << std::endl
+	      << "First level gives target direction index (input)." << std::endl
+              << "Second level gives real direction index." << std::endl
+	      << "Third level gives store index for velocity." << std::endl
+	      << "Fourth level gives  indices for max-stress and MT-stress values." << std::endl;
+
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("UpdateMTDirectionEquilibrium");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "k_rate";
+  tmp[1] = "velocitythreshold";
+  tmp[2] = "stressdifthreshold";	      
+  setParameterId(tmp);
+}
+
+void UpdateMTDirectionEquilibrium::initiate(Tissue &T,
+				 DataMatrix &cellData,
+				 DataMatrix &wallData,
+				 DataMatrix &vertexData) 
+{
+  size_t numCell=cellData.size();
+  size_t dimension=vertexData[0].size();
+  size_t inIndex=variableIndex(0,0);   // target
+  size_t outIndex=variableIndex(1,0);  // MT
+ 
+  for (size_t i=0; i<numCell; ++i)
+    for (size_t d=0; d<dimension; ++d)
+      cellData[i][outIndex+d] = cellData[i][inIndex+d];
+}
+
+void UpdateMTDirectionEquilibrium::derivs(Tissue &T,
+			       DataMatrix &cellData,
+			       DataMatrix &wallData,
+			       DataMatrix &vertexData,
+			       DataMatrix &cellDerivs,
+			       DataMatrix &wallDerivs,
+			       DataMatrix &vertexDerivs ) {
+
+  size_t numCell=cellData.size();
+  size_t velocityIndex=variableIndex(2,0);
+
+ 
+  for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) {
+    size_t numwall= T.cell(cellIndex).numWall();
+    cellData[cellIndex][velocityIndex]=0;
+    for(size_t j=0; j< numwall ; j++){
+      size_t vtx = T.cell(cellIndex).vertex(j)->index();
+      cellData[cellIndex][velocityIndex] +=std::sqrt( vertexDerivs[vtx][0]*vertexDerivs[vtx][0]+
+                                                      vertexDerivs[vtx][1]*vertexDerivs[vtx][1]+
+                                                      vertexDerivs[vtx][2]*vertexDerivs[vtx][2] );  
+    }
+    //std::cerr<< cellData[cellIndex][velocityIndex] << std::endl;
+   
+  }
+  
+}
+
+void UpdateMTDirectionEquilibrium::update(Tissue &T,
+                                          DataMatrix &cellData,
+                                          DataMatrix &wallData,
+                                          DataMatrix &vertexData, 
+                                          double h) 
+{
+  size_t numCell=cellData.size();
+  size_t dimension=vertexData[0].size();
+  size_t inIndex=variableIndex(0,0);
+  size_t outIndex=variableIndex(1,0);
+  size_t velocityIndex=variableIndex(2,0);
+  size_t stressIndex=variableIndex(3,0);
+  size_t MTstressIndex=variableIndex(3,1);
+
+  if (parameter(0)==0.0)
+    return;
+  for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) {
+    double stressDif=(cellData[cellIndex][stressIndex]-cellData[cellIndex][MTstressIndex]) /cellData[cellIndex][stressIndex];
+
+    if (std::abs(stressDif) > parameter(2)) { 
+      // std::cerr<<"target" <<" "<<cellData[cellIndex][inIndex] 
+      // 	     <<" "<<cellData[cellIndex][inIndex+1] 
+      // 	     <<" "<<cellData[cellIndex][inIndex+2]<<std::endl;
+      // std::cerr<<"MT    " <<" "<<cellData[cellIndex][outIndex] 
+      // 	     <<" "<<cellData[cellIndex][outIndex+1] 
+      // 	     <<" "<<cellData[cellIndex][outIndex+2]<<std::endl;
+      // std::cerr<<"h:" <<" "<<h<<std::endl;    
+      
+      double temp=(cellData[cellIndex][outIndex  ]*cellData[cellIndex][inIndex  ]+
+		   cellData[cellIndex][outIndex+1]*cellData[cellIndex][inIndex+1]+
+		   cellData[cellIndex][outIndex+2]*cellData[cellIndex][inIndex+2] );
+      if ( temp<0 ){
+	cellData[cellIndex][outIndex  ] *=-1;  
+	cellData[cellIndex][outIndex+1] *=-1;  
+	cellData[cellIndex][outIndex+2] *=-1;  
+      }
+      
+      if ( cellData[cellIndex][velocityIndex] < parameter(1) ){
+	
+	for (size_t d=0; d<dimension; ++d)
+	  cellData[cellIndex][outIndex+d] += parameter(0)*h*(cellData[cellIndex][inIndex+d]-cellData[cellIndex][outIndex+d]);
+	//cellData[cellIndex][outIndex+d] += cellData[cellIndex][inIndex+d];
+	// Normalize
+	double norm=0.0;
+	for (size_t d=0; d<dimension; ++d)
+	  norm += cellData[cellIndex][outIndex+d]*cellData[cellIndex][outIndex+d];
+	norm = 1.0/std::sqrt(norm);
+	for (size_t d=0; d<dimension; ++d)
+	  cellData[cellIndex][outIndex+d] *= norm;
+      }
+    }
+  }
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 UpdateMTDirectionConcenHill::UpdateMTDirectionConcenHill(std::vector<double> &paraValue,
 				     std::vector< std::vector<size_t> > &indValue)
