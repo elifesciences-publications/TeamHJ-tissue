@@ -56,9 +56,13 @@ public:
 ///
 /// @verbatim
 /// ContinousMTDirection3d 1 2 1 1
+///
 /// k_rate
+///
 /// target index
+///
 /// MT index
+///
 /// @endverbatim
 
 
@@ -87,10 +91,15 @@ public:
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
+/// 
 /// UpdateMTDirection 1 2 1 1
+/// 
 /// k_rate
+/// 
 /// target index
+/// 
 /// MT index
+///
 /// @endverbatim
 
 class UpdateMTDirection : public BaseReaction
@@ -116,6 +125,63 @@ class UpdateMTDirection : public BaseReaction
 		    DataMatrix &vertexData,
 		    double h);
 };
+
+///
+/// @brief Updates a direction continuosly towards a direction updated for the cell
+///
+/// This function applies the update within the "update" and moves the
+/// direction toward a given direction using an Euler step directly on the direction vector.
+/// The update is done only in the cells that are close "enough" to equilibrium. Equilibrium 
+/// is considered as a state in which the addition of absolute values of velocity vectors of 
+/// vertices of a cell is less than a user defined threshold. 
+/// It normalizes the vector after the update.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+///
+/// UpdateMTDirectionEquilibrium 3 4 1 1 1 2 
+///
+/// k_rate
+/// equilibrium velocity threshold
+/// stress difference threshold
+///
+/// target index
+///
+/// MT index
+///
+/// max-stress index
+/// MT-stress index
+///
+/// velocity store index
+///
+/// @endverbatim
+
+
+class UpdateMTDirectionEquilibrium : public BaseReaction
+{
+ public:
+  UpdateMTDirectionEquilibrium(std::vector<double> &paraValue,
+		    std::vector< std::vector<size_t> > &indValue);
+  
+	void initiate(Tissue &T,
+		      DataMatrix &cellData,
+		      DataMatrix &wallData,
+		      DataMatrix &vertexData);
+	void derivs(Tissue &T,
+		    DataMatrix &cellData,
+		    DataMatrix &wallData,
+		    DataMatrix &vertexData,
+		    DataMatrix &cellDerivs,
+		    DataMatrix &wallDerivs,
+		    DataMatrix &vertexDerivs );
+	void update(Tissue &T,
+		    DataMatrix &cellData,
+		    DataMatrix &wallData,
+		    DataMatrix &vertexData,
+                    double h);
+};
+
 
 ///
 /// @brief Updates a direction continuosly towards a direction updated for the cell
