@@ -229,18 +229,62 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// VertexFromTRBSMT 8 1 3
-/// Y_modulus_Matrix Y_modulus_Fibre Poisson_Longit. P_coeff_Trans. MF-flag, plane-strain/stress-flag MT-angle MT-feedback-flag 
-/// L_ij-index MT_cellIndex anisotropyIndex
+///
+/// VertexFromTRBSMT 10 1 8
+/// 
+/// Y_matrix 
+/// Y_fiber 
+/// Poisson_Long
+/// Poisson_Trans
+/// MF_flag(0/1) 
+/// neighborWeight 
+/// unusedparameter 
+/// plane-strain/stress-flag 
+/// MT-angle MT-feedback-flag 
+/// 
+/// L_ij-index 
+/// MT_cellIndex 
+/// strainAnisotropy-Index
+/// stressAnisotropy-Index 
+/// areaRatioIndex 
+/// isoEnergyIndex
+/// anisoEnergyIndex 
+/// YoungL-index
 ///
 /// or
 ///
-/// VertexFromTRBSMT 8 3 3 0/1/2/3 0/1/2
-/// Y_modulus_Matrix Y_modulus_Fibre Poisson_Longit. P_coeff_Trans. MF-flag, plane-strain/stress-flag MT-angle MT-feedback-flag  
-/// L_ij-index MT_cellIndex anisotropyIndex
-/// optional index for storing strain(0: no strain, 1: strain, 2: strain/perpendicular strain, 3: strain/perpendicular strain/2nd strain)
-/// optional index for storing stress(0: no stress, 1: stress, 2: stress/2nd stress)
-/// @endverbatim
+/// VertexFromTRBSMT 10 3 8 0/1/2/3 0/1/2
+///
+/// Y_matrix
+/// Y_fiber
+/// Poisson_Long
+/// Poisson_Trans
+/// MF_flag(0/1)
+/// neighborWeight
+/// unusedparameter
+/// plane-strain/stress-flag
+/// MT-angle
+/// MT-feedback-flag
+/// 
+/// L_ij-index
+/// MT_cellIndex
+/// strainAnisotropy-Index
+/// stressAnisotropy-Index
+/// areaRatioIndex 
+/// isoEnergyIndex
+/// anisoEnergyIndex
+/// YoungL-index
+///
+/// optional index for storing strain(0: no strain,
+///                                   1: strain, 
+///                                   2: strain/perpendicular strain, 
+///                                   3: strain/perpendicular strain/2nd strain)
+///
+/// optional index for storing stress(0: no stress, 
+///                                   1: stress, 
+///                                   2: stress/2nd stress)
+///
+///  @endverbatim
 /// In case of storing strain/stress direction/value, in 3(2) dimensions, 
 /// strain/stress values will be stored after  (3) components of vectors.  
 /// The value for perpendicular strain is maximal strain value.
@@ -295,17 +339,69 @@ class VertexFromTRBSMT : public BaseReaction {
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// VertexFromTRBScenterTriangulationMT 8 2 3 1  
-/// Y_matrix Y_fiber Poisson_Long, Poisson_Trans, MF_flag plane-strain/stress-flag MT-angle MT-feedback-flag 
-/// L_ij-index MT_cellIndex Anisotropy-Index
+/// VertexFromTRBScenterTriangulationMT 10 2 11 1 
+/// 
+/// Y_matrix 
+/// Y_fiber 
+/// Poisson_Long
+/// Poisson_Trans
+/// MF_flag(0/1) 
+/// neighborWeight 
+/// unusedparameter 
+/// plane-strain/stress-flag 
+/// MT-angle 
+/// MT-feedback-flag 
+///
+/// L_ij-index 
+/// MT_cellIndex 
+/// strainAnisotropy-Index 
+/// stressAnisotropy-Index
+/// areaRatioIndex 
+/// isoEnergyIndex 
+/// anisoEnergyIndex 
+/// youngL-index 
+/// MTstressIndex 
+/// stressTensorIndex 
+/// normalVectorIndex
+///
 /// InternalVarStartIndex
+/// 
 /// or
-/// VertexFromTRBScenterTriangulationMT 8 4 3 1 0/1/2/3 0/1/2
-/// Y_matrix Y_fiber Poisson_Long  Poisson_Trans MF_flag plane-strain/stress-flag MT-angle MT-feedback-flag 
-/// L_ij-index MT_cellIndex Anisotropy-Index
+/// 
+/// VertexFromTRBScenterTriangulationMT 10 4 11 1 0/1/2/3 0/1/2
+///
+/// Y_matrix 
+/// Y_fiber 
+/// Poisson_Long  
+/// Poisson_Trans 
+/// MF_flag(0/1) 
+/// neighborWeight 
+/// unusedparameter 
+/// plane-strain/stress-flag 
+/// MT-angle 
+/// MT-feedback-flag
+/// 
+/// L_ij-index 
+/// MT_cellIndex 
+/// strainAnisotropy-Index 
+/// stressAnisotropy-Index
+/// areaRatioIndex 
+/// isoEnergyIndex 
+/// anisoEnergyIndex 
+/// youngL-index 
+/// MTstressIndex 
+/// stressTensorIndex 
+/// normalVectorIndex
+///
 /// InternalVarStartIndex
-/// optional index for storing strain(0: no strain, 1: strain, 2: strain/perpendicular strain, 3: strain/perpendicular strain/2nd strain)
-/// optional index for storing stress(0: no stress, 1: stress, 2: stress/2nd stress)
+///
+/// optional indices for storing strain(0: no strain, 
+///                                     1: strain, 
+///                                     2: strain/perpendicular strain, 
+///                                     3: strain/perpendicular strain/2nd strain)
+/// optional indices for storing stress(0: no stress, 
+///                                     1: stress, 
+///                                     2: stress/2nd stress)
 /// @endverbatim
 /// In case of storing strain/stress direction/value, in 3(2) dimensions, 
 /// strain/stress values will be stored after (3) components of vectors.
@@ -355,6 +451,8 @@ class VertexFromTRBScenterTriangulationMT : public BaseReaction {
 // 		DataMatrix &cellDerivs,
 // 		DataMatrix &wallDerivs,
 // 		DataMatrix &vertexDerivs );  
+
+
 };
 
 
@@ -442,5 +540,95 @@ class VertexFromTRBScenterTriangulationConcentrationHillMT : public BaseReaction
 		DataMatrix &wallDerivs,
 		DataMatrix &vertexDerivs );  
 };
+
+
+
+
+
+///
+/// @brief 
+/// Updates Young modulus of cells within "update" based on linear or nonlinear Fiber_model
+/// It uses anisotropy(stress or strain) that should be calculated by VertexFromTRBS... functions.
+/// and velocity that should be calculated by "UpdateMTdirectionEquilibrium" function. It cooperates 
+/// with TRBS functions via cell vector component wich is introduced for storing longitudinal Young modulus.
+/// 
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+///
+/// FiberModel 7 3 1 1 1
+/// 
+///  k_rate
+///  velocity threshold
+///  liniear-hill-flag 0/1
+///  k_hill
+///  n_hill
+///  Y_matrix
+///  Y_fiber
+///
+///  anisotropy index.
+///
+///  Young_Longitudinal index
+///
+///  store index for velocity from "UpdateMTdirectionEquilibrium"
+///
+/// @endverbatim
+///
+
+
+class FiberModel : public BaseReaction {
+  
+public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  FiberModel(std::vector<double> &paraValue, 
+             std::vector< std::vector<size_t> > 
+             &indValue );  
+ ///
+  /// @brief Reaction initiation applied before simulation starts
+  ///
+  /// @see BaseReaction::initiate(Tissue &T,...)
+  ///
+  void initiate(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData, 
+              double h); 
+};
+
 
 #endif
