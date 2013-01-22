@@ -554,12 +554,13 @@ InitiateWallLength(std::vector<double> &paraValue,
 
 void InitiateWallLength::
 initiate(Tissue &T,
-       DataMatrix &cellData,
-       DataMatrix &wallData,
-       DataMatrix &vertexData,
-       DataMatrix &cellDerivs,
-       DataMatrix &wallDerivs,
-       DataMatrix &vertexDerivs ) 
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs )
+	
 {
   size_t dimension = vertexData[0].size();
   size_t numWall = T.numWall();
@@ -877,3 +878,143 @@ update(Tissue &T,
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+MoveVerticesRandomlyCapCylinder::MoveVerticesRandomlyCapCylinder(std::vector<double> &paraValue, 
+							       std::vector< std::vector<size_t> > &indValue)
+{
+  if (paraValue.size() != 1) {
+    std::cerr << "MoveVerticesRandomlyCapCylinder::MoveVerticesRandomlyCapCylinder() "
+	      << "Uses one parameter: onlyInUpdateFlag\n";
+    exit(0);
+  }
+  
+  if (indValue.size() != 0) {
+    std::cerr << "MoveVerticesRandomlyCapCylinder::MoveVerticesRandomlyCapCylinder() "
+	      << "no parameter index.\n";
+    exit(0);
+  }
+	
+  setId("MoveVerticesRandomlyCapCylinder");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "onlyInUpdateFlag";
+  setParameterId(tmp);
+  
+  
+}
+
+void MoveVerticesRandomlyCapCylinder::initiate(Tissue &T,
+					       DataMatrix &cellData,
+					       DataMatrix &wallData,
+					       DataMatrix &vertexData,
+					       DataMatrix &cellDerivs,
+					       DataMatrix &wallDerivs,
+					       DataMatrix &vertexDerivs)
+{
+
+
+  size_t numVertices = T.numVertex();
+  double fac=parameter(0);
+  
+  double PI=3.14159265;
+  double R=10;  
+  double zmax=30;
+  double zmin=0;
+  
+  // Move vertices
+  for( size_t VertexIndex=0 ; VertexIndex<numVertices ; ++VertexIndex ) {
+    double a= rand();
+    double b= rand();
+    double c= RAND_MAX ;
+    double d=a/c;
+    double f=b/c;
+    double x=vertexData[ VertexIndex][0];
+    double y=vertexData[ VertexIndex][1];
+    double z=vertexData[ VertexIndex][2];
+    // if (z>zmin && z<zmax){
+    //   vertexData[ VertexIndex][2]+=fac*(d-0.5);
+    // }
+   
+    // if ((z<zmin && z>-9.6) || ( z>zmax && z<39.6)){
+    //   double teta=0;
+    //   if (z<zmin){
+    // 	teta=std::atan((std::sqrt(x*x+y*y))/z);  
+    //   }   
+    //   if (z>zmax){
+    // 	teta=std::atan((std::sqrt(x*x+y*y))/(z-zmax));  
+    //   }   
+    //   double phi=std::atan(y/x);     
+
+    //   if (x<0 ){phi +=PI;}
+    //   if (z<0 ){teta +=PI;}
+ 
+    //   teta +=fac*(d-0.5);
+    //   phi  +=fac*(f-0.5);
+    //   if ( z<zmin && z>-9.6 ){
+    // 	vertexData[ VertexIndex][0]=R*(std::sin(teta))*(std::cos(phi));
+    // 	vertexData[ VertexIndex][1]=R*(std::sin(teta))*(std::sin(phi));
+    // 	vertexData[ VertexIndex][2]=R*(std::cos(teta));
+    //   }
+    //   if ( z>zmax && z< 39.6 ){
+    // 	vertexData[ VertexIndex][0]=R*(std::sin(teta))*(std::cos(phi));
+    // 	vertexData[ VertexIndex][1]=R*(std::sin(teta))*(std::sin(phi));
+    // 	vertexData[ VertexIndex][2]=30+(R*(std::cos(teta)));
+    //   }
+    // } 
+    if (z>zmin && z<zmax){
+       
+      double phi=std::atan(y/x);     
+      if (x<0 ){phi +=PI;}
+      phi  +=fac*(f-0.5);
+      vertexData[ VertexIndex][0]=R*(std::cos(phi));
+      vertexData[ VertexIndex][1]=R*(std::sin(phi));
+      
+
+    }
+    
+    std::cerr<<"                                "<<a/c<<"  "<<b/c << std::endl;
+    
+  }
+  
+}
+
+
+
+
+
+
+void MoveVerticesRandomlyCapCylinder::derivs(Tissue &T,
+					    DataMatrix &cellData,
+					    DataMatrix &wallData,
+					    DataMatrix &vertexData,
+					    DataMatrix &cellDerivs,
+					    DataMatrix &wallDerivs,
+					    DataMatrix &vertexDerivs) 
+{
+   
+  
+}
+
+
+
+void MoveVerticesRandomlyCapCylinder::update(Tissue &T,
+					    DataMatrix &cellData,
+					    DataMatrix &wallData,
+					    DataMatrix &vertexData,
+					    double h)
+{
+  
+}
+
+
