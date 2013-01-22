@@ -516,6 +516,74 @@ public:
 
 
 ///
+/// @brief Updates vertices from a 'pressure' term defined to act in the normal
+/// direction to  triangular elements of the cell
+/// force for each triangular element can be calculated according to the element's 
+/// current area and then distributed equally on nodes (including the centeral node) 
+/// The pressure is applied increasingly (... linear in a given time span).
+/// It does not rely on  PCA  plane in contrast with 
+/// VertexFromCellPlane and VertexFromCellPlaneLinear .
+///
+/// A cell contributes to a vertex update with
+///
+/// @f[ \frac{dx_{i}}{dt} = p_{0} A n_{i} / N_{vertex} @f]
+///
+/// where @f$p_{0}@f$ is a 'pressure' parameter, A is the cell area @f$n_{i}@f$ is the 
+/// cell normal component and @f$N_{vertex}@f$ is the number of vertices for the cell.
+/// An additional parameter @f$p_{2}@f$ can be used to not include the area factor if
+/// set to zero (normally it should be set to 1).
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+///
+/// VertexFromCellPlaneLinearCenterTriangulation 3 1 1
+///
+/// P 
+/// Area_flag
+/// deltaT
+///
+/// InternalVarStartIndex
+///
+/// @endverbatim
+///
+/// @see CalculatePCAPlane
+///
+class VertexFromCellPlaneLinearCenterTriangulation : public BaseReaction
+{
+private:
+  
+  double timeFactor_;
+  
+public:
+  VertexFromCellPlaneLinearCenterTriangulation(std::vector<double> &paraValue,
+                            std::vector< std::vector<size_t> > &indValue);
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs);
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+  
+};
+
+
+
+
+
+///
 /// @brief Updates vertices from a 'pressure' term defined to act in the cell normal
 /// direction.
 ///
@@ -927,12 +995,15 @@ class VertexFromExternalWall : public BaseReaction {
 
 ///
 /// @brief Calculates change in template volume and its time derivative 
-/// and saves them in the cellData[1][24,25]
+/// and total Derivative and stores them in the given indices in cellData vector
 ///
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// TemplateVolumeChange 0 0
+/// TemplateVolumeChange 0 1 6
+/// cell-index-VolumeChange       component-index-VolumeChange
+/// cell-index-deltaVolumeChange  component-index-deltaVolumeChange
+/// cell-index-totalDerivative    component-index-totalDerivative
 ///
 /// @endverbatim
 /// 
@@ -942,7 +1013,9 @@ class TemplateVolumeChange : public BaseReaction
  private:
 
   DataMatrix vertexDataRest;
-
+  double VolumeChange;
+  double deltaVolumeChange;
+  double totalDerivative;
  public:
 
  ///
@@ -979,12 +1052,13 @@ class TemplateVolumeChange : public BaseReaction
   /// @see BaseReaction::initiate(Tissue &T,...)
   ///
   void initiate(Tissue &T,
-		DataMatrix &cellData,
-		DataMatrix &wallData,
-		DataMatrix &vertexData,
-		DataMatrix &cellDerivs,
-		DataMatrix &wallDerivs,
-		DataMatrix &vertexDerivs );
+                DataMatrix &cellData,
+                DataMatrix &wallData,
+                DataMatrix &vertexData,
+                DataMatrix &cellDerivs,
+                DataMatrix &wallDerivs,
+                DataMatrix &vertexDerivs);
+                 
   ///
   /// @brief Update function for this reaction class
   ///
@@ -993,7 +1067,95 @@ class TemplateVolumeChange : public BaseReaction
   void update(Tissue &T,
               DataMatrix &cellData,
 	      DataMatrix &vertexData,
-              DataMatrix &vertexDerivs);  
+              DataMatrix &wallData,
+              DataMatrix &vertexDerivs,
+              double h);  
+};
+
+
+
+
+
+///
+/// @brief Calculates abs(cos(...)) of angle between two 3d vectors
+/// (starting from given indices) in cellData vector and stores it in the given 
+/// index in cellData vector, uses no parameter 
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// CalculateAngleVectors 0 2 2 1
+/// start-index(1st vector)   start-index(2nd vector) 
+/// store-index(angle-deg) 
+///
+/// @endverbatim
+/// 
+class CalculateAngleVectors : public BaseReaction 
+{
+
+ private:
+
+  DataMatrix vertexDataRest;
+  double VolumeChange;
+  double deltaVolumeChange;
+  double totalDerivative;
+ public:
+
+ ///
+ /// @brief Main constructor
+ ///
+ /// This is the main constructor which sets the parameters and variable
+ /// indices that defines the reaction.
+ ///
+ /// @param paraValue vector with parameters
+ ///
+ /// @param indValue vector of vectors with variable indices
+ ///
+ /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+ ///
+  CalculateAngleVectors(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > &indValue ); 
+
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  ///
+  /// @brief Reaction initiation applied before simulation starts
+  ///
+  /// @see BaseReaction::initiate(Tissue &T,...)
+  ///
+  // void initiate(Tissue &T,
+  //               DataMatrix &cellData,
+  //               DataMatrix &wallData,
+  //               DataMatrix &vertexData,
+  //               DataMatrix &cellDerivs,
+  //               DataMatrix &wallDerivs,
+  //               DataMatrix &vertexDerivs);
+                 
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+
+
+  // void update(Tissue &T,
+  //             DataMatrix &cellData,
+  //             DataMatrix &vertexData,
+  //             DataMatrix &wallData,
+  //             DataMatrix &vertexDerivs,
+  //             double h);
+  
 };
 
 
