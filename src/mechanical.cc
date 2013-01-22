@@ -2065,6 +2065,7 @@ derivs(Tissue &T,
       for (size_t d=0; d<dimension; ++d) {
 	vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
       }
+      // std::cerr << timeFactor_ * parameter(0)  << std::endl;
     }	
     // For saving normals in direction used for test plotting
     //for (size_t d=0; d<dimension; ++d)
@@ -2073,6 +2074,7 @@ derivs(Tissue &T,
   //std::cerr << numFlipNormal << " cells out of " << T.numCell() << " has flipped normal."
   //	      << std::endl;
 }
+
 
 void VertexFromCellPlaneLinear::update(Tissue &T,
                                        DataMatrix &cellData,
@@ -2088,7 +2090,192 @@ void VertexFromCellPlaneLinear::update(Tissue &T,
   //cellData[0][12]=timeFactor_*parameter(0);
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////7
+
+
+VertexFromCellPlaneLinearCenterTriangulation::
+VertexFromCellPlaneLinearCenterTriangulation(std::vector<double> &paraValue,
+		    std::vector< std::vector<size_t> > &indValue)
+{
+  if (paraValue.size() != 3) {
+    std::cerr << "VertexFromCellPlaneLinearCenterTriangulation::VertexFromCellPlaneLinearCenterTriangulation() " 
+	      << "Uses two parameters: k_force and areaFlag and time span" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (paraValue[1]!=0.0 && paraValue[1]!=1.0) {
+    std::cerr << "VertexFromCellPlaneLinearCenterTriangulation::VertexFromCellPlaneLinearCenterTriangulation() " 
+	      << "areaFlag must be zero (no area included) or one (area included)." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (paraValue[1]<=0.0 ) {
+    std::cerr << "VertexFromCellPlaneLinearCenterTriangulation::VertexFromCellPlaneLinearCenterTriangulation() " 
+	      << "time span must be positive." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (indValue.size() != 1) {
+    std::cerr << "VertexFromCellPlaneLinearCenterTriangulation::VertexFromCellPlane() " 
+	      << std::endl
+	       << "Start of additional Cell variable indices (center(x,y,z) " << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  setId("VertexFromCellPlaneLinearCenterTriangulation");
+  setParameter(paraValue);
+  setVariableIndex(indValue);
+  
+  std::vector<std::string> tmp(numParameter());
+  tmp[0] = "k_force";
+  tmp[1] = "areaFlag";
+  tmp[2] = "deltaT";
+
+  timeFactor_=0.0;
+  setParameterId(tmp);
+}
+
+void VertexFromCellPlaneLinearCenterTriangulation::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs)
+{
+  size_t dimension = vertexData[0].size();
+  if (dimension!=3) {
+    std::cerr << " VertexFromCellPlaneLinearCenterTriangulation::VertexFromCellPlaneLinearCenterTriangulation() " 
+	      << " Only implemented for three dimensions ." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+ size_t numCells = T.numCell();
+ size_t comIndex = variableIndex(0,0);
+ size_t lengthInternalIndex = comIndex+dimension;
+
+  for (size_t cellIndex= 0; cellIndex< numCells; ++cellIndex) {  
+
+    size_t numWalls = T.cell(cellIndex).numWall();
+    //Cell cell = T.cell(n);        
+    // double normal[3]={0,0,0};
+    // normal[0]=cellData[n][normalVectorIndex  ]; 
+    // normal[1]=cellData[n][normalVectorIndex+1]; 
+    // normal[2]=cellData[n][normalVectorIndex+2]; 
+
+     if(  T.cell(cellIndex).numVertex()!= numWalls ) {
+       std::cerr << "VertexFromTRBCellPlaneLinearcenterTriangulationMT::derivs() same number of vertices and walls."
+		<< " Not for cells with " << T.cell(cellIndex).numWall() << " walls and "
+		<< T.cell(cellIndex).numVertex() << " vertices!"	
+		<< std::endl;
+      exit(-1);
+    }
+     // One triangle per 'vertex' in cyclic order
+     for (size_t wallindex=0; wallindex<numWalls; ++wallindex) { 
+       size_t kPlusOneMod = (wallindex+1)%numWalls;
+       //size_t v1 = com;
+       size_t v2 = T.cell(cellIndex).vertex(wallindex)->index();
+       size_t v3 = T.cell(cellIndex).vertex(kPlusOneMod)->index();
+
+       //size_t w1 = internal wallindex
+      size_t w2 = T.cell(cellIndex).wall(wallindex)->index();
+      //size_t w3 = internal wallindex+1
+      // Position matrix holds in rows positions for com, vertex(wallindex), vertex(wallindex+1)
+      DataMatrix position(3,vertexData[v2]);
+      for (size_t d=0; d<dimension; ++d)
+	position[0][d] = cellData[cellIndex][comIndex+d]; // com position
+      //position[1] = vertexData[v2]; // given by initiation
+      position[2] = vertexData[v3];
+      //position[0][2] z for vertex 1 of the current element
+
+      // Lengths are from com-vertex(wallindex), vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
+      std::vector<double> length(numWalls);
+      length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
+			     (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
+			     (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
+      
+      length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
+        
+      length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
+			     (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
+			     (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
+
+      // current Area of the element (using Heron's formula)                                      
+      double Area=std::sqrt( ( length[0]+length[1]+length[2])*
+			     (-length[0]+length[1]+length[2])*
+			     ( length[0]-length[1]+length[2])*
+			     ( length[0]+length[1]-length[2])  )*0.25;
+
+      double tempA=std::sqrt((position[2][0]-position[1][0])*(position[2][0]-position[1][0])+
+                             (position[2][1]-position[1][1])*(position[2][1]-position[1][1])+
+                             (position[2][2]-position[1][2])*(position[2][2]-position[1][2])  );
+
+      double tempB=std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+                             (position[0][1]-position[1][1])*(position[0][1]-position[1][1])+
+                             (position[0][2]-position[1][2])*(position[0][2]-position[1][2])  );
+
+      double Xcurrent[3];      
+      Xcurrent[0]= (position[2][0]-position[1][0])/tempA;
+      Xcurrent[1]= (position[2][1]-position[1][1])/tempA;
+      Xcurrent[2]= (position[2][2]-position[1][2])/tempA;
+      
+      double Bcurrent[3];      
+      Bcurrent[0]= (position[0][0]-position[1][0])/tempB;
+      Bcurrent[1]= (position[0][1]-position[1][1])/tempB;
+      Bcurrent[2]= (position[0][2]-position[1][2])/tempB;
+
+      double normal[3];      
+      normal[0]= Xcurrent[1]*Bcurrent[2]-Xcurrent[2]*Bcurrent[1];
+      normal[1]= Xcurrent[2]*Bcurrent[0]-Xcurrent[0]*Bcurrent[2];
+      normal[2]= Xcurrent[0]*Bcurrent[1]-Xcurrent[1]*Bcurrent[0];
+
+      tempA=std:: sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
+      normal[0]=normal[0]/tempA;
+      normal[1]=normal[1]/tempA;
+      normal[2]=normal[2]/tempA;
+
+      // normal[0]=cellData[cellIndex][32];  
+      // normal[1]=cellData[cellIndex][33];  
+      // normal[2]=cellData[cellIndex][34];  
+
+       // Get the cell size
+       double A=1.0/3;
+       if (parameter(1)==1.0)
+	 A = Area/3;
+       double coeff =timeFactor_*parameter(0) * A;
+       //update the vertex derivatives
+                        
+       cellDerivs[cellIndex][comIndex  ] +=   coeff * normal[0];  
+       cellDerivs[cellIndex][comIndex+1] +=  coeff * normal[1];  
+       cellDerivs[cellIndex][comIndex+2] +=  coeff * normal[2];  
+       
+       vertexDerivs[v2][0] +=  coeff * normal[0];  
+       vertexDerivs[v2][1] +=  coeff * normal[1];  
+       vertexDerivs[v2][2] +=  coeff * normal[2];  
+       
+       vertexDerivs[v3][0] +=  coeff * normal[0];  
+       vertexDerivs[v3][1] +=  coeff * normal[1];  
+       vertexDerivs[v3][2] +=  coeff * normal[2];         
+			
+     }// for over walls
+  }// for over cells  
+}
+
+
+
+
+void VertexFromCellPlaneLinearCenterTriangulation::update(Tissue &T,
+                                       DataMatrix &cellData,
+                                       DataMatrix &wallData,
+                                       DataMatrix &vertexData,
+                                       double h)
+{
+  if (timeFactor_ < 1.0 ) {
+    timeFactor_ += h/parameter(numParameter()-1);
+  }
+  if (timeFactor_ >1.0)
+    timeFactor_=1.0;
+  //cellData[0][12]=timeFactor_*parameter(0);
+}
+
+
 
 VertexFromCellPlaneSpatial::
 VertexFromCellPlaneSpatial(std::vector<double> &paraValue,
@@ -3095,7 +3282,7 @@ VertexFromCellPlaneTriangular(std::vector<double> &paraValue,
   if (paraValue.size() != 3 && paraValue.size() !=6) {
     std::cerr << "VertexFromCellPlaneTriangular::VertexFromCellPlaneTriangular()" 
 	      << " Uses three parameters: k_force, areaFlag(0/1 without/with area-constant"
-              << " pressure) and Zplane(reference for volume) or six parameters: k_force, areaFlag (2/3 without/with area-pressure"
+              << " pressure) and Zplane or six parameters: k_force, areaFlag (2/3 without/with area-pressure"
               << " increase with area decrease), Zplane, equilibrium volume,volume" 
               << " decrease factor and pressure increase factor." << std::endl;
     exit(EXIT_FAILURE);
@@ -3251,7 +3438,8 @@ derivs(Tissue &T,
       totalVolume += A*(((position[0][2]+position[1][2]+position[2][2])/3)-parameter(2));
     }
     
-    std:: cerr<<"total Volume:  "<<totalVolume<<std::endl;
+    //  std:: cerr<<"total Volume:  "<<totalVolume<<std::endl;
+
     for (size_t n = 0; n < T.numCell(); ++n) { 
       Cell cell = T.cell(n);
       if (cell.numVertex()!=3) {
@@ -3701,25 +3889,50 @@ void VertexFromExternalWall::update(Tissue &T,
 
 TemplateVolumeChange::TemplateVolumeChange(std::vector<double> &paraValue,
                                            std::vector< std::vector<size_t> > &indValue )
-{
+{ // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=0 ) {
+    std::cerr << "TemplateVolumeChange:: "
+	      << "TemplateVolumeChange() "
+	      << "Calculates change in template volume and its time derivative " 
+              << "and total Derivative and stores them in the given indices in cellData vector "
+              << "uses no parameter "
+              << std::endl;
+    exit(0);
+  }
+ if( indValue.size() != 1 || indValue[0].size() != 6 ) {
+    std::cerr << "TemplateVolumeChange:: "
+	      << "TemplateVolumeChange() "
+	      << "1 level with 6 variable indices used: "
+              << "cell-index-VolumeChange       component-index-VolumeChange "
+              << "cell-index-deltaVolumeChange  component-index-deltaVolumeChange "
+              << "cell-index-totalDerivative    component-index-totalDerivative "
+              << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("TemplateVolumeChange");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+
 }
 
-void TemplateVolumeChange::
-initiate(Tissue &T,
-	 DataMatrix &cellData,
-	 DataMatrix &wallData,
-	 DataMatrix &vertexData,
-	 DataMatrix &cellDerivs,
-	 DataMatrix &wallDerivs,
-	 DataMatrix &vertexDerivs )
+void TemplateVolumeChange:: initiate(Tissue &T,
+                                     DataMatrix &cellData,
+                                     DataMatrix &wallData,
+                                     DataMatrix &vertexData,
+                                     DataMatrix &cellDerivs,
+                                     DataMatrix &wallDerivs,
+                                     DataMatrix &vertexDerivs)
 {
   size_t dimension=3; //Only implemented for 3D models
   assert (dimension==vertexData[0].size());
   vertexDataRest.resize(vertexData.size());
   for(size_t i=0 ; i<vertexDataRest.size() ;++i)
     vertexDataRest[i].resize(vertexData[i].size());
-  
-  size_t numVertices = vertexData.size();
+
+  size_t numVertices = T.numVertex();
 
   for (size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex) 
     for (size_t d=0; d<dimension; ++d) {
@@ -3736,17 +3949,8 @@ derivs(Tissue &T,
        DataMatrix &wallDerivs,
        DataMatrix &vertexDerivs )
 {
-}
-
-void TemplateVolumeChange::
-update(Tissue &T,
-       DataMatrix &cellData,
-       DataMatrix &vertexData,
-       DataMatrix &vertexDerivs)
-{ 
-  size_t numVertices = vertexData.size();
-  
-  double VolumeChange=0;
+  size_t numVertices =T.numVertex();
+  VolumeChange=0;
   for(size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex) 
     { VolumeChange += std::sqrt( (vertexData[vertexIndex][0]-vertexDataRest[vertexIndex][0])*
                                  (vertexData[vertexIndex][0]-vertexDataRest[vertexIndex][0])+
@@ -3755,27 +3959,130 @@ update(Tissue &T,
                                  (vertexData[vertexIndex][2]-vertexDataRest[vertexIndex][2])*
                                  (vertexData[vertexIndex][2]-vertexDataRest[vertexIndex][2])  );
     }
-  double deltaVolumeChange = VolumeChange - cellData[1][24];
-  double VolumeChangeDerT=0;
+  deltaVolumeChange = VolumeChange - cellData[variableIndex(0,0)][variableIndex(0,1)];
+  totalDerivative=0;
   for(size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex) 
     { 
-      if (vertexDerivs[0].size()>1)
-	VolumeChangeDerT += std::sqrt( vertexDerivs[vertexIndex][0]*vertexDerivs[vertexIndex][0]+
-				       vertexDerivs[vertexIndex][1]*vertexDerivs[vertexIndex][1]+
-				       vertexDerivs[vertexIndex][2]*vertexDerivs[vertexIndex][2]  );
+      if (vertexDerivs[0].size()>2)
+        totalDerivative += std::sqrt( vertexDerivs[vertexIndex][0]*vertexDerivs[vertexIndex][0]+
+                                      vertexDerivs[vertexIndex][1]*vertexDerivs[vertexIndex][1]+
+                                      vertexDerivs[vertexIndex][2]*vertexDerivs[vertexIndex][2]  );
     }
-  
-  cellData[1][24]=VolumeChange;
-  cellData[1][25]=deltaVolumeChange;
-  cellData[2][25]=VolumeChangeDerT;
+  cellData[variableIndex(0,0)][variableIndex(0,1)]=VolumeChange;
+  cellData[variableIndex(0,2)][variableIndex(0,3)]=deltaVolumeChange;
+  cellData[variableIndex(0,4)][variableIndex(0,5)]=totalDerivative;
+  //std:: cerr << VolumeChange<<" "<<deltaVolumeChange<<" "<<VolumeChangeDerT<<std::endl;
+}
+
+void TemplateVolumeChange:: update(Tissue &T,
+                                   DataMatrix &cellData,
+                                   DataMatrix &wallData,
+                                   DataMatrix &vertexData,
+                                   DataMatrix &vertexDerivs,
+                                   double h)
+{ 
 }
 
 
 
+
+CalculateAngleVectors::CalculateAngleVectors(std::vector<double> &paraValue,
+                                           std::vector< std::vector<size_t> > &indValue )
+{ // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=0 ) {
+    std::cerr << "CalculateAngleVectors:: "
+	      << "CalculateAngleVectors() "
+	      << "Calculates abs(cos(...)) of angle between two 3d vectors(starting from given indices) in cellData vector "
+              << "and stores it in the given index in cellData vector, uses no parameter "
+              << std::endl;
+    exit(0);
+  }
+ if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 1 ) {
+    std::cerr << "CalculateAngleVectors:: "
+	      << "CalculateAngleVectors() "
+	      << "1st level with 2 variable indices used: "
+              << "start index for 1st vector   start index for 2nd vector "
+              << "2nd level with 1 variable index used: "
+              << "store index for angle(deg) "
+              << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("CalculateAngleVectors");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+
+}
+
+// void CalculateAngleVectors:: initiate(Tissue &T,
+//                                      DataMatrix &cellData,
+//                                      DataMatrix &wallData,
+//                                      DataMatrix &vertexData,
+//                                      DataMatrix &cellDerivs,
+//                                      DataMatrix &wallDerivs,
+//                                      DataMatrix &vertexDerivs)
+// {
+//   size_t dimension=3; //Only implemented for 3D models
+//   assert (dimension==vertexData[0].size());
+//   vertexDataRest.resize(vertexData.size());
+//   for(size_t i=0 ; i<vertexDataRest.size() ;++i)
+//     vertexDataRest[i].resize(vertexData[i].size());
+
+//   size_t numVertices = vertexData.size();
+
+//   for (size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex) 
+//     for (size_t d=0; d<dimension; ++d) {
+//       vertexDataRest[vertexIndex][d]=vertexData[vertexIndex][d];
+//   }
+// }
+
+void CalculateAngleVectors::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  size_t numCells =T.numCell();
+  for(size_t cellIndex=0; cellIndex<numCells; ++cellIndex) 
+    { double teta=0;
+      double tmp=std::sqrt( cellData[cellIndex][variableIndex(0,0)  ]*cellData[cellIndex][variableIndex(0,0)  ] +
+                            cellData[cellIndex][variableIndex(0,0)+1]*cellData[cellIndex][variableIndex(0,0)+1] +
+                            cellData[cellIndex][variableIndex(0,0)+2]*cellData[cellIndex][variableIndex(0,0)+2]   );
+      cellData[cellIndex][variableIndex(0,0)  ]=cellData[cellIndex][variableIndex(0,0)  ]/tmp;
+      cellData[cellIndex][variableIndex(0,0)+1]=cellData[cellIndex][variableIndex(0,0)+1]/tmp;
+      cellData[cellIndex][variableIndex(0,0)+2]=cellData[cellIndex][variableIndex(0,0)+2]/tmp;
+
+      tmp=std::sqrt( cellData[cellIndex][variableIndex(0,1)  ]*cellData[cellIndex][variableIndex(0,1)  ] +
+                     cellData[cellIndex][variableIndex(0,1)+1]*cellData[cellIndex][variableIndex(0,1)+1] +
+                     cellData[cellIndex][variableIndex(0,1)+2]*cellData[cellIndex][variableIndex(0,1)+2]   );
+      cellData[cellIndex][variableIndex(0,1)  ]=cellData[cellIndex][variableIndex(0,1)  ]/tmp;
+      cellData[cellIndex][variableIndex(0,1)+1]=cellData[cellIndex][variableIndex(0,1)+1]/tmp;
+      cellData[cellIndex][variableIndex(0,1)+2]=cellData[cellIndex][variableIndex(0,1)+2]/tmp;
+
+      teta=std::abs( cellData[cellIndex][variableIndex(0,0)  ]*cellData[cellIndex][variableIndex(0,1)  ] +
+                     cellData[cellIndex][variableIndex(0,0)+1]*cellData[cellIndex][variableIndex(0,1)+1] +
+                     cellData[cellIndex][variableIndex(0,0)+2]*cellData[cellIndex][variableIndex(0,1)+2]   );
+  
+      cellData[cellIndex][variableIndex(1,0)]=teta;
+    }
+}
+
+// void CalculateAngleVectors:: update(Tissue &T,
+//                                    DataMatrix &cellData,
+//                                    DataMatrix &wallData,
+//                                    DataMatrix &vertexData,
+//                                    DataMatrix &vertexDerivs,
+//                                    double h)
+// { 
+// }
+
 DebugReaction::DebugReaction(std::vector<double> &paraValue,
 			     std::vector< std::vector<size_t> > &indValue)
 {
-
 }
 
 void DebugReaction::derivs(Tissue &T,
