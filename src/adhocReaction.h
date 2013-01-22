@@ -300,6 +300,7 @@ public:
 		DataMatrix &cellDerivs,
 		DataMatrix &wallDerivs,
 		DataMatrix &vertexDerivs );
+	
   
   void derivs(Tissue &T,
 	      DataMatrix &cellData,
@@ -413,5 +414,50 @@ class CalculateVertexStressDirection : public BaseReaction
  private:
   std::vector<size_t> wallForceIndexes_;
 };
+
+
+
+
+class MoveVerticesRandomlyCapCylinder : public BaseReaction
+{
+public:
+	
+	MoveVerticesRandomlyCapCylinder(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+	
+	void initiate(Tissue &T,
+		      DataMatrix &cellData,
+		      DataMatrix &wallData,
+		      DataMatrix &vertexData,
+		      DataMatrix &cellDerivs,
+		      DataMatrix &wallDerivs,
+		      DataMatrix &vertexDerivs );
+	
+	void derivs(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
+	
+	void update(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		double h);
+
+
+};
+
+
+
+
+
+
+
+
+
 
 #endif //ADHOCREACTION_H
