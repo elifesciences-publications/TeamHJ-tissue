@@ -8,16 +8,18 @@
 #include <vector>
 
 #include "baseReaction.h"
+
 #include "adhocReaction.h"
 #include "cellTime.h"
+#include "centerTriangulation.h"
 #include "creation.h"
 #include "degradation.h"
 #include "directionReaction.h"
+#include "grn.h"
 #include "growth.h"
 #include "mechanical.h"
 #include "mechanicalSpring.h"
 #include "mechanicalTRBS.h"
-#include "centerTriangulation.h"
 #include "network.h"
 
 //#include"massAction.h"
@@ -219,6 +221,15 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
     return new DegradationOne(paraValue,indValue); 
   else if(idValue=="DegradationTwo")
     return new DegradationTwo(paraValue,indValue); 
+  //grn.h,grn.cc
+  else if(idValue=="Hill")
+    return new Hill(paraValue,indValue); 
+  else if(idValue=="HillGeneralOne")
+    return new HillGeneralOne(paraValue,indValue); 
+  else if(idValue=="HillGeneralTwo")
+    return new HillGeneralTwo(paraValue,indValue); 
+  else if(idValue=="HillGeneralThree")
+    return new HillGeneralThree(paraValue,indValue); 
 
   //network.h,network.cc
   else if(idValue=="AuxinModelSimple1")

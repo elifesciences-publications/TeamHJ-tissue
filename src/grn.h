@@ -20,7 +20,8 @@
 /// This reaction is a Michaelis-Menten formalism for production with a
 /// restricting variable given by
 ///
-/// @f[ \frac{dy_{ij}}{dt} = p_0 \frac{y_{ik}^{p_2}}{p_1^{p_2}+y_{ik}^{p_2}}...\frac{p_{1'}^{p_{2'}}}{p_{1'}^{p_{2'}}+y_{ik'}^{p_{2'}}}@f]
+/// @f[ \frac{dy_{ij}}{dt} = p_0 \frac{y_{ik}^{p_2}}{p_1^{p_2}+y_{ik}^{p_2}}...
+/// \frac{p_{1'}^{p_{2'}}}{p_{1'}^{p_{2'}}+y_{ik'}^{p_{2'}}}@f]
 ///
 /// where p_0 is the maximal rate (@f$V_{max}@f$), and @f$p_1@f$ is the Hill
 /// constant (@f$K_{half}@f$), and @f$p_2@f$ is the Hill coefficient (n). The

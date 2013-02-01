@@ -49,8 +49,8 @@ derivs(Tissue &T,
        DataMatrix &vertexData,
        DataMatrix &cellDerivs,
        DataMatrix &wallDerivs,
-       DataMatrix &vertexDerivs ) {
-  
+       DataMatrix &vertexDerivs ) 
+{  
   //Do the update for each cell
   size_t numCells = T.numCell();
 
