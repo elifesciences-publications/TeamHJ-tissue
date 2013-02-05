@@ -230,7 +230,7 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 ///
 /// @verbatim
 ///
-/// VertexFromTRBSMT 10 1 8
+/// VertexFromTRBSMT 10 1 9
 /// 
 /// Y_matrix 
 /// Y_fiber 
@@ -250,6 +250,7 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 /// isoEnergyIndex
 /// anisoEnergyIndex 
 /// YoungL-index
+/// MTstress
 ///
 /// or
 ///
@@ -274,6 +275,7 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 /// isoEnergyIndex
 /// anisoEnergyIndex
 /// YoungL-index
+/// MTstress
 ///
 /// optional index for storing strain(0: no strain,
 ///                                   1: strain, 
