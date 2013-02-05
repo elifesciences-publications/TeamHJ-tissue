@@ -2725,7 +2725,7 @@ VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue,
 	      << "0,1: young modulus(matrix and fibre) " 
               << "2,3 : poisson ratio (longitudinal (MT) and transverse directions)"
 	      << "4 : MF flag(0 constant material anisotropy ,1: material anisotropy via FiberModel " 
-              << "5,6 : not used  " 
+              << "5 : neighbor weight for correlation 6 : not used  " 
               << "7 : 2nd flag(0: plane strain, 1: plane stress) " 
               << "8 : MT direction angle"
               << "9 (MT update flag): 0:for no feedback or direct feedback by indices,"
@@ -2775,7 +2775,7 @@ VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue,
   tmp[3] = "P_ratio_T"; // Transverse Poisson ratio
   tmp[4] = "MF flag";
   tmp[5] = "neigborweight";
-  tmp[6] = "parameter6";
+  tmp[6] = "stressmax";
   tmp[7] = "Strain-Stress flag";
   tmp[8] = "TETA anisotropy";
   tmp[9] = "MT update flag";
@@ -3822,7 +3822,7 @@ derivs(Tissue &T,
         Istrain2=0;
         Istrain3=1;
       }
-      if(std::abs(StrainCellGlobal[Istrain3][Istrain3])>std::abs(StrainCellGlobal[Istrain2][Istrain2])) {
+      if(StrainCellGlobal[Istrain3][Istrain3] > StrainCellGlobal[Istrain2][Istrain2] ) {
         temp=Istrain2;
         Istrain2=Istrain3;
         Istrain3=temp;
@@ -4210,7 +4210,7 @@ derivs(Tissue &T,
       Istress2=0;
       Istress3=1;
     }
-    if(std::abs(StressTensor[Istress3][Istress3])>std::abs(StressTensor[Istress2][Istress2])) {
+    if(StressTensor[Istress3][Istress3] > StressTensor[Istress2][Istress2] ) {
       temp=Istress2;
       Istress2=Istress3;
       Istress3=temp;
@@ -4230,8 +4230,13 @@ derivs(Tissue &T,
     
     // storing a measure for stress anisotropy in cell vector
     if (std::abs(maximalStressValue)<  0.000001) cellData[cellIndex][stressAnIndex]=0;
-    if (std::abs(maximalStressValue)>= 0.000001) cellData[cellIndex][stressAnIndex]=1-std::abs(maximalStressValue2/maximalStressValue);
-    
+
+    if (std::abs(maximalStressValue)>= 0.000001) {
+      if(parameter(6)==0)
+	cellData[cellIndex][stressAnIndex]=1-std::abs(maximalStressValue2/maximalStressValue);
+      else
+	cellData[cellIndex][stressAnIndex]=(1-std::abs(maximalStressValue2/maximalStressValue))*(maximalStressValue/parameter(6));
+    }    
     
     
     
