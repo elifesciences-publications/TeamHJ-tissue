@@ -4684,7 +4684,7 @@ void Tissue::printInitOrganism(std::ostream &os)
       else if (cell(i).wall(k)->cell2()->index()==cell(i).index()) {
 	if (cell(i).wall(k)->cell1()!=background()) {
 	  kList.push_back(k);
-	  jList.push_back(cell(i).wall(k)->cell2()->index());
+	  jList.push_back(cell(i).wall(k)->cell1()->index());
 	}
       }
     }
