@@ -76,21 +76,28 @@ class AuxinModelSimple1 : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
-//!A wall-based auxin transport model
-/*!A complete auxin transport model based on PIN polarization from a linear
-  feedback from a wall variable. PIN and auxin are updated
-  according to:
-  
-  dA_i/dt = p0 - p1*A_i +p4*\sum_{neigh} (A_n-A_i) + 
-  p3*\sum_{neigh} (P_ni*A_n-P_in*A_i) 
-  
-  dP_i/dt = p5 - p6*P_i 
-  
-  P_in = P_i*X_in/(p_2+\sum_{k,neigh}X_ik)
-  
-  where X_in is the variable in the wall.
-  In addition, the column index for auxin, PIN, X (in wall) should be given.
-*/
+///
+/// @brief A 'linear polarization from wall signal'-based auxin transport model
+///
+///A complete auxin transport model based on PIN polarization from a linear
+///feedback from a wall variable (X). PIN and auxin are updated
+///according to:
+///
+/// @f[ \frac{dA_i}{dt} = p_0 - p_1 A_i + p_4 \sum_{neigh} (A_n-A_i) + @f] 
+/// @f[ p_3 \sum_{neigh} (P_{ni} A_n - P_{in} A_i) @f] 
+///
+/// @f[ \frac{dP_i}{dt} = p_5 - p_6 P_i @f] 
+///
+/// @f[ P_{in} = P_i \frac{X_{in}}{(p_2 + \sum_{k,neigh} X_{ik})} @f]
+///
+/// where @f$X_{in}@f$ is the polarizing variable in the wall.
+/// The column index for auxin, PIN, and X (in wall) should be given.
+///
+/// In a model file, the reaction is given as:
+///
+/// @verbatim
+/// @endverbatim
+///
 class AuxinModelSimple1Wall : public BaseReaction {
   
  public:
@@ -359,8 +366,9 @@ class AuxinWallModel : public BaseReaction {
 ///  
 /// @f[ \frac{dP_{ij}}{dt} = (from above) @f]
 ///
-/// @f[ \frac{dR_{i}}{dt} = p_{10} – p_{11} R_i + \sum_j (p_{12} R_{ij} 
-/// ((R_{ji})^(p_{15}))/((p_{14})^(p_{15}) + (R_{ji})^(p_{15}))) – p_{13} R_i A_{ij} @f]
+/// @f[ \frac{dR_{i}}{dt} = p_{10} – p_{11} R_i + @f]
+/// @f[ \sum_j (p_{12} R_{ij} \frac{R_{ji}^{p_{15}}}{p_{14}^{p_{15}} + R_{ji}^{p_{15}}} @f]
+/// @f[ - p_{13} R_i A_{ij} ) @f]
 ///  
 /// @f[ \frac{dR_{ij}}{dt} = (from above) @f]
 ///  
