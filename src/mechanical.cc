@@ -3721,8 +3721,8 @@ VertexFromBall(std::vector<double> &paraValue,
 	      << "VertexFromBall() "
 	      << "Puts a ball(sphere) of a given radius (radius) in a given "
 	      << "position (x,y,z) around meriestem or moves it toward meristem by a given velocity vector "
-	      << "5 parameters used in static condition: radius, x, y, z. Kforce" << std::endl
-	      << "8 parameters used in dynamic condition: radius, x, y, z, Kforce, dx, dy, dz."
+	      << "5 parameters for static : radius, x, y, z. Kforce" << std::endl
+	      << "8 parameters for dynamic : radius, x, y, z, Kforce, dx, dy, dz."
 	      << std::endl;
     exit(0);
   }
@@ -3792,6 +3792,123 @@ void VertexFromBall::update(Tissue &T,
     setParameter(3,parameter(3)+h*parameter(7));
   }
 }
+
+
+
+
+
+
+
+
+
+
+VertexFromParabolid::
+VertexFromParabolid(std::vector<double> &paraValue, 
+		       std::vector< std::vector<size_t> > 
+		       &indValue ) 
+{  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=5 && paraValue.size()!=6 ) {
+    std::cerr << "VertexFromParabolid::"
+	      << "VertexFromParabolid() "
+	      << "Puts a vertical(z) parabolid z=a((x-xc)2+(y-yc)2)+b with given properties in a given "
+	      << "position (x,y) and b below or above template or  moves it upward or downwars by a given velocity"
+	      << "5 parameters for static : a, xc, yc, b. Kforce" << std::endl
+	      << "6 parameters for dynamic : a, xc, yc, b, Kforce, v."
+	      << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 0 ) {
+    std::cerr << "VertexFromParabolid::"
+	      << "VertexFromParabolid() "
+	      << "No variable indices used." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexFromParabolid");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "a";
+  tmp[1] = "xc";
+  tmp[2] = "yc";
+  tmp[3] = "b";
+  tmp[4] = "Kforce";
+
+  setParameterId( tmp );
+}
+
+void VertexFromParabolid::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  //Do the update for each vertex .
+  size_t numVertex = T.numVertex();
+  for (size_t vertexIndex=0 ; vertexIndex<numVertex; ++vertexIndex) {
+    double a=parameter(0);
+    double Xc=parameter(1);
+    double Yc=parameter(2);
+    double b=parameter(3);
+    double Kforce=parameter(4);
+    DataMatrix position(1,vertexData[vertexIndex]);
+    double d=position[0][2]-a*(position[0][0]-Xc)*(position[0][0]-Xc)-a*(position[0][1]-Yc)*(position[0][1]-Yc)-b;
+    if( d < 0 ){
+
+      double m=2*a*(position[0][0]-Xc);
+      double n=2*a*(position[0][1]-Yc);
+
+      // vertexDerivs[vertexIndex][0]+=-Kforce*(m/std::sqrt(1+m*m+n*n));
+      // vertexDerivs[vertexIndex][1]+=-Kforce*(n/std::sqrt(1+m*m+n*n));
+      // vertexDerivs[vertexIndex][2]+=Kforce*(1/std::sqrt(1+m*m+n*n));
+      vertexDerivs[vertexIndex][2]+=-Kforce*(d);
+    }
+  }
+}
+
+
+void VertexFromParabolid::update(Tissue &T,
+			    DataMatrix &cellData,
+			    DataMatrix &wallData,
+			    DataMatrix &vertexData,
+			    double h)
+{
+  if( numParameter()>5 ) 
+    setParameter(3,parameter(3)+h*parameter(5));
+   
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 VertexFromExternalWall::
 VertexFromExternalWall(std::vector<double> &paraValue, 
