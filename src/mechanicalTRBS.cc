@@ -2718,10 +2718,10 @@ VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue,
                                     &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
-  if( paraValue.size()!=10 ) { 
+  if( paraValue.size()!=11 ) { 
     std::cerr << "VertexFromTRBScenterTriangulationMT::"
               << "VertexFromTRBScenterTriangulationMT() "
-              << "Uses 10 parameters: "
+              << "Uses 11 parameters: "
 	      << "0,1: young modulus(matrix and fibre) " 
               << "2,3 : poisson ratio (longitudinal (MT) and transverse directions)"
 	      << "4 : MF flag(0 constant material anisotropy ,1: material anisotropy via FiberModel " 
@@ -2730,7 +2730,8 @@ VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue,
               << "8 : MT direction angle"
               << "9 (MT update flag): 0:for no feedback or direct feedback by indices,"
               << "                    1:for MT direction from 7th parameter TETA, 2:force to Stress,  "
-              << "                    3: force to Strain ,4:force to perp-strain "<< std::endl;
+              << "                    3: force to Strain ,4:force to perp-strain "
+	      << "10 : unused parameter for temporary use "<< std::endl;
     
     exit(0);
   }
@@ -2779,6 +2780,7 @@ VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue,
   tmp[7] = "Strain-Stress flag";
   tmp[8] = "TETA anisotropy";
   tmp[9] = "MT update flag";
+  tmp[10] = "unused";
  
   setParameterId( tmp );
   
@@ -2932,16 +2934,32 @@ derivs(Tissue &T,
     double strainZ=0;
 
     if ( parameter(9)==1 ) {  // aniso direction from TETA 
+      
       cellData[cellIndex][variableIndex(0,1)]=std::cos(TETA);    
       cellData[cellIndex][variableIndex(0,1)+1]=std::sin(TETA);
       cellData[cellIndex][variableIndex(0,1)+2]=0;
+      if(parameter(10)!=100){
+	if(cellIndex==0 || cellIndex==2 ){
+	  cellData[cellIndex][variableIndex(0,1)]=std::cos(TETA);    
+	  cellData[cellIndex][variableIndex(0,1)+1]=std::sin(TETA);
+	  cellData[cellIndex][variableIndex(0,1)+2]=0;
+	}
+	if(cellIndex==1 || cellIndex==3 ){
+	  cellData[cellIndex][variableIndex(0,1)]=std::cos(parameter(10));    
+	  cellData[cellIndex][variableIndex(0,1)+1]=std::sin(parameter(10));
+	  cellData[cellIndex][variableIndex(0,1)+2]=0;
+	}
+      }
     }
+    
+   
 
     // Aniso vector in current shape in global coordinate system
       double AnisoCurrGlob[3];
       AnisoCurrGlob[0] = cellData[cellIndex][variableIndex(0,1)];  
       AnisoCurrGlob[1] = cellData[cellIndex][variableIndex(0,1)+1];
       AnisoCurrGlob[2] = cellData[cellIndex][variableIndex(0,1)+2];
+
       
      
     // One triangle per 'vertex' in cyclic order
@@ -2966,7 +2984,7 @@ derivs(Tissue &T,
 
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-      //if(position[0][2]<-200) boundary=1; // excluding boundary area for stress value storing
+
       // Resting lengths are from com-vertex(wallindex), vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
       std::vector<double> restingLength(numWalls);
       restingLength[0] = cellData[cellIndex][lengthInternalIndex + wallindex];
@@ -3838,7 +3856,13 @@ derivs(Tissue &T,
         maximalStrainValue=maximalStrainValue2;
         maximalStrainValue2=maximalStrainValue3; 
       }
-
+      
+      double growthStrain=maximalStrainValue2;
+      if ( cellData[cellIndex][MTindex  ]*eigenVectorStrain[0][Istrain] +
+	   cellData[cellIndex][MTindex+1]*eigenVectorStrain[1][Istrain] +
+	   cellData[cellIndex][MTindex+2]*eigenVectorStrain[2][Istrain] < 0.01  ){
+      growthStrain=maximalStrainValue;
+      }
 
       // normal to the cell plane in global direction is averaged Zcurrent[], vector product gives the perpendicular strain direction
       double PerpStrain[3];
@@ -3906,7 +3930,7 @@ derivs(Tissue &T,
           cellData[cellIndex][variableIndex(2,1)]  =PerpStrain[0];
           cellData[cellIndex][variableIndex(2,1)+1]=PerpStrain[1];
           cellData[cellIndex][variableIndex(2,1)+2]=PerpStrain[2];
-          cellData[cellIndex][variableIndex(2,1)+3]=maximalStrainValue;  // maximal Strain Value is stored after its eigenvector
+          cellData[cellIndex][variableIndex(2,1)+3]=growthStrain;  //growth Strain Value is stored after its eigenvector
           
         }
     }
@@ -3922,8 +3946,34 @@ derivs(Tissue &T,
       cellData[cellIndex][MTindex+1]=cellData[cellIndex][MTindex+1]/temp;
       cellData[cellIndex][MTindex+2]=cellData[cellIndex][MTindex+2]/temp;
     }
+
     
-   
+    //<<<<<<<<<<<<<<<<<<<<<<<< angles between  vectors and circumferential direction <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    temp=std::sqrt(cellData[cellIndex][variableIndex(0,1)]*cellData[cellIndex][variableIndex(0,1)]+     // 12 --> MT
+		   cellData[cellIndex][variableIndex(0,1)+1]*cellData[cellIndex][variableIndex(0,1)+1]);
+    if(temp<0.00000001){
+      cellData[cellIndex][12]=pi/2;
+    }
+    else{
+      cellData[cellIndex][12]=std::atan(cellData[cellIndex][variableIndex(0,1)+2]/temp);
+    }
+    
+    temp=std::sqrt(eigenVectorStrain[0][Istrain]*eigenVectorStrain[0][Istrain]+                                   // 13 --> Strain
+		   eigenVectorStrain[1][Istrain]*eigenVectorStrain[1][Istrain] );
+    if(temp<0.0000000001){
+      cellData[cellIndex][13]=pi/2;
+    }
+    else{
+      cellData[cellIndex][13]=std::atan(eigenVectorStrain[2][Istrain]/temp);
+    }
+    
+    
+    cellData[cellIndex][15]= cellData[cellIndex][comIndex+2]; // z coordinate of central vertex of the cell                                  // 15 --> Z coordinate
+    
+       
+       
+       //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   
 
 
@@ -3985,8 +4035,10 @@ derivs(Tissue &T,
     // cellData[cellIndex][20]=EnergyIso+EnergyAniso;    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     cellData[cellIndex][areaRatioIndex  ]= areaRatio;
     cellData[cellIndex][isoEnergyIndex  ]= EnergyIso;    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    cellData[cellIndex][anisoEnergyIndex]= EnergyAniso;  
-   
+    cellData[cellIndex][anisoEnergyIndex]= EnergyAniso;
+    // temporary  
+    //cellData[cellIndex][13]=cellData[cellIndex][areaRatioIndex]-cellData[cellIndex][19];
+
   }
 
   
@@ -4035,18 +4087,18 @@ derivs(Tissue &T,
   	StressTensor[0][1]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex+3];
   	StressTensor[2][0]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex+4];
   	StressTensor[1][2]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex+5];
-	
-  	counter+=1;
+	counter+=1;
       }
     }
-
-    StressTensor[0][0]/=counter;
-    StressTensor[1][1]/=counter;
-    StressTensor[2][2]/=counter;
-    StressTensor[0][1]/=counter;
-    StressTensor[2][0]/=counter;
-    StressTensor[1][2]/=counter;
-
+    if(counter !=0){
+      StressTensor[0][0]/=counter;
+      StressTensor[1][1]/=counter;
+      StressTensor[2][2]/=counter;
+      StressTensor[0][1]/=counter;
+      StressTensor[2][0]/=counter;
+      StressTensor[1][2]/=counter;
+    }
+   
     StressTensor[0][0]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex  ];
     StressTensor[1][1]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+1];
     StressTensor[2][2]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+2];
@@ -4237,6 +4289,18 @@ derivs(Tissue &T,
       else
 	cellData[cellIndex][stressAnIndex]=(1-std::abs(maximalStressValue2/maximalStressValue))*(maximalStressValue/parameter(6));
     }    
+
+    
+     // ---------------angles stress with circumferental direction- begin
+    temp=std::sqrt(eigenVectorStress[0][Istress]*eigenVectorStress[0][Istress]+                                // 14 --> Stress
+		   eigenVectorStress[1][Istress]*eigenVectorStress[1][Istress] );
+    if(temp<0.0000001){
+      cellData[cellIndex][14]=pi/2;
+    }
+    else{
+      cellData[cellIndex][14]=std::atan(eigenVectorStress[2][Istress]/temp);
+    } 
+    // ---------------angles stress with circumferental direction- end
     
     
     
@@ -5465,9 +5529,9 @@ initiate(Tissue &T,
 FiberModel::FiberModel(std::vector<double> &paraValue,
 				     std::vector< std::vector<size_t> > &indValue)
 {
-  if (paraValue.size() != 7) {
+  if (paraValue.size() != 8) {
     std::cerr << "FiberModel::FiberModel() " 
-	      << "Uses seven parameters: k_rate, equilibrium threshold , linear-hill flag, K_hill, n_hill, young_matrix and young_fiber " << std::endl;
+	      << "Uses eight parameters: k_rate, equilibrium threshold , linear-hill flag, K_hill, n_hill, young_matrix, young_fiber and initialization flag " << std::endl;
     exit(EXIT_FAILURE);
   }
   
@@ -5491,6 +5555,7 @@ FiberModel::FiberModel(std::vector<double> &paraValue,
   tmp[4] = "n_hill";
   tmp[5] = "Y_matrix";
   tmp[6] = "Y_fiber";
+  tmp[7] = "init_flag";
 
   setParameterId(tmp);
 }
@@ -5503,10 +5568,12 @@ void FiberModel::initiate(Tissue &T,
                           DataMatrix &wallDerivs,
                           DataMatrix &vertexDerivs) {
   size_t numCell=cellData.size();
-  for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) { // initiating with 0 anisotropy and isotropic material
-    cellData[cellIndex][variableIndex(0,0)] = 0;
-    cellData[cellIndex][variableIndex(1,0)] = parameter(5)+0.5*parameter(6); // youngL = youngMatrix + 0.5*youngFiber;
-    //std::cerr<< cellData[cellIndex][variableIndex(1,0)] << std::endl;
+  if (parameter(7)==1){
+    for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) { // initiating with 0 anisotropy and isotropic material
+      cellData[cellIndex][variableIndex(0,0)] = 0;
+      cellData[cellIndex][variableIndex(1,0)] = parameter(5)+0.5*parameter(6); // youngL = youngMatrix + 0.5*youngFiber;
+      //std::cerr<< cellData[cellIndex][variableIndex(1,0)] << std::endl;
+    }
   }
 }
 
@@ -5541,6 +5608,7 @@ void FiberModel::update(Tissue &T,
     if ( parameter(2)==0 
 	 && cellData[cellIndex][velocityIndex] < parameter(1) 
 	 && cellData[cellIndex][YoungLIndex] < youngMatrix+0.5*(1+anisotropy)* youngFiber
+	 && cellData[cellIndex][YoungLIndex] < youngMatrix+youngFiber // not to exceed maximum when using absolute stress anisotropy 
 	 ){ // linear Fiber model
        cellData[cellIndex][YoungLIndex] += parameter(0)*h*0.5*anisotropy * youngFiber;
       //cellData[cellIndex][YoungLIndex] = youngMatrix+0.5*(1+anisotropy)* youngFiber;
@@ -5551,6 +5619,7 @@ void FiberModel::update(Tissue &T,
 	 youngMatrix+
 	 0.5*(1+(std::pow(anisotropy,Nh)
 		 /(std::pow((1-anisotropy),Nh)*std::pow(Kh,Nh)+std::pow(anisotropy,Nh))))* youngFiber
+	 && cellData[cellIndex][YoungLIndex] < youngMatrix+youngFiber // not to exceed maximum when using absolute stress anisotropy 
 	 ){ // Hill Fiber model
 
       // cellData[cellIndex][] += parameter(0)*h*(cellData[cellIndex][]-cellData[cellIndex][]);
@@ -5565,3 +5634,1496 @@ void FiberModel::update(Tissue &T,
     }
   }
 }
+
+
+
+
+
+
+
+
+
+// //functions including bending energy
+
+// VertexFromTRBSMTbending::
+// VertexFromTRBSMTbending(std::vector<double> &paraValue, 
+// 	       std::vector< std::vector<size_t> > 
+// 	       &indValue ) 
+// {  
+//   // Do some checks on the parameters and variable indeces
+//   if( paraValue.size()!=10 ) {
+//     std::cerr << "VertexFromTRBSMTbending::"
+// 	      << "VertexFromTRBSMTbending() "
+//               << "Uses ten parameters: "
+//               << "0,1 : young modulus(matrix and fibre) " 
+//               << "2,3 : poisson ratio (longitudinal (MT) and transverse directions)"
+// 	      << "4 : MF flag(0 constant material anisotropy ,1: material anisotropy via FiberModel "
+//               << "5 : K_Hill, 6: n_Hill  " 
+//               << "7 : flag(0: plane strain, 1: plane stress) " 
+//               << "8 : MT direction angle"
+//               << "9 : flag(0: for no feedback or direct feedback by indices,"
+//               << "         1: for MT direction from 6th parameter TETA, 2: force to Stress,  "
+//               << "         3: force to Strain , 4: force to perp-strain "<< std::endl;
+//     exit(0);
+//   }
+
+//   if( (indValue.size()!=1 && indValue.size()!=3) ||
+//       indValue[0].size()!=9 ||
+//       (indValue.size()==3 && (indValue[1].size()!=0 && indValue[1].size()!=1 && indValue[1].size()!=2 && indValue[1].size()!=3 )) ||
+//       (indValue.size()==3 && (indValue[2].size()!=0 && indValue[2].size()!=1 && indValue[2].size()!=2)) 
+//       ) { 
+//     std::cerr << "VertexFromTRBSMTbending::"
+// 	      << "VertexFromTRBSMTbending() "
+//               << "resting length index and MT direction initial index and strain and stress anisotropy indices and " 
+//               << "indices for storing area ratio, isotropic energy and anisotropic energy and young_fiber and MTstress given in first level." 
+//               << "Optionally two additional levels can be given where the strain and perpendicular direction to strain in cell plane and 2nd strain" 
+//               << "directions/values(dx dy dz value) can be stored at given indices at second level."
+//               << "If no index given at second level, strain will not be stored, if one index given strain will be stored"
+//               << "and if two indices are given maximal and perpendicular to strain will be stored at first and second"
+//               << "indices at second level respectively"
+//               << "and if 3 indices are given maximal and perpendicular to strain and 2nd strain will be stored at 1st, 2nd and 3rd "
+//               << "indices at second level respectively"
+//               << "If no index given at 3rd level, stress will not be stored, if one index given stress will be stored"
+//               << "and if two indices are given maximal and 2nd stress will be stored at first and second"
+//               << "indices at 3rd level respectively"
+//               << std::endl;
+//     exit(0);
+//   }
+  
+//   // Set the variable values
+//   setId("VertexFromTRBSMTbending");
+//   setParameter(paraValue);  
+//   setVariableIndex(indValue);
+  
+  
+
+//   // Set the parameter identities
+//   std::vector<std::string> tmp( numParameter() );
+//   tmp[0] = "Y_mod_M";   // Matrix Young modulus
+//   tmp[1] = "Y_mod_F";   // Fiber Young modulus
+//   tmp[2] = "P_ratio_L"; // Longitudinal Poisson ratio
+//   tmp[3] = "P_ratio_T"; // Transverse Poisson ratio
+//   tmp[4] = "MF flag";
+//   tmp[5] = "neighborweight";
+//   tmp[6] = "parameter6";
+//   tmp[7] = "Strain-Stress flag";
+//   tmp[8] = "TETA anisotropy";
+//   tmp[9] = "MT update flag";
+
+//   setParameterId( tmp );
+ 
+//   if( parameter(2)<0 || parameter(2)>=0.5 || parameter(3)<0 || parameter(3)>=0.5 ) {
+//     std::cerr << "VertexFromTRBSMTbending::"
+//  	      << "VertexFromTRBSMTbending() "
+//  	      << "poisson ratios must be 0 <= p < 0.5 " << std::endl;
+//     exit(0);
+//   }
+
+//   if( parameter(4)!=0 && parameter(4)!=1 ) {
+//     std::cerr << " VertexFromTRBSMTbending::"
+// 	      << " VertexFromTRBSMTbending() "
+// 	      << " 5th parameter must be 0 or 1 " 
+//               << " 0: constant material anisotropy, 1: material anisotropy via FiberModel " << std::endl;
+//     exit(0);
+//     exit(0);
+//   }
+
+//   // if( parameter(5)<0 || parameter(5)>=1 ) {
+//   //   std::cerr << " VertexFromTRBSMTbending::"
+//   //             << " VertexFromTRBSMTbending() "
+//   //             << " K parameter in Hill function must be 0 < K < 1 " << std::endl;
+//   //   exit(0);
+//   // }
+
+//   if( parameter(7)!=0 && parameter(7)!=1 ) {
+//     std::cerr << " VertexFromTRBSMTbending::"
+// 	      << " VertexFromTRBSMTbending() "
+// 	      << " 6th parameter must be 0 or 1(0:plane strain, 1:plane stress) " << std::endl;
+//     exit(0);
+//   }
+
+//   if( parameter(9)!=0 && parameter(9)!=1 && parameter(9)!=2 && parameter(9)!=3 && parameter(9)!=4) {
+//     std::cerr << " VertexFromTRBSMTbending::"
+//               << " VertexFromTRBSMTbending() "
+//               << " 8th parameter must be 0/1/2/3/4"
+//               << " 0: for no feedback or direct feedback by indices "
+//               << " 1: for MT direction from 7th parameter TETA "
+//               << " 2: force to Stress "
+//               << " 3: force to S1train "
+//               << " 4: force to perp-strain " << std::endl;
+//     exit(0);
+//   }
+// }
+
+// void VertexFromTRBSMTbending::
+// derivs(Tissue &T,
+//        DataMatrix &cellData,
+//        DataMatrix &wallData,
+//        DataMatrix &vertexData,
+//        DataMatrix &cellDerivs,
+//        DataMatrix &wallDerivs,
+//        DataMatrix &vertexDerivs ) {
+  
+//   //Do the update for each cell
+//   size_t dimension = 3;
+//   assert (dimension==vertexData[0].size());
+//   size_t numCells = T.numCell();
+//   size_t wallLengthIndex = variableIndex(0,0);
+//   size_t numWalls = 3; // defined only for triangles 
+  
+//   double TotalVolume=0;
+//   double deltaVolume=0;
+
+
+//   for( size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex ) {
+//     if( T.cell(cellIndex).numWall() != numWalls ) {
+//       std::cerr << "VertexFromTRBSMTbending::derivs() only defined for triangular cells."
+// 		<< " Not for cells with " << T.cell(cellIndex).numWall() << " walls!"
+// 		<< std::endl;
+//       exit(-1);
+//     }
+    
+//     double youngMatrix= parameter(0);    
+//     double youngFiber = parameter(1); 
+//     double poissonL   = parameter(2);    
+//     double poissonT   = parameter(3);
+//     double TETA= parameter(8); 
+
+//     size_t v1 = T.cell(cellIndex).vertex(0)->index();
+//     size_t v2 = T.cell(cellIndex).vertex(1)->index();
+//     size_t v3 = T.cell(cellIndex).vertex(2)->index();
+//     size_t w1 = T.cell(cellIndex).wall(0)->index();
+//     size_t w2 = T.cell(cellIndex).wall(1)->index();
+//     size_t w3 = T.cell(cellIndex).wall(2)->index();
+
+//     //std::cerr<< "cell "<< cellIndex<< " vertices  "<< v1<<" "<< v2 << " "<< v3 << " walls  "<< w1 <<" "<< w2 << " "<< w3<< std::endl;
+    
+   
+
+//     double youngL;
+//     double youngT;    
+
+//     if( parameter(4)==0 ){ // constant anisotropic material
+//       youngL = youngMatrix+youngFiber;
+//       youngT = youngMatrix; 
+//     }
+//     if( parameter(4)==1){  // material anisotropy via FiberModel
+//       youngL = cellData[cellIndex][variableIndex(0,7)]; 
+//       youngT = 2*youngMatrix+youngFiber-youngL; 
+//     }
+    
+   
+//     double lambdaL, mioL, lambdaT, mioT;
+    
+//     if (parameter(7)==0){      
+//       // Lame coefficients based on plane strain (for 3D 0<poisson<0.5)
+//       lambdaL=youngL*poissonL/((1+poissonL)*(1-2*poissonL));
+//       mioL=youngL/(2*(1+poissonL));
+//       lambdaT=youngT*poissonT/((1+poissonT)*(1-2*poissonT));
+//       mioT=youngT/(2*(1+poissonT));
+//     } 
+//     else{      
+//       // Lame coefficients based on plane stress (for 3D 0<poisson<0.5)
+//       lambdaL=youngL*poissonL/(1-poissonL*poissonL);
+//       mioL=youngL/(2*(1+poissonL));
+//       lambdaT=youngT*poissonT/(1-poissonT*poissonT);
+//       mioT=youngT/(2*(1+poissonT));
+//     }
+    
+//     // Lame coefficients based on delin. paper (for 2D 0<poisson<1)
+//     // double lambdaL=youngL*poissonL/(1-poissonL*poissonL);
+//     // double mioL=youngL/(1+poissonL);
+//     // double lambdaT=youngT*poissonT/(1-poissonT*poissonT);
+//     // double mioT=youngT/(1+poissonT);
+     
+ 
+    
+//     double EnergyIso=0;                      
+//     double EnergyAniso=0;
+//     double strainZ=0;
+
+
+//     double TETA1=parameter(5);
+//     if ( parameter(9)==1 ) {  // aniso direction from TETA 
+//       if ( cellIndex==0 || cellIndex==2) {
+// 	cellData[cellIndex][variableIndex(0,1)]=std::cos(TETA1);  
+// 	cellData[cellIndex][variableIndex(0,1)+1]=std::sin(TETA1);
+// 	cellData[cellIndex][variableIndex(0,1)+2]=0;
+//       }
+//       if ( cellIndex==1 || cellIndex==3) {
+// 	cellData[cellIndex][variableIndex(0,1)]=std::cos(TETA);  
+// 	cellData[cellIndex][variableIndex(0,1)+1]=std::sin(TETA);
+// 	cellData[cellIndex][variableIndex(0,1)+2]=0;
+//       }
+//     }
+//     // if ( parameter(9)==1 ) {  // aniso direction from TETA 
+//     //   cellData[cellIndex][variableIndex(0,1)]=std::cos(TETA);  
+//     //   cellData[cellIndex][variableIndex(0,1)+1]=std::sin(TETA);
+//     //   cellData[cellIndex][variableIndex(0,1)+2]=0;
+//     // }
+    
+//     // Aniso vector in current shape in global coordinate system
+//     double AnisoCurrGlob[3];
+//     AnisoCurrGlob[0] = cellData[cellIndex][variableIndex(0,1)];
+//     AnisoCurrGlob[1] = cellData[cellIndex][variableIndex(0,1)+1];
+//     AnisoCurrGlob[2] = cellData[cellIndex][variableIndex(0,1)+2];
+    
+
+//     std::vector<double> restingLength(numWalls);
+//     restingLength[0] = wallData[w1][wallLengthIndex];
+//     restingLength[1] = wallData[w2][wallLengthIndex];
+//     restingLength[2] = wallData[w3][wallLengthIndex];
+
+//     DataMatrix position(3,vertexData[v1]);
+//     position[1] = vertexData[v2];
+//     position[2] = vertexData[v3];
+//     //position[0][2] z for vertex 1 (of the cell)
+   
+//     std::vector<double> length(numWalls);
+//     length[0] = T.wall(w1).lengthFromVertexPosition(vertexData);
+//     length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
+//     length[2] = T.wall(w3).lengthFromVertexPosition(vertexData);
+    
+//     //Anisotropic Correction is based on difference between Lam Coefficients of Longitudinal and Transverse dirrections:
+//     double deltaLam=lambdaL-lambdaT;
+//     double deltaMio=mioL-mioT;
+//     double deltaMio1=(youngL-youngT)/2;
+//     // double deltaLam=AnisoMeasure*(lambdaL-lambdaT);
+//     // double deltaMio=AnisoMeasure*(mioL-mioT);
+    
+//     //Resting area of the element (using Heron's formula)                                      
+//     double restingArea=std::sqrt( ( restingLength[0]+restingLength[1]+restingLength[2])*
+//                                   (-restingLength[0]+restingLength[1]+restingLength[2])*
+//                                   ( restingLength[0]-restingLength[1]+restingLength[2])*
+//                                   ( restingLength[0]+restingLength[1]-restingLength[2])  )*0.25;
+    
+//     //Angles of the element ( assuming the order: 0,L0,1,L1,2,L2 clockwise )
+//     std::vector<double> Angle(3);
+//     // can be ommited by cotan(A)=.25*sqrt(4*b*b*c*c/K-1)
+//     Angle[0]=std::acos(  (restingLength[0]*restingLength[0]+restingLength[2]*restingLength[2]-restingLength[1]*restingLength[1])/
+//                          (restingLength[0]*restingLength[2]*2)    );
+//     Angle[1]=std::acos(  (restingLength[0]*restingLength[0]+restingLength[1]*restingLength[1]-restingLength[2]*restingLength[2])/
+//                          (restingLength[0]*restingLength[1]*2)    );
+//     Angle[2]=std::acos(  (restingLength[1]*restingLength[1]+restingLength[2]*restingLength[2]-restingLength[0]*restingLength[0])/
+//                          (restingLength[1]*restingLength[2]*2)    );
+    
+//     //Tensile Stiffness
+//     double tensileStiffness[3];
+//     double temp = 1.0/(restingArea*16);                                      
+//     std::vector<double> cotan(3);
+//     cotan[0] = 1.0/std::tan(Angle[0]);
+//     cotan[1] = 1.0/std::tan(Angle[1]);
+//     cotan[2] = 1.0/std::tan(Angle[2]);    
+//     //the force is calculated based on Transverse coefficients
+//     //Longitudinal coefficients are considered in deltaF
+    
+//     tensileStiffness[0]=(2*cotan[2]*cotan[2]*(lambdaT+2*mioT)+2*mioT)*temp;
+//     tensileStiffness[1]=(2*cotan[0]*cotan[0]*(lambdaT+2*mioT)+2*mioT)*temp;
+//     tensileStiffness[2]=(2*cotan[1]*cotan[1]*(lambdaT+2*mioT)+2*mioT)*temp;
+    
+//     //Angular Stiffness
+//     std::vector<double> angularStiffness(3);
+//     angularStiffness[0]=(2*cotan[1]*cotan[2]*(lambdaT+2*mioT)-2*mioT)*temp;                          
+//     angularStiffness[1]=(2*cotan[0]*cotan[2]*(lambdaT+2*mioT)-2*mioT)*temp;
+//     angularStiffness[2]=(2*cotan[0]*cotan[1]*(lambdaT+2*mioT)-2*mioT)*temp;
+    
+//     //Calculate biquadratic strains  
+//     std::vector<double> Delta(3);
+//     Delta[0]=(length[0])*(length[0])-(restingLength[0])*(restingLength[0]);
+//     Delta[1]=(length[1])*(length[1])-(restingLength[1])*(restingLength[1]);
+//     Delta[2]=(length[2])*(length[2])-(restingLength[2])*(restingLength[2]);
+
+//     //Area of the element (using Heron's formula)                                      
+//     double Area=std::sqrt( ( length[0]+length[1]+length[2])*
+//                            (-length[0]+length[1]+length[2])*
+//                            ( length[0]-length[1]+length[2])*
+//                            ( length[0]+length[1]-length[2])  )*0.25;
+
+
+//     // calculating the angles between shape vectors and anisotropy direction in resting shape when anisotropy vector is provided in current shape
+    
+//     //Current shape local coordinate of the element  (counterclockwise ordering of nodes/edges)
+//       double CurrentAngle1=std::acos(  (length[0]*length[0]+length[1]*length[1]-length[2]*length[2])/
+//                                        (length[0]*length[1]*2)    );
+
+//       double Qa=std::cos(CurrentAngle1)*length[0];
+//       double Qc=std::sin(CurrentAngle1)*length[0];
+//       double Qb=length[1];
+//       // shape vector matrix = inverse of coordinate matrix ( only first two elements i.e. ShapeVector[3][2] )      
+//       double ShapeVectorCurrent[3][3]={ {  0   ,       1/Qc      , 0 }, 
+//                                         {-1/Qb , (Qa-Qb)/(Qb*Qc) , 1 },       
+//                                         { 1/Qb ,     -Qa/(Qb*Qc) , 0 }  };
+            
+   
+//       // Local coordinates of the resting shape ( counterclockwise )
+//       double RestingAngle1=std::acos(  (restingLength[0]*restingLength[0]+restingLength[1]*restingLength[1]-restingLength[2]*restingLength[2])/
+//                                        (restingLength[0]*restingLength[1]*2)    );
+
+//       double Pa=std::cos(RestingAngle1)*restingLength[0];
+//       double Pc=std::sin(RestingAngle1)*restingLength[0];
+//       double Pb=restingLength[1];
+
+//       // shape vector matrix in resting shape in local coordinate system  = inverse of coordinate matrix ( only first two elements i.e. ShapeVectorResting[3][2] )      
+//       double ShapeVectorResting[3][3]={ {  0   ,       1/Pc      , 0 }, 
+//                                         {-1/Pb , (Pa-Pb)/(Pb*Pc) , 1 },       
+//                                         { 1/Pb ,     -Pa/(Pb*Pc) , 0 }  };
+   
+//       // Rotation Matrix for changing coordinate systems for both Local to Global( Strain Tensor) and Global to Local( Aniso Vector in the current shape)
+//       double rotation[3][3];  
+
+//       double tempA=std::sqrt((position[2][0]-position[1][0])*(position[2][0]-position[1][0])+
+//                              (position[2][1]-position[1][1])*(position[2][1]-position[1][1])+
+//                              (position[2][2]-position[1][2])*(position[2][2]-position[1][2])  );
+
+//       double tempB=std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+//                              (position[0][1]-position[1][1])*(position[0][1]-position[1][1])+
+//                              (position[0][2]-position[1][2])*(position[0][2]-position[1][2])  );
+      
+//       double Xcurrent[3];      
+//       Xcurrent[0]= (position[2][0]-position[1][0])/tempA;
+//       Xcurrent[1]= (position[2][1]-position[1][1])/tempA;
+//       Xcurrent[2]= (position[2][2]-position[1][2])/tempA;
+      
+//       double Bcurrent[3];      
+//       Bcurrent[0]= (position[0][0]-position[1][0])/tempB;
+//       Bcurrent[1]= (position[0][1]-position[1][1])/tempB;
+//       Bcurrent[2]= (position[0][2]-position[1][2])/tempB;
+
+//       double Zcurrent[3];      
+//       Zcurrent[0]= Xcurrent[1]*Bcurrent[2]-Xcurrent[2]*Bcurrent[1];
+//       Zcurrent[1]= Xcurrent[2]*Bcurrent[0]-Xcurrent[0]*Bcurrent[2];
+//       Zcurrent[2]= Xcurrent[0]*Bcurrent[1]-Xcurrent[1]*Bcurrent[0];
+      
+//       tempA=std:: sqrt(Zcurrent[0]*Zcurrent[0]+Zcurrent[1]*Zcurrent[1]+Zcurrent[2]*Zcurrent[2]);
+//       Zcurrent[0]=Zcurrent[0]/tempA;
+//       Zcurrent[1]=Zcurrent[1]/tempA;
+//       Zcurrent[2]=Zcurrent[2]/tempA;
+
+//       double Ycurrent[3];      
+//       Ycurrent[0]= Zcurrent[1]*Xcurrent[2]-Zcurrent[2]*Xcurrent[1];
+//       Ycurrent[1]= Zcurrent[2]*Xcurrent[0]-Zcurrent[0]*Xcurrent[2];
+//       Ycurrent[2]= Zcurrent[0]*Xcurrent[1]-Zcurrent[1]*Xcurrent[0];
+
+
+//       rotation[0][0]=Xcurrent[0];
+//       rotation[1][0]=Xcurrent[1];
+//       rotation[2][0]=Xcurrent[2];
+
+//       rotation[0][1]=Ycurrent[0];
+//       rotation[1][1]=Ycurrent[1];
+//       rotation[2][1]=Ycurrent[2];
+
+//       rotation[0][2]=Zcurrent[0];
+//       rotation[1][2]=Zcurrent[1];
+//       rotation[2][2]=Zcurrent[2];      
+       
+//       // rotating the anisotropy vector from global coordinate system to the local one in the current shape
+//       double AnisoCurrLocal[3];
+//       AnisoCurrLocal[0]=rotation[0][0]*AnisoCurrGlob[0]+rotation[1][0]*AnisoCurrGlob[1]+rotation[2][0]*AnisoCurrGlob[2];
+//       AnisoCurrLocal[1]=rotation[0][1]*AnisoCurrGlob[0]+rotation[1][1]*AnisoCurrGlob[1]+rotation[2][1]*AnisoCurrGlob[2];
+//       AnisoCurrLocal[2]=rotation[0][2]*AnisoCurrGlob[0]+rotation[1][2]*AnisoCurrGlob[1]+rotation[2][2]*AnisoCurrGlob[2];
+     
+
+
+//       double positionLocal[3][2]={ {Qa , Qc}, 
+//                                    {0  , 0 },  
+//                                    {Qb , 0 }  };
+      
+//       double DeformGrad[2][2]={{0,0},{0,0}}; // F= Qi x Di
+//       for ( int i=0 ; i<3 ; ++i ) {
+//         DeformGrad[0][0]=DeformGrad[0][0]+positionLocal[i][0]*ShapeVectorResting[i][0];
+//         DeformGrad[1][0]=DeformGrad[1][0]+positionLocal[i][1]*ShapeVectorResting[i][0];
+//         DeformGrad[0][1]=DeformGrad[0][1]+positionLocal[i][0]*ShapeVectorResting[i][1];
+//         DeformGrad[1][1]=DeformGrad[1][1]+positionLocal[i][1]*ShapeVectorResting[i][1];
+//       }      
+
+//       double AnisoRestLocal[3]={0,0,0};
+
+//       AnisoRestLocal[0]=DeformGrad[0][0]*AnisoCurrLocal[0]+DeformGrad[1][0]*AnisoCurrLocal[1];
+//       AnisoRestLocal[1]=DeformGrad[0][1]*AnisoCurrLocal[0]+DeformGrad[1][1]*AnisoCurrLocal[1];
+     
+     
+//       double tempAn=std::sqrt(AnisoRestLocal[0]*AnisoRestLocal[0]+AnisoRestLocal[1]*AnisoRestLocal[1]+AnisoRestLocal[2]*AnisoRestLocal[2]);
+//       AnisoRestLocal[0]/=tempAn;
+//       AnisoRestLocal[1]/=tempAn;
+      
+
+
+
+
+//       double AnisoMeasure=std::sqrt(AnisoRestLocal[0]*AnisoRestLocal[0]+AnisoRestLocal[1]*AnisoRestLocal[1]);
+//       // std::cerr<< "cell "<< cellIndex<<" AnisoMeasure "<< AnisoMeasure<<std::endl;
+      
+//       // choosing a random normalized dirrection for anisotropy if AnisoVector is close to perpendicular to the cell plane
+//       if ( AnisoMeasure<0.0001) {
+//         double randomAngle=((rand()%360)*2*3.14159265)/360;
+        
+//         AnisoRestLocal[0]=std::cos(randomAngle);
+//         AnisoRestLocal[1]=std::sin(randomAngle);
+//       }  
+//       else {// normalizing the anisoVector if it is not random
+//         AnisoRestLocal[0]=AnisoRestLocal[0]/AnisoMeasure;
+//         AnisoRestLocal[1]=AnisoRestLocal[1]/AnisoMeasure;        
+//       }
+      
+      
+      
+//       //Angles between anisotropy vector and shape vectors for calculating the terms like a.Di , teta(k) = acos((dot(Anisorest,Dk))/(norm(Anisorest)*norm(Dk))),
+//       std::vector<double> teta(3);
+//       teta[0] = std::acos(  (ShapeVectorResting[0][0]*AnisoRestLocal[0]+ShapeVectorResting[0][1]*AnisoRestLocal[1])/
+//                             std::sqrt(ShapeVectorResting[0][0]*ShapeVectorResting[0][0]+ShapeVectorResting[0][1]*ShapeVectorResting[0][1]+0.0000001) );
+      
+//       teta[1] = std::acos(  (ShapeVectorResting[1][0]*AnisoRestLocal[0]+ShapeVectorResting[1][1]*AnisoRestLocal[1])/
+//                             std::sqrt(ShapeVectorResting[1][0]*ShapeVectorResting[1][0]+ShapeVectorResting[1][1]*ShapeVectorResting[1][1]+0.0000001) );
+      
+//       teta[2] = std::acos(  (ShapeVectorResting[2][0]*AnisoRestLocal[0]+ShapeVectorResting[2][1]*AnisoRestLocal[1])/
+//                             std::sqrt(ShapeVectorResting[2][0]*ShapeVectorResting[2][0]+ShapeVectorResting[2][1]*ShapeVectorResting[2][1]+0.0000001) );
+
+
+      
+//       // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STRAIN and STRESS TENSOR (BEGIN) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      
+//       // deformation gradiant tensor F =Sigma i=1,2,3 Qi x Di
+//       // strain tensor in resting shape E=0.5(FtF-I)
+//       // trE
+//       // B=FFt
+//       // axa (direct product of aniso vector in resting shape)
+//       // atEa
+//       // E(axa) and (axa)E
+//       double trE=( Delta[1]*cotan[0]+ Delta[2]*cotan[1]+Delta[0]*cotan[2])/(4*restingArea);
+      
+//       double directAniso[2][2]={{AnisoRestLocal[0]*AnisoRestLocal[0],AnisoRestLocal[0]*AnisoRestLocal[1]},
+//                                 {AnisoRestLocal[1]*AnisoRestLocal[0],AnisoRestLocal[1]*AnisoRestLocal[1]}};
+      
+
+//       double LeftCauchy[2][2]; // B=FFt
+//       LeftCauchy[0][0]=DeformGrad[0][0]*DeformGrad[0][0]+DeformGrad[0][1]*DeformGrad[0][1];
+//       LeftCauchy[1][0]=DeformGrad[1][0]*DeformGrad[0][0]+DeformGrad[1][1]*DeformGrad[0][1];
+//       LeftCauchy[0][1]=DeformGrad[0][0]*DeformGrad[1][0]+DeformGrad[0][1]*DeformGrad[1][1];
+//       LeftCauchy[1][1]=DeformGrad[1][0]*DeformGrad[1][0]+DeformGrad[1][1]*DeformGrad[1][1];
+
+
+//       double Egreen[2][2];//E=0.5(C-I)
+//       Egreen[0][0]=0.5*(DeformGrad[0][0]*DeformGrad[0][0]+DeformGrad[1][0]*DeformGrad[1][0]-1);
+//       Egreen[1][0]=0.5*(DeformGrad[0][1]*DeformGrad[0][0]+DeformGrad[1][1]*DeformGrad[1][0]);
+//       Egreen[0][1]=0.5*(DeformGrad[0][0]*DeformGrad[0][1]+DeformGrad[1][0]*DeformGrad[1][1]);
+//       Egreen[1][1]=0.5*(DeformGrad[0][1]*DeformGrad[0][1]+DeformGrad[1][1]*DeformGrad[1][1]-1);
+
+
+//       double E2[2][2]; // used for energy calculation only
+//       E2[0][0]=Egreen[0][0]*Egreen[0][0]+Egreen[0][1]*Egreen[1][0];
+//       E2[1][0]=Egreen[1][0]*Egreen[0][0]+Egreen[1][1]*Egreen[1][0];
+//       E2[0][1]=Egreen[0][0]*Egreen[0][1]+Egreen[0][1]*Egreen[1][1];
+//       E2[1][1]=Egreen[1][0]*Egreen[0][1]+Egreen[1][1]*Egreen[1][1];
+      
+//       double I2=E2[0][0]+E2[1][1]; //trE2 used for energy calculation only
+      
+//        //atE2a used for energy calculation only
+//       double I5= AnisoRestLocal[0]*AnisoRestLocal[0]*E2[0][0]   +  
+//         AnisoRestLocal[0]*AnisoRestLocal[1]*(E2[0][1]+E2[1][0]) +
+//         AnisoRestLocal[1]*AnisoRestLocal[1]*E2[1][1];
+      
+      
+//       double StrainAlmansi[2][2]; // e=0.5(1-B^-1)  True strain tensor
+//       temp=LeftCauchy[0][0]*LeftCauchy[1][1]-LeftCauchy[1][0]*LeftCauchy[0][1]; // det(B)
+//       StrainAlmansi[0][0]=0.5*(1-(LeftCauchy[1][1]/temp));
+//       StrainAlmansi[1][0]=0.5*LeftCauchy[1][0]/temp;
+//       StrainAlmansi[0][1]=0.5*LeftCauchy[0][1]/temp;  
+//       StrainAlmansi[1][1]=0.5*(1-(LeftCauchy[0][0]/temp));
+      
+//       double atEa=AnisoRestLocal[0]*AnisoRestLocal[0]*Egreen[0][0]
+//                  +AnisoRestLocal[0]*AnisoRestLocal[1]*(Egreen[0][1]+Egreen[1][0])
+//                  +AnisoRestLocal[1]*AnisoRestLocal[1]*Egreen[1][1];
+
+//       double I4=atEa;      
+
+//       double Eaa[2][2];
+//       Eaa[0][0]= Egreen[0][0]*directAniso[0][0]+Egreen[0][1]*directAniso[1][0];        
+//       Eaa[1][0]= Egreen[1][0]*directAniso[0][0]+Egreen[1][1]*directAniso[1][0];        
+//       Eaa[0][1]= Egreen[0][0]*directAniso[0][1]+Egreen[0][1]*directAniso[1][1];        
+//       Eaa[1][1]= Egreen[1][0]*directAniso[0][1]+Egreen[1][1]*directAniso[1][1];        
+
+//       double aaE[2][2];
+//       aaE[0][0]= directAniso[0][0]*Egreen[0][0]+directAniso[0][1]*Egreen[1][0];        
+//       aaE[1][0]= directAniso[1][0]*Egreen[0][0]+directAniso[1][1]*Egreen[1][0];        
+//       aaE[0][1]= directAniso[0][0]*Egreen[0][1]+directAniso[0][1]*Egreen[1][1];        
+//       aaE[1][1]= directAniso[1][0]*Egreen[0][1]+directAniso[1][1]*Egreen[1][1];        
+      
+//       double B2[2][2];// LeftCauchy^2
+//       B2[0][0]=LeftCauchy[0][0]*LeftCauchy[0][0]+LeftCauchy[0][1]*LeftCauchy[1][0];
+//       B2[1][0]=LeftCauchy[1][0]*LeftCauchy[0][0]+LeftCauchy[1][1]*LeftCauchy[1][0];
+//       B2[0][1]=LeftCauchy[0][0]*LeftCauchy[0][1]+LeftCauchy[0][1]*LeftCauchy[1][1];
+//       B2[1][1]=LeftCauchy[1][0]*LeftCauchy[0][1]+LeftCauchy[1][1]*LeftCauchy[1][1];
+
+
+//       double areaFactor=restingArea/Area; // 1/detF
+//       //double areaFactor=restingArea/Area; // detF
+
+//       double Sigma[2][2]; // true stress tensor (isotropic term) based on lambdaT and mioT
+//       Sigma[0][0]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[0][0]+(mioT)*B2[0][0]);
+//       Sigma[1][0]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[1][0]+(mioT)*B2[1][0]);
+//       Sigma[0][1]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[0][1]+(mioT)*B2[0][1]);
+//       Sigma[1][1]=areaFactor*((lambdaT*trE-mioT)*LeftCauchy[1][1]+(mioT)*B2[1][1]);
+     
+//       // double deltaS[2][2]; // based on Delin. paper
+//       // deltaS[0][0]=deltaLam*(trE*directAniso[0][0]+atEa)+(2*deltaMio)*(Eaa[0][0]+aaE[0][0])-(deltaLam+2*deltaMio)*atEa*directAniso[0][0];
+//       // deltaS[1][0]=deltaLam*(trE*directAniso[1][0]     )+(2*deltaMio)*(Eaa[1][0]+aaE[1][0])-(deltaLam+2*deltaMio)*atEa*directAniso[1][0];
+//       // deltaS[0][1]=deltaLam*(trE*directAniso[0][1]     )+(2*deltaMio)*(Eaa[0][1]+aaE[0][1])-(deltaLam+2*deltaMio)*atEa*directAniso[0][1];
+//       // deltaS[1][1]=deltaLam*(trE*directAniso[1][1]+atEa)+(2*deltaMio)*(Eaa[1][1]+aaE[1][1])-(deltaLam+2*deltaMio)*atEa*directAniso[1][1];
+
+     
+//       double deltaS[2][2]; // based on  equipartition energy 
+//       deltaS[0][0]=(deltaLam/2)*(trE*directAniso[0][0]+atEa)+(deltaMio)*(Eaa[0][0]+aaE[0][0]);
+//       deltaS[1][0]=(deltaLam/2)*(trE*directAniso[1][0]     )+(deltaMio)*(Eaa[1][0]+aaE[1][0]);
+//       deltaS[0][1]=(deltaLam/2)*(trE*directAniso[0][1]     )+(deltaMio)*(Eaa[0][1]+aaE[0][1]);
+//       deltaS[1][1]=(deltaLam/2)*(trE*directAniso[1][1]+atEa)+(deltaMio)*(Eaa[1][1]+aaE[1][1]);
+
+
+//       // double deltaS[2][2]; // based on  ... 
+//       // deltaS[0][0]=(deltaLam/2)*(trE*directAniso[0][0]+atEa)+2*(deltaMio)* atEa * directAniso[0][0];
+//       // deltaS[1][0]=(deltaLam/2)*(trE*directAniso[1][0]     )+2*(deltaMio)* atEa * directAniso[1][0];
+//       // deltaS[0][1]=(deltaLam/2)*(trE*directAniso[0][1]     )+2*(deltaMio)* atEa * directAniso[0][1];
+//       // deltaS[1][1]=(deltaLam/2)*(trE*directAniso[1][1]+atEa)+2*(deltaMio)* atEa * directAniso[1][1];
+
+
+
+
+//       // double deltaS[2][2]; // based on  ... 
+//       // deltaS[0][0]=2*(deltaMio1)* atEa * directAniso[0][0];
+//       // deltaS[1][0]=2*(deltaMio1)* atEa * directAniso[1][0];
+//       // deltaS[0][1]=2*(deltaMio1)* atEa * directAniso[0][1];
+//       // deltaS[1][1]=2*(deltaMio1)* atEa * directAniso[1][1];
+
+
+        
+//       strainZ =1-poissonT*((2*lambdaT*trE+2*mioT*trE)+deltaS[0][0]+deltaS[1][1])/youngT;
+
+//       //<<<<<<<<<<<<<<<<<<<isotropic force from stress tensor <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+//       // double ss[2][2];//lambda(trE)I+2mioE
+//       // ss[0][0]=lambdaT*trE+2*mioT*Egreen[0][0];
+//       // ss[0][1]=            2*mioT*Egreen[0][1];
+//       // ss[1][0]=            2*mioT*Egreen[1][0];
+//       // ss[1][1]=lambdaT*trE+2*mioT*Egreen[1][1];
+
+       
+
+//       // double TPK[2][2];// 2nd Piola Kirchhoff stress tensor 
+//       // TPK[0][0]=restingArea*(DeformGrad[0][0]*ss[0][0]+DeformGrad[0][1]*ss[1][0]);
+//       // TPK[1][0]=restingArea*(DeformGrad[1][0]*ss[0][0]+DeformGrad[1][1]*ss[1][0]);
+//       // TPK[0][1]=restingArea*(DeformGrad[0][0]*ss[0][1]+DeformGrad[0][1]*ss[1][1]);
+//       // TPK[1][1]=restingArea*(DeformGrad[1][0]*ss[0][1]+DeformGrad[1][1]*ss[1][1]);
+
+//       // //deltaFTPKlocal[i][0]= TPK[0][0]*ShapeVectorResting[i][0]+TPK[0][1]*ShapeVectorResting[i][1];
+//       // //deltaFTPKlocal[i][1]= TPK[1][0]*ShapeVectorResting[i][0]+TPK[1][1]*ShapeVectorResting[i][1];
+     
+//       // double deltaFTPKlocal[2][2];
+//       // deltaFTPKlocal[0][0]= TPK[0][0]*ShapeVectorResting[0][0]+TPK[0][1]*ShapeVectorResting[0][1];
+//       // deltaFTPKlocal[0][1]= TPK[1][0]*ShapeVectorResting[0][0]+TPK[1][1]*ShapeVectorResting[0][1];
+     
+//       // double deltaFTPK[2][2]; 
+//       // deltaFTPK[0][0]= rotation[0][0]*deltaFTPKlocal[0][0]+rotation[0][1]*deltaFTPKlocal[0][1];
+//       // deltaFTPK[0][1]= rotation[1][0]*deltaFTPKlocal[0][0]+rotation[1][1]*deltaFTPKlocal[0][1];
+//       // deltaFTPK[0][2]= rotation[2][0]*deltaFTPKlocal[0][0]+rotation[2][1]*deltaFTPKlocal[0][1];
+//       //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+//       // //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//       double TPK[2][2];// 2nd Piola Kirchhoff stress tensor 
+//       TPK[0][0]=restingArea*(DeformGrad[0][0]*deltaS[0][0]+DeformGrad[0][1]*deltaS[1][0]);
+//       TPK[1][0]=restingArea*(DeformGrad[1][0]*deltaS[0][0]+DeformGrad[1][1]*deltaS[1][0]);
+//       TPK[0][1]=restingArea*(DeformGrad[0][0]*deltaS[0][1]+DeformGrad[0][1]*deltaS[1][1]);
+//       TPK[1][1]=restingArea*(DeformGrad[1][0]*deltaS[0][1]+DeformGrad[1][1]*deltaS[1][1]);
+
+//       //deltaFTPKlocal[i][0]= TPK[0][0]*ShapeVectorResting[i][0]+TPK[0][1]*ShapeVectorResting[i][1];
+//       //deltaFTPKlocal[i][1]= TPK[1][0]*ShapeVectorResting[i][0]+TPK[1][1]*ShapeVectorResting[i][1];
+     
+//       double deltaFTPKlocal[3][2];
+//       deltaFTPKlocal[0][0]= TPK[0][0]*ShapeVectorResting[0][0]+TPK[0][1]*ShapeVectorResting[0][1];
+//       deltaFTPKlocal[0][1]= TPK[1][0]*ShapeVectorResting[0][0]+TPK[1][1]*ShapeVectorResting[0][1];
+     
+//       deltaFTPKlocal[1][0]= TPK[0][0]*ShapeVectorResting[1][0]+TPK[0][1]*ShapeVectorResting[1][1];
+//       deltaFTPKlocal[1][1]= TPK[1][0]*ShapeVectorResting[1][0]+TPK[1][1]*ShapeVectorResting[1][1];
+
+//       deltaFTPKlocal[2][0]= TPK[0][0]*ShapeVectorResting[2][0]+TPK[0][1]*ShapeVectorResting[2][1];
+//       deltaFTPKlocal[2][1]= TPK[1][0]*ShapeVectorResting[2][0]+TPK[1][1]*ShapeVectorResting[2][1];
+
+
+//       double deltaFTPK[3][3]; 
+//       deltaFTPK[0][0]= rotation[0][0]*deltaFTPKlocal[0][0]+rotation[0][1]*deltaFTPKlocal[0][1];
+//       deltaFTPK[0][1]= rotation[1][0]*deltaFTPKlocal[0][0]+rotation[1][1]*deltaFTPKlocal[0][1];
+//       deltaFTPK[0][2]= rotation[2][0]*deltaFTPKlocal[0][0]+rotation[2][1]*deltaFTPKlocal[0][1];
+
+//       deltaFTPK[1][0]= rotation[0][0]*deltaFTPKlocal[1][0]+rotation[0][1]*deltaFTPKlocal[1][1];
+//       deltaFTPK[1][1]= rotation[1][0]*deltaFTPKlocal[1][0]+rotation[1][1]*deltaFTPKlocal[1][1];
+//       deltaFTPK[1][2]= rotation[2][0]*deltaFTPKlocal[1][0]+rotation[2][1]*deltaFTPKlocal[1][1];
+      
+//       deltaFTPK[2][0]= rotation[0][0]*deltaFTPKlocal[2][0]+rotation[0][1]*deltaFTPKlocal[2][1];
+//       deltaFTPK[2][1]= rotation[1][0]*deltaFTPKlocal[2][0]+rotation[1][1]*deltaFTPKlocal[2][1];
+//       deltaFTPK[2][2]= rotation[2][0]*deltaFTPKlocal[2][0]+rotation[2][1]*deltaFTPKlocal[2][1];
+
+
+//       // //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+//       double deltaSFt[2][2];
+//       deltaSFt[0][0]=deltaS[0][0]*DeformGrad[0][0]+deltaS[0][1]*DeformGrad[0][1];
+//       deltaSFt[1][0]=deltaS[1][0]*DeformGrad[0][0]+deltaS[1][1]*DeformGrad[0][1];
+//       deltaSFt[0][1]=deltaS[0][0]*DeformGrad[1][0]+deltaS[0][1]*DeformGrad[1][1];
+//       deltaSFt[1][1]=deltaS[1][0]*DeformGrad[1][0]+deltaS[1][1]*DeformGrad[1][1];
+      
+//       double deltaSigma[2][2];// true stress tensor (anisotropic correction term)deltaLambda and deltaMio (Longitudinal-Transverse)
+//       deltaSigma[0][0]=areaFactor*(DeformGrad[0][0]*deltaSFt[0][0]+DeformGrad[0][1]*deltaSFt[1][0]);
+//       deltaSigma[1][0]=areaFactor*(DeformGrad[1][0]*deltaSFt[0][0]+DeformGrad[1][1]*deltaSFt[1][0]);
+//       deltaSigma[0][1]=areaFactor*(DeformGrad[0][0]*deltaSFt[0][1]+DeformGrad[0][1]*deltaSFt[1][1]);
+//       deltaSigma[1][1]=areaFactor*(DeformGrad[1][0]*deltaSFt[0][1]+DeformGrad[1][1]*deltaSFt[1][1]);
+    
+
+  
+     
+//       double StressTensor[3][3];
+//       StressTensor[0][0]=Sigma[0][0]+deltaSigma[0][0];
+//       StressTensor[1][0]=Sigma[1][0]+deltaSigma[1][0];
+//       StressTensor[0][1]=Sigma[0][1]+deltaSigma[0][1];
+//       StressTensor[1][1]=Sigma[1][1]+deltaSigma[1][1];
+     
+ 
+//       //Shape vectors in Current shape (counterclockwise ordering of nodes/edges)     ShapeVectorCurrent[3][3]  calculated above   
+//       //.............................. ( or clockwise ordering of nodes/edges)
+          
+ 
+//       //square of radius of circumstancing circle in resting shape
+//       //double Rcirc2Resting=(0.25*restingLength[0]*restingLength[1]*restingLength[2]/Area)*(0.25*restingLength[0]*restingLength[1]*restingLength[2]/Area);  
+      
+//       double StrainTensor[3][3];
+//       //1
+//       StrainTensor[0][0]=StrainAlmansi[0][0];
+//       StrainTensor[1][0]=StrainAlmansi[1][0];
+//       StrainTensor[0][1]=StrainAlmansi[0][1];
+//       StrainTensor[1][1]=StrainAlmansi[1][1];
+
+
+//       StrainTensor[0][2]=0;  // adding 3rd dimension which is zero, the tensor is still in element plane
+//       StrainTensor[1][2]=0;
+//       StrainTensor[2][2]=0;
+//       StrainTensor[2][0]=0;
+//       StrainTensor[2][1]=0;
+      
+//       StressTensor[0][2]=0;  // adding 3rd dimension which is zero, the tensor is still in element plane
+//       StressTensor[1][2]=0;
+//       StressTensor[2][2]=0;
+//       StressTensor[2][0]=0;
+//       StressTensor[2][1]=0;
+ 
+
+      
+
+//       //rotation matrix to go to global coordinate system based on counterclockwise ordering;   rotation[3][3] calculated above  
+//       //double testRatio1=Sigma[0][0]*
+//       // double testRatio1=StressTensor[0][0]*(1-2*StrainTensor[0][0])*(1-2*StrainTensor[0][0])/((mioT*StrainTensor[0][0]+lambdaT*trE*(1-2*StrainTensor[0][0]))*(Area/restingArea));
+//       // std::cerr<< "test1 "<<testRatio1<<std::endl;
+//       // double testRatio2=StressTensor[1][1]*(1-2*StrainTensor[1][1])*(1-2*StrainTensor[1][1])/((mioT*StrainTensor[1][1]+lambdaT*trE*(1-2*StrainTensor[1][1]))*(Area/restingArea));
+//       // std::cerr<< "test2 "<<testRatio2<<std::endl;
+//       // std::cerr<< "trE1 "<<trE<<std::endl;
+//       // std::cerr<< "trE2 "<<Egreen[0][0]+Egreen[1][1]<<std::endl;
+//       // std::cerr<< "mioT "<<mioT<<std::endl;
+//       // std::cerr<< "Area "<<Area<<std::endl;
+//       //std::cerr<< "restingArea "<<restingArea<<std::endl;
+
+//       //   std::cerr<< "alfa0           "<<StrainAlmansi[0][0]<<std::endl;
+
+//       // std::cerr<< "0.5(1-(1/beta0)) "<<0.5*(1-(1/LeftCauchy[0][0]))<<std::endl;
+//       // std::cerr<< "0.5(1-(1/beta1)) "<<0.5*(1-(1/LeftCauchy[1][1]))<<std::endl;
+//       // std::cerr<< "almansi 01           "<<StrainAlmansi[0][1]<<std::endl;
+//       // std::cerr<< "almansi 10           "<<StrainAlmansi[1][0]<<std::endl;
+      
+//       // std::cerr <<"rotation tensor " << std::endl;
+//       // std::cerr <<" Rxx  "<< rotation[0][0] <<" Rxy  "<< rotation[0][1] <<" Rxz  "<< rotation[0][2] << std::endl
+//       //           <<" Ryx  "<< rotation[1][0] <<" Ryy  "<< rotation[1][1] <<" Ryz  "<< rotation[1][2] << std::endl
+//       //           <<" Rzx  "<< rotation[2][0] <<" Rzy  "<< rotation[2][1] <<" Rzz  "<< rotation[2][2] << std::endl <<std::endl;
+//       //   std::cerr<< "deltaSigma[0][0] and [1][1]  "<<deltaSigma[0][0]<<"  "<<deltaSigma[1][1]<<std::endl;
+//       // std::cerr<< "Sigma[0][0] and [1][1]  "<<Sigma[0][0]<<"  "<<Sigma[1][1]<<std::endl;
+      
+//       // double test1=((mioT*StrainTensor[0][0]+lambdaT*trE*(1-2*StrainTensor[0][0]))*(Area/restingArea))/((1-2*StrainTensor[0][0])*(1-2*StrainTensor[0][0]));
+//       // double test2=((mioT*StrainTensor[1][1]+lambdaT*trE*(1-2*StrainTensor[1][1]))*(Area/restingArea))/((1-2*StrainTensor[1][1])*(1-2*StrainTensor[1][1]));
+//       // std::cerr<< "test1  test2  "<<test1<<" "<<test2<<std::endl;
+      
+ 
+//          // std::cerr<< "Egreen[0][0] and Egreen[1][1]  "<<Egreen[0][0]<<"  "<<Egreen[1][1]<<std::endl;
+//          // std::cerr<< "cauchyStress[0][0] and cauchyStressEgreen[1][1]  "<<lambdaT*trE+mioT*Egreen[0][0]<<"  "<<lambdaT*trE+mioT*Egreen[1][1]<<std::endl;
+      
+ 
+//       // rotating strain tensor to the global coordinate system
+//       double tempR[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+//       for (int r=0 ; r<3 ; r++) {
+//         for (int s=0 ; s<3 ; s++) {
+//           for(int w=0 ; w<3 ; w++) {
+//             tempR[r][s]=tempR[r][s]+rotation[r][w]*StrainTensor[w][s];
+//           }
+//         }
+//       }
+//       for (int r=0 ; r<3 ; r++) {
+//         for (int s=0 ; s<3 ; s++) {
+//           StrainTensor[r][s]=0;
+//           for(int w=0 ; w<3 ; w++) {
+//             StrainTensor[r][s]=StrainTensor[r][s]+tempR[r][w]*rotation[s][w];
+//           }
+//         }
+//       }
+      
+  
+//       // rotating stress tensor to the global coordinate system
+  
+//       for (int r=0 ; r<3 ; r++) {
+//         for (int s=0 ; s<3 ; s++) {
+//           tempR[r][s]=0;
+//         }
+//       }
+ 
+//       for (int r=0 ; r<3 ; r++) {
+//         for (int s=0 ; s<3 ; s++) {
+//           for(int w=0 ; w<3 ; w++) {
+//             tempR[r][s]=tempR[r][s]+rotation[r][w]*StressTensor[w][s];
+//           }
+//         }
+//       }
+//       for (int r=0 ; r<3 ; r++) {
+//         for (int s=0 ; s<3 ; s++) {
+//           StressTensor[r][s]=0;
+//           for(int w=0 ; w<3 ; w++) {
+//             StressTensor[r][s]=StressTensor[r][s]+tempR[r][w]*rotation[s][w];
+//           }
+//         }
+//       }
+
+      
+
+//       //Cell *  cell1=&(T.cell(cellIndex));
+//       // std::cerr<<" cell   "<<cellIndex<<"   wall   "<<w1<<  "  cell neighbohr  "<<(cell1->cellNeighbor(0))->index() <<std::endl;
+//       // std::cerr<<" cell   "<<cellIndex<<"   wall   "<<w2<<  "  cell neighbohr  "<<(cell1->cellNeighbor(1))->index() <<std::endl;
+//       // std::cerr<<" cell   "<<cellIndex<<"   wall   "<<w3<<  "  cell neighbohr  "<<(cell1->cellNeighbor(2))->index() <<std::endl;
+//       cellData[cellIndex][26]=StressTensor[0][0];
+//       cellData[cellIndex][27]=StressTensor[1][1];
+//       cellData[cellIndex][28]=StressTensor[2][2];
+//       cellData[cellIndex][29]=StressTensor[0][1];
+//       cellData[cellIndex][30]=StressTensor[0][2];
+//       cellData[cellIndex][31]=StressTensor[1][2];
+      
+      
+      
+      
+//       // stress component along MT direction 
+//       temp = std::sqrt ( cellData[cellIndex][variableIndex(0,1)  ] * cellData[cellIndex][variableIndex(0,1)  ] +
+// 			 cellData[cellIndex][variableIndex(0,1)+1] * cellData[cellIndex][variableIndex(0,1)+1] +
+// 			 cellData[cellIndex][variableIndex(0,1)+2] * cellData[cellIndex][variableIndex(0,1)+2]  );
+//       cellData[cellIndex][variableIndex(0,1)  ] /=temp;
+//       cellData[cellIndex][variableIndex(0,1)+1] /=temp;
+//       cellData[cellIndex][variableIndex(0,1)+2] /=temp;
+      
+//       cellData[cellIndex][variableIndex(0,8)  ] =
+// 	cellData[cellIndex][variableIndex(0,1)     ] *cellData[cellIndex][variableIndex(0,1)     ] *StressTensor[0][0]  +
+// 	cellData[cellIndex][variableIndex(0,1)     ] *cellData[cellIndex][variableIndex(0,1)+1] *StressTensor[0][1]  +
+// 	cellData[cellIndex][variableIndex(0,1)     ] *cellData[cellIndex][variableIndex(0,1)+2] *StressTensor[0][2]  +
+// 	cellData[cellIndex][variableIndex(0,1)+1] *cellData[cellIndex][variableIndex(0,1)     ] *StressTensor[1][0]  +
+// 	cellData[cellIndex][variableIndex(0,1)+1] *cellData[cellIndex][variableIndex(0,1)+1] *StressTensor[1][1]  +
+// 	cellData[cellIndex][variableIndex(0,1)+1] *cellData[cellIndex][variableIndex(0,1)+2] *StressTensor[1][2]  +
+// 	cellData[cellIndex][variableIndex(0,1)+2] *cellData[cellIndex][variableIndex(0,1)     ] *StressTensor[2][0]  +
+// 	cellData[cellIndex][variableIndex(0,1)+2] *cellData[cellIndex][variableIndex(0,1)+1] *StressTensor[2][1]  +
+// 	cellData[cellIndex][variableIndex(0,1)+2] *cellData[cellIndex][variableIndex(0,1)+2] *StressTensor[2][2]       ;
+  
+    
+//       // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STRAIN and STRESS TENSORS (END) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      
+//       // eigenvalues/eigenvectors of strain tensor in global coordinate system. (Jacobi method)
+      
+//       double strainEpcilon =0.000001;
+      
+
+//       double eigenVectorStrain[3][3]={{1,0,0},{0,1,0},{0,0,1}};
+//       double pivot=1;
+//       double pi=3.14159265;
+//       int I,J;
+//       double RotAngle,Si,Co;
+      
+//       pivot=std::abs(StrainTensor[1][0]);
+//       I=1;
+//       J=0;
+//       if (std::abs(StrainTensor[2][0])>pivot) {
+//         pivot=std::abs(StrainTensor[2][0]);
+//         I=2;
+//         J=0;
+//       }
+//       if (std::abs(StrainTensor[2][1])>pivot) {
+//         pivot=std::abs(StrainTensor[2][1]);
+//         I=2;
+//         J=1;
+//       }
+
+//       while (pivot>strainEpcilon) {
+      
+//         if (std::abs(StrainTensor[I][I]-StrainTensor[J][J])<strainEpcilon) {
+//           RotAngle=pi/4;
+//         }            
+//         else {
+//           RotAngle=0.5*std::atan((2*StrainTensor[I][J])/(StrainTensor[J][J]-StrainTensor[I][I]));
+//         }
+//         Si=std::sin(RotAngle);
+//         Co=std::cos(RotAngle);
+//         double tempRot[3][3]={{1,0,0},{0,1,0},{0,0,1}};
+//         tempRot[I][I]=Co;
+//         tempRot[J][J]=Co;
+//         tempRot[I][J]=Si;
+//         tempRot[J][I]=-Si;
+//         double tempStrain[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+//         for (int r=0 ; r<3 ; r++) {
+//           for (int s=0 ; s<3 ; s++) {
+//             for(int w=0 ; w<3 ; w++) {
+//               tempStrain[r][s]=tempStrain[r][s]+StrainTensor[r][w]*tempRot[w][s];
+//             }
+//           }
+//         }
+        
+//         for (int r=0 ; r<3 ; r++) {
+//           for (int s=0 ; s<3 ; s++) {
+//             StrainTensor[r][s]=0;
+//           }
+//         }
+        
+//         for (int r=0 ; r<3 ; r++) {
+//           for (int s=0 ; s<3 ; s++) {
+//             for(int w=0 ; w<3 ; w++) {
+//               StrainTensor[r][s]=StrainTensor[r][s]+tempRot[w][r]*tempStrain[w][s];
+//             }
+//           }
+//         }
+        
+//         for (int r=0 ; r<3 ; r++) 
+//           {
+//             for (int s=0 ; s<3 ; s++) 
+//               {
+//                 tempStrain[r][s]=eigenVectorStrain[r][s];
+//               }
+//           }
+
+// 	for (size_t ii=0; ii<3; ++ii) {
+// 	  for (size_t jj=0; jj<3; ++jj) {
+// 	    eigenVectorStrain[ii][jj] = 0.0; 
+// 	  }
+// 	}	
+//         for (int r=0 ; r<3 ; r++) {
+//           for (int s=0 ; s<3 ; s++) {
+//             for(int w=0 ; w<3 ; w++) {
+//               eigenVectorStrain[r][s]=eigenVectorStrain[r][s]+tempStrain[r][w]*tempRot[w][s];
+//             }
+//           }
+//         }
+//         pivot=std::abs(StrainTensor[1][0]);
+//         I=1;
+//         J=0;
+//         if (std::abs(StrainTensor[2][0])>pivot) {
+//           pivot=std::abs(StrainTensor[2][0]);
+//           I=2;
+//           J=0;
+//         }
+//         if (std::abs(StrainTensor[2][1])>pivot) {
+//           pivot=std::abs(StrainTensor[2][1]);
+//           I=2;
+//           J=1;
+//         }
+//       }
+      
+      
+//       // maximal strain direction
+//       double maximalStrainValue=StrainTensor[0][0];
+//       int Istrain=0;
+//       if (std::abs(StrainTensor[1][1])>std::abs(maximalStrainValue)) 
+//         {
+//           maximalStrainValue=StrainTensor[1][1];
+//           Istrain=1;
+//         }
+//       if (std::abs(StrainTensor[2][2])>std::abs(maximalStrainValue)) 
+//         {
+//           maximalStrainValue=StrainTensor[2][2];
+//           Istrain=2;
+//         }
+//       //std::cerr<<"maximal Strain direction "<< eigenVectorStrain[0][Istrain] <<" "<< eigenVectorStrain[1][Istrain] <<" "<< eigenVectorStrain[2][Istrain] <<std::endl;  
+//       //std::cerr<<"maximal Strain value "<< maximalStrainValue <<std::endl;  
+      
+//       // 2nd maximalstrain direction/value
+//       double maximalStrainValue2;
+//       int Istrain2,Istrain3;
+//       if (Istrain==0) {
+//         Istrain2=1;
+//         Istrain3=2;
+//       }
+//       if (Istrain==1) {
+//         Istrain2=0;
+//         Istrain3=2;
+//       }
+//       if (Istrain==2) {
+//         Istrain2=0;
+//         Istrain3=1;
+//       }
+//       if(std::abs(StrainTensor[Istrain3][Istrain3])>std::abs(StrainTensor[Istrain2][Istrain2])) {
+//         Istrain2=Istrain3;
+//       }
+//       maximalStrainValue2=StrainTensor[Istrain2][Istrain2];
+      
+      
+      
+
+   
+//       //perpendicular direction to strain in cellData
+      
+//       // normal to the cell plane in global direction is Zcurrent[], vector product gives the perpendicular strain direction
+//       double PerpStrain[3];
+//       PerpStrain[0]=Zcurrent[1]*eigenVectorStrain[2][Istrain]-Zcurrent[2]*eigenVectorStrain[1][Istrain];
+//       PerpStrain[1]=Zcurrent[2]*eigenVectorStrain[0][Istrain]-Zcurrent[0]*eigenVectorStrain[2][Istrain];
+//       PerpStrain[2]=Zcurrent[0]*eigenVectorStrain[1][Istrain]-Zcurrent[1]*eigenVectorStrain[0][Istrain];
+//       temp=std::sqrt(PerpStrain[0]*PerpStrain[0]+PerpStrain[1]*PerpStrain[1]+PerpStrain[2]*PerpStrain[2]);     
+      
+//        if(std::abs(temp)<0.0001){ // if maximal strain is normal to the cell plane storing strain direction instead as it should not be used
+//          PerpStrain[0]=eigenVectorStrain[0][Istrain];
+//          PerpStrain[1]=eigenVectorStrain[1][Istrain];
+//          PerpStrain[2]=eigenVectorStrain[2][Istrain];
+//        }
+       
+//        //   if (dimension==2)
+//        //     {
+//        //       cellData[cellIndex][0]=PerpStrain[0];        
+//        //       cellData[cellIndex][1]=PerpStrain[1];
+//        //     }
+//        //   if (dimension==3)
+//        //     {
+//        //       cellData[cellIndex][0]=PerpStrain[0];
+//        //       cellData[cellIndex][1]=PerpStrain[1];
+//        //       cellData[cellIndex][2]=PerpStrain[2];
+//        //       // cellData[cellIndex][3]=10*maximalStrainValue;  //NOTE maximal Strain and Stress Values should be used somewhere this is an option
+//        //     }
+       
+
+//        // storing a measure for strain anisotropy in cell vector
+//        if (std::abs(maximalStrainValue)<0.0000001) cellData[cellIndex][variableIndex(0,2)]=0;
+//        if (std::abs(maximalStrainValue)>= 0.0000001) cellData[cellIndex][variableIndex(0,2)]=1-std::abs(maximalStrainValue2/maximalStrainValue);
+       
+//        // storing   strain direction/value in cellData
+//        if (numVariableIndexLevel()==3 && (numVariableIndex(1)==1 || numVariableIndex(1)==2 || numVariableIndex(1)==3) ) {// storing maximal strain
+//          if (dimension==2)
+//            {
+//              cellData[cellIndex][variableIndex(1,0)]  =eigenVectorStrain[0][Istrain];
+//              cellData[cellIndex][variableIndex(1,0)+1]=eigenVectorStrain[1][Istrain];
+//              cellData[cellIndex][variableIndex(1,0)+3]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
+//            }
+//          if (dimension==3)
+//            {
+//              cellData[cellIndex][variableIndex(1,0)]  =eigenVectorStrain[0][Istrain];
+//              cellData[cellIndex][variableIndex(1,0)+1]=eigenVectorStrain[1][Istrain];
+//              cellData[cellIndex][variableIndex(1,0)+2]=eigenVectorStrain[2][Istrain];
+//              cellData[cellIndex][variableIndex(1,0)+3]=maximalStrainValue;  //maximal Strain Value is stored after its eigenvector
+//            }
+//        }
+       
+//        if (numVariableIndexLevel()==3 &&  numVariableIndex(1)==3  ) {//storing 2nd maximal strain
+//          if (dimension==2)
+//            {
+//              cellData[cellIndex][variableIndex(1,2)]  =eigenVectorStrain[0][Istrain2];
+//              cellData[cellIndex][variableIndex(1,2)+1]=eigenVectorStrain[1][Istrain2];
+//              cellData[cellIndex][variableIndex(1,2)+3]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
+//            }
+//          if (dimension==3)
+//            {
+//              cellData[cellIndex][variableIndex(1,2)]  =eigenVectorStrain[0][Istrain2];
+//              cellData[cellIndex][variableIndex(1,2)+1]=eigenVectorStrain[1][Istrain2];
+//              cellData[cellIndex][variableIndex(1,2)+2]=eigenVectorStrain[2][Istrain2];
+//              cellData[cellIndex][variableIndex(1,2)+3]=maximalStrainValue2;  //2nd maximal Strain Value is stored after its eigenvector
+//            }
+//        }
+//        if (numVariableIndexLevel()==3 && ( numVariableIndex(1)==2 || numVariableIndex(1)==3 ) ) {//storing perpendicular to maximal strain
+//          if (dimension==2)
+//            {
+//              cellData[cellIndex][variableIndex(1,1)]  =PerpStrain[0];
+//              cellData[cellIndex][variableIndex(1,1)+1]=PerpStrain[1];
+//              cellData[cellIndex][variableIndex(1,1)+3]=maximalStrainValue;//maximal Strain Value is stored after its eigenvector
+//              //cellData[cellIndex][variableIndex(1,1)+3]=Area/restingArea;
+//            }
+//          if (dimension==3)
+//            {
+//              cellData[cellIndex][variableIndex(1,1)]  =PerpStrain[0];
+//              cellData[cellIndex][variableIndex(1,1)+1]=PerpStrain[1];
+//              cellData[cellIndex][variableIndex(1,1)+2]=PerpStrain[2];
+//              cellData[cellIndex][variableIndex(1,1)+3]=maximalStrainValue;//maximal Strain Value is stored after its eigenvector
+//              //cellData[cellIndex][variableIndex(1,1)+3]=Area/restingArea;
+//            }
+//        }
+
+
+       
+
+       
+//        //<<<<<<<<<<<<<<<<<<<<<<<< angles between  vectors and circumferential direction <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      
+//        temp=std::sqrt(cellData[cellIndex][variableIndex(0,1)]*cellData[cellIndex][variableIndex(0,1)]+     // 12 --> MT
+//                       cellData[cellIndex][variableIndex(0,1)+1]*cellData[cellIndex][variableIndex(0,1)+1]);
+//        if(temp<0.000001){
+//          cellData[cellIndex][12]=pi/2;
+//        }
+//        else{
+//          cellData[cellIndex][12]=std::atan(cellData[cellIndex][variableIndex(0,1)+2]/temp);
+//        }
+       
+//        temp=std::sqrt(eigenVectorStrain[0][Istrain]*eigenVectorStrain[0][Istrain]+                                   // 13 --> Strain
+//                       eigenVectorStrain[1][Istrain]*eigenVectorStrain[1][Istrain] );
+//        if(temp<0.000000001){
+//          cellData[cellIndex][13]=pi/2;
+//        }
+//        else{
+//          cellData[cellIndex][13]=std::atan(eigenVectorStrain[2][Istrain]/temp);
+//        }
+
+      
+//        cellData[cellIndex][15]=position[0][2]; // z coordinate of 0th vertex of the cell                                  // 15 --> Z coordinate
+      
+       
+       
+//        //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+       
+       
+//        //---- Anisotropic Correction Force-------------------------------
+//        double deltaF[3][3];
+       
+        
+//          for ( int i=0 ; i<3 ; ++i )  // from stress tensor(equipartitioning energy)
+//           for ( int j=0 ; j<3 ; ++j )
+//             deltaF[i][j]=(-deltaFTPK[i][j]);
+      
+//         double  I1=trE;
+
+//         // energy
+//         EnergyIso =( (lambdaT/2)*I1*I1 + mioT*I2 );//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//         EnergyAniso =( (deltaLam/2)*I4*I1 + deltaMio*I5 ); //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      
+//         //Forces of vertices   
+//         double Force[3][3];                                           
+    
+//         Force[0][0]= (tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2])*(position[1][0]-position[0][0])
+//           +(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[2][0]-position[0][0])
+//           + deltaF[0][0]; 
+//         Force[0][1]= (tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2])*(position[1][1]-position[0][1])
+//           +(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[2][1]-position[0][1])
+//           + deltaF[0][1];  
+//         Force[0][2]= (tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2])*(position[1][2]-position[0][2])
+//           +(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[2][2]-position[0][2])
+//           + deltaF[0][2]; 
+//         Force[1][0]= (tensileStiffness[0]*Delta[0]+angularStiffness[0]*Delta[2]+angularStiffness[1]*Delta[1])*(position[0][0]-position[1][0])
+//           +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0])*(position[2][0]-position[1][0])
+//           + deltaF[1][0];  
+//         Force[1][1]= (tensileStiffness[0]*Delta[0]+angularStiffness[0]*Delta[2]+angularStiffness[1]*Delta[1])*(position[0][1]-position[1][1])
+//           +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0])*(position[2][1]-position[1][1])
+//           + deltaF[1][1];  
+//         Force[1][2]= (tensileStiffness[0]*Delta[0]+angularStiffness[0]*Delta[2]+angularStiffness[1]*Delta[1])*(position[0][2]-position[1][2])
+//           +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0])*(position[2][2]-position[1][2])
+//           + deltaF[1][2];  
+        
+//         Force[2][0]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1])*(position[0][0]-position[2][0])
+//           +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][0]-position[2][0])
+//           + deltaF[2][0];  
+//         Force[2][1]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1])*(position[0][1]-position[2][1])
+//           +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][1]-position[2][1])
+//           + deltaF[2][1];  
+//         Force[2][2]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1])*(position[0][2]-position[2][2])
+//           +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][2]-position[2][2])
+//           + deltaF[2][2];  
+        
+      
+        
+//         // adding TRBSMT forces to the total vertexDerivs
+        
+//         vertexDerivs[v1][0]+= Force[0][0];
+//         vertexDerivs[v1][1]+= Force[0][1];
+//         vertexDerivs[v1][2]+= Force[0][2];
+        
+//         vertexDerivs[v2][0]+= Force[1][0];
+//         vertexDerivs[v2][1]+= Force[1][1];
+//         vertexDerivs[v2][2]+= Force[1][2];
+        
+//         vertexDerivs[v3][0]+= Force[2][0];
+//         vertexDerivs[v3][1]+= Force[2][1];
+//         vertexDerivs[v3][2]+= Force[2][2];
+
+ 
+
+
+//         //cellData[cellIndex][19]=TetaPerpStress;
+//         //cellData[cellIndex][20]= strainZ;
+//         //cellData[cellIndex][21]= areaRatio;
+//         // cellData[cellIndex][21]= TetaStress;
+//         // cellData[cellIndex][22]= TetaStrain; 
+//         // cellData[cellIndex][23]= TetaPerp;
+//         // cellData[cellIndex][19]= TETA;
+//         // cellData[cellIndex][20]=EnergyIso+EnergyAniso;    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//         cellData[cellIndex][variableIndex(0,4)]= Area/restingArea; //area ratio
+//         cellData[cellIndex][variableIndex(0,5)]=EnergyIso;    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//         cellData[cellIndex][variableIndex(0,6)]=EnergyAniso;  
+        
+//   }
+   
+
+//   double totalEnergyIso=0;
+//   double totalEnergyAniso=0;
+
+//   for( size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex ) {
+   
+//     totalEnergyIso +=cellData[cellIndex][variableIndex(0,5)];
+//     totalEnergyAniso +=cellData[cellIndex][variableIndex(0,6)];
+
+//     Cell *  cell1=&(T.cell(cellIndex));
+ 	
+//     int neighbor[3];  
+//     neighbor[0]=(cell1->cellNeighbor(0))->index();
+//     neighbor[1]=(cell1->cellNeighbor(1))->index();
+//     neighbor[2]=(cell1->cellNeighbor(2))->index();
+
+//     double neighborweight=parameter(5);
+
+//     double StressTensor[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+    
+//     int counter=0;
+//     for (int nn=0 ; nn<3 ; nn++){
+//       if (neighbor[nn]<numCells && neighbor[nn]>-1){
+// 	StressTensor[0][0]+=neighborweight*cellData[neighbor[nn]][26];
+// 	counter+=1;
+//       }
+//     }
+//     StressTensor[0][0]/=counter;
+//     StressTensor[0][0]+=(1-neighborweight)*cellData[cellIndex][26];
+
+//     counter=0;
+//     for (int nn=0 ; nn<3 ; nn++){
+//       if (neighbor[nn]<numCells && neighbor[nn]>-1){
+// 	StressTensor[1][1]+=neighborweight*cellData[neighbor[nn]][27];
+// 	counter+=1;
+//       }
+//     }
+//     StressTensor[1][1]/=counter;
+//     StressTensor[1][1]+=(1-neighborweight)*cellData[cellIndex][27];
+
+//     counter=0;
+//     for (int nn=0 ; nn<3 ; nn++){
+//       if (neighbor[nn]<numCells && neighbor[nn]>-1){
+// 	StressTensor[2][2]+=neighborweight*cellData[neighbor[nn]][28];
+// 	counter+=1;
+//       }
+//     }
+//     StressTensor[2][2]/=counter;
+//     StressTensor[2][2]+=(1-neighborweight)*cellData[cellIndex][28];
+
+//     counter=0;
+//     for (int nn=0 ; nn<3 ; nn++){
+//       if (neighbor[nn]<numCells && neighbor[nn]>-1){
+// 	StressTensor[0][1]+=neighborweight*cellData[neighbor[nn]][29];
+// 	counter+=1;
+//       }
+//     }
+//     StressTensor[0][1]/=counter;
+//     StressTensor[0][1]+=(1-neighborweight)*cellData[cellIndex][29];
+
+//     counter=0;
+//     for (int nn=0 ; nn<3 ; nn++){
+//       if (neighbor[nn]<numCells && neighbor[nn]>-1){
+// 	StressTensor[2][0]+=neighborweight*cellData[neighbor[nn]][30];
+// 	counter+=1;
+//       }
+//     }
+//     StressTensor[2][0]/=counter;
+//     StressTensor[2][0]+=(1-neighborweight)*cellData[cellIndex][30];
+
+//     counter=0;
+//     for (int nn=0 ; nn<3 ; nn++){
+//       if (neighbor[nn]<numCells && neighbor[nn]>-1){
+// 	StressTensor[1][2]+=neighborweight*cellData[neighbor[nn]][31];
+// 	counter+=1;
+//       }
+//     }
+//     StressTensor[1][2]/=counter;
+//     StressTensor[1][2]+=(1-neighborweight)*cellData[cellIndex][31];
+    
+//     StressTensor[0][2]=StressTensor[2][0];
+//     StressTensor[1][0]=StressTensor[0][1];
+//     StressTensor[2][1]=StressTensor[1][2];
+       
+//     // eigenvalue/eigenvectors of  stress tensor in global coordinate system. (Jacobi method)
+      
+//     double pi=3.14159265;
+//     double stressEpcilon=0.000001;    
+
+//     double RotAngle,Si,Co;
+//     double eigenVectorStress[3][3]={{1,0,0},{0,1,0},{0,0,1}};
+//     int I,J;    
+//     double pivot=1;
+    
+//     while (pivot>stressEpcilon) {
+//       pivot=std::abs(StressTensor[1][0]);
+//       I=1;
+//       J=0;
+//       if (std::abs(StressTensor[2][0])>pivot) {
+// 	pivot=std::abs(StressTensor[2][0]);
+// 	I=2;
+// 	J=0;
+//       }
+//       if (std::abs(StressTensor[2][1])>pivot) {
+// 	pivot=std::abs(StressTensor[2][1]);
+// 	I=2;
+// 	J=1;
+//       }
+//       if (std::abs(StressTensor[I][I]-StressTensor[J][J])<stressEpcilon) {
+// 	RotAngle=pi/4;
+//       }            
+//       else {
+// 	RotAngle=0.5*std::atan((2*StressTensor[I][J])/(StressTensor[J][J]-StressTensor[I][I]));
+//       }
+//       Si=std::sin(RotAngle);
+//       Co=std::cos(RotAngle);
+//       double tempRot[3][3]={{1,0,0},{0,1,0},{0,0,1}};
+//       tempRot[I][I]=Co;
+//       tempRot[J][J]=Co;
+//       tempRot[I][J]=Si;
+//       tempRot[J][I]=-Si;
+//       double tempStress[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+//       for (int r=0 ; r<3 ; r++) 
+// 	for (int s=0 ; s<3 ; s++) 
+// 	  for(int w=0 ; w<3 ; w++) 
+// 	    tempStress[r][s]=tempStress[r][s]+StressTensor[r][w]*tempRot[w][s];
+      
+//       for (int r=0 ; r<3 ; r++) 
+// 	for (int s=0 ; s<3 ; s++) 
+// 	  StressTensor[r][s]=0;
+      
+//       for (int r=0 ; r<3 ; r++) 
+// 	for (int s=0 ; s<3 ; s++) 
+// 	  for(int w=0 ; w<3 ; w++) 
+// 	    StressTensor[r][s]=StressTensor[r][s]+tempRot[w][r]*tempStress[w][s];
+      
+//       for (int r=0 ; r<3 ; r++) 
+// 	for (int s=0 ; s<3 ; s++) 
+// 	  tempStress[r][s]=eigenVectorStress[r][s];
+      
+//       for (size_t ii=0; ii<3; ++ii) 
+// 	for (size_t jj=0; jj<3; ++jj) 
+// 	  eigenVectorStress[ii][jj] = 0.0;
+      
+//       for (int r=0 ; r<3 ; r++) 
+// 	for (int s=0 ; s<3 ; s++) 
+// 	  for(int w=0 ; w<3 ; w++) 
+// 	    eigenVectorStress[r][s]=eigenVectorStress[r][s]+tempStress[r][w]*tempRot[w][s];
+      
+//     }
+    
+    
+//     // maximal stress direction
+//     double maximalStressValue=StressTensor[0][0];
+//     int Istress=0;
+//     if (std::abs(StressTensor[1][1])>std::abs(maximalStressValue)) 
+//       {
+// 	maximalStressValue=StressTensor[1][1];
+// 	Istress=1;
+//       }
+//     if (std::abs(StressTensor[2][2])>std::abs(maximalStressValue)) 
+//       {
+// 	maximalStressValue=StressTensor[2][2];
+// 	Istress=2;
+//       }
+    
+//        // 2nd maximal stress direction/value
+//       double maximalStressValue2;
+//       int Istress2,Istress3;
+//       if (Istress==0) {
+//         Istress2=1;
+//         Istress3=2;
+//       }
+//       if (Istress==1) {
+//         Istress2=0;
+//         Istress3=2;
+//       }
+//       if (Istress==2) {
+//         Istress2=0;
+//         Istress3=1;
+//       }
+//       if(std::abs(StressTensor[Istress3][Istress3])>std::abs(StressTensor[Istress2][Istress2])) {
+//         Istress2=Istress3;
+//       }
+//       maximalStressValue2=StressTensor[Istress2][Istress2];
+      
+      
+    
+    
+//     // storing a measure for stress anisotropy in cell vector
+//     if (std::abs(maximalStressValue)<0.000001) cellData[cellIndex][variableIndex(0,3)]=0;
+//     if (std::abs(maximalStressValue)>= 0.000001) cellData[cellIndex][variableIndex(0,3)]=1-std::abs(maximalStressValue2/maximalStressValue);
+    
+    
+        
+//     // ---------------angles stress with circumferental direction- begin
+//    double  temp=std::sqrt(eigenVectorStress[0][Istress]*eigenVectorStress[0][Istress]+                                // 14 --> Stress
+// 		   eigenVectorStress[1][Istress]*eigenVectorStress[1][Istress] );
+//     if(temp<0.000001){
+//       cellData[cellIndex][14]=pi/2;
+//     }
+//     else{
+//       cellData[cellIndex][14]=std::atan(eigenVectorStress[2][Istress]/temp);
+//     } 
+//     // ---------------angles stress with circumferental direction- end
+    
+    
+    
+
+
+//     if (numVariableIndexLevel()==3 && (numVariableIndex(2)==1 || numVariableIndex(2)==2)) { // storing maximal stress
+//       if (dimension==2)
+// 	{
+// 	  cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStress[0][Istress];
+// 	  cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStress[1][Istress];
+// 	  cellData[cellIndex][variableIndex(2,0)+3]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
+// 	}
+//       if (dimension==3)
+// 	{
+// 	  cellData[cellIndex][variableIndex(2,0)]  =eigenVectorStress[0][Istress];
+// 	  cellData[cellIndex][variableIndex(2,0)+1]=eigenVectorStress[1][Istress];
+// 	  cellData[cellIndex][variableIndex(2,0)+2]=eigenVectorStress[2][Istress];
+// 	  cellData[cellIndex][variableIndex(2,0)+3]=maximalStressValue;  //maximal Stress Value is stored after its eigenvector
+// 	}
+//     }
+    
+//     if (numVariableIndexLevel()==3 && numVariableIndex(2)==2 ) { // storing 2nd maximal stress
+//       if (dimension==2)
+// 	{
+// 	  cellData[cellIndex][variableIndex(2,1)]  =eigenVectorStress[0][Istress2];
+// 	  cellData[cellIndex][variableIndex(2,1)+1]=eigenVectorStress[1][Istress2];
+// 	  cellData[cellIndex][variableIndex(2,1)+3]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
+// 	}
+//       if (dimension==3)
+// 	{
+// 	  cellData[cellIndex][variableIndex(2,1)]  =eigenVectorStress[0][Istress2];
+// 	  cellData[cellIndex][variableIndex(2,1)+1]=eigenVectorStress[1][Istress2];
+// 	  cellData[cellIndex][variableIndex(2,1)+2]=eigenVectorStress[2][Istress2];
+// 	  cellData[cellIndex][variableIndex(2,1)+3]=maximalStressValue2;  //2nd maximal Stress Value is stored after its eigenvector
+// 	}
+//     }
+    
+    
+//   }//-----------------------------
+
+//     cellData[0][variableIndex(0,5)]=totalEnergyIso ;
+//     cellData[0][variableIndex(0,6)]=totalEnergyAniso ;
+  // size_t numVertices = T.numVertex();
+  // for(size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex){ // stimating volume for equilibrium 
+  //   TotalVolume +=std::sqrt(vertexData[vertexIndex][0]*vertexData[vertexIndex][0] +
+  //                           vertexData[vertexIndex][1]*vertexData[vertexIndex][1] +
+  //                           vertexData[vertexIndex][2]*vertexData[vertexIndex][2] );
+  // }
+  // deltaVolume=TotalVolume-cellData[0][25];
+  // cellData[0][25]=TotalVolume;
+  // cellData[0][24]=deltaVolume;
+// }
+
+// void VertexFromTRBSMTbending::initiate(Tissue &T,
+// 				       DataMatrix &cellData,
+// 				       DataMatrix &wallData,
+// 				       DataMatrix &vertexData,
+// 				       DataMatrix &cellDerivs,
+// 				       DataMatrix &wallDerivs,
+// 				       DataMatrix &vertexDerivs) {
+//   size_t numWall=wallData.size();
+
+//   double pi=3.14159265359;
+  
+//   for (size_t wallIndex=0; wallIndex<numWall; ++wallIndex) 
+//     { // initiating with resting angle for each wall 
+   
+
+//       if( T.wall(wallIndex).cell1() != T.background() && T.wall(wallIndex).cell2() != T.background())
+// 	{
+	  
+	  
+// 	  size_t v1 = T.wall(wallIndex).vertex1()->index();
+// 	  size_t v2 = T.wall(wallIndex).vertex2()->index();
+	  
+// 	  cell1index=T.wall(walIndex).cell1()->index();
+// 	  cell2index=T.wall(walIndex).cell2()->index();
+	  
+// 	  size_t v1C1 = T.cell(cell1Index).vertex(0)->index();
+// 	  size_t v2C1 = T.cell(cell1Index).vertex(1)->index();
+// 	  size_t v3C1 = T.cell(cell1Index).vertex(2)->index();
+	  
+// 	  size_t v1C2 = T.cell(cell2Index).vertex(0)->index();
+// 	  size_t v2C2 = T.cell(cell2Index).vertex(1)->index();
+// 	  size_t v3C2 = T.cell(cell2Index).vertex(2)->index();
+// 	  if (v1==v1C1)
+// 	    { 
+// 	      if (v2==v2C1){V1=v1; V2=v2}      
+// 	      if (v2==v3C1){V1=v2; V2=v1}
+// 	    }
+// 	  if (v1==v2C1)
+// 	    { 
+// 	      if (v2==v3C1){V1=v1; V2=v2}      
+// 	      if (v2==v1C1){V1=v2; V2=v1}
+// 	    }
+// 	  if (v1==v3C1)
+// 	    { 
+// 	      if (v2==v1C1){V1=v1; V2=v2}      
+// 	      if (v2==v2C1){V1=v2; V2=v1}
+// 	    }
+// 	  // V1->V2 wall vector counterclockwise for cell 1 
+// 	  double wallVector[3]={0,0,0};
+// 	  wallVector[0]=vertexData[V2][0]-vertexData[V1][0];
+// 	  wallVector[1]=vertexData[V2][1]-vertexData[V1][1];
+// 	  wallVector[2]=vertexData[V2][2]-vertexData[V1][2];
+
+ 
+// 	  double normal_1[3]={0,0,0};
+// 	  double normal_2[3]={0,0,0};
+// 	  normal_1[0]= (vertexData[v2C1][1]-vertexData[v1C1][1])*(vertexData[v3C1][2]-vertexData[v1C1][2])
+// 	              -(vertexData[v2C1][2]-vertexData[v1C1][2])*(vertexData[v3C1][1]-vertexData[v1C1][1]);
+// 	  normal_1[1]= (vertexData[v2C1][2]-vertexData[v1C1][2])*(vertexData[v3C1][0]-vertexData[v1C1][0])
+// 	              -(vertexData[v2C1][0]-vertexData[v1C1][0])*(vertexData[v3C1][2]-vertexData[v1C1][2]);
+// 	  normal_1[2]= (vertexData[v2C1][0]-vertexData[v1C1][0])*(vertexData[v3C1][1]-vertexData[v1C1][1])
+// 	              -(vertexData[v2C1][1]-vertexData[v1C1][1])*(vertexData[v3C1][0]-vertexData[v1C1][0]);
+// 	  double tmp=std::sqrt(normal_1[0]*normal_1[0]+normal_1[1]*normal_1[1]+normal_1[2]*normal_1[2]);
+//           normal_1[0]/=tmp;          
+// 	  normal_1[1]/=tmp;          
+// 	  normal_1[2]/=tmp;          
+
+	  
+// 	  normal_2[0]= (vertexData[v2C2][1]-vertexData[v1C2][1])*(vertexData[v3C2][2]-vertexData[v1C2][2])
+// 	              -(vertexData[v2C2][2]-vertexData[v1C2][2])*(vertexData[v3C2][1]-vertexData[v1C2][1]);
+// 	  normal_2[1]= (vertexData[v2C2][2]-vertexData[v1C2][2])*(vertexData[v3C2][0]-vertexData[v1C2][0])
+// 	              -(vertexData[v2C2][0]-vertexData[v1C2][0])*(vertexData[v3C2][2]-vertexData[v1C2][2]);
+// 	  normal_2[2]= (vertexData[v2C2][0]-vertexData[v1C2][0])*(vertexData[v3C2][1]-vertexData[v1C2][1])
+// 	              -(vertexData[v2C2][1]-vertexData[v1C2][1])*(vertexData[v3C2][0]-vertexData[v1C2][0]);
+// 	  tmp=std::sqrt(normal_2[0]*normal_2[0]+normal_2[1]*normal_2[1]+normal_2[2]*normal_2[2]);
+// 	  normal_2[0]/=tmp;          
+// 	  normal_2[1]/=tmp;          
+// 	  normal_2[2]/=tmp;          
+          
+
+// 	  tmp= wallVector[0]*(normal_1[1]*normal_2[2]-normal_1[2]*normal_2[1])
+//               +wallVector[1]*(normal_1[2]*normal_2[0]-normal_1[0]*normal_2[2])
+// 	      +wallVector[2]*(normal_1[0]*normal_2[1]-normal_1[1]*normal_2[0]);
+
+// 	  double teta=std::acos(normal_1[0]*normal_2[0]+normal_1[1]*normal_2[1]+normal_1[2]*normal_2[2]);
+
+// 	  if (tmp>0)  wallData[wallIndex][2]=pi+teta;
+// 	  if (tmp<0)  wallData[wallIndex][2]=pi-teta;
+// 	  // (normal1 x normal2).wallvector > 0  => teta > 180 :: teta= pi+acos(normal_1.normal_2)
+// 	  //                                   else teta < 180 :: teta= pi-acos(normal_1.normal_2) 
+// 	}
+      
+
+//       else{
+// 	wallData[wallIndex][2]=-10;// for walls at the boundary   
+//       }
+      
+      
+//     }
+  
+  
+  
+// }
