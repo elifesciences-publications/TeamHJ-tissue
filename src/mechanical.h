@@ -516,20 +516,21 @@ public:
 
 
 ///
-/// @brief Updates vertices from a 'pressure' term defined to act in the normal
-/// direction to  triangular elements of the cell
-/// force for each triangular element can be calculated according to the element's 
-/// current area and then distributed equally on nodes (including the centeral node) 
-/// The pressure is applied increasingly (... linear in a given time span).
-/// It does not rely on  PCA  plane in contrast with 
-/// VertexFromCellPlane and VertexFromCellPlaneLinear .
+/// @brief Updates vertices from a 'pressure' term defined to act in the normal 
+/// direction  to  triangular  elements  of  the cell force for each triangular 
+/// element is calculated according to  the  element's  current area and in the 
+/// direction of normal  to each  triangular  element. The force is distributed 
+/// equally on  nodes (including the centeral node). The  pressure  is  applied 
+/// increasingly (... linear in a given time span).
+/// It does  not rely  on  PCA  plane  in contrast with VertexFromCellPlane and 
+/// VertexFromCellPlaneLinear .
 ///
 /// A cell contributes to a vertex update with
 ///
-/// @f[ \frac{dx_{i}}{dt} = p_{0} A n_{i} / N_{vertex} @f]
+/// @f[ \frac{dx_{i}}{dt} = p_{0} A n_{i} / 3 @f]
 ///
-/// where @f$p_{0}@f$ is a 'pressure' parameter, A is the cell area @f$n_{i}@f$ is the 
-/// cell normal component and @f$N_{vertex}@f$ is the number of vertices for the cell.
+/// where @f$p_{0}@f$ is a 'pressure' parameter, A is the triangular element area @f$n_{i}@f$ is the 
+/// triangular element normal vector .
 /// An additional parameter @f$p_{2}@f$ can be used to not include the area factor if
 /// set to zero (normally it should be set to 1).
 ///
@@ -901,6 +902,72 @@ class VertexFromBall : public BaseReaction {
   /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
   ///
   VertexFromBall(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+  
+};
+
+
+///
+/// @brief Updates position of vertices assuming that a parabolid is moving with a given velocity(z) into the template
+///The force applied outward respect to the parabolid
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// VertexFromParabolid 5 0
+/// a Xc Yc b Kforce
+/// 
+/// or
+///
+/// VertexFromParabolid 8 0
+/// a Xc Yc b Kforce VelocityZ
+/// @endverbatim
+///
+/// where the parabolid is defined by z=a((x-xc)2 +(y-yc)2)+b radius is the size of the 'ball' pushing at the tissue, Xc,Yc,Zc is the center 
+/// of the ball, and the optional dXc,dYc,dZc are the rates for moving the ball along the different
+/// directions (the movement is defined in the update function).
+/// 
+class VertexFromParabolid : public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  VertexFromParabolid(std::vector<double> &paraValue, 
 			 std::vector< std::vector<size_t> > &indValue );
   
   ///
