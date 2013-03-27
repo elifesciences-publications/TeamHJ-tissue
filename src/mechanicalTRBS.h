@@ -341,7 +341,7 @@ class VertexFromTRBSMT : public BaseReaction {
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// VertexFromTRBScenterTriangulationMT 10 2 11 1 
+/// VertexFromTRBScenterTriangulationMT 11 2 11 1 
 /// 
 /// Y_matrix 
 /// Y_fiber 
@@ -353,6 +353,7 @@ class VertexFromTRBSMT : public BaseReaction {
 /// plane-strain/stress-flag 
 /// MT-angle 
 /// MT-feedback-flag 
+/// unused parameter 
 ///
 /// L_ij-index 
 /// MT_cellIndex 
@@ -370,7 +371,7 @@ class VertexFromTRBSMT : public BaseReaction {
 /// 
 /// or
 /// 
-/// VertexFromTRBScenterTriangulationMT 10 4 11 1 0/1/2/3 0/1/2
+/// VertexFromTRBScenterTriangulationMT 11 4 11 1 0/1/2/3 0/1/2
 ///
 /// Y_matrix 
 /// Y_fiber 
@@ -382,6 +383,7 @@ class VertexFromTRBSMT : public BaseReaction {
 /// plane-strain/stress-flag 
 /// MT-angle 
 /// MT-feedback-flag
+/// unused parameter
 /// 
 /// L_ij-index 
 /// MT_cellIndex 
@@ -558,7 +560,7 @@ class VertexFromTRBScenterTriangulationConcentrationHillMT : public BaseReaction
 ///
 /// @verbatim
 ///
-/// FiberModel 7 3 1 1 1
+/// FiberModel 8 3 1 1 1
 /// 
 ///  k_rate
 ///  velocity threshold
@@ -567,6 +569,7 @@ class VertexFromTRBScenterTriangulationConcentrationHillMT : public BaseReaction
 ///  n_hill
 ///  Y_matrix
 ///  Y_fiber
+///  initiate_flag 0/1
 ///
 ///  anisotropy index.
 ///
