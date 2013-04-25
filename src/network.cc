@@ -2251,3 +2251,118 @@ derivs(Tissue &T,
     }
   }
 }
+
+AuxinPINBistabilityModelCell::
+AuxinPINBistabilityModelCell(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > 
+			     &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=8 ) {
+    std::cerr << "AuxinPINBistabilityModelCell::"
+	      << "AuxinPINBistabilityModelCell() "
+	      << "8 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 1 ) {
+    std::cerr << "AuxinPINBistabilityModelCell::"
+	      << "AuxinPINBistabilityModelCell() "
+	      << "Two cell variable indices (first row) and one wall variable"
+	      << " index are used (PIN)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("AuxinPINBistabilityModelCell");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "c_IAA";
+  tmp[1] = "d_IAA";
+  tmp[2] = "D";
+  tmp[3] = "alpha";
+  tmp[4] = "phi";
+  tmp[5] = "c_PIN";
+  tmp[6] = "c_PIN(*Auxin)";
+  tmp[7] = "d_PIN (delta)";
+	
+  setParameterId( tmp );
+}
+
+void AuxinPINBistabilityModelCell::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);//auxin
+  size_t pI = variableIndex(0,1);//pin
+  size_t pwI = variableIndex(1,0);//pin (membrane/wall)
+
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  awI<wallData[0].size() &&
+	  pwI<wallData[0].size() );
+
+
+  for (size_t i=0; i<numCells; ++i) {
+    //Production and degradation
+    cellDerivs[i][aI] += parameter(0) - parameter(1)*cellData[i][aI]; //p_0 - p_1 A_i
+    cellDerivs[i][pI] += parameter(5) + parameter(6)*cellData[i][aI] - parameter(7)*cellData[i][pI]; //p_5 + p_6 A_i - p_7 P_i
+    
+    //Auxin transport and protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+      // Checks if cell i is first or second neighbor to wall (wall variables are stored as pairs, and membrane
+      // parameters are stored in walls, e.g. wallData[j][pwI] and wallData[j][pwI+1]) 
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+	double fac = parameter(2)*cellData[i][aI] +
+	  parameter(4)*cellData[i][aI]*wallData[j][pwI]; //p_2 A_i + p_4 A_i P_ij
+	cellDerivs[i][aI] -= fac;
+	cellDerivs[iNeighbor][aI] += fac;
+	//PIN cycling
+	fac = 0.5*(2. - wallData[j][pwI]*wallData[j][pwI+1] + wallData[j][pwI+1]*wallData[j][pwI+1]);
+	if (fac<=0.) {//to avoid negative concentrations
+	  fac = 0.;
+	}
+	fac = fac*wallData[j][pwI] - parameter(3)*cellData[i][pI];//0.5*(2 - P_ij P_ji + P_ji P_ji) P_ij - alpha P_i
+	wallDerivs[j][pwI] -= fac;
+	cellDerivs[i][pI] += fac;
+      }
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell1()->index();
+	double fac = parameter(2)*cellData[i][aI] +
+	  parameter(4)*cellData[i][aI]*wallData[j][pwI+1];
+	
+	cellDerivs[i][aI] -= fac;
+	cellDerivs[iNeighbor][aI] += fac;
+	//PIN cycling
+	fac = 0.5*(2. - wallData[j][pwI]*wallData[j][pwI+1] + wallData[j][pwI]*wallData[j][pwI]);
+	if (fac<=0.) {//to avoid negative concentrations
+	  fac = 0.;
+	}
+	fac = fac*wallData[j][pwI+1] - parameter(3)*cellData[i][pI];
+	wallDerivs[j][pwI+1] -= fac;
+	cellDerivs[i][pI] += fac;
+      }
+      //else {
+      //std::cerr << "AuxinPINBistabilityModelCell::derivs() Cell-wall neighborhood wrong." 
+      //	  << std::endl;
+      //exit(-1);
+      //}
+    }
+  }
+}
