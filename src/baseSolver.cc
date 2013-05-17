@@ -8,6 +8,7 @@
 //
 #include <cmath>
 #include <set>
+#include <sstream>
 #include "baseSolver.h"
 #include "rungeKutta.h"
 #include "euler.h"
@@ -15,6 +16,7 @@
 #include "myFiles.h"
 #include "myTimes.h"
 #include "pvd_file.h"
+#include "ply_file.h"
 
 BaseSolver::BaseSolver()
 {
@@ -200,7 +202,7 @@ void BaseSolver::print(std::ostream &os)
 	    << numOk_ << " " << numBad_ << "  " << t_-tOld << " " 
 	    << static_cast<int>(cellData_.size())-static_cast<int>(NOld) 
 	    << " " << numOk_-okOld << " " << numBad_-badOld << " "
-	    << time << std::endl;; 
+	    << time << std::endl;
   tOld = t_;  
   NOld = cellData_.size();
   okOld = numOk_;
@@ -389,12 +391,17 @@ void BaseSolver::print(std::ostream &os)
     os << std::endl;
   }
 
+//ply output
+    else if ( printFlag_==6 ) {
+        std::ostringstream ssCount;
+        ssCount << tCount;
+        std::string fname = "tmp/output_" + ssCount.str() + ".ply";
+        PLY_file plyFile(fname);
+        plyFile << *T_;
+    }
   //
   // Ad hoc and temporary print flags
   //
-
-
- 
 
   else if( printFlag_==50 ) {
     

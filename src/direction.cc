@@ -15,6 +15,8 @@
 
 Direction::Direction() 
 {
+    directionUpdate_ = NULL;
+    directionDivision_ = NULL;
   //std::cerr << "Direction::Direction().\n";
 }
 

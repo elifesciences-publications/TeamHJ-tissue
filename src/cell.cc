@@ -36,9 +36,10 @@ Cell::Cell(size_t indexVal,std::string idVal) {
   setId(idVal);
 }
 
-Cell::~Cell() {}
+Cell::~Cell() {
+}
 
-void Cell::setVariable( std::vector<double> val ) 
+void Cell::setVariable( std::vector<double> &val ) 
 {
   if (numVariable() != val.size()) {
     std::cerr << "Cell::setVariable(vector) Warning: "

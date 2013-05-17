@@ -16,9 +16,9 @@
 #include "../vertex.h"
 #include "../wall.h"
 #include "../pvd_file.h"
+#include "../ply_reader.h"
 
 int main(int argc,char *argv[]) {
-  
   //Command line handling
   myConfig::registerOption("init_output", 1);
   myConfig::registerOption("init_output_format", 1);

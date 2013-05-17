@@ -115,6 +115,10 @@ class Cell {
   /// @brief Number of variables in the cell
   ///
   inline size_t numVariable() const;
+    ///
+  /// @brief Sets (resizes) the number of variables stored by the Wall.
+  ///
+  inline size_t setNumVariable(size_t n);
   ///
   /// @brief Number of center positions defined in the cell
   ///
@@ -243,7 +247,7 @@ class Cell {
   ///
   /// @brief Sets all variables in the variable vector to the values provided
   ///  
-  void setVariable( std::vector<double> val );
+  void setVariable( std::vector<double> &val );
   ///
   /// @brief Adds a variable to the end of the vector in a cell
   ///  
@@ -500,6 +504,12 @@ inline size_t Cell::numVariable() const
   return variable_.size(); 
 }
 
+inline size_t Cell::setNumVariable(size_t n) 
+{ 
+  variable_.resize(n);
+  return variable_.size(); 
+}
+  
 inline size_t Cell::numCenterPosition() const 
 { 
   return centerPosition_.size(); 
