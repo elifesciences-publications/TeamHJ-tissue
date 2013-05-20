@@ -3603,14 +3603,7 @@ derivs(Tissue &T,
     if( numParameter()>d )
     	vertexDerivs[i][d] += timeFactor_*parameter(d);
    
-    // double f0=1000;
-    // vertexDerivs[i][0] += timeFactor_*parameter(0);
-    // if (i==0)    vertexDerivs[i][1] += timeFactor_*(-f0-parameter(0));	
-    // if (i==1)    vertexDerivs[i][1] += timeFactor_*(-f0+parameter(0));
-    // if (i==2)    vertexDerivs[i][1] += timeFactor_*(f0-parameter(0));	
-    // if (i==3)    vertexDerivs[i][1] += timeFactor_*(f0+parameter(0));	
-    // vertexDerivs[i][2] += timeFactor_*parameter(2);
- 
+   
   }
  
 }
@@ -3626,87 +3619,10 @@ void VertexFromForceLinear::update(Tissue &T,
   }
   if (timeFactor_ >1.0)
     timeFactor_=1.0;
-  //cellData[0][12]=timeFactor_*parameter(0);
+ 
 }
-// 				   double h)
-// {
-//   if (timeFactor_ < parameter(numParameter()-1) ) {
-//     timeFactor_ += h/parameter(numParameter()-1);
-//   }
-//   if (timeFactor_ >1.0)
-//     timeFactor_=1.0;
-//   cellData[0][12]=h;//timeFactor_*parameter(0);
-// }
 
 
-
-// old version
-// VertexFromBall::
-// VertexFromBall(std::vector<double> &paraValue, 
-// 		       std::vector< std::vector<size_t> > 
-// 		       &indValue ) 
-// {  
-//   //Do some checks on the parameters and variable indeces
-//   //
-//   if( paraValue.size()!=4 && paraValue.size()!=7 ) {
-//     std::cerr << "VertexFromBall::"
-// 	      << "VertexFromBall() "
-// 	      << "Puts a fixed ball(sphere) of a given radius (radius) in a given "
-// 	      << "position (x,y,z) on top of meriestem "
-// 	      << "4 parameters used in static condition: radius, x, y, z." << std::endl
-// 	      << "7 parameters used in dynamic condition: radius, x, y, z, dx, dy, dz."
-// 	      << std::endl;
-//     exit(0);
-//   }
-//   if( indValue.size() != 0 ) {
-//     std::cerr << "VertexFromBall::"
-// 	      << "VertexFromBall() "
-// 	      << "No variable indices used." << std::endl;
-//     exit(0);
-//   }
-//   //Set the variable values
-//   //
-//   setId("VertexFromBall");
-//   setParameter(paraValue);  
-//   setVariableIndex(indValue);
-  
-//   //Set the parameter identities
-//   //
-//   std::vector<std::string> tmp( numParameter() );
-//   tmp[0] = "Radius";
-//   tmp[1] = "xc";
-//   tmp[2] = "yc";
-//   tmp[3] = "zc";
-//   setParameterId( tmp );
-// }
-
-// void VertexFromBall::
-// derivs(Tissue &T,
-//        DataMatrix &cellData,
-//        DataMatrix &wallData,
-//        DataMatrix &vertexData,
-//        DataMatrix &cellDerivs,
-//        DataMatrix &wallDerivs,
-//        DataMatrix &vertexDerivs ) {
-  
-//   //Do the update for each vertex .
-//   size_t numVertex = T.numVertex();
-//   for (size_t vertexIndex=0 ; vertexIndex<numVertex; ++vertexIndex) {
-//     double Radius=parameter(0);
-//     double Xc=parameter(1);
-//     double Yc=parameter(2);
-//     double Zc=parameter(3);
-//     DataMatrix position(1,vertexData[vertexIndex]);
-//     double d2=(position[0][0]-Xc)*(position[0][0]-Xc)+
-//       (position[0][1]-Yc)*(position[0][1]-Yc)+
-//       (position[0][2]-Zc)*(position[0][2]-Zc);
-//     if( d2 < Radius*Radius ){
-//       vertexData[vertexIndex][2]= Zc - std::sqrt(Radius*Radius-(position[0][0]-Xc)*
-// 						 (position[0][0]-Xc)-(position[0][1]-Yc)*
-// 						 (position[0][1]-Yc));
-//     }
-//   }
-// }
 
 
 VertexFromBall::
@@ -4188,7 +4104,109 @@ derivs(Tissue &T,
     }
 }
 
-// void CalculateAngleVectors:: update(Tissue &T,
+
+
+
+
+AngleVector::AngleVector(std::vector<double> &paraValue,
+                                           std::vector< std::vector<size_t> > &indValue )
+{ // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=1 ) {
+    std::cerr << "AngleVector:: "
+	      << "AngleVector() "
+	      << "Calculates  angle between a 3d vector(starting from given index) in cellData vector and "
+              << "a given axes(x,y,z) and stores it in the given index in cellData vector, uses one parameter "
+	      << "for specifying the axes "
+              << std::endl;
+    exit(0);
+  }
+ if( indValue.size() != 2 || indValue[0].size() != 1 || indValue[1].size() != 1 ) {
+    std::cerr << "AngleVector:: "
+	      << "AngleVector() "
+	      << "1st level with 1 variable index used: "
+              << "start index for the vector  "
+              << "2nd level with 1 variable index used: "
+              << "store index for angle(deg) "
+              << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("AngleVector");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+
+ // Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "axes";   // axes specifier
+
+  setParameterId( tmp );
+
+  if( parameter(0)!=0 &&  parameter(0)!=1 &&  parameter(0)!=2 ) {
+    std::cerr << " AngleVector:: AngleVector() "
+              << " 0nly 0(X), 1(Y) or 2(Z) " << std::endl;
+    exit(0);
+  }
+  if( parameter(0)==1 ||  parameter(0)==2 ) {
+    std::cerr << " AngleVector:: AngleVector() "
+              << " The code should be modified for 3d " << std::endl;
+    exit(0);
+  }
+
+}
+
+
+
+void AngleVector::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  size_t numCells =T.numCell();
+  for(size_t cellIndex=0; cellIndex<numCells; ++cellIndex) 
+    { double teta=0;
+      double tmp=std::sqrt( cellData[cellIndex][variableIndex(0,0)  ]*cellData[cellIndex][variableIndex(0,0)  ] +
+                            cellData[cellIndex][variableIndex(0,0)+1]*cellData[cellIndex][variableIndex(0,0)+1] +
+                            cellData[cellIndex][variableIndex(0,0)+2]*cellData[cellIndex][variableIndex(0,0)+2]   );
+      cellData[cellIndex][variableIndex(0,0)  ]=cellData[cellIndex][variableIndex(0,0)  ]/tmp;
+      cellData[cellIndex][variableIndex(0,0)+1]=cellData[cellIndex][variableIndex(0,0)+1]/tmp;
+      cellData[cellIndex][variableIndex(0,0)+2]=cellData[cellIndex][variableIndex(0,0)+2]/tmp;
+
+      double pi= 3.141592;
+
+      if(parameter(0)==0){    
+	teta=180*std::acos(cellData[cellIndex][variableIndex(0,0)  ])/pi;
+	if(cellData[cellIndex][variableIndex(0,0)+1]<0)	{
+	  teta=180-teta;
+	}
+	cellData[cellIndex][variableIndex(1,0)]=teta;
+
+      }
+
+      // should be modified for 3d
+      if(parameter(0)==1){    
+	teta=180*std::acos(cellData[cellIndex][variableIndex(0,0)+1])/pi;
+	
+	cellData[cellIndex][variableIndex(1,0)]=teta;
+      }
+
+      if(parameter(0)==2){    
+	teta=180*std::acos(cellData[cellIndex][variableIndex(0,0)+2])/pi;
+	
+	cellData[cellIndex][variableIndex(1,0)]=teta;
+      }
+
+    }
+}
+
+
+
+
+// void AngleVector:: update(Tissue &T,
 //                                    DataMatrix &cellData,
 //                                    DataMatrix &wallData,
 //                                    DataMatrix &vertexData,
