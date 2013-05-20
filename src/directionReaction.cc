@@ -369,7 +369,12 @@ void UpdateMTDirectionEquilibrium::update(Tissue &T,
   if (parameter(0)==0.0)
     return;
   for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) {
+    size_t v0=T.cell(cellIndex).vertex(0)->index();
+    double zCell;
+    zCell= vertexData[v0][2];
     double stressDif=(cellData[cellIndex][stressIndex]-cellData[cellIndex][MTstressIndex]) /cellData[cellIndex][stressIndex];
+
+    if( zCell < 3500 && zCell > -3500 ){
 
     if (std::abs(stressDif) > parameter(2)) { 
       // std::cerr<<"target" <<" "<<cellData[cellIndex][inIndex] 
@@ -403,6 +408,11 @@ void UpdateMTDirectionEquilibrium::update(Tissue &T,
 	  cellData[cellIndex][outIndex+d] *= norm;
       }
     }
+
+    }// z threshold for applyng the update locally
+
+
+
   }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
