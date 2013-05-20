@@ -10,6 +10,9 @@
 #include "centerTriangulation.h"
 #include "tissue.h"
 
+#include <ctime>
+using namespace std;
+
 namespace CenterTriangulation {
 
   Initiate::
@@ -67,8 +70,8 @@ namespace CenterTriangulation {
     assert (numCell==T.numCell());
     if (!T.cell(0).numCenterPosition() || (numParameter() && parameter(0)==1) ) {
       //No centers defined in cells in tissue or overridden (create central triangulation from scratch)
-      for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) {
-	size_t numInternalWall = T.cell(cellIndex).numVertex();
+      for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) {	
+        size_t numInternalWall = T.cell(cellIndex).numVertex();
 	cellData[cellIndex].resize(numVariable+dimension+numInternalWall);
 	cellDerivs[cellIndex].resize(numVariable+dimension+numInternalWall);
 	com = T.cell(cellIndex).positionFromVertex(vertexData);
@@ -87,6 +90,17 @@ namespace CenterTriangulation {
 				       (com[2]-vertexData[vertexIndex][2]) );   
 	  cellData[cellIndex][numVariable+dimension+k] = distance;
 	}
+
+        // sleep(1); //initiating MT dirrections randomly in xy plane
+        // srand((unsigned)time(NULL));
+        
+        // cellData[cellIndex][0]=((double)rand() / (RAND_MAX+1)) ;
+        // cellData[cellIndex][1]=((double)rand() / (RAND_MAX+1)) ;
+        // double tmp=-std::sqrt(cellData[cellIndex][0]*cellData[cellIndex][0]+cellData[cellIndex][1]*cellData[cellIndex][1]); 
+        
+        // cellData[cellIndex][0]/=tmp;
+        // cellData[cellIndex][1]/=tmp;
+        // std::cerr<< "MT vector"<< cellData[cellIndex][0]<<" "<< cellData[cellIndex][1]<< std::endl;
       }
     }
     else { 
