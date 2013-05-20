@@ -1196,36 +1196,69 @@ class CalculateAngleVectors : public BaseReaction
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
 
-  ///
-  /// @brief Reaction initiation applied before simulation starts
-  ///
-  /// @see BaseReaction::initiate(Tissue &T,...)
-  ///
-  // void initiate(Tissue &T,
-  //               DataMatrix &cellData,
-  //               DataMatrix &wallData,
-  //               DataMatrix &vertexData,
-  //               DataMatrix &cellDerivs,
-  //               DataMatrix &wallDerivs,
-  //               DataMatrix &vertexDerivs);
-                 
-  ///
-  /// @brief Update function for this reaction class
-  ///
-  /// @see BaseReaction::update(Tissue &T,...)
-  ///
-
-
-  // void update(Tissue &T,
-  //             DataMatrix &cellData,
-  //             DataMatrix &vertexData,
-  //             DataMatrix &wallData,
-  //             DataMatrix &vertexDerivs,
-  //             double h);
   
 };
 
 
+
+
+
+///
+/// @brief Calculates the angle between a 3d vector
+/// (starting from given indices) in cellData vector and a given axes(x,y,z) 
+/// and stores it in the given index in cellData vector, uses one parameter for specifying the axes 
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// AngleVector 1 2 1 1
+/// axes_flag (0:X, 1:Y, 2:Z)
+/// start-index(the vector)   
+/// store-index(angle-deg) 
+///
+/// @endverbatim
+/// 
+class AngleVector : public BaseReaction 
+{
+
+ private:
+
+  DataMatrix vertexDataRest;
+  double VolumeChange;
+  double deltaVolumeChange;
+  double totalDerivative;
+ public:
+
+ ///
+ /// @brief Main constructor
+ ///
+ /// This is the main constructor which sets the parameters and variable
+ /// indices that defines the reaction.
+ ///
+ /// @param paraValue vector with parameters
+ ///
+ /// @param indValue vector of vectors with variable indices
+ ///
+ /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+ ///
+  AngleVector(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > &indValue ); 
+
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  
+};
 
 
 // Do not use this reaction. Restricted area (unless you are a developer).
