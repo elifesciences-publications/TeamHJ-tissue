@@ -285,6 +285,13 @@ public:
 ///
 /// Sets the wall length variables to be the distance between the two vertices times a factor.
 /// 
+/// In the model file the reaction is defined as:
+///
+/// @verbatim
+/// InitiateWallLength 1 0
+/// factor
+/// @endverbatim 
+/// 
 class InitiateWallLength : public BaseReaction {
   
 public:
@@ -423,6 +430,50 @@ class MoveVerticesRandomlyCapCylinder : public BaseReaction
 public:
 	
 	MoveVerticesRandomlyCapCylinder(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+	
+	void initiate(Tissue &T,
+		      DataMatrix &cellData,
+		      DataMatrix &wallData,
+		      DataMatrix &vertexData,
+		      DataMatrix &cellDerivs,
+		      DataMatrix &wallDerivs,
+		      DataMatrix &vertexDerivs );
+	
+	void derivs(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
+	
+	void update(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		double h);
+
+
+};
+
+///
+/// @brief scales the template by a factor via Initiate 
+/// position of vertices and wall length variables will be scaled.
+/// 
+/// In the model file the reaction is defined as:
+///
+/// @verbatim
+/// scaleTemplate 1 0
+/// factor
+/// @endverbatim 
+/// 
+class scaleTemplate : public BaseReaction
+{
+public:
+	
+	scaleTemplate(std::vector<double> &paraValue, 
 		std::vector< std::vector<size_t> > 
 		&indValue );
 	
