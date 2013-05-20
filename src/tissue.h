@@ -245,6 +245,8 @@ class Tissue {
   /// See the function implementation for the format.
   ///
   void readInitMGXCellMesh(const char *initFile,int verbose=0, int skipCenter=1);
+  /// @brief Reads an initial tissue configuration from PLY format
+  void readInitPLYMesh(const char *initFile,int verbose=0);
   ///
   /// @brief Opens the file modelFile and then calls readModel(std::ifstream&,int)
   ///

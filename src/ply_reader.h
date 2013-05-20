@@ -41,10 +41,12 @@ private:
     std::vector<Vertex*> m_vertices;
     //space for variables
     std::vector<double> m_variables;
+    std::vector<double> m_ceter_vertex;
+    std::vector<double> m_edges_lengths;
     
     /// @brief Set connectivity information between tissue Walls and Cells given that their Vertex information is alredy specified
     void set_cell_wall_connectivity(Tissue &t);
-    
+
     void vertex_begin();
     void vertex_x_callback(ply::float32 x);
     void vertex_y_callback(ply::float32 y);
@@ -60,6 +62,12 @@ private:
     void face_variables_begin(ply::uint8 size);
     void face_variables_element(ply::float32 variable);
     void face_variables_end();
+    void face_center_vertex_begin(ply::uint8 size);
+    void face_center_vertex_element(ply::float32 variable);
+    void face_center_vertex_end();
+    void face_edges_lengths_begin(ply::uint8 size);
+    void face_edges_lengths_element(ply::float32 variable);
+    void face_edges_lengths_end();
     void face_end();
 
     void edge_begin();
@@ -146,39 +154,48 @@ inline std::tr1::function <void (ply::uint32)> PLY_reader::scalar_property_defin
 template <>
 inline std::tr1::tuple<std::tr1::function<void (ply::uint8)>, std::tr1::function<void (ply::uint32)>, std::tr1::function<void ()> > PLY_reader::list_property_definition_callback(const std::string& element_name, const std::string& property_name)
 {
-  if ((element_name == "face") && (property_name == "vertex_index")) {
-    return std::tr1::tuple<std::tr1::function<void (ply::uint8)>, std::tr1::function<void (ply::uint32)>, std::tr1::function<void ()> >(
-      std::tr1::bind(&PLY_reader::face_vertex_indices_begin, this, std::tr1::placeholders::_1),
-      std::tr1::bind(&PLY_reader::face_vertex_indices_element, this, std::tr1::placeholders::_1),
-      std::tr1::bind(&PLY_reader::face_vertex_indices_end, this)
-    );
-  }
-  else {
-    return std::tr1::tuple<std::tr1::function<void (ply::uint8)>, std::tr1::function<void (ply::uint32)>, std::tr1::function<void ()> >(0, 0, 0);
-  }
+    if ((element_name == "face") && (property_name == "vertex_index")) {
+        return std::tr1::tuple<std::tr1::function<void (ply::uint8)>, std::tr1::function<void (ply::uint32)>, std::tr1::function<void ()> >(
+                   std::tr1::bind(&PLY_reader::face_vertex_indices_begin, this, std::tr1::placeholders::_1),
+                   std::tr1::bind(&PLY_reader::face_vertex_indices_element, this, std::tr1::placeholders::_1),
+                   std::tr1::bind(&PLY_reader::face_vertex_indices_end, this)
+               );
+    }
+    else {
+        return std::tr1::tuple<std::tr1::function<void (ply::uint8)>, std::tr1::function<void (ply::uint32)>, std::tr1::function<void ()> >(0, 0, 0);
+    }
 }
 //-----------------------------------------------------------------------------
 template <>
 inline std::tr1::tuple<std::tr1::function<void (ply::uint8)>, std::tr1::function<void (ply::float32)>, std::tr1::function<void ()> > PLY_reader::list_property_definition_callback(const std::string& element_name, const std::string& property_name)
 {
-  if ((element_name == "face") && (property_name == "var")) {
-    return std::tr1::tuple<std::tr1::function<void (ply::uint8)>, std::tr1::function<void (ply::float32)>, std::tr1::function<void ()> >(
-      std::tr1::bind(&PLY_reader::face_variables_begin, this, std::tr1::placeholders::_1),
-      std::tr1::bind(&PLY_reader::face_variables_element, this, std::tr1::placeholders::_1),
-      std::tr1::bind(&PLY_reader::face_variables_end, this)
-    );
-  }
-  else if ((element_name == "edge") && (property_name == "var")) {
-    return std::tr1::tuple<std::tr1::function<void (ply::uint8)>, std::tr1::function<void (ply::float32)>, std::tr1::function<void ()> >(
-      std::tr1::bind(&PLY_reader::edge_variables_begin, this, std::tr1::placeholders::_1),
-      std::tr1::bind(&PLY_reader::edge_variables_element, this, std::tr1::placeholders::_1),
-      std::tr1::bind(&PLY_reader::edge_variables_end, this)
-    );
-  }
-  
-  else {
+    if (element_name == "face") {
+        if (property_name == "var") {
+            return std::tr1::tuple<std::tr1::function<void (ply::uint8)>, std::tr1::function<void (ply::float32)>, std::tr1::function<void ()> >(
+                       std::tr1::bind(&PLY_reader::face_variables_begin, this, std::tr1::placeholders::_1),
+                       std::tr1::bind(&PLY_reader::face_variables_element, this, std::tr1::placeholders::_1),
+                       std::tr1::bind(&PLY_reader::face_variables_end, this));
+        }
+        else if (property_name == "center_vertex") {
+            return std::tr1::tuple<std::tr1::function<void (ply::uint8)>, std::tr1::function<void (ply::float32)>, std::tr1::function<void ()> >(
+                       std::tr1::bind(&PLY_reader::face_center_vertex_begin, this, std::tr1::placeholders::_1),
+                       std::tr1::bind(&PLY_reader::face_center_vertex_element, this, std::tr1::placeholders::_1),
+                       std::tr1::bind(&PLY_reader::face_center_vertex_end, this));
+        }
+        else if (property_name == "internal_edges_lengths") {
+            return std::tr1::tuple<std::tr1::function<void (ply::uint8)>, std::tr1::function<void (ply::float32)>, std::tr1::function<void ()> >(
+                       std::tr1::bind(&PLY_reader::face_edges_lengths_begin, this, std::tr1::placeholders::_1),
+                       std::tr1::bind(&PLY_reader::face_edges_lengths_element, this, std::tr1::placeholders::_1),
+                       std::tr1::bind(&PLY_reader::face_edges_lengths_end, this));
+        }
+    }
+    else if ((element_name == "edge") && (property_name == "var")) {
+        return std::tr1::tuple<std::tr1::function<void (ply::uint8)>, std::tr1::function<void (ply::float32)>, std::tr1::function<void ()> >(
+                   std::tr1::bind(&PLY_reader::edge_variables_begin, this, std::tr1::placeholders::_1),
+                   std::tr1::bind(&PLY_reader::edge_variables_element, this, std::tr1::placeholders::_1),
+                   std::tr1::bind(&PLY_reader::edge_variables_end, this));
+    }
     return std::tr1::tuple<std::tr1::function<void (ply::uint8)>, std::tr1::function<void (ply::float32)>, std::tr1::function<void ()> >(0, 0, 0);
-  }
 }
 //-----------------------------------------------------------------------------
 #endif

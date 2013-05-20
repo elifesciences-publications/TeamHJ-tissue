@@ -148,6 +148,36 @@ void PLY_reader::face_variables_end()
 
 }
 //----------------------------------------------------------------------------
+void PLY_reader::face_center_vertex_begin(ply::uint8 size)
+{
+    m_ceter_vertex.reserve(size);
+}
+//----------------------------------------------------------------------------
+void PLY_reader::face_center_vertex_element(ply::float32 variable)
+{
+    m_ceter_vertex.push_back(variable);
+}
+//----------------------------------------------------------------------------
+void PLY_reader::face_center_vertex_end()
+{
+
+}
+//----------------------------------------------------------------------------
+void PLY_reader::face_edges_lengths_begin(ply::uint8 size)
+{
+    m_edges_lengths.reserve(size);
+}
+//----------------------------------------------------------------------------
+void PLY_reader::face_edges_lengths_element(ply::float32 variable)
+{
+    m_edges_lengths.push_back(variable);
+}
+//----------------------------------------------------------------------------
+void PLY_reader::face_edges_lengths_end()
+{
+
+}
+//----------------------------------------------------------------------------
 void PLY_reader::face_end()
 {
     Cell * c = m_tissue->cellP(m_index);
@@ -155,6 +185,8 @@ void PLY_reader::face_end()
     c->setVertex(m_vertices);
     c->setNumVariable(m_variables.size());
     c->setVariable(m_variables);
+    c->setCenterPosition(m_ceter_vertex);
+    c->setEdgeLength(m_edges_lengths);
     std::vector<Vertex*>::iterator it, v_end;
     for (it = m_vertices.begin(), v_end = m_vertices.end(); it != v_end; ++it)
     {

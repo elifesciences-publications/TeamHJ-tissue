@@ -267,7 +267,7 @@ class Cell {
   /// @see namespace centerTriangulation
   /// @see Tissue::readInitCenterTri()
   ///
-  void setCenterPosition( std::vector<double> val );
+  void setCenterPosition( std::vector<double> &val );
   ///
   /// @brief Adds a position to the end of the centerPosition vector in a cell
   ///  
@@ -291,7 +291,7 @@ class Cell {
   /// @see namespace centerTriangulation
   /// @see Tissue::readInitCenterTri()
   ///
-  void setEdgeLength( std::vector<double> val );
+  void setEdgeLength( std::vector<double> &val );
   ///
   /// @brief Adds an internal edge length to the end of the edgeLength vector in a cell
   ///  
@@ -646,6 +646,11 @@ inline void Cell::setCenterPosition( size_t index,double val )
   centerPosition_[index]=val;
 }
 
+inline void Cell::setCenterPosition( std::vector<double> &val )
+{
+  centerPosition_.assign(val.begin(), val.end());
+}
+
 inline void Cell::addCenterPosition( double val ) 
 {
   centerPosition_.push_back(val);
@@ -661,6 +666,10 @@ inline void Cell::addEdgeLength( double val )
   edgeLength_.push_back(val);
 }
 
+inline void Cell::setEdgeLength( std::vector<double> &val )
+{
+  edgeLength_.assign(val.begin(), val.end());
+}
 inline int Cell::isNeighbor( Cell *neighbor ) 
 {
   for (size_t i=0; i<numWall(); ++i )

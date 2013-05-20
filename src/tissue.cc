@@ -17,6 +17,7 @@
 #include "wall.h"
 #include "myFiles.h"
 #include "myMath.h"
+#include "ply_reader.h"
 
 Tissue::Tissue() {  
   cell_.reserve(200000);
@@ -1324,6 +1325,13 @@ void Tissue::readInitMGXTriMesh( const char *initFile, int verbose )
   checkConnectivity(verbose);
   
   return;
+}
+
+void Tissue::readInitPLYMesh(const char *initFile, int verbose)
+{
+  PLY_file ply_file(initFile);
+  PLY_reader ply_reader;
+  ply_reader.read(ply_file, *this);
 }
 
 void Tissue::readModel(std::ifstream &IN,int verbose) {

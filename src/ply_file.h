@@ -32,9 +32,13 @@ public:
     void close();
     /// @brief Outputs current Tissue
     void operator<<(Tissue const& t);
+    /// @brief Sets output option for center triangulation
+    void center_triangulation_output(bool b);
 private:
     /// @brief Name of the ply file
     std::string filename;
+    /// @brief Flag for center triangulation output 
+    bool m_center_triangulation;
     /// @brief Outputs current Tissue
     void write(Tissue const& t);
     friend class PLY_reader;

@@ -390,13 +390,21 @@ void BaseSolver::print(std::ostream &os)
     }				
     os << std::endl;
   }
-
 //ply output
     else if ( printFlag_==6 ) {
         std::ostringstream ssCount;
         ssCount << tCount;
         std::string fname = "tmp/output_" + ssCount.str() + ".ply";
         PLY_file plyFile(fname);
+        plyFile << *T_;
+    }
+//ply output with center triangulation
+    else if ( printFlag_==7 ) {
+        std::ostringstream ssCount;
+        ssCount << tCount;
+        std::string fname = "tmp/output_" + ssCount.str() + ".ply";
+        PLY_file plyFile(fname);
+        plyFile.center_triangulation_output(true);
         plyFile << *T_;
     }
   //
