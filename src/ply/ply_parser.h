@@ -18,9 +18,9 @@
 #include <boost/mpl/transform.hpp>
 #include <boost/mpl/vector.hpp>
 
-#include <ply/ply.h>
-#include <ply/byte_order.h>
-#include <ply/io_operators.h>
+#include "ply.h"
+#include "byte_order.h"
+#include "io_operators.h"
 
 namespace ply {
 

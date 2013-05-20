@@ -7,8 +7,8 @@
 #define _PLY_READER_H_
 #include <fstream>
 #include <vector>
-#include <ply_file.h>
-#include <ply.h>
+#include "ply_file.h"
+#include "ply.h"
 #include <tr1/functional>
 
 class Tissue;
