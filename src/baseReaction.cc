@@ -161,6 +161,8 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
     return new VertexFromCellPlane(paraValue, indValue);
  else if (idValue == "VertexFromCellPlaneLinear")
     return new VertexFromCellPlaneLinear(paraValue, indValue);
+ else if (idValue == "VertexFromCellPlaneLinearCenterTriangulation")
+    return new VertexFromCellPlaneLinearCenterTriangulation(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneSpatial")
     return new VertexFromCellPlaneSpatial(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneConcentrationHill")
@@ -181,12 +183,16 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
     return new VertexFromForceLinear(paraValue,indValue);
   else if(idValue=="VertexFromBall")
     return new VertexFromBall(paraValue,indValue);
+else if(idValue=="VertexFromParabolid")
+    return new VertexFromParabolid(paraValue,indValue);
   else if(idValue=="VertexFromExternalWall")
     return new VertexFromExternalWall(paraValue,indValue);
   else if(idValue=="TemplateVolumeChange")
     return new TemplateVolumeChange(paraValue,indValue);
-  //else if(idValue=="CalculateAngleVectors")
-  //return new CalculateAngleVectors(paraValue,indValue);
+  else if(idValue=="CalculateAngleVectors")
+  return new CalculateAngleVectors(paraValue,indValue);
+  else if(idValue=="AngleVector")
+  return new AngleVector(paraValue,indValue);
   else if (idValue == "DebugReaction")
     return new DebugReaction(paraValue, indValue);
   
@@ -209,7 +215,8 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
     return new VertexFromTRBScenterTriangulationMT(paraValue, indValue);
  else if (idValue == "VertexFromTRBScenterTriangulationConcentrationHillMT")
    return new VertexFromTRBScenterTriangulationConcentrationHillMT(paraValue, indValue);
-  
+  else if (idValue == "FiberModel")
+    return new FiberModel(paraValue, indValue);
 
   //creation.h,creation.cc
   else if(idValue=="CreationZero")
@@ -274,6 +281,8 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
   return new ContinousMTDirection3d(paraValue, indValue);
   else if (idValue == "UpdateMTDirection")
     return new UpdateMTDirection(paraValue, indValue);
+  else if (idValue == "UpdateMTDirectionEquilibrium")
+    return new UpdateMTDirectionEquilibrium(paraValue, indValue);
   else if (idValue == "UpdateMTDirectionConcenHill")
     return new UpdateMTDirectionConcenHill(paraValue, indValue);
   else if (idValue == "RotatingDirection")
@@ -302,6 +311,11 @@ else if(idValue=="VertexFromCellPressurecenterTriangulationLinear")
     return new StrainTest(paraValue,indValue); 
   else if(idValue=="CalculateVertexStressDirection")
     return new CalculateVertexStressDirection(paraValue,indValue); 
+ else if(idValue=="MoveVerticesRandomlyCapCylinder")
+    return new MoveVerticesRandomlyCapCylinder(paraValue,indValue); 
+ else if(idValue=="scaleTemplate")
+    return new scaleTemplate(paraValue,indValue); 
+
 
   // cellTime.h
   else if (idValue=="CellTimeDerivative")
