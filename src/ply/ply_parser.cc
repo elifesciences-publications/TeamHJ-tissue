@@ -1,4 +1,4 @@
-#include <ply/ply_parser.h>
+#include "ply_parser.h"
 
 bool ply::ply_parser::parse(std::istream& istream)
 {

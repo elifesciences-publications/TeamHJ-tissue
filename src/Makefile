@@ -29,7 +29,7 @@ SIM_SRC = simulator/simulator.cc
 SIM_OBJ = $(SIM_SRC:.cc=.o)
 CONV_SRC = tools/converter.cc
 CONV_OBJ = $(CONV_SRC:.cc=.o)
-SRC_DIR = ./
+SRC_DIR = ./ ./ply/
 SRCS := $(wildcard $(SRC_DIR:/=/*.cc))
 OBJS = $(SRCS:.cc=.o)
 DEP = makedep.rule
