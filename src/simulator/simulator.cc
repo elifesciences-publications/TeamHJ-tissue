@@ -21,16 +21,16 @@
 int main(int argc,char *argv[]) {
     
   //BEGIN testing ply format reader override
-  Tissue t;
-  std::string filename = "output_0.ply";
-//   std::string filename = "template2D_correct.ply";
-  PLY_file ply_f(filename);
-  std::cout << "creating reader\n";
-  PLY_reader ply_read;
-  std::cout << "reading\n";
-  ply_read.read(ply_f, t);
-  std::cout << "exiting\n";
-  return 0;
+  //Tissue t;
+  //std::string filename = "output_0.ply";
+	//   std::string filename = "template2D_correct.ply";
+  //PLY_file ply_f(filename);
+  //std::cout << "creating reader\n";
+  //PLY_reader ply_read;
+  //std::cout << "reading\n";
+  //ply_read.read(ply_f, t);
+  //std::cout << "exiting\n";
+  //return 0;
   //END testing ply format reader override
   //Command line handling
   myConfig::registerOption("init_output", 1);
