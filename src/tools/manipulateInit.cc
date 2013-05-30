@@ -74,7 +74,7 @@ int scaleSpaceToMaxArea(Tissue &T,std::vector<double> &p);
 ///
 /// Scales vertex positions and wall resting lengths with a factor
 /// p[0]/l_{max} where l_{max} is the maximal length of a wall (defined from
-/// its two vertex positions).
+/// its two vertex positions). 
 ///
 int scaleSpaceToMaxWallLength(Tissue &T,std::vector<double> &p);
 ///
