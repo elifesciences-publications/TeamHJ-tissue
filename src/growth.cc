@@ -41,7 +41,8 @@ namespace WallGrowth {
     std::vector<std::string> tmp( numParameter() );
     tmp.resize( numParameter() );
     tmp[0] = "k_growth";
-    if (numParameter()>1) {
+    tmp[1] = "linearFlag";
+    if (numParameter()>2) {
       tmp[1] = "L_trunc";
     }
     setParameterId( tmp );
@@ -173,6 +174,74 @@ namespace WallGrowth {
   }
   
   namespace CenterTriangulation {
+    Constant::
+    Constant(std::vector<double> &paraValue, 
+	     std::vector< std::vector<size_t> > 
+	     &indValue ) {
+      
+      //Do some checks on the parameters and variable indeces
+      //
+      if( paraValue.size()!=2 && paraValue.size() !=3) {
+	std::cerr << "WallGrowth::CenterTriangulation::Constant::"
+		  << "Constant() "
+		  << "Two or three parameters used  k_growth, linearFlag, [L_trunc]"
+		  << std::endl;
+	exit(EXIT_FAILURE);
+      }
+      if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+	std::cerr << "WallGrowth::CenterTriangulation::Const::"
+		  << "Const() "
+		  << "Start of additional Cell variable indices (center(x,y,z) "
+		  << "L_1,...,L_n, n=num vertex) is given in first level." 
+		  << std::endl;
+	exit(EXIT_FAILURE);
+      }
+      //Set the variable values
+      //
+      setId("WallGrowth::CenterTriangulation::Constant");
+      setParameter(paraValue);  
+      setVariableIndex(indValue);
+      
+      //Set the parameter identities
+      //
+      std::vector<std::string> tmp( numParameter() );
+      tmp.resize( numParameter() );
+      tmp[0] = "k_growth";
+      tmp[1] = "linearFlag";
+      if (numParameter()>2) {
+	tmp[1] = "L_trunc";
+      }
+      setParameterId( tmp );
+    }
+    
+    void Constant::
+    derivs(Tissue &T,
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs ) {
+      
+      size_t numWalls = T.numWall();
+      size_t lengthIndex = variableIndex(0,0);
+      size_t lengthStartIndex = lengthIndex+3;//assuming 3D
+      
+      for (size_t i=0; i<numCells; ++i) {
+	for (size_t k=0; k<T.cell(i).numVertex(); ++k) {
+	  size_t v = T.cell(i).vertex(k)->index();
+	  double arg = parameter(0);
+	  if (parameter(1)==1) {//linearFlag (prop to length)
+	    arg *= cellData[i][k+lengthStartIndex];
+	  }
+	  if (numParameter()>2) {//truncated at maximal length
+	    arg *= (1 - cellData[i][k+lengthStartIndex]/parameter(2));
+	  }
+	  cellDerivs[i][k+lengthStartIndex] += arg;
+	}
+      }
+    }
+    
     Stress::
     Stress(std::vector<double> &paraValue, 
 	   std::vector< std::vector<size_t> > 

@@ -34,7 +34,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   //Growth related updates
   //growth.h,growth.cc
   if(idValue == "WallGrowthExponentialTruncated" ) {
-    std::cerr << "Reaction WallGrowthExponentialTruncated has been replaced by WallGrowth::Constant." << std::endl;
+    std::cerr << "Reaction WallGrowthExponentialTruncated has been replaced by WallGrowth::Constant." 
+	      << std::endl;
     exit(EXIT_FAILURE);
   }
   else if(idValue == "WallGrowth::Constant" )
@@ -47,6 +48,9 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   }
   else if(idValue == "WallGrowthStress" || idValue == "WallGrowth::Stress" )
     return new WallGrowth::Stress(paraValue, indValue);
+  else if (idValue == "WallGrowth::CenterTriangulation::Constant" ||
+	   idValue == "CenterTriangulation::WallGrowth::Constant")
+    return new WallGrowth::CenterTriangulation::Constant(paraValue, indValue);
   else if (idValue == "WallGrowthStresscenterTriangulation" ||
 	   idValue == "WallGrowth::CenterTriangulation::Stress" ||
 	   idValue == "CenterTriangulation::WallGrowth::Stress")

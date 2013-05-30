@@ -159,6 +159,72 @@ namespace WallGrowth {
   
   namespace CenterTriangulation {
     ///
+    /// @brief Constant internal edge growth which can be truncated at threshold length
+    ///
+    /// Constant (constant mode) or exponential (proportional to length, linear mode) 
+    /// growth of the internal edges 
+    /// in a central cell vertex meshed description. The internal edges 
+    /// lengths are updated only if the length plus a threshold value is shorter 
+    /// than the distance between the vertices (vertex and central cell vertex). 
+    ///
+    /// The internal edge lengths, L, are updated according to
+    ///
+    /// @f[ \frac{dL}{dt} = p_0 L (1-\frac{L}{p_2}) @f]
+    ///
+    /// if linearFlag (@f$p_1@f$) is set, or 
+    ///
+    /// @f[ \frac{dL}{dt} = p_0 (1-\frac{L}{p_2}) @f]
+    ///
+    /// otherwise. @f$ p_0 @f$ is the growth rate (@f$ k_{growth} @f$), @f$ p_1 @f$ is the flag setting
+    /// the update version (0 for constant and 1 for linear dependence on the current length), and 
+    /// the optional parameter @f$ p_2 @f$ is the threshold for growth truncation (@f$ L_{trunc} @f$).
+    /// If this parameter is not given, no truncation is applied.
+    ///
+    /// The column index for the cell additional variables of the central mesh (x,y,z,L_1,...,L_n) 
+    /// should be given in the first level of indices.
+    ///
+    /// In a model file the reaction is defined as
+    ///
+    /// @verbatim
+    /// WallGrowth::Constant 2/3 1 1
+    /// k_growth linear_flag [L_trunc]
+    /// index
+    /// @endverbatim
+    ///
+    /// @see WallGrowth::Constant (for same update of 1D walls)
+    ///
+    class Constant : public BaseReaction {
+      
+    public:
+      ///
+      /// @brief Main constructor
+      ///
+      /// This is the main constructor which sets the parameters and variable
+      /// indices that defines the reaction.
+      ///
+      /// @param paraValue vector with parameters
+      ///
+      /// @param indValue vector of vectors with variable indices
+      ///
+      /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+      ///  
+      Constant(std::vector<double> &paraValue, 
+	       std::vector< std::vector<size_t> > 
+	       &indValue );
+      ///
+      /// @brief Derivative function for this reaction class
+      ///
+      /// @see BaseReaction::derivs(Tissue &T,...)
+      ///  
+      void derivs(Tissue &T,
+		  DataMatrix &cellData,
+		  DataMatrix &wallData,
+		  DataMatrix &vertexData,
+		  DataMatrix &cellDerivs,
+		  DataMatrix &wallDerivs,
+		  DataMatrix &vertexDerivs );
+    };
+    ///
     /// @brief Constant stress/strain-driven internal edge growth dependent on a threshold
     ///
     /// Constant (constant mode) or exponential (linear mode) growth of the internal edges 
