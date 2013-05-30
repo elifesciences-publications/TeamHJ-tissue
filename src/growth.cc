@@ -223,7 +223,7 @@ namespace WallGrowth {
 	   DataMatrix &wallDerivs,
 	   DataMatrix &vertexDerivs ) {
       
-      size_t numWalls = T.numWall();
+      size_t numCells = T.numCell();
       size_t lengthIndex = variableIndex(0,0);
       size_t lengthStartIndex = lengthIndex+3;//assuming 3D
       
