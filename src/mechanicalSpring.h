@@ -76,6 +76,69 @@ class VertexFromWallSpring : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+namespace CenterTriangulation {
+	///
+	/// @brief Updates vertices from an asymmetric spring potential on internal edges
+	///
+	/// The update (in all dimensions) are given by
+	///
+	/// @f[ \frac{dx_i}{dt} = (x_{i}-x_{j}) \frac{K_{force}}{L_{ij}}(1-\frac{L_{ij}}{d}) @f]
+	///
+	/// where @f$ d @f$ = distance between vertices (vertex and center point),
+	/// where @f$ x_i,x_j @f$ = vertex position in specific dimension,
+	/// @f$ L_{ij} @f$ = resting length of internal edge
+	///
+	/// The parameters are @f$ K_{force} @f$ (parameter(0)), which sets the strength
+	/// of the spring (spring constant), and @f$ K_{adh} @f$ (parameter(1)), which
+	/// sets the relative strength of adhesive forces compared to repressive
+	/// forces (when adhesive forces, the two parameters are multiplied 
+	/// (@f$ K=K_{force}K_{adhFrac} @f$). 
+	/// The column index for the cell additional variables of the central mesh 
+	/// (x,y,z,L_1,...,L_n) should be given in the first level of indices.
+	///
+	/// In a model file the reaction is defined as
+	///
+	/// @verbatim
+	/// CenterTriangulation::EdgeSpring 2 1 1
+	/// K_force K_adh
+	/// index
+	/// @endverbatim
+	///
+	/// @see VertexFromWallSpring
+	///
+	class EdgeSpring : public BaseReaction {
+		
+	public:
+		///
+		/// @brief Main constructor
+		///
+		/// This is the main constructor which sets the parameters and variable
+		/// indices that defines the reaction.
+		///
+		/// @param paraValue vector with parameters
+		///
+		/// @param indValue vector of vectors with variable indices
+		///
+		/// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+		///
+		EdgeSpring(std::vector<double> &paraValue, 
+							 std::vector< std::vector<size_t> > 
+							 &indValue );  
+		///
+		/// @brief Derivative function for this reaction class
+		///
+		/// @see BaseReaction::derivs(Tissue &T,...)
+		///
+		void derivs(Tissue &T,
+								DataMatrix &cellData,
+								DataMatrix &wallData,
+								DataMatrix &vertexData,
+								DataMatrix &cellDerivs,
+								DataMatrix &wallDerivs,
+								DataMatrix &vertexDerivs );
+	};
+}
+
 ///
 /// @brief Updates vertices from an asymmetric wall spring potential
 /// where the spring constants are taken from two wall variables

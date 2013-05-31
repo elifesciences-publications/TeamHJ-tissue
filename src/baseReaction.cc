@@ -94,6 +94,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   //mechanicalSpring.h,mechanicalSpring.cc
   else if(idValue=="VertexFromWallSpring")
     return new VertexFromWallSpring(paraValue,indValue);
+  else if(idValue=="CenterTriangulation::EdgeSpring")
+    return new CenterTriangulation::EdgeSpring(paraValue,indValue);
   else if(idValue=="VertexFromDoubleWallSpring")
     return new VertexFromDoubleWallSpring(paraValue,indValue);
   else if(idValue=="VertexFromWallSpringSpatial")

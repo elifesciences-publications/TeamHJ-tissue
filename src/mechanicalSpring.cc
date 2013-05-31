@@ -91,10 +91,96 @@ derivs(Tissue &T,
   }
 }
 
+namespace CenterTriangulation {
+	EdgeSpring::
+	EdgeSpring(std::vector<double> &paraValue, 
+						 std::vector< std::vector<size_t> > 
+						 &indValue ) 
+	{  
+		// Do some checks on the parameters and variable indeces
+		if( paraValue.size()!=2 ) {
+			std::cerr << "CenterTriangulation::EdgeSpring"
+								<< "EdgeSpring() "
+								<< "Uses two parameters K_force frac_adhesion.\n";
+			exit(EXIT_FAILURE);
+		}
+		if( indValue.size() != 1 || indValue[0].size() != 1 ) { 
+			std::cerr << "CenterTriangulation::EdgeSpring"
+								<< "EdgeSpring() "
+								<< "Start of additional Cell variable indices (center(x,y,z) "
+								<< "L_1,...,L_n, n=num vertex) is given in first level." 
+								<< std::endl;
+			exit(EXIT_FAILURE);
+		}
+		
+		// Set the variable values
+		setId("CenterTriangulation::EdgeSpring");
+		setParameter(paraValue);  
+		setVariableIndex(indValue);
+		
+		// Set the parameter identities
+		std::vector<std::string> tmp( numParameter() );
+		tmp[0] = "K_force";
+		tmp[1] = "frac_adh";
+		setParameterId( tmp );
+	}
+
+	void EdgeSpring::
+	derivs(Tissue &T,
+				 DataMatrix &cellData,
+				 DataMatrix &wallData,
+				 DataMatrix &vertexData,
+				 DataMatrix &cellDerivs,
+				 DataMatrix &wallDerivs,
+				 DataMatrix &vertexDerivs ) {
+		
+		//Do the update for each internal edge for eache cell
+		size_t numCells = T.numCell();
+		size_t posIndex = variableIndex(0,0);
+		size_t dimension = vertexData[0].size();
+		assert( 3==dimension );//assuming 3D
+		size_t lengthIndex = posIndex+dimension;
+
+		for (size_t i=0; i<numCells; ++i) {
+			for (size_t k=0; k<T.cell(i).numVertex(); ++k) {
+				size_t v = T.cell(i).vertex(k)->index();
+
+				//Calculate shared factors
+				double distance=0.0;
+				for( size_t d=0 ; d<dimension ; d++ ) {
+					distance += (vertexData[v][d]-cellData[i][posIndex+d])*
+						(vertexData[v][d]-cellData[i][posIndex+d]);
+				}
+				distance = std::sqrt(distance);
+				double edgeLength=cellData[i][lengthIndex+k];
+				double coeff = parameter(0)*((1.0/edgeLength)-(1.0/distance));
+				if( distance <= 0.0 && edgeLength <=0.0 ) {
+					//std::cerr << i << " " << k << " - " << edgeLength << " " 
+					//<< distance << std::endl;
+					coeff = 0.0;
+				}
+				if( distance>edgeLength )
+					coeff *=parameter(1);
+				
+				// Save force in wall variable if appropriate
+				//if( numVariableIndexLevel()>1 )
+				//wallData[i][variableIndex(1,0)] = coeff*distance;
+				
+				//Update both vertices for each dimension
+				for(size_t d=0 ; d<dimension ; d++ ) {
+					double div = (vertexData[v][d]-cellData[i][posIndex+d])*coeff;
+					vertexDerivs[v][d] -= div;
+					cellDerivs[i][posIndex+d] += div;
+				}
+			}
+		}
+	}
+}
+
 VertexFromDoubleWallSpring::
 VertexFromDoubleWallSpring(std::vector<double> &paraValue, 
-			   std::vector< std::vector<size_t> > 
-			   &indValue ) 
+													 std::vector< std::vector<size_t> > 
+													 &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
   if( paraValue.size()!=2 ) {

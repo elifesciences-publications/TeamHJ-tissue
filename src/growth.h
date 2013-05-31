@@ -180,8 +180,8 @@ namespace WallGrowth {
     /// the optional parameter @f$ p_2 @f$ is the threshold for growth truncation (@f$ L_{trunc} @f$).
     /// If this parameter is not given, no truncation is applied.
     ///
-    /// The column index for the cell additional variables of the central mesh (x,y,z,L_1,...,L_n) 
-    /// should be given in the first level of indices.
+    /// The column index for the cell additional variables of the central mesh 
+		/// (x,y,z,L_1,...,L_n) should be given in the first level of indices.
     ///
     /// In a model file the reaction is defined as
     ///
