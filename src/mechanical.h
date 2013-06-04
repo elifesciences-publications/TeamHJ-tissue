@@ -13,9 +13,24 @@
 #include<cmath>
 
 ///
-/// @brief Updates vertices from a cell pressure potential
+/// @brief Updates vertices from a cell pressure potential, i.e. forces normal to edges
 ///
-/// 
+/// A area rule in two dimensions is used to calculate the forces on vertex @$v@$ from a cell is
+///
+/// @f[\frac{dx_v}{dt} = 0.5*p_0 (y_{v_r} - y_{v_l}) @f]
+/// @f[\frac{dy_v}{dt} = 0.5*p_0 (x_{v_l} - x_{v_r}) @f]
+///
+/// where @$v_r,v_l@$ are right and left vertices in the sorted order. @$p_0$ represents the pressure,
+/// and if @$p_1=1@$, the pressure will be divided by the cell volume.
+///
+/// In a model file, the reaction is given by
+///
+/// @verbatim
+/// VertexFromCellPressure 2 0
+/// P V_normflag(=0/1)
+/// @endverbatim
+///
+/// @note Requires two dimensions with vertices sorted.
 ///
 class VertexFromCellPressure : public BaseReaction {
   
@@ -50,110 +65,124 @@ class VertexFromCellPressure : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
-///
-/// @brief Updates vertices from a cell pressure potential
-///
-/// This function determines the direction of the pressure force term
-/// is from the position of the central mesh cell vertex to the center of the wall. 
-/// Applies a force proportional to the pressure (parameter(0)) and the 
-/// size of the wall.
-///
-/// @note Maybe it should rather be normal to the wall in the plane of the triangle?
-///
-class VertexFromCellPressurecenterTriangulation : public BaseReaction {
-  
- public:
-  
+namespace CenterTriangulation {
   ///
-  /// @brief Main constructor
+  /// @brief Updates vertices from a cell pressure potential
   ///
-  /// This is the main constructor which sets the parameters and variable
-  /// indices that defines the reaction.
+  /// This function determines the direction of the pressure force term
+  /// from the position of the central mesh cell vertex to the center of the wall. 
+  /// Applies a force proportional to the pressure (parameter(0)) and the 
+  /// size of the wall. parameter(1) equal to 1 normalizes the force with cell volume. 
+  /// (0 otherwise).
   ///
-  /// @param paraValue vector with parameters
+  /// In a model file, the reaction is given by
   ///
-  /// @param indValue vector of vectors with variable indices
+  /// @verbatim
+  /// CenterTriangulation:VertexFromCellPressure 2 1 1
+  /// P V_normflag(=0/1)
+  /// startIndex 
+  /// @endverbatim
   ///
-  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  /// where the startindex is marking the start of internal edge varibales (x,y,z,L_1,...).
   ///
-  VertexFromCellPressurecenterTriangulation(std::vector<double> &paraValue, 
-					    std::vector< std::vector<size_t> > &indValue );
-  
+  /// @note Maybe it should rather be normal to the wall in the plane of the triangle?
+  /// @note Assumes three dimensions as all CenterTriangulation functions.
+  /// @see VertexFromCellPressure
   ///
-  /// @brief Derivative function for this reaction class
-  ///
-  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
-  ///
-  void derivs(Tissue &T,
-	      DataMatrix &cellData,
-	      DataMatrix &wallData,
-	      DataMatrix &vertexData,
-	      DataMatrix &cellDerivs,
-	      DataMatrix &wallDerivs,
-	      DataMatrix &vertexDerivs );
-};
+  class VertexFromCellPressure : public BaseReaction {
+    
+  public:
+    
+    ///
+    /// @brief Main constructor
+    ///
+    /// This is the main constructor which sets the parameters and variable
+    /// indices that defines the reaction.
+    ///
+    /// @param paraValue vector with parameters
+    ///
+    /// @param indValue vector of vectors with variable indices
+    ///
+    /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+    ///
+    VertexFromCellPressure(std::vector<double> &paraValue, 
+			   std::vector< std::vector<size_t> > &indValue );
+    
+    ///
+    /// @brief Derivative function for this reaction class
+    ///
+    /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+    ///
+    void derivs(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
+  };
 
-///
-/// @brief Updates vertices from a cell pressure potential linearly increasing in a given time span
-///
-/// This function determines the direction of the pressure force term
-/// is from the position of the central mesh cell vertex to the center of the wall. 
-/// Applies a force proportional to the pressure (parameter(0)) and the 
-/// size of the wall.
-///
-/// In a model file the reaction is defined as
-///
-/// @verbatim
-/// VertexFromCellPressurecenterTriangulationLinear 3 1 1
-/// P A_flag deltaT
-/// @endverbatim
-/// @note Maybe it should rather be normal to the wall in the plane of the triangle?
-///
-class VertexFromCellPressurecenterTriangulationLinear : public BaseReaction {
- private:
-
-  double timeFactor_; 
- public:
-  
   ///
-  /// @brief Main constructor
+  /// @brief Updates vertices from a cell pressure potential linearly increasing in a given time span
   ///
-  /// This is the main constructor which sets the parameters and variable
-  /// indices that defines the reaction.
+  /// This function determines the direction of the pressure force term
+  /// from the position of the central mesh cell vertex to the center of the wall. 
+  /// Applies a force proportional to the pressure (parameter(0)) and the 
+  /// size of the wall.
   ///
-  /// @param paraValue vector with parameters
+  /// In a model file the reaction is defined as
   ///
-  /// @param indValue vector of vectors with variable indices
+  /// @verbatim
+  /// CenterTriangulation:VertexFromCellPressureLinear 3 1 1
+  /// P A_flag deltaT
+  /// @endverbatim
+  /// @note Maybe it should rather be normal to the wall in the plane of the triangle?
   ///
-  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
-  ///
-  VertexFromCellPressurecenterTriangulationLinear(std::vector<double> &paraValue, 
-					    std::vector< std::vector<size_t> > &indValue );
-  
-  ///
-  /// @brief Derivative function for this reaction class
-  ///
-  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
-  ///
-  void derivs(Tissue &T,
-	      DataMatrix &cellData,
-	      DataMatrix &wallData,
-	      DataMatrix &vertexData,
-	      DataMatrix &cellDerivs,
-	      DataMatrix &wallDerivs,
-	      DataMatrix &vertexDerivs );
-  ///
-  /// @brief Update function for this reaction class
-  ///
-  /// @see BaseReaction::update(Tissue &T,...)
-  ///
-  void update(Tissue &T,
-	      DataMatrix &cellData,
-	      DataMatrix &wallData,
-	      DataMatrix &vertexData,
-	      double h);
-};
-
+  class VertexFromCellPressureLinear : public BaseReaction {
+  private:
+    
+    double timeFactor_; 
+  public:
+    
+    ///
+    /// @brief Main constructor
+    ///
+    /// This is the main constructor which sets the parameters and variable
+    /// indices that defines the reaction.
+    ///
+    /// @param paraValue vector with parameters
+    ///
+    /// @param indValue vector of vectors with variable indices
+    ///
+    /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+    ///
+    VertexFromCellPressureLinear(std::vector<double> &paraValue, 
+				 std::vector< std::vector<size_t> > &indValue );
+    
+    ///
+    /// @brief Derivative function for this reaction class
+    ///
+    /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+    ///
+    void derivs(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
+    ///
+    /// @brief Update function for this reaction class
+    ///
+    /// @see BaseReaction::update(Tissue &T,...)
+    ///
+    void update(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		double h);
+  };
+} // end namespace CenterTriangulation
 
 
 //!Updates vertices from a cell pressure potential
