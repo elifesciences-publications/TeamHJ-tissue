@@ -1399,7 +1399,7 @@ CellVolumeExperimental(std::vector<double> &paraValue,
     std::cerr << "CellVolumeExperimental::CellVolumeExperimental() "
 	      << "Wall length index and cell volume index must be given in "
 	      << "first level.\n"
-	      << "Force indices must ge given in second level. "
+	      << "Force indices must be given in second level. "
 	      << "Optionally index for saving the pressure can be"
 	      << " given at third level." << std::endl; 		
     exit(EXIT_FAILURE);
