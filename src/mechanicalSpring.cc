@@ -1306,9 +1306,7 @@ derivs(Tissue &T,
 }
 
 VertexFromDoubleWallSpringMTConcentrationHill::
-VertexFromDoubleWallSpringMTConcentrationHill(std::vector<double> &paraValue, 
-																							std::vector< std::vector<size_t> > 
-																							&indValue ) 
+VertexFromDoubleWallSpringMTConcentrationHill(std::vector<double> &paraValue,											 std::vector< std::vector<size_t> > &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
   if( paraValue.size()!=6 ) {
@@ -1442,4 +1440,182 @@ derivs(Tissue &T,
       vertexDerivs[v2][d] += div;
     }
   }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+VertexFromExternalSpring::
+VertexFromExternalSpring(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=4 ) {
+    std::cerr << "VertexFromExternalSpring::"
+	      << "VertexFromExternalSpring() "
+	      << "Uses four parameters spring constant K, frac_adhesion, Lmaxfactor and growth_rate.\n";
+    exit(0);
+  }
+  if( indValue.size() != 3  || indValue[1].size() !=indValue[2].size() || indValue[0].size()!=1 ) {
+    std::cerr << "VertexFromExternalSpring::"
+	      << "VertexFromExternalSpring() "
+	      << "vertex indices come as pairs each from one of the two sets with " 
+              << "the same number of elements in the second and third levels. \n";
+    exit(0);
+  }
+  //Set the variable values
+  setId("VertexFromExternalSpring");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "K_sp";
+  tmp[1] = "frac_adh";
+  tmp[2] = "Lmaxfactor";
+  tmp[3] = "growth_rate";
+  
+  setParameterId( tmp );
+
+  Npairs=indValue[1].size();
+}
+
+
+
+void VertexFromExternalSpring::initiate(Tissue &T,
+					DataMatrix &cellData,
+					DataMatrix &wallData,
+					DataMatrix &vertexData,
+					DataMatrix &cellDerivs,
+					DataMatrix &wallDerivs,
+					DataMatrix &vertexDerivs) { 
+
+  //size_t Npairs=variableIndex(1).size();  
+  restinglength.resize(Npairs);
+  Kspring.resize(Npairs);
+  
+  size_t dimension=vertexData[0].size();
+  
+  
+  double distance=std::sqrt(distance);
+  
+  for (size_t i=0 ; i< Npairs ; i++){
+    Kspring[i]=parameter(0);
+    size_t v1=variableIndex(1,i);
+    size_t v2=variableIndex(2,i);
+    restinglength[i]=0;
+    for( size_t d=0 ; d<dimension ; d++ ) {
+      restinglength[i] += (vertexData[v2][d]-vertexData[v1][d])* (vertexData[v2][d]-vertexData[v1][d]);
+    }
+    
+    restinglength[i]=std::sqrt(restinglength[i]);
+  }
+   
+}
+
+
+
+
+void VertexFromExternalSpring::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  double fad=parameter(1);
+ 
+  //size_t Npairs=indValue[1].size();
+  size_t dimension=vertexData[0].size();
+
+  for (size_t i=0 ; i< Npairs ; i++){
+    
+    size_t v1=variableIndex(1,i);
+    size_t v2=variableIndex(2,i);
+    
+    double distance=0;
+    
+    for( size_t d=0 ; d<dimension ; d++ ) 
+      distance += (vertexData[v2][d]-vertexData[v1][d])*(vertexData[v2][d]-vertexData[v1][d]);
+    
+    distance=std::sqrt(distance);
+
+    double coeff=0;
+    if ( restinglength[i]>0.0)
+      coeff=Kspring[i]*((1.0/restinglength[i])-(1.0/distance));
+    
+    if( distance <= 0.0 && restinglength[i] <=0.0 ) 
+      coeff = 0.0;
+    
+    if( distance>restinglength[i])
+      coeff *=fad;
+    //Update both vertices for each dimension
+    for(size_t d=0 ; d<dimension ; d++ ) {
+      double div = coeff*(vertexData[v2][d]-vertexData[v1][d]);
+      if ( restinglength[i]>0){
+	vertexDerivs[v1][d] += div;
+	vertexDerivs[v2][d] -= div;
+      }
+      if ( distance<.1*restinglength[i]){
+	double force=vertexDerivs[v1][d];
+	vertexDerivs[v1][d] +=vertexDerivs[v2][d];
+	vertexDerivs[v2][d] +=force;
+      }
+      
+    }
+  }  
+}
+
+void VertexFromExternalSpring::update(Tissue &T,
+				      DataMatrix &cellData,
+				      DataMatrix &wallData,
+				      DataMatrix &vertexData, 
+				      double h) 
+{
+  double Lmaxfactor=parameter(2);
+  double Kgrowth=parameter(3);
+  
+  //size_t Npairs=indValue[1].size();
+  size_t dimension=vertexData[0].size();
+  
+  for (size_t i=0 ; i< Npairs ; i++){
+    size_t v1=variableIndex(1,i);
+    size_t v2=variableIndex(2,i);
+    double distance=0;
+    for( size_t d=0 ; d<dimension ; d++ ) 
+      distance += (vertexData[v2][d]-vertexData[v1][d])*(vertexData[v2][d]-vertexData[v1][d]);
+    
+    distance=std::sqrt(distance);
+    
+    if (distance>Lmaxfactor*restinglength[i])  Kspring[i]=0;  
+    if (distance<Lmaxfactor*restinglength[i])  Kspring[i]=parameter(0);  
+  
+    if (Kspring[i]!=0 && restinglength[i]>0){ 
+      if(variableIndex(0,0)==1) restinglength[i]+=h*Kgrowth ;
+      if(variableIndex(0,0)==2) restinglength[i]+=h*Kgrowth*restinglength[i] ;
+      if(variableIndex(0,0)==3) restinglength[i]+=h*Kgrowth*(distance-restinglength[i]) ;
+      if(variableIndex(0,0)==4 && distance>restinglength[i]) restinglength[i]+=h*Kgrowth ;
+      if(variableIndex(0,0)==5 && distance>restinglength[i]) restinglength[i]+=h*Kgrowth*restinglength[i] ;
+      if(variableIndex(0,0)==6 && distance>restinglength[i]) restinglength[i]+=h*Kgrowth*(distance-restinglength[i]) ;
+      
+      
+    }
+
+    
+  }
+  //std::cerr<<"resting   "<<restinglength[14]<<std::endl; 
 }
