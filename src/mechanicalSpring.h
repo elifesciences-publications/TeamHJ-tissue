@@ -577,4 +577,90 @@ class VertexFromDoubleWallSpringMTConcentrationHill : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+
+
+
+///
+/// @brief Sets external  breakable springs between vertices at given indices
+///
+/// This function has a spring constant and adhision factor 
+///
+/// @f[ F=-K*f_{adh}*(L_0-X) @f]
+///
+/// when the distance between vertices is greater than Lmax Force becomes zero.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// VertexFromExternalSpring 4 3 1 1/.../n 1/.../n
+///
+/// K f_adh Lmaxfactor growth_rate 
+/// growth_flag
+/// vertex-index11 ... vertex-index1n 
+/// vertex-index21 ... vertex-index2n  
+/// 
+/// @endverbatim
+///
+///
+class VertexFromExternalSpring : public BaseReaction {
+ 
+ private: 
+  std:: vector<double> restinglength;
+  std:: vector<double> Kspring;
+  size_t Npairs;
+
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  VertexFromExternalSpring(std::vector<double> &paraValue, 
+			   std::vector< std::vector<size_t> > &indValue );
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///  
+  void initiate(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);
+
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData, 
+              double h);
+
+
+};
+
+
+
+
+
 #endif
