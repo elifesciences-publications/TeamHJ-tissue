@@ -388,6 +388,20 @@ class EpidermalVertexForce : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+
+///
+/// @brief 
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// VertexFromPressureExperimental
+///
+///  
+/// 
+/// @endverbatim
+///
+///
 class VertexFromPressureExperimental : public BaseReaction
 {  
  public:
@@ -404,6 +418,33 @@ class VertexFromPressureExperimental : public BaseReaction
   double polygonArea(std::vector< std::pair<double, double> > vertices);
 };
 
+
+///
+/// @brief 
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// CellVolumeExperimental 4 2 2 n
+///
+/// k_p  P_max  k_pp allowShrink_flag
+///
+/// Wall_length_index  cell_volume_index
+/// Force indices
+///
+/// or
+///
+/// CellVolumeExperimental 4 3 2 n 1
+///
+/// k_p  P_max  k_pp allowShrink_flag
+///
+/// Wall_length_index  cell_volume_index
+/// Force indices
+/// Optionally_index_for_saving_the_pressure
+
+/// @endverbatim
+///
+///
 class CellVolumeExperimental : public BaseReaction
 {
  public:
