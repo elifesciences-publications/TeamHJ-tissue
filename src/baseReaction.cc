@@ -118,6 +118,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromWallSpringMTConcentrationHill(paraValue,indValue);
   else if(idValue=="VertexFromDoubleWallSpringMTConcentrationHill")
     return new VertexFromDoubleWallSpringMTConcentrationHill(paraValue,indValue);
+  else if(idValue=="VertexFromExternalSpring")
+    return new VertexFromExternalSpring(paraValue,indValue);
   else if (idValue=="VertexFromWallSpringAsymmetric" ||
 	   idValue=="VertexFromEpidermalWallSpringAsymmetric" ||
 	   idValue=="VertexFromEpidermalCellWallSpringAsymmetric") {
