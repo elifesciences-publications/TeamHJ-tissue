@@ -4043,7 +4043,8 @@ derivs(Tissue &T,
     
     Cell *  cell1=&(T.cell(cellIndex));
     	
-		std::vector<size_t> neighbor(numWalls);
+    //std::vector<int> neighbor(numWalls);
+    std::vector<size_t> neighbor(numWalls);
     for   ( size_t wallIndex=0 ; wallIndex<numWalls ; ++wallIndex ){
       neighbor[wallIndex]=(cell1->cellNeighbor(wallIndex))->index();
     }

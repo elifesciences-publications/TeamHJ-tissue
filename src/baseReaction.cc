@@ -273,8 +273,8 @@ else if(idValue=="VertexFromParabolid")
     return new AuxinTransportCellCellNoGeometry(paraValue,indValue); 
   else if(idValue=="AuxinWallModel")
     return new AuxinWallModel(paraValue,indValue); 
-  else if(idValue=="AuxinROPModel")
-    return new AuxinROPModel(paraValue,indValue); 
+  //  else if(idValue=="AuxinROPModel")
+  //return new AuxinROPModel(paraValue,indValue); 
   else if(idValue=="AuxinROPModel2")
     return new AuxinROPModel2(paraValue,indValue); 
   else if(idValue=="AuxinROPModel3")
