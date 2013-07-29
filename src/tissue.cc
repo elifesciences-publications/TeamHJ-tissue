@@ -255,6 +255,14 @@ int Tissue::addCompartmentChange( std::istream &IN ) {
   return 0;
 }
 
+void Tissue::addSisterVertex(size_t val1,size_t val2) 
+{
+  std::vector<size_t> tmpIndex(2);
+  tmpIndex[0]=val1;
+  tmpIndex[1]=val2;
+  sisterVertexIndex_.push_back(tmpIndex);
+}
+
 void Tissue::readInit(std::istream &IN,int verbose) {
   
   unsigned int numCellVal,numWallVal,numVertexVal;

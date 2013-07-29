@@ -22,7 +22,7 @@ CXX = g++
 #CXXFLAGS = -g -Wall -pedantic -ansi
 #LDFLAGS = -g -Wall -pedantic -ansi 
 CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi -I/sw/include/
-LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi 
+LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi  
 
 #Sourcefiles etc.
 SIM_SRC = simulator/simulator.cc

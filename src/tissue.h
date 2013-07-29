@@ -48,7 +48,9 @@ class Tissue {
   //DataMatrix tmpCellData_;
   
   std::vector<size_t> directionalWall_;
-	
+
+  std::vector< std::vector<size_t> > sisterVertexIndex_;
+
  public:
   
   ///
@@ -421,6 +423,10 @@ class Tissue {
   ///
   inline size_t numDirectionalWall() const;
   ///
+  /// @brief Returns the number of sister vertex pairs in the tissue model
+  ///
+  inline size_t numSisterVertex() const;
+  ///
   /// @brief Returns the directionalWall with index i
   ///
   inline size_t directionalWall(size_t i) const;
@@ -534,6 +540,10 @@ class Tissue {
   ///
   inline BaseCompartmentChange* compartmentChange(size_t i) const;
   ///
+  /// @brief returns a vertex index for a sister vertex
+  ///
+  inline size_t sisterVertex(size_t i, size_t k) const;
+  ///
   /// @brief Sets the name of the tissue.
   ///
   inline void setId(std::string value);
@@ -553,6 +563,10 @@ class Tissue {
   /// @brief Resizes the directionalWall vector in the tissue.
   ///
   inline void setNumDirectionalWall(size_t val);
+  ///
+  /// @brief Resizes the sisterVertexIndex vector in the tissue.
+  ///
+  inline void setNumSisterVertex(size_t val);
   
   //inline const DataMatrix & tmpCellData() const;
   //inline void setTmpCellData(DataMatrix &val);
@@ -567,6 +581,14 @@ class Tissue {
   /// @brief Sets directionalWall i of th etissue to the value val
   ///
   inline void setDirectionalWall(size_t i,size_t val);
+  ///
+  /// @brief Sets the sister vertex index
+  ///
+  inline void setSisterVertex(size_t i,size_t k,size_t val);
+  ///
+  /// @brief Expands the sistervertex vector with a new pair od indices
+  ///
+  void addSisterVertex(size_t val1,size_t val2); 
   ///
   /// @brief Adds a reaction to the list of reactions from an open file 
   ///
@@ -872,6 +894,11 @@ inline size_t Tissue::numDirectionalWall() const
   return directionalWall_.size(); 
 }
 
+inline size_t Tissue::numSisterVertex() const 
+{ 
+  return sisterVertexIndex_.size(); 
+}
+
 inline size_t Tissue::directionalWall(size_t i) const 
 { 
   return directionalWall_[i];
@@ -1006,6 +1033,12 @@ inline BaseCompartmentChange* Tissue::compartmentChange(size_t i) const {
   return compartmentChange_[i];
 }
 
+inline size_t Tissue::sisterVertex(size_t i, size_t k) const {
+  assert(i<numSisterVertex());
+  assert(k==0 || k==1);
+  return sisterVertexIndex_[i][k];
+}
+
 inline void Tissue::setId(std::string value) {
   id_ = value;
 }
@@ -1027,9 +1060,20 @@ inline void Tissue::setNumDirectionalWall(size_t val)
   directionalWall_.resize(val);
 }
 
+inline void Tissue::setNumSisterVertex(size_t val) 
+{
+  std::vector<size_t> tmpIndex(2);
+  sisterVertexIndex_.resize(val,tmpIndex);
+}
+
 inline void Tissue::setDirectionalWall(size_t i,size_t val) 
 {
   directionalWall_[i]=val;
+}
+
+inline void Tissue::setSisterVertex(size_t i,size_t k,size_t val) 
+{
+  sisterVertexIndex_[i][k]=val;
 }
 
 //inline const DataMatrix & Tissue::

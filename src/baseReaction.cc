@@ -21,6 +21,7 @@
 #include "mechanicalSpring.h"
 #include "mechanicalTRBS.h"
 #include "network.h"
+#include "sisterVertex.h"
 
 //#include"massAction.h"
 
@@ -297,6 +298,16 @@ else if(idValue=="VertexFromParabolid")
     return new UpdateMTDirectionConcenHill(paraValue, indValue);
   else if (idValue == "RotatingDirection")
     return new RotatingDirection(paraValue, indValue);
+  
+  //sisterVertex.h, sisterVertex.cc
+  else if (idValue == "SisterVertex::InitiateFromFile")
+    return new SisterVertex::InitiateFromFile(paraValue, indValue);
+  else if (idValue == "SisterVertex::InitiateFromDistance")
+    return new SisterVertex::InitiateFromDistance(paraValue, indValue);
+  else if (idValue == "SisterVertex::Spring")
+    return new SisterVertex::Spring(paraValue, indValue);
+  else if (idValue == "SisterVertex::CombineDerivatives")
+    return new SisterVertex::CombineDerivatives(paraValue, indValue);
   
   //adhocReaction.h,adhocReaction.cc
   else if(idValue=="VertexNoUpdateFromPosition")

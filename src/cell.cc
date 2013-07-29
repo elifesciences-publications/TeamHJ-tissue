@@ -574,7 +574,7 @@ double Cell::calculateVolume( const DataMatrix &vertexData, size_t signFlag )
     tmpVolume *= 0.5;
     volume_ = std::fabs(tmpVolume);
     if( signFlag ) 
-      return tmpVolume;
+      return tmpVolume; 
     else
       return volume_;
   }
