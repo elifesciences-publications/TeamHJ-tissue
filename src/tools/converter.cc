@@ -16,6 +16,7 @@
 #include "../vertex.h"
 #include "../wall.h"
 #include "../pvd_file.h"
+#include "../ply_reader.h"
 
 int main(int argc,char *argv[]) {
   
@@ -39,7 +40,8 @@ int main(int argc,char *argv[]) {
 	      << "MGXTriMesh (MGX exported mesh in mesh format, before making cells), " << std::endl 
 	      << "MGXTriVtu (MGX exported mesh in vtu format, before making cells), " << std::endl 
 	      << "MGXCellVtu (MGX exported mesh in vtu format, after making cells [TO COME]), " << std::endl
-	      << "merryProj (Montpellier (openAlea) format [now obselete?])." << std::endl
+	      << "merryProj (Montpellier (openAlea) format [now obselete?]), " << std::endl
+	      << "ply (standard geometry format, adopted? as standard for exchange between plant modellers)." << std::endl
 	      << std::endl;
     std::cerr << "-output_format format - Sets format for output of"
 	      << " state in specified file format. " << std::endl 
@@ -126,6 +128,16 @@ int main(int argc,char *argv[]) {
 		<< std::endl;
     }
     T.readInitMerryProj(initFile.c_str(),verboseFlag);
+  }
+  else if (inputFormat.compare("ply")==0) {
+    if (verboseFlag) {
+      std::cerr << "Reading init from file " << initFile << " assuming ply format." 
+		<< std::endl;
+    }
+    PLY_file pf(initFile.c_str());
+    PLY_reader P;
+    P.read(pf,T);
+    //T.readInitPly(initFile.c_str(),verboseFlag); ...yet to be defined...
   }
   else {
     std::cerr << "Input format " << inputFormat << " not recognized. Use '-help' for allowed formats."
