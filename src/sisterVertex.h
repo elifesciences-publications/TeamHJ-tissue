@@ -78,8 +78,21 @@ namespace SisterVertex {
 		  DataMatrix &wallDerivs,
 		  DataMatrix &vertexDerivs);
     
+    ///
+    /// @brief Derivative function for this reaction class
+    ///
+    /// For this reaction nothing is added to the derivative
+    ///
+    /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+    ///
+    void derivs(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
   };
-
   /// 
   /// @brief Initiates sister vertices by adding vertex pairs that are close in space
   ///
@@ -122,6 +135,20 @@ namespace SisterVertex {
 		  DataMatrix &cellDerivs,
 		  DataMatrix &wallDerivs,
 		  DataMatrix &vertexDerivs);    
+    ///
+    /// @brief Derivative function for this reaction class
+    ///
+    /// For this reaction nothing is added to the derivative
+    ///
+    /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+    ///
+    void derivs(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
   };
 
   /// 

@@ -66,6 +66,17 @@ namespace SisterVertex {
     }
   }
 
+  void InitiateFromFile::
+  derivs(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs )
+  {
+  }
+
   InitiateFromDistance::
   InitiateFromDistance(std::vector<double> &paraValue, 
 		       std::vector< std::vector<size_t> > 
@@ -125,6 +136,17 @@ namespace SisterVertex {
       }
     }
   }    
+
+  void InitiateFromDistance::
+  derivs(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs )
+  {
+  }
   
   Spring::
   Spring(std::vector<double> &paraValue, 
@@ -215,9 +237,8 @@ namespace SisterVertex {
     
     //Set the parameter identities
     //
-    std::vector<std::string> tmp( numParameter() );
-    tmp[0] = "K_spring";
-    setParameterId( tmp );
+    //std::vector<std::string> tmp( numParameter() );
+    //setParameterId( tmp );
   }
   
   void CombineDerivatives::
