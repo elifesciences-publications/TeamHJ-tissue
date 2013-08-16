@@ -121,6 +121,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromDoubleWallSpringMTConcentrationHill(paraValue,indValue);
   else if(idValue=="VertexFromExternalSpring")
     return new VertexFromExternalSpring(paraValue,indValue);
+  else if(idValue=="VertexFromExternalSpringFromPerpVertex")
+    return new VertexFromExternalSpringFromPerpVertex(paraValue,indValue);
   else if (idValue=="VertexFromWallSpringAsymmetric" ||
 	   idValue=="VertexFromEpidermalWallSpringAsymmetric" ||
 	   idValue=="VertexFromEpidermalCellWallSpringAsymmetric") {
@@ -201,9 +203,11 @@ else if(idValue=="VertexFromParabolid")
   else if(idValue=="TemplateVolumeChange")
     return new TemplateVolumeChange(paraValue,indValue);
   else if(idValue=="CalculateAngleVectors")
-  return new CalculateAngleVectors(paraValue,indValue);
+    return new CalculateAngleVectors(paraValue,indValue);
   else if(idValue=="AngleVector")
-  return new AngleVector(paraValue,indValue);
+    return new AngleVector(paraValue,indValue);
+  else if(idValue=="VertexFromHypocotylGrowth")
+    return new VertexFromHypocotylGrowth(paraValue,indValue);
   else if (idValue == "DebugReaction")
     return new DebugReaction(paraValue, indValue);
   
