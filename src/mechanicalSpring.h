@@ -663,4 +663,93 @@ class VertexFromExternalSpring : public BaseReaction {
 
 
 
+
+
+//////////////////////////////////////////////////////////////////////////
+
+
+///
+/// @brief Sets external  breakable springs between vertices which see eachother 
+/// in a given angle intervall respect to the normal direction to their membrane.
+///
+/// This function has a spring constant and adhision factor 
+///
+/// @f[ F=-K*f_{adh}*(L_0-X) @f]
+///
+/// when the distance between vertices is greater than Lmax Force becomes zero.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+///
+/// VertexFromExternalSpringFromPerpVertex 6 1 1 
+/// K   f_adh Lmaxfactor growth_rate  angle_width intraction_angle
+/// growth_flag (0:non ,1: ,2: ,3: ,4: ,5: ,6: )
+/// 
+/// @endverbatim
+///
+///
+class VertexFromExternalSpringFromPerpVertex : public BaseReaction {
+ 
+ private: 
+  
+  size_t Npairs;
+  std:: vector<std::vector<std::vector<double> > >  connections;
+  std:: vector<std::vector<double> >  vertexVec;
+
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue, 
+			   std::vector< std::vector<size_t> > &indValue );
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///  
+  void initiate(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);
+
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData, 
+              double h);
+
+
+};
+
+
+
+
+
+
 #endif
