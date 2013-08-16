@@ -1799,14 +1799,14 @@ void VertexFromExternalSpringFromPerpVertex::initiate(Tissue &T,
   }
 
 
-  for(size_t zx=0; zx<numCells;zx++){
-    std::cerr<<"cell  "<<zx<<std::endl;
+  // for(size_t zx=0; zx<numCells;zx++){
+  //   std::cerr<<"cell  "<<zx<<std::endl;
   
-  for (int a=1;a<40;a++)
-     for (int b=1;b<40;b++)
-	  if (connections[zx][a][b]!=0)
-	    std::cerr<<"a,b  "<<a<<" , "<<b<<" connections["<<zx<<"][a][b] is "<<connections[zx][a][b]<<std::endl;
-  }
+  // for (int a=1;a<40;a++)
+  //    for (int b=1;b<40;b++)
+  // 	  if (connections[zx][a][b]!=0)
+  // 	    std::cerr<<"a,b  "<<a<<" , "<<b<<" connections["<<zx<<"][a][b] is "<<connections[zx][a][b]<<std::endl;
+  // }
   //size_t Npairs=variableIndex(1).size();  
  
    
