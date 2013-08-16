@@ -1619,3 +1619,335 @@ void VertexFromExternalSpring::update(Tissue &T,
   }
   //std::cerr<<"resting   "<<restinglength[14]<<std::endl; 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+VertexFromExternalSpringFromPerpVertex::
+VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=6 ) {
+    std::cerr << "VertexFromExternalSpringFromPerpVertex::"
+	      << "VertexFromExternalSpringFromPerpVertex() "
+	      << "Uses six parameters spring constant K, frac_adhesion, Lmaxfactor and growth_rate angle-width intraction-angle.\n";
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size()!=1 ) {
+    std::cerr << "VertexFromExternalSpringFromPerpVertex::"
+	      << "VertexFromExternalSpringFromPerpVertex() "
+	      << " single index level for gowth flag. \n";
+    exit(0);
+  }
+  //Set the variable values
+  setId("VertexFromExternalSpringFromPerpVertex");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "K_sp";
+  tmp[1] = "frac_adh";
+  tmp[2] = "Lmaxfactor";
+  tmp[3] = "growth_rate";
+  tmp[4] = "angle_width";
+  tmp[5] = "intraction_angle";
+  
+  setParameterId( tmp );
+
+ 
+}
+
+
+
+void VertexFromExternalSpringFromPerpVertex::initiate(Tissue &T,
+					DataMatrix &cellData,
+					DataMatrix &wallData,
+					DataMatrix &vertexData,
+					DataMatrix &cellDerivs,
+					DataMatrix &wallDerivs,
+					DataMatrix &vertexDerivs) { 
+
+  size_t numCells = T.numCell();
+  size_t totalVertices=0;
+  connections.resize(numCells);
+  for (size_t cellIndex = 0; cellIndex <numCells; cellIndex++){
+    size_t numVertices= T.cell(cellIndex).numVertex();
+    totalVertices+=numVertices;
+    connections[cellIndex].resize(numVertices);
+    for (size_t verIndex = 0; verIndex < numVertices; verIndex++)
+      {
+	//size_t vertex = T.cell(cellIndex).vertex(verIndex)->index();
+	connections[cellIndex][verIndex].resize(numVertices,0);
+      }
+  }
+  vertexVec.resize(totalVertices);
+ 
+  for(size_t i=0 ; i<totalVertices ; i++) 
+    vertexVec[i].resize(3,0);
+
+  for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
+    size_t numVertices= T.cell(cellIndex).numVertex();
+      for (size_t vertex=0 ; vertex< numVertices ; vertex++){
+
+	size_t vertexIndex = T.cell(cellIndex).vertex(vertex)->index();
+	size_t vertexPlusIndex;
+	size_t  vertexMinusIndex;
+        if (vertex!=0 )
+	  vertexMinusIndex = T.cell(cellIndex).vertex(vertex-1)->index();
+	else
+	  vertexMinusIndex= T.cell(cellIndex).vertex(numVertices-1)->index();
+	if ( vertex!=numVertices-1 )
+	  vertexPlusIndex = T.cell(cellIndex).vertex(vertex+1)->index();
+	else
+	  vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
+		
+	DataMatrix position(3,vertexData[vertexMinusIndex]);
+	 position[1] = vertexData[vertexIndex];
+	 position[2] = vertexData[vertexPlusIndex];
+	// position[0][2] z for vertexMinus
+	 double right[3]={position[2][0]-position[1][0] ,position[2][1]-position[1][1] ,position[2][2]-position[1][2] };
+	 double left[3]={position[0][0]-position[1][0] ,position[0][1]-position[1][1] ,position[0][2]-position[1][2] };
+	 double tmp=std::sqrt(right[0]*right[0]+right[1]*right[1]+right[2]*right[2]);
+	 right[0]/=tmp;
+	 right[1]/=tmp;
+	 right[2]/=tmp;
+	 tmp=std::sqrt(left[0]*left[0]+left[1]*left[1]+left[2]*left[2]);
+	 left[0]/=tmp;
+	 left[1]/=tmp;
+	 left[2]/=tmp;
+	 
+	 vertexVec[vertexIndex][0]=-(right[1]-left[1]);
+	 vertexVec[vertexIndex][1]=right[0]-left[0];
+	 tmp=std::sqrt(
+		       vertexVec[vertexIndex][0]*vertexVec[vertexIndex][0]+
+		       vertexVec[vertexIndex][1]*vertexVec[vertexIndex][1]);
+	 if(tmp>0.0000001){ 
+	   vertexVec[vertexIndex][0]/=tmp;
+	   vertexVec[vertexIndex][1]/=tmp;
+	 }
+	 else{ // if two consecutive edges overlay the right one is chosen
+	   vertexVec[vertexIndex][0]=right[0];
+	   vertexVec[vertexIndex][1]=right[1];
+	 }
+	 
+	 // if (cellIndex==2)  
+	 //std::cerr<<vertexMinus<<"  " << vertex <<"  " << vertexPlus<<std::endl;
+	 //std::cerr<<" N  " << vertexIndex <<"  " <<  vertexVec[vertexIndex][0]
+	 //  <<" "<< vertexVec[vertexIndex][1]<<std::endl;
+      }
+  }
+ 
+
+  for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
+    size_t numVertices= T.cell(cellIndex).numVertex();
+    for (size_t vertex1=0 ; vertex1< numVertices ; vertex1++){
+
+      size_t vertexIndex1 = T.cell(cellIndex).vertex(vertex1)->index();
+      DataMatrix position(2,vertexData[vertexIndex1]);
+  
+      for (size_t vertex2=0 ; vertex2< numVertices ; vertex2++)
+  	if (vertex2!=vertex1){
+  	  size_t vertexIndex2= T.cell(cellIndex).vertex(vertex2)->index();
+  	  position[1] = vertexData[vertexIndex2];
+	  
+  	  double  N1N2=
+  	    vertexVec[vertexIndex1][0]*vertexVec[vertexIndex2][0]+
+  	    vertexVec[vertexIndex1][1]*vertexVec[vertexIndex2][1];
+          
+	  double v1v2[2]={vertexData[vertexIndex2][0]-vertexData[vertexIndex1][0],
+			  vertexData[vertexIndex2][1]-vertexData[vertexIndex1][1]};
+
+	  double tmp=std::sqrt(v1v2[0]*v1v2[0]+v1v2[1]*v1v2[1]);
+	  v1v2[0]/=tmp;
+	  v1v2[1]/=tmp;
+	 
+	  double teta=std::acos(
+				vertexVec[vertexIndex1][0]*v1v2[0]+
+				vertexVec[vertexIndex1][1]*v1v2[1]
+				);
+
+	  //if (tmp==0) 
+	  //  std::cerr<<"cell "<<cellIndex<<" N  " << vertexIndex1 <<" N " << vertexIndex2 <<" "<< N1N2<<" teta "<< teta<<std::endl;
+  	  if (N1N2<cos(3.1416-(parameter(5)*3.1416/180)) && teta<(parameter(4)*3.1416/180)) 
+  	    connections[cellIndex][vertex1][vertex2]= std::sqrt(
+  								(position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+  								(position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+  	  connections[cellIndex][vertex2][vertex1]=connections[cellIndex][vertex1][vertex2];
+  	 	
+  	}
+     
+    }
+  }
+
+
+  for(size_t zx=0; zx<numCells;zx++){
+    std::cerr<<"cell  "<<zx<<std::endl;
+  
+  for (int a=1;a<40;a++)
+     for (int b=1;b<40;b++)
+	  if (connections[zx][a][b]!=0)
+	    std::cerr<<"a,b  "<<a<<" , "<<b<<" connections["<<zx<<"][a][b] is "<<connections[zx][a][b]<<std::endl;
+  }
+  //size_t Npairs=variableIndex(1).size();  
+ 
+   
+}
+
+
+void VertexFromExternalSpringFromPerpVertex::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  double fad=parameter(1);
+ 
+  //size_t Npairs=indValue[1].size();
+  size_t dimension=vertexData[0].size();
+
+  size_t numCells = T.numCell();
+  for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
+    size_t numVertices= T.cell(cellIndex).numVertex();
+    for (size_t verIndex1=0 ; verIndex1< numVertices ; verIndex1++){
+      
+      size_t vertex1 = T.cell(cellIndex).vertex(verIndex1)->index();
+     
+      
+      for (size_t verIndex2=0 ; verIndex2< numVertices ; verIndex2++)
+  	if (verIndex2!=verIndex1 && connections[cellIndex][verIndex1][verIndex2]!=0){
+  	  size_t vertex2= T.cell(cellIndex).vertex(verIndex2)->index();
+  	 
+	  
+	  double distance=0;
+	  
+	  for( size_t d=0 ; d<dimension ; d++ ) 
+	    distance += (vertexData[vertex2][d]-vertexData[vertex1][d])*(vertexData[vertex2][d]-vertexData[vertex1][d]);
+	  
+	  distance=std::sqrt(distance);
+  	double coeff=0;
+	if ( connections[cellIndex][verIndex1][verIndex2]>0.0)
+	  coeff=parameter(0)*((1.0/connections[cellIndex][verIndex1][verIndex2])-(1.0/distance));
+	
+	if( distance <= 0.0 && connections[cellIndex][verIndex1][verIndex2] <=0.0 ) 
+	  coeff = 0.0;
+	
+	if( distance>connections[cellIndex][verIndex1][verIndex2])
+	  coeff *=fad;
+	//Update both vertices for each dimension
+	for(size_t d=0 ; d<dimension ; d++ ) {
+	  double div = coeff*(vertexData[vertex2][d]-vertexData[vertex1][d]);
+	  if ( connections[cellIndex][verIndex1][verIndex2]>0){
+	    vertexDerivs[vertex1][d] += div;
+	    vertexDerivs[vertex2][d] -= div;
+	  }
+	  // if ( distance<.1*restinglength[i]){
+	  //   double force=vertexDerivs[vertex1][d];
+	  //   vertexDerivs[vertex1][d] +=vertexDerivs[v2][d];
+	  //   vertexDerivs[vertex2][d] +=force;
+	  // }  
+	}
+	}
+      
+    }
+    
+    
+  }  
+}
+
+void VertexFromExternalSpringFromPerpVertex::update(Tissue &T,
+				      DataMatrix &cellData,
+				      DataMatrix &wallData,
+				      DataMatrix &vertexData, 
+				      double h) 
+{
+  double Lmaxfactor=parameter(2);
+  double Kgrowth=parameter(3);
+  
+  //size_t Npairs=indValue[1].size();
+  size_t dimension=vertexData[0].size();
+  
+
+
+ size_t numCells = T.numCell();
+  for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
+    size_t numVertices= T.cell(cellIndex).numVertex();
+    for (size_t verIndex1=0 ; verIndex1< numVertices ; verIndex1++){
+      
+      size_t vertex1 = T.cell(cellIndex).vertex(verIndex1)->index();
+      
+      
+      for (size_t verIndex2=0 ; verIndex2< numVertices ; verIndex2++)
+  	if (verIndex2!=verIndex1 && connections[cellIndex][verIndex1][verIndex2]!=0){
+	  double restinglength=connections[cellIndex][verIndex1][verIndex2];
+	  size_t vertex2= T.cell(cellIndex).vertex(verIndex2)->index();
+  	 
+	  double distance=0;
+	  for( size_t d=0 ; d<dimension ; d++ ) 
+	    distance += (vertexData[vertex2][d]-vertexData[vertex1][d])*(vertexData[vertex2][d]-vertexData[vertex1][d]);
+	  
+	  distance=std::sqrt(distance);
+
+   if (restinglength>0){ 
+      if(variableIndex(0,0)==1) restinglength+=h*Kgrowth ;
+      if(variableIndex(0,0)==2) restinglength+=h*Kgrowth*restinglength ;
+      if(variableIndex(0,0)==3) restinglength+=h*Kgrowth*(distance-restinglength) ;
+      if(variableIndex(0,0)==4 && distance>restinglength) restinglength+=h*Kgrowth ;
+      if(variableIndex(0,0)==5 && distance>restinglength) restinglength+=h*Kgrowth*restinglength ;
+      if(variableIndex(0,0)==6 && distance>restinglength) restinglength+=h*Kgrowth*(distance-restinglength) ;
+      connections[cellIndex][verIndex1][verIndex2]=restinglength;
+   }
+
+	}}}
+
+
+
+
+
+
+
+
+
+  
+    // if (distance>Lmaxfactor*restinglength[i])  Kspring[i]=0;  
+    // if (distance<Lmaxfactor*restinglength[i])  Kspring[i]=parameter(0);  
+  
+  
+      
+      
+   
+
+    
+  }
+  //std::cerr<<"resting   "<<restinglength[14]<<std::endl; 
+
+
+
+
+
+
+
+
+
+
