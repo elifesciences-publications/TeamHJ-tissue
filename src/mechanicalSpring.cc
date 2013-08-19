@@ -1749,10 +1749,10 @@ void VertexFromExternalSpringFromPerpVertex::initiate(Tissue &T,
 	   vertexVec[vertexIndex][1]=right[1];
 	 }
 	 
-	 // if (cellIndex==2)  
-	 //std::cerr<<vertexMinus<<"  " << vertex <<"  " << vertexPlus<<std::endl;
-	 //std::cerr<<" N  " << vertexIndex <<"  " <<  vertexVec[vertexIndex][0]
-	 //  <<" "<< vertexVec[vertexIndex][1]<<std::endl;
+	 if (cellIndex==2)  
+	 // std::cerr<<vertexMinus<<"  " << vertex <<"  " << vertexPlus<<std::endl;
+	 std::cerr<<" N  " << vertexIndex <<"  " <<  vertexVec[vertexIndex][0]
+	  <<" "<< vertexVec[vertexIndex][1]<<std::endl;
       }
   }
  
@@ -1799,14 +1799,15 @@ void VertexFromExternalSpringFromPerpVertex::initiate(Tissue &T,
   }
 
 
-  // for(size_t zx=0; zx<numCells;zx++){
-  //   std::cerr<<"cell  "<<zx<<std::endl;
-  
-  // for (int a=1;a<40;a++)
-  //    for (int b=1;b<40;b++)
-  // 	  if (connections[zx][a][b]!=0)
-  // 	    std::cerr<<"a,b  "<<a<<" , "<<b<<" connections["<<zx<<"][a][b] is "<<connections[zx][a][b]<<std::endl;
-  // }
+  for(size_t zx=0; zx<numCells;zx++){
+    std::cerr<<"cell  "<<zx<<std::endl;
+   size_t numV= T.cell(zx).numVertex();
+  for (int a=1;a<numV;a++)
+     for (int b=1;b<numV;b++)
+  	  if (connections[zx][a][b]!=0)
+  	    std::cerr<<"a,b  "<<a<<" , "<<b<<" connections["<<zx<<"][a][b] is "<<connections[zx][a][b]<<std::endl;
+  }
+
   //size_t Npairs=variableIndex(1).size();  
  
    
