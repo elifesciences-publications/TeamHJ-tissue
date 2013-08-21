@@ -1358,14 +1358,17 @@ derivs(Tissue &T,
       
       double px = vertexData[pvertex->index()][0];
       double py = vertexData[pvertex->index()][1];
+
       double nx = vertexData[nvertex->index()][0];
       double ny = vertexData[nvertex->index()][1];
       
       double dAdx = sa * 0.5 * (-py + ny);
       double dAdy = sa * 0.5 * (px - nx);
+
       
       vertexDerivs[vertex->index()][0] += parameter(0) * (1 - area / cellData[n][variableIndex(0, 0)]) * dAdx;
       vertexDerivs[vertex->index()][1] += parameter(0) * (1 - area / cellData[n][variableIndex(0, 0)]) * dAdy;
+
     }
   }
 }
@@ -4204,14 +4207,208 @@ derivs(Tissue &T,
 
 
 
-// void AngleVector:: update(Tissue &T,
-//                                    DataMatrix &cellData,
-//                                    DataMatrix &wallData,
-//                                    DataMatrix &vertexData,
-//                                    DataMatrix &vertexDerivs,
-//                                    double h)
-// { 
+
+VertexFromHypocotylGrowth::
+VertexFromHypocotylGrowth(std::vector<double> &paraValue, 
+		       std::vector< std::vector<size_t> > 
+		       &indValue ) 
+{  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=4 ) {
+    std::cerr << "VertexFromHypocotylGrowth::"
+	      << "VertexFromHypocotylGrowth()"
+	      << "Applies forces F axially to the vertices in the region between Y0-a and Y0+a"
+              << "uses 4 parameters: Y0, a, d and F" << std::endl
+              << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 0 ) {
+    std::cerr << "VertexFromHypocotylGrowth::"
+	      << "VertexFromHypocotylGrowth() "
+	      << "No variable indices used." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexFromHypocotylGrowth");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "y0";      // the center of the growing region
+  tmp[1] = "a";       // growing region interwall 
+  tmp[2] = "d";       // force application interwall
+  tmp[3] = "F";       // Force for each node
+ 
+  setParameterId( tmp );
+}
+
+void VertexFromHypocotylGrowth::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  //Do the update for each vertex .
+  size_t numVertex = T.numVertex();
+  for (size_t vertexIndex=0 ; vertexIndex<numVertex; ++vertexIndex) {
+    double Y0=parameter(0);
+    double a=parameter(1);
+    double d=parameter(2);
+    double F=parameter(3);
+    
+    DataMatrix position(1,vertexData[vertexIndex]);
+    
+
+    if( position[0][2] > Y0+a && position[0][2] < Y0+a+d ){
+
+      //vertexDerivs[vertexIndex][0]+=Kforce*(-d)*std::sqrt(-d)*nx/std::sqrt(nx*nx+ny*ny+nz*nz);
+      //vertexDerivs[vertexIndex][1]+=Kforce*(-d)*std::sqrt(-d)*ny/std::sqrt(nx*nx+ny*ny+nz*nz);
+      vertexDerivs[vertexIndex][2]+=F;
+    }
+    if( position[0][2] < Y0-a && position[0][2] > Y0-a-d ){
+      
+      //vertexDerivs[vertexIndex][0]+=Kforce*(-d)*std::sqrt(-d)*nx/std::sqrt(nx*nx+ny*ny+nz*nz);
+      //vertexDerivs[vertexIndex][1]+=Kforce*(-d)*std::sqrt(-d)*ny/std::sqrt(nx*nx+ny*ny+nz*nz);
+      vertexDerivs[vertexIndex][2]-=F;
+    }
+  }
+}
+
+
+
+
+void VertexFromHypocotylGrowth::update(Tissue &T,
+			    DataMatrix &cellData,
+			    DataMatrix &wallData,
+			    DataMatrix &vertexData,
+			    double h)
+{
+ 
+}
+
+
+// VertexFromHypocotylGrowth::
+// VertexFromHypocotylGrowth(std::vector<double> &paraValue, 
+// 		       std::vector< std::vector<size_t> > 
+// 		       &indValue ) 
+// {  
+//   //Do some checks on the parameters and variable indeces
+//   //
+//   if( paraValue.size()!=8 ) {
+//     std::cerr << "VertexFromHypocotylGrowth::"
+// 	      << "VertexFromHypocotylGrowth()"
+// 	      << "Applies forces by simple springs from a growing center in the Hypocotyl"
+//               << "uses 7 parameters: Y0, a, d, delta, lambda, b, K, epsilon" << std::endl
+//               << std::endl;
+//     exit(0);
+//   }
+//   if( indValue.size() != 0 ) {
+//     std::cerr << "VertexFromHypocotylGrowth::"
+// 	      << "VertexFromHypocotylGrowth() "
+// 	      << "No variable indices used." << std::endl;
+//     exit(0);
+//   }
+//   //Set the variable values
+//   //
+//   setId("VertexFromHypocotylGrowth");
+//   setParameter(paraValue);  
+//   setVariableIndex(indValue);
+  
+//   //Set the parameter identities
+//   //
+//   std::vector<std::string> tmp( numParameter() );
+//   tmp[0] = "y0";      // the center of the growing region
+//   tmp[1] = "a";       // growing region interwall 
+//   tmp[2] = "d";       // distance between the boundary of the growing region and epidermis
+//   tmp[3] = "delta";   // maximum displacement ( at the center of the growing region)
+//   tmp[4] = "lambda";  // Gaussian distribution of displacement of the growing center
+//   tmp[5] = "b";       // interwall on epidermis recieving the force
+//   tmp[6] = "Ks";       // spring constant
+//   tmp[7] = "epsilon"; // deltaX for evaluating the integral force
+
+//   setParameterId( tmp );
 // }
+
+// void VertexFromHypocotylGrowth::
+// derivs(Tissue &T,
+//        DataMatrix &cellData,
+//        DataMatrix &wallData,
+//        DataMatrix &vertexData,
+//        DataMatrix &cellDerivs,
+//        DataMatrix &wallDerivs,
+//        DataMatrix &vertexDerivs ) {
+  
+//   //Do the update for each vertex .
+//   size_t numVertex = T.numVertex();
+//   for (size_t vertexIndex=0 ; vertexIndex<numVertex; ++vertexIndex) {
+//     double Y0=parameter(0);
+//     double a=parameter(1);
+//     double d=parameter(2);
+//     double delta=parameter(3);
+//     double lambda=parameter(4);
+//     double b=parameter(5);
+//     double Ks=parameter(6);
+//     double epsilon=parameter(7);
+   
+//     DataMatrix position(1,vertexData[vertexIndex]);
+    
+
+//     if( position[0][2] > Y0-b && position[0][2] < Y0+b ){
+
+//       double Faxial=0;
+//       double Fradial=0;
+//       double X=Y0-a;
+//       double Y=position[0][2];
+//       while (X < Y0+a){
+// 	int sgnx=0;
+//         if ( X-Y0 > 0 ) sgnx=1;
+// 	else sgnx=-1;
+
+// 	Faxial -=(epsilon/(2*a))*Ks 
+// 	  *(    (  std::sqrt( (Y-X)*(Y-X)+d*d )
+// 		   /std::sqrt((Y-X-sgnx*delta*exp(-lambda*X*X))*(Y-X-sgnx*delta*exp(-lambda*X*X))+d*d )   
+// 		   )       
+// 		-1 )
+//           *(Y-X-sgnx*delta*exp(-lambda*X*X));    
+	 	  
+// 	Fradial =(epsilon/(2*a))*Ks 
+// 	  *(    (  std::sqrt( (Y-X)*(Y-X)+d*d )
+// 		   /std::sqrt((Y-X-sgnx*delta*exp(-lambda*X*X))*(Y-X-sgnx*delta*exp(-lambda*X*X))+d*d )   
+// 		   )       
+// 		-1 )
+//           *(d);    
+// 	  X+=epsilon;	 
+//       }
+//       //vertexDerivs[vertexIndex][0]+=Kforce*(-d)*std::sqrt(-d)*nx/std::sqrt(nx*nx+ny*ny+nz*nz);
+//       //vertexDerivs[vertexIndex][1]+=Kforce*(-d)*std::sqrt(-d)*ny/std::sqrt(nx*nx+ny*ny+nz*nz);
+//       vertexDerivs[vertexIndex][2]+=Faxial;
+//     }
+//   }
+// }
+
+
+
+
+// void VertexFromHypocotylGrowth::update(Tissue &T,
+// 			    DataMatrix &cellData,
+// 			    DataMatrix &wallData,
+// 			    DataMatrix &vertexData,
+// 			    double h)
+// {
+ 
+// }
+
+
+
+
+
 
 DebugReaction::DebugReaction(std::vector<double> &paraValue,
 			     std::vector< std::vector<size_t> > &indValue)
