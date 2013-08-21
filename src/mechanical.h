@@ -1331,6 +1331,103 @@ class AngleVector : public BaseReaction
 };
 
 
+
+///
+/// @brief Updates position of vertices is an interwall on a cylinderical template 
+/// due to the force applied from a growing region in the center of the cylinder 
+/// (Hypocotyl axial growth) assuming that epidermis is connected to this regions by simple springs 
+///
+/// In a model file the reaction is defined as
+
+/// @verbatim
+/// VertexFromHypocotylGrowth 8 0
+/// Y0 a d delta lambda b K epsilon
+/// @endverbatim
+///
+/// 
+
+///
+/// @brief Updates position of vertices in an interwall on a cylinderical template 
+/// due to the force applied axially and tensional to the regions with z between a and a+d(upward) 
+/// and -a and -a-d(downward) resembling Hypocotyl axial growth. 
+///
+/// In a model file the reaction is defined as
+
+/// @verbatim
+/// VertexFromHypocotylGrowth 4 0
+/// Y0 a d F
+/// @endverbatim
+///
+/// 
+
+class VertexFromHypocotylGrowth : public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  VertexFromHypocotylGrowth(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+  
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Do not use this reaction. Restricted area (unless you are a developer).
 class DebugReaction : public BaseReaction
 {
