@@ -1645,10 +1645,10 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
 			 std::vector< std::vector<size_t> > &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
-  if( paraValue.size()!=6 ) {
+  if( paraValue.size()!=5 ) {
     std::cerr << "VertexFromExternalSpringFromPerpVertex::"
 	      << "VertexFromExternalSpringFromPerpVertex() "
-	      << "Uses six parameters spring constant K, frac_adhesion, Lmaxfactor and growth_rate angle-width intraction-angle.\n";
+	      << "Uses six parameters spring constant K, frac_adhesion, Lmaxfactor and growth_rate intraction-angle.\n";
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size()!=1 ) {
@@ -1668,8 +1668,7 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
   tmp[1] = "frac_adh";
   tmp[2] = "Lmaxfactor";
   tmp[3] = "growth_rate";
-  tmp[4] = "angle_width";
-  tmp[5] = "intraction_angle";
+  tmp[4] = "intraction_angle";
   
   setParameterId( tmp );
 
@@ -1703,7 +1702,7 @@ void VertexFromExternalSpringFromPerpVertex::initiate(Tissue &T,
  
   for(size_t i=0 ; i<totalVertices ; i++) 
     vertexVec[i].resize(3,0);
-
+  // calculating normals to the membrane
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
     size_t numVertices= T.cell(cellIndex).numVertex();
       for (size_t vertex=0 ; vertex< numVertices ; vertex++){
@@ -1727,24 +1726,27 @@ void VertexFromExternalSpringFromPerpVertex::initiate(Tissue &T,
 	 double right[3]={position[2][0]-position[1][0] ,position[2][1]-position[1][1] ,position[2][2]-position[1][2] };
 	 double left[3]={position[0][0]-position[1][0] ,position[0][1]-position[1][1] ,position[0][2]-position[1][2] };
 	 double tmp=std::sqrt(right[0]*right[0]+right[1]*right[1]+right[2]*right[2]);
-	 right[0]/=tmp;
-	 right[1]/=tmp;
-	 right[2]/=tmp;
+	 if (tmp!=0){
+	   right[0]/=tmp;
+	   right[1]/=tmp;
+	   right[2]/=tmp;
+	 }
 	 tmp=std::sqrt(left[0]*left[0]+left[1]*left[1]+left[2]*left[2]);
-	 left[0]/=tmp;
-	 left[1]/=tmp;
-	 left[2]/=tmp;
-	 
+	 if (tmp!=0){
+	   left[0]/=tmp;
+	   left[1]/=tmp;
+	   left[2]/=tmp;
+	 }
 	 vertexVec[vertexIndex][0]=-(right[1]-left[1]);
 	 vertexVec[vertexIndex][1]=right[0]-left[0];
 	 tmp=std::sqrt(
 		       vertexVec[vertexIndex][0]*vertexVec[vertexIndex][0]+
 		       vertexVec[vertexIndex][1]*vertexVec[vertexIndex][1]);
-	 if(tmp>0.0000001){ 
+	 if (tmp!=0){ 
 	   vertexVec[vertexIndex][0]/=tmp;
 	   vertexVec[vertexIndex][1]/=tmp;
 	 }
-	 else{ // if two consecutive edges overlay the right one is chosen
+	 else{ // if two consecutive edges overlay the right one is sellected!!
 	   vertexVec[vertexIndex][0]=right[0];
 	   vertexVec[vertexIndex][1]=right[1];
 	 }
@@ -1756,7 +1758,7 @@ void VertexFromExternalSpringFromPerpVertex::initiate(Tissue &T,
       }
   }
  
-
+  //setting internal actins
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
     size_t numVertices= T.cell(cellIndex).numVertex();
     for (size_t vertex1=0 ; vertex1< numVertices ; vertex1++){
@@ -1767,32 +1769,37 @@ void VertexFromExternalSpringFromPerpVertex::initiate(Tissue &T,
       for (size_t vertex2=0 ; vertex2< numVertices ; vertex2++)
   	if (vertex2!=vertex1){
   	  size_t vertexIndex2= T.cell(cellIndex).vertex(vertex2)->index();
-  	  position[1] = vertexData[vertexIndex2];
+	   position[1] = vertexData[vertexIndex2];
 	  
-  	  double  N1N2=
-  	    vertexVec[vertexIndex1][0]*vertexVec[vertexIndex2][0]+
-  	    vertexVec[vertexIndex1][1]*vertexVec[vertexIndex2][1];
+  	  // double  N1N2=
+  	  //   vertexVec[vertexIndex1][0]*vertexVec[vertexIndex2][0]+
+  	  //   vertexVec[vertexIndex1][1]*vertexVec[vertexIndex2][1];
           
 	  double v1v2[2]={vertexData[vertexIndex2][0]-vertexData[vertexIndex1][0],
 			  vertexData[vertexIndex2][1]-vertexData[vertexIndex1][1]};
 
 	  double tmp=std::sqrt(v1v2[0]*v1v2[0]+v1v2[1]*v1v2[1]);
-	  v1v2[0]/=tmp;
-	  v1v2[1]/=tmp;
-	 
-	  double teta=std::acos(
+	  if (tmp!=0){
+	    v1v2[0]/=tmp;
+	    v1v2[1]/=tmp;
+	  }
+	  double teta1=std::acos(
 				vertexVec[vertexIndex1][0]*v1v2[0]+
 				vertexVec[vertexIndex1][1]*v1v2[1]
+				);
+	  double teta2=std::acos(
+				-vertexVec[vertexIndex2][0]*v1v2[0]+
+				-vertexVec[vertexIndex2][1]*v1v2[1]
 				);
 
 	  //if (tmp==0) 
 	  //  std::cerr<<"cell "<<cellIndex<<" N  " << vertexIndex1 <<" N " << vertexIndex2 <<" "<< N1N2<<" teta "<< teta<<std::endl;
-  	  if (N1N2<cos(3.1416-(parameter(5)*3.1416/180)) && teta<(parameter(4)*3.1416/180)) 
+if (/*teta1>0.4 && teta2>0.4 && */ teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
   	    connections[cellIndex][vertex1][vertex2]= std::sqrt(
   								(position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
   								(position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
   	  connections[cellIndex][vertex2][vertex1]=connections[cellIndex][vertex1][vertex2];
-  	 	
+	  
   	}
      
     }
@@ -1903,45 +1910,30 @@ void VertexFromExternalSpringFromPerpVertex::update(Tissue &T,
   	if (verIndex2!=verIndex1 && connections[cellIndex][verIndex1][verIndex2]!=0){
 	  double restinglength=connections[cellIndex][verIndex1][verIndex2];
 	  size_t vertex2= T.cell(cellIndex).vertex(verIndex2)->index();
-  	 
+	  
 	  double distance=0;
 	  for( size_t d=0 ; d<dimension ; d++ ) 
 	    distance += (vertexData[vertex2][d]-vertexData[vertex1][d])*(vertexData[vertex2][d]-vertexData[vertex1][d]);
 	  
 	  distance=std::sqrt(distance);
-
-   if (restinglength>0){ 
-      if(variableIndex(0,0)==1) restinglength+=h*Kgrowth ;
-      if(variableIndex(0,0)==2) restinglength+=h*Kgrowth*restinglength ;
-      if(variableIndex(0,0)==3) restinglength+=h*Kgrowth*(distance-restinglength) ;
-      if(variableIndex(0,0)==4 && distance>restinglength) restinglength+=h*Kgrowth ;
-      if(variableIndex(0,0)==5 && distance>restinglength) restinglength+=h*Kgrowth*restinglength ;
-      if(variableIndex(0,0)==6 && distance>restinglength) restinglength+=h*Kgrowth*(distance-restinglength) ;
-      connections[cellIndex][verIndex1][verIndex2]=restinglength;
-   }
-
-	}}}
-
-
-
-
-
-
-
-
-
-  
-    // if (distance>Lmaxfactor*restinglength[i])  Kspring[i]=0;  
-    // if (distance<Lmaxfactor*restinglength[i])  Kspring[i]=parameter(0);  
-  
-  
-      
-      
-   
-
-    
+	  
+	  if (restinglength>0){ 
+	    if(variableIndex(0,0)==1) restinglength+=h*Kgrowth ;
+	    if(variableIndex(0,0)==2) restinglength+=h*Kgrowth*restinglength ;
+	    if(variableIndex(0,0)==3) restinglength+=h*Kgrowth*(distance-restinglength) ;
+	    if(variableIndex(0,0)==4 && distance>restinglength) restinglength+=h*Kgrowth ;
+	    if(variableIndex(0,0)==5 && distance>restinglength) restinglength+=h*Kgrowth*restinglength ;
+	    if(variableIndex(0,0)==6 && distance>restinglength) restinglength+=h*Kgrowth*(distance-restinglength) ;
+	    connections[cellIndex][verIndex1][verIndex2]=restinglength;
+	  }
+	  
+	}
+    }
   }
-  //std::cerr<<"resting   "<<restinglength[14]<<std::endl; 
+  
+  
+}
+
 
 
 
