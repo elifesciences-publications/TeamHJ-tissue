@@ -682,8 +682,8 @@ class VertexFromExternalSpring : public BaseReaction {
 ///
 /// @verbatim
 ///
-/// VertexFromExternalSpringFromPerpVertex 6 1 1 
-/// K   f_adh Lmaxfactor growth_rate  angle_width intraction_angle
+/// VertexFromExternalSpringFromPerpVertex 5 1 1 
+/// K   f_adh Lmaxfactor growth_rate  intraction_angle
 /// growth_flag (0:non ,1: ,2: ,3: ,4: ,5: ,6: )
 /// 
 /// @endverbatim
