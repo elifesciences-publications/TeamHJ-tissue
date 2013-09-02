@@ -1503,7 +1503,7 @@ void VertexFromExternalSpring::initiate(Tissue &T,
 					DataMatrix &wallDerivs,
 					DataMatrix &vertexDerivs) { 
 
-  //size_t Npairs=variableIndex(1).size();  
+  //size_t Npairs=numVariableIndex(1);  
   restinglength.resize(Npairs);
   Kspring.resize(Npairs);
   
@@ -1621,26 +1621,6 @@ void VertexFromExternalSpring::update(Tissue &T,
   //std::cerr<<"resting   "<<restinglength[14]<<std::endl; 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-
 VertexFromExternalSpringFromPerpVertex::
 VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue, 
 			 std::vector< std::vector<size_t> > &indValue ) 
@@ -1649,14 +1629,15 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
   if( paraValue.size()!=5 ) {
     std::cerr << "VertexFromExternalSpringFromPerpVertex::"
 	      << "VertexFromExternalSpringFromPerpVertex() "
-	      << "Uses six parameters spring constant K, frac_adhesion, Lmaxfactor and growth_rate intraction-angle.\n";
+	      << "Uses six parameters spring constant K, frac_adhesion,"
+	      << " Lmaxfactor and growth_rate intraction-angle." << std::endl;
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size()!=2 ) {
     std::cerr << " VertexFromExternalSpringFromPerpVertex::"
 	      << " VertexFromExternalSpringFromPerpVertex() "
 	      << " one level two indices for gowth flag and " 
-	      << " constraint on connections . \n";
+	      << " constraint on connections." << std::endl;
     exit(0);
   }
   //Set the variable values
@@ -1672,21 +1653,18 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
   tmp[3] = "growth_rate";
   tmp[4] = "intraction_angle";
   
-  setParameterId( tmp );
-
- 
+  setParameterId( tmp ); 
 }
 
-
-
-void VertexFromExternalSpringFromPerpVertex::initiate(Tissue &T,
-					DataMatrix &cellData,
-					DataMatrix &wallData,
-					DataMatrix &vertexData,
-					DataMatrix &cellDerivs,
-					DataMatrix &wallDerivs,
-					DataMatrix &vertexDerivs) { 
-
+void VertexFromExternalSpringFromPerpVertex::
+initiate(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs) 
+{   
   size_t numCells = T.numCell();
   size_t totalVertices=0;
   connections.resize(numCells);
@@ -1701,77 +1679,77 @@ void VertexFromExternalSpringFromPerpVertex::initiate(Tissue &T,
       }
   }
   vertexVec.resize(totalVertices);
- 
+  
   for(size_t i=0 ; i<totalVertices ; i++) 
     vertexVec[i].resize(3,0);
   // calculating normals to the membrane
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
     size_t numVertices= T.cell(cellIndex).numVertex();
-      for (size_t vertex=0 ; vertex< numVertices ; vertex++){
-
-	size_t vertexIndex = T.cell(cellIndex).vertex(vertex)->index();
-	size_t vertexPlusIndex;
-	size_t  vertexMinusIndex;
-        if (vertex!=0 )
-	  vertexMinusIndex = T.cell(cellIndex).vertex(vertex-1)->index();
+    for (size_t vertex=0 ; vertex< numVertices ; vertex++){
+      
+      size_t vertexIndex = T.cell(cellIndex).vertex(vertex)->index();
+      size_t vertexPlusIndex;
+      size_t  vertexMinusIndex;
+      if (vertex!=0 )
+	vertexMinusIndex = T.cell(cellIndex).vertex(vertex-1)->index();
 	else
 	  vertexMinusIndex= T.cell(cellIndex).vertex(numVertices-1)->index();
-	if ( vertex!=numVertices-1 )
-	  vertexPlusIndex = T.cell(cellIndex).vertex(vertex+1)->index();
-	else
-	  vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
-		
-	DataMatrix position(3,vertexData[vertexMinusIndex]);
-	 position[1] = vertexData[vertexIndex];
-	 position[2] = vertexData[vertexPlusIndex];
-	// position[0][2] z for vertexMinus
-	 double right[3]={position[2][0]-position[1][0] ,position[2][1]-position[1][1] ,position[2][2]-position[1][2] };
-	 double left[3]={position[0][0]-position[1][0] ,position[0][1]-position[1][1] ,position[0][2]-position[1][2] };
-	 double tmp=std::sqrt(right[0]*right[0]+right[1]*right[1]+right[2]*right[2]);
-	 if (tmp!=0){
-	   right[0]/=tmp;
-	   right[1]/=tmp;
-	   right[2]/=tmp;
-	 }
-	 tmp=std::sqrt(left[0]*left[0]+left[1]*left[1]+left[2]*left[2]);
-	 if (tmp!=0){
-	   left[0]/=tmp;
-	   left[1]/=tmp;
-	   left[2]/=tmp;
-	 }
-	 vertexVec[vertexIndex][0]=-(right[1]-left[1]);
-	 vertexVec[vertexIndex][1]=right[0]-left[0];
-	 tmp=std::sqrt(
-		       vertexVec[vertexIndex][0]*vertexVec[vertexIndex][0]+
-		       vertexVec[vertexIndex][1]*vertexVec[vertexIndex][1]);
-	 if (tmp!=0){ 
-	   vertexVec[vertexIndex][0]/=tmp;
-	   vertexVec[vertexIndex][1]/=tmp;
-	 }
-	 else{ // if two consecutive edges overlay the right one is sellected!!
-	   vertexVec[vertexIndex][0]=right[0];
-	   vertexVec[vertexIndex][1]=right[1];
-	 }
-	 
-	 if (cellIndex==2)  
-	 // std::cerr<<vertexMinus<<"  " << vertex <<"  " << vertexPlus<<std::endl;
-	 std::cerr<<" N  " << vertexIndex <<"  " <<  vertexVec[vertexIndex][0]
-	  <<" "<< vertexVec[vertexIndex][1]<<std::endl;
+      if ( vertex!=numVertices-1 )
+	vertexPlusIndex = T.cell(cellIndex).vertex(vertex+1)->index();
+      else
+	vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
+      
+      DataMatrix position(3,vertexData[vertexMinusIndex]);
+      position[1] = vertexData[vertexIndex];
+      position[2] = vertexData[vertexPlusIndex];
+      // position[0][2] z for vertexMinus
+      double right[3]={position[2][0]-position[1][0] ,position[2][1]-position[1][1] ,position[2][2]-position[1][2] };
+      double left[3]={position[0][0]-position[1][0] ,position[0][1]-position[1][1] ,position[0][2]-position[1][2] };
+      double tmp=std::sqrt(right[0]*right[0]+right[1]*right[1]+right[2]*right[2]);
+      if (tmp!=0){
+	right[0]/=tmp;
+	right[1]/=tmp;
+	right[2]/=tmp;
       }
+      tmp=std::sqrt(left[0]*left[0]+left[1]*left[1]+left[2]*left[2]);
+      if (tmp!=0){
+	left[0]/=tmp;
+	left[1]/=tmp;
+	left[2]/=tmp;
+      }
+      vertexVec[vertexIndex][0]=-(right[1]-left[1]);
+      vertexVec[vertexIndex][1]=right[0]-left[0];
+      tmp=std::sqrt(
+		    vertexVec[vertexIndex][0]*vertexVec[vertexIndex][0]+
+		    vertexVec[vertexIndex][1]*vertexVec[vertexIndex][1]);
+      if (tmp!=0){ 
+	vertexVec[vertexIndex][0]/=tmp;
+	vertexVec[vertexIndex][1]/=tmp;
+      }
+      else{ // if two consecutive edges overlay the right one is sellected!!
+	vertexVec[vertexIndex][0]=right[0];
+	vertexVec[vertexIndex][1]=right[1];
+      }
+      
+      if (cellIndex==2)  
+	// std::cerr<<vertexMinus<<"  " << vertex <<"  " << vertexPlus<<std::endl;
+	std::cerr<<" N  " << vertexIndex <<"  " <<  vertexVec[vertexIndex][0]
+		 <<" "<< vertexVec[vertexIndex][1]<<std::endl;
+    }
   }
- 
+  
   //setting internal actins
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
     size_t numVertices= T.cell(cellIndex).numVertex();
     for (size_t vertex1=0 ; vertex1< numVertices ; vertex1++){
-
+      
       size_t vertexIndex1 = T.cell(cellIndex).vertex(vertex1)->index();
       DataMatrix position(2,vertexData[vertexIndex1]);
-  
+      
       for (size_t vertex2=0 ; vertex2< numVertices ; vertex2++)
   	if (vertex2!=vertex1){
   	  size_t vertexIndex2= T.cell(cellIndex).vertex(vertex2)->index();
-	   position[1] = vertexData[vertexIndex2];
+	  position[1] = vertexData[vertexIndex2];
 	  
   	  // double  N1N2=
   	  //   vertexVec[vertexIndex1][0]*vertexVec[vertexIndex2][0]+
@@ -1779,21 +1757,21 @@ void VertexFromExternalSpringFromPerpVertex::initiate(Tissue &T,
           
 	  double v1v2[2]={vertexData[vertexIndex2][0]-vertexData[vertexIndex1][0],
 			  vertexData[vertexIndex2][1]-vertexData[vertexIndex1][1]};
-
+	  
 	  double tmp=std::sqrt(v1v2[0]*v1v2[0]+v1v2[1]*v1v2[1]);
 	  if (tmp!=0){
 	    v1v2[0]/=tmp;
 	    v1v2[1]/=tmp;
 	  }
 	  double teta1=std::acos(
-				vertexVec[vertexIndex1][0]*v1v2[0]+
-				vertexVec[vertexIndex1][1]*v1v2[1]
-				);
+				 vertexVec[vertexIndex1][0]*v1v2[0]+
+				 vertexVec[vertexIndex1][1]*v1v2[1]
+				 );
 	  double teta2=std::acos(
-				-vertexVec[vertexIndex2][0]*v1v2[0]+
-				-vertexVec[vertexIndex2][1]*v1v2[1]
-				);
-
+				 -vertexVec[vertexIndex2][0]*v1v2[0]+
+				 -vertexVec[vertexIndex2][1]*v1v2[1]
+				 );
+	  
 	  //if (tmp==0) 
 	  //  std::cerr<<"cell "<<cellIndex<<" N  " << vertexIndex1 <<" N " << vertexIndex2 <<" "<< N1N2<<" teta "<< teta<<std::endl;
 	  if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
@@ -1805,27 +1783,51 @@ void VertexFromExternalSpringFromPerpVertex::initiate(Tissue &T,
   	    connections[cellIndex][vertex1][vertex2]= std::sqrt(
   								(position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
   								(position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
-
+	  
   	  connections[cellIndex][vertex2][vertex1]=connections[cellIndex][vertex1][vertex2];
 	  
   	}
       
     }
   }
-
-
+  
+  
   for(size_t zx=0; zx<numCells;zx++){
     std::cerr<<"cell  "<<zx<<std::endl;
-   size_t numV= T.cell(zx).numVertex();
-  for (int a=1;a<numV;a++)
-     for (int b=1;b<numV;b++)
-  	  if (connections[zx][a][b]!=0)
-  	    std::cerr<<"a,b  "<<a<<" , "<<b<<" connections["<<zx<<"][a][b] is "<<connections[zx][a][b]<<std::endl;
+    size_t numV= T.cell(zx).numVertex();
+    for (int a=1;a<numV;a++)
+      for (int b=1;b<numV;b++)
+	if (connections[zx][a][b]!=0)
+	  std::cerr<<"a,b  "<<a<<" , "<<b<<" connections["<<zx<<"][a][b] is "<<connections[zx][a][b]<<std::endl;
   }
-
-  //size_t Npairs=variableIndex(1).size();  
- 
-   
+  
+  //size_t Npairs=variableIndex(1).size();    
+  // Print the edges gnuplot style to check connectivity
+  //
+  //for (size_t i=0; i<numCells; ++i) {
+  //  size_t numVertices= T.cell(i).numVertex();
+  //  for (size_t j=0; j<numVertices; ++j) {
+  //    for (size_t k=j+1; k<numVertices; ++k) {
+  //	if (connections[i][j][k]) {
+  //	  std::cerr << "In cell " << i << " vertices " << j << " and " << k << " connected." << std::endl;  
+  //	  size_t numDimension = vertexData[0].size();
+  //	  size_t v1 = T.cell(i).vertex(j)->index();
+  //	  size_t v2 = T.cell(i).vertex(k)->index();
+  //	  for (size_t d=0; d<numDimension; ++d) {
+  //	    std::cout << vertexData[v1][d] << " ";
+  //	  }
+  //	  std::cout << i << std::endl;
+  //	  for (size_t d=0; d<numDimension; ++d) {
+  //	    std::cout << vertexData[v2][d] << " ";
+  //	  }
+  //	  std::cout << i << std::endl;
+  //	  std::cout << std::endl;
+  //	}
+  //  }
+  //}
+  //}
+  //std::cerr << "End of printing." << std::endl;
+  // END printing
 }
 
 
