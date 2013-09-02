@@ -1,3 +1,4 @@
+
 //
 // Filename     : mechanicalSpring.cc
 // Description  : Classes describing updates due to mechanical spring interactions
@@ -1651,10 +1652,11 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
 	      << "Uses six parameters spring constant K, frac_adhesion, Lmaxfactor and growth_rate intraction-angle.\n";
     exit(0);
   }
-  if( indValue.size() != 1 || indValue[0].size()!=1 ) {
-    std::cerr << "VertexFromExternalSpringFromPerpVertex::"
-	      << "VertexFromExternalSpringFromPerpVertex() "
-	      << " single index level for gowth flag. \n";
+  if( indValue.size() != 1 || indValue[0].size()!=2 ) {
+    std::cerr << " VertexFromExternalSpringFromPerpVertex::"
+	      << " VertexFromExternalSpringFromPerpVertex() "
+	      << " one level two indices for gowth flag and " 
+	      << " constraint on connections . \n";
     exit(0);
   }
   //Set the variable values
@@ -1794,14 +1796,20 @@ void VertexFromExternalSpringFromPerpVertex::initiate(Tissue &T,
 
 	  //if (tmp==0) 
 	  //  std::cerr<<"cell "<<cellIndex<<" N  " << vertexIndex1 <<" N " << vertexIndex2 <<" "<< N1N2<<" teta "<< teta<<std::endl;
-if (/*teta1>0.4 && teta2>0.4 && */ teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
+	  if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
   	    connections[cellIndex][vertex1][vertex2]= std::sqrt(
   								(position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
   								(position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+
+	  if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
+  	    connections[cellIndex][vertex1][vertex2]= std::sqrt(
+  								(position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+  								(position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+
   	  connections[cellIndex][vertex2][vertex1]=connections[cellIndex][vertex1][vertex2];
 	  
   	}
-     
+      
     }
   }
 
