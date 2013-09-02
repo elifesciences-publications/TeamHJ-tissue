@@ -661,13 +661,6 @@ class VertexFromExternalSpring : public BaseReaction {
 
 
 
-
-
-
-
-//////////////////////////////////////////////////////////////////////////
-
-
 ///
 /// @brief Sets external  breakable springs between vertices which see eachother 
 /// in a given angle intervall respect to the normal direction to their membrane.
