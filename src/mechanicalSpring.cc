@@ -1733,10 +1733,10 @@ initiate(Tissue &T,
 	vertexVec[vertexIndex][1]=right[1];
       }
       
-      if (cellIndex==2)  
-	// std::cerr<<vertexMinus<<"  " << vertex <<"  " << vertexPlus<<std::endl;
-	std::cerr<<" N  " << vertexIndex <<"  " <<  vertexVec[vertexIndex][0]
-		 <<" "<< vertexVec[vertexIndex][1]<<std::endl;
+      //if (cellIndex==2)  
+      // std::cerr<<vertexMinus<<"  " << vertex <<"  " << vertexPlus<<std::endl;
+      // std::cerr<<" N  " << vertexIndex <<"  " <<  vertexVec[vertexIndex][0]
+      //	  <<" "<< vertexVec[vertexIndex][1]<<std::endl;
     }
   }
   
