@@ -1626,14 +1626,15 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
 			 std::vector< std::vector<size_t> > &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
-  if( paraValue.size()!=5 ) {
+  if( paraValue.size()!=6 ) {
     std::cerr << "VertexFromExternalSpringFromPerpVertex::"
 	      << "VertexFromExternalSpringFromPerpVertex() "
 	      << "Uses six parameters spring constant K, frac_adhesion,"
-	      << " Lmaxfactor and growth_rate intraction-angle." << std::endl;
+	      << " Lmaxfactor, growth_rate, intraction-angle and corner_angle. "<< std::endl;
+
     exit(0);
   }
-  if( indValue.size() != 1 || indValue[0].size()!=2 ) {
+  if( indValue.size() != 1 || indValue[0].size()!=3 ) {
     std::cerr << " VertexFromExternalSpringFromPerpVertex::"
 	      << " VertexFromExternalSpringFromPerpVertex() "
 	      << " one level two indices for gowth flag and " 
@@ -1652,6 +1653,7 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
   tmp[2] = "Lmaxfactor";
   tmp[3] = "growth_rate";
   tmp[4] = "intraction_angle";
+  tmp[5] = "corner_angle";
   
   setParameterId( tmp ); 
 }
@@ -1774,15 +1776,29 @@ initiate(Tissue &T,
 	  
 	  //if (tmp==0) 
 	  //  std::cerr<<"cell "<<cellIndex<<" N  " << vertexIndex1 <<" N " << vertexIndex2 <<" "<< N1N2<<" teta "<< teta<<std::endl;
-	  if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
-  	    connections[cellIndex][vertex1][vertex2]= std::sqrt(
-  								(position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-  								(position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	  if(variableIndex(0,2)==0){
+	    if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
+	      connections[cellIndex][vertex1][vertex2]= std::sqrt(
+								  (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+								  (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	    
+	    if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
+	      connections[cellIndex][vertex1][vertex2]= std::sqrt(
+								  (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+								  (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	  }
 
-	  if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
-  	    connections[cellIndex][vertex1][vertex2]= std::sqrt(
-  								(position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-  								(position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	  if(variableIndex(0,2)==1){
+	    if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
+	      connections[cellIndex][vertex1][vertex2]= std::sqrt(
+								  (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+								  (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	    
+	    if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
+	      connections[cellIndex][vertex1][vertex2]= std::sqrt(
+								  (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+								  (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	  }
 	  
   	  connections[cellIndex][vertex2][vertex1]=connections[cellIndex][vertex1][vertex2];
 	  
