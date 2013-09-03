@@ -1691,7 +1691,7 @@ initiate(Tissue &T,
       
       size_t vertexIndex = T.cell(cellIndex).vertex(vertex)->index();
       size_t vertexPlusIndex;
-      size_t  vertexMinusIndex;
+      size_t vertexMinusIndex;
       if (vertex!=0 )
 	vertexMinusIndex = T.cell(cellIndex).vertex(vertex-1)->index();
 	else
@@ -1788,16 +1788,34 @@ initiate(Tissue &T,
 								  (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
 	  }
 
-	  if(variableIndex(0,2)==1){
-	    if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
-	      connections[cellIndex][vertex1][vertex2]= std::sqrt(
-								  (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-								  (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	  if(variableIndex(0,2)==1) {
 	    
-	    if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
-	      connections[cellIndex][vertex1][vertex2]= std::sqrt(
-								  (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-								  (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	    size_t vertexIndex1 = T.cell(cellIndex).vertex(vertex1)->index();
+	    size_t vertexPlusIndex;
+	    size_t vertexMinusIndex;
+	    
+	    if (vertex1!=0 )
+	      vertexMinusIndex = T.cell(cellIndex).vertex(vertex1-1)->index();
+	    else
+	      vertexMinusIndex= T.cell(cellIndex).vertex(numVertices-1)->index();
+	    if ( vertex1!=numVertices-1 )
+	      vertexPlusIndex = T.cell(cellIndex).vertex(vertex1+1)->index();
+	    else
+	      vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
+	    
+	    double cornerAngle=vertexVec[vertexMinusIndex][0]*vertexVec[vertexPlusIndex][0]+
+	      vertexVec[vertexMinusIndex][1]*vertexVec[vertexPlusIndex][1];
+	    if (cornerAngle > std::cos(3.1416*(180-parameter(5))/180)){
+	      if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
+		connections[cellIndex][vertex1][vertex2]= std::sqrt(
+								    (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+								    (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	      
+	      if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
+		connections[cellIndex][vertex1][vertex2]= std::sqrt(
+								    (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+								    (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	    }
 	  }
 	  
   	  connections[cellIndex][vertex2][vertex1]=connections[cellIndex][vertex1][vertex2];
