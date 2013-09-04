@@ -161,7 +161,7 @@ namespace WallGrowth {
 	stress = (distance-wallData[i][lengthIndex]) /
 	  wallData[i][lengthIndex];
       }
-      if (stress > parameter(1)) {
+      if (parameter(1)==0.0 || stress > parameter(1)) {
 	double growthRate = parameter(0)*(stress - parameter(1));
 	if (parameter(3))
 	  growthRate *= wallData[i][lengthIndex];

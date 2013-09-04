@@ -101,7 +101,7 @@ namespace WallGrowth {
   /// where S is the stress/strain and L is the wall length.
   /// @f$ p_0 @f$ is the growth rate (@f$ k_{growth} @f$). 
   /// @f$ p_1 @f$ is a threshold (@f$ s_{threshold} @f$) in stress or strain depending 
-  /// on @f$ p_2 @f$. 
+  /// on @f$ p_2 @f$. If set to zero, shinkage is allowed. 
   /// @f$ p_2 @f$ is a flag (@f$ strain_{flag} @f$) for using stretch/strain (@f$p_2=1 @f$) 
   /// or stress (@f$p_2=0 @f$). Strain is calculated by @f$ S=(d-L)/L @f$, where d is the distance
   /// between the vertices. Stress is read from the second layer of variable indices.  
@@ -124,6 +124,8 @@ namespace WallGrowth {
   ///
   /// If stress is used (stretch_flag=0) a second level of wall stresses has to be read
   /// (calculated and updated from other (mechanical) reactions).
+  ///
+  /// @note If s_threshold is set to zero, also shrinkage is allowed. To avoid shrinkage set small value.
   ///
   class Stress : public BaseReaction {
     

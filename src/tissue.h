@@ -567,6 +567,10 @@ class Tissue {
   /// @brief Resizes the sisterVertexIndex vector in the tissue.
   ///
   inline void setNumSisterVertex(size_t val);
+  ///
+  /// @brief Removes last sister vertex pair from the list
+  ///
+  inline void sisterVertexPopBack();
   
   //inline const DataMatrix & tmpCellData() const;
   //inline void setTmpCellData(DataMatrix &val);
@@ -1064,6 +1068,11 @@ inline void Tissue::setNumSisterVertex(size_t val)
 {
   std::vector<size_t> tmpIndex(2);
   sisterVertexIndex_.resize(val,tmpIndex);
+}
+
+inline void Tissue::sisterVertexPopBack() 
+{
+  sisterVertexIndex_.pop_back();
 }
 
 inline void Tissue::setDirectionalWall(size_t i,size_t val) 

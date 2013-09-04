@@ -155,10 +155,11 @@ namespace SisterVertex {
   {
     //Do some checks on the parameters and variable indices
     //
-    if( paraValue.size()!=1 ) {
+    if (paraValue.size()!=1 && paraValue.size()!=2) {
       std::cerr << "SisterVertex::Spring::"
 		<< "Spring() "
-		<< "Uses one parameter, k_spring." << std::endl;
+		<< "Uses one or two parameters, k_spring and [lengthFractionBreak]." 
+		<< std::endl;
       exit(0);
     }
     if( indValue.size() != 0 ) {
@@ -177,6 +178,8 @@ namespace SisterVertex {
     //
     std::vector<std::string> tmp( numParameter() );
     tmp[0] = "K_spring";
+    if (numParameter()==2)
+      tmp[1] = "BreakLength";
     setParameterId( tmp );
   }
 
@@ -207,8 +210,41 @@ namespace SisterVertex {
 	 DataMatrix &vertexDerivs,
 	 double h)
   {
-    // Maybe add a possibility to disconnect sisters that are moving too far from each other?
-  }  
+    if (numParameter()==2) {
+      std::vector<size_t> remove;
+      size_t N=T.numSisterVertex();
+      size_t dimension = vertexData[0].size();
+      // Mark sister vertex pairs for removal
+      for (size_t i=0; i<N; ++i) {
+	double distance = 0.0;
+	for (size_t d=0; d<dimension; ++d) {
+	  distance += (vertexData[T.sisterVertex(i,0)][d] - vertexData[T.sisterVertex(i,1)][d])*
+	    (vertexData[T.sisterVertex(i,0)][d] - vertexData[T.sisterVertex(i,1)][d]);
+	}
+	distance = std::sqrt(distance);
+	if (distance>parameter(1)) {
+	  remove.push_back(i);
+	}
+      }
+      // Remove sistervertex pairs marked
+      if (remove.size()) {
+	for (size_t k=remove.size()-1; k>=0; ++k) {
+	  size_t i = remove[k];
+	  size_t NN = T.numSisterVertex()-1;
+	  // If last element, remove it
+	  if (i==NN) {
+	    T.sisterVertexPopBack();
+	  }
+	  else {
+	    // If not last element, copy last element to i and then remove last element
+	    T.setSisterVertex(i,0,T.sisterVertex(NN,0));
+	    T.setSisterVertex(i,1,T.sisterVertex(NN,1));
+	    T.sisterVertexPopBack();	    
+	  }
+	}
+      }
+    }
+  }
 
   CombineDerivatives::
   CombineDerivatives(std::vector<double> &paraValue, 
