@@ -675,11 +675,12 @@ class VertexFromExternalSpring : public BaseReaction {
 ///
 /// @verbatim
 ///
-/// VertexFromExternalSpringFromPerpVertex 6 1 3 
+/// VertexFromExternalSpringFromPerpVertex 6 1 4 
 /// K   f_adh Lmaxfactor growth_rate  intraction_angle corner_angle
 /// growth_flag (0:non ,1: ,2: ,3: ,4: ,5: ,6: )
 /// connection_flag (1: constraint on the first node only, 2: for both)
 /// exclude_corner_flag (0:include corners, 1: exclude corners)
+/// initiate_flag       (0: for all vertices, 1: only the vertices in the sisterVertex list)
 /// @endverbatim
 ///
 ///
