@@ -1634,10 +1634,14 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
 
     exit(0);
   }
-  if( indValue.size() != 1 || indValue[0].size()!=3 ) {
+  if( indValue.size() != 1 || indValue[0].size()!=4 ) {
     std::cerr << " VertexFromExternalSpringFromPerpVertex::"
-	      << " VertexFromExternalSpringFromPerpVertex() "
-	      << " one level two indices for gowth flag and " 
+	      << " VertexFromExternalSpringFromPerpVertex()"
+	      << " one level four indices for gowth flag" 
+	      << " connection_flag (constraint on first vertex(1)"
+	      << " or both vertices(2)), exclude_corner_flag,"
+	      << " and initiate flag (0: for all vertices, 1: only"
+	      << " the vertices in the sisterVertex list)" 
 	      << " constraint on connections." << std::endl;
     exit(0);
   }
@@ -1680,6 +1684,15 @@ initiate(Tissue &T,
 	connections[cellIndex][verIndex].resize(numVertices,0);
       }
   }
+  
+  std:: vector<int> hasSister;
+  hasSister.resize(totalVertices);
+  size_t NsisterPairs = T.numSisterVertex();
+  for(size_t is=0 ; is<NsisterPairs ; is++) {
+    hasSister[T.sisterVertex(is,0)]=1; 
+    hasSister[T.sisterVertex(is,1)]=1; 
+  }
+  
   vertexVec.resize(totalVertices);
   
   for(size_t i=0 ; i<totalVertices ; i++) 
@@ -1776,36 +1789,9 @@ initiate(Tissue &T,
 	  
 	  //if (tmp==0) 
 	  //  std::cerr<<"cell "<<cellIndex<<" N  " << vertexIndex1 <<" N " << vertexIndex2 <<" "<< N1N2<<" teta "<< teta<<std::endl;
-	  if(variableIndex(0,2)==0){
-	    if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
-	      connections[cellIndex][vertex1][vertex2]= std::sqrt(
-								  (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-								  (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
-	    
-	    if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
-	      connections[cellIndex][vertex1][vertex2]= std::sqrt(
-								  (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-								  (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
-	  }
+	  if(variableIndex(0,3)==0 || (variableIndex(0,3)==1 && hasSister[vertexIndex1]==1 )){
 
-	  if(variableIndex(0,2)==1) {
-	    
-	    size_t vertexIndex1 = T.cell(cellIndex).vertex(vertex1)->index();
-	    size_t vertexPlusIndex;
-	    size_t vertexMinusIndex;
-	    
-	    if (vertex1!=0 )
-	      vertexMinusIndex = T.cell(cellIndex).vertex(vertex1-1)->index();
-	    else
-	      vertexMinusIndex= T.cell(cellIndex).vertex(numVertices-1)->index();
-	    if ( vertex1!=numVertices-1 )
-	      vertexPlusIndex = T.cell(cellIndex).vertex(vertex1+1)->index();
-	    else
-	      vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
-	    
-	    double cornerAngle=vertexVec[vertexMinusIndex][0]*vertexVec[vertexPlusIndex][0]+
-	      vertexVec[vertexMinusIndex][1]*vertexVec[vertexPlusIndex][1];
-	    if (cornerAngle > std::cos(3.1416*(180-parameter(5))/180)){
+	    if(variableIndex(0,2)==0){
 	      if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
 		connections[cellIndex][vertex1][vertex2]= std::sqrt(
 								    (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
@@ -1815,6 +1801,36 @@ initiate(Tissue &T,
 		connections[cellIndex][vertex1][vertex2]= std::sqrt(
 								    (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
 								    (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	    }
+	    
+	    if(variableIndex(0,2)==1) {
+	      
+	      size_t vertexIndex1 = T.cell(cellIndex).vertex(vertex1)->index();
+	      size_t vertexPlusIndex;
+	      size_t vertexMinusIndex;
+	      
+	      if (vertex1!=0 )
+		vertexMinusIndex = T.cell(cellIndex).vertex(vertex1-1)->index();
+	      else
+		vertexMinusIndex= T.cell(cellIndex).vertex(numVertices-1)->index();
+	      if ( vertex1!=numVertices-1 )
+		vertexPlusIndex = T.cell(cellIndex).vertex(vertex1+1)->index();
+	      else
+		vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
+	      
+	      double cornerAngle=vertexVec[vertexMinusIndex][0]*vertexVec[vertexPlusIndex][0]+
+		vertexVec[vertexMinusIndex][1]*vertexVec[vertexPlusIndex][1];
+	      if (cornerAngle > std::cos(3.1416*(180-parameter(5))/180)){
+		if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
+		  connections[cellIndex][vertex1][vertex2]= std::sqrt(
+								      (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+								      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+		
+		if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
+		  connections[cellIndex][vertex1][vertex2]= std::sqrt(
+								      (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+								      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	      }
 	    }
 	  }
 	  
@@ -1837,30 +1853,30 @@ initiate(Tissue &T,
   
   //size_t Npairs=variableIndex(1).size();    
   // Print the edges gnuplot style to check connectivity
-  //
-  //for (size_t i=0; i<numCells; ++i) {
-  //  size_t numVertices= T.cell(i).numVertex();
-  //  for (size_t j=0; j<numVertices; ++j) {
-  //    for (size_t k=j+1; k<numVertices; ++k) {
-  //	if (connections[i][j][k]) {
-  //	  std::cerr << "In cell " << i << " vertices " << j << " and " << k << " connected." << std::endl;  
-  //	  size_t numDimension = vertexData[0].size();
-  //	  size_t v1 = T.cell(i).vertex(j)->index();
-  //	  size_t v2 = T.cell(i).vertex(k)->index();
-  //	  for (size_t d=0; d<numDimension; ++d) {
-  //	    std::cout << vertexData[v1][d] << " ";
-  //	  }
-  //	  std::cout << i << std::endl;
-  //	  for (size_t d=0; d<numDimension; ++d) {
-  //	    std::cout << vertexData[v2][d] << " ";
-  //	  }
-  //	  std::cout << i << std::endl;
-  //	  std::cout << std::endl;
-  //	}
-  //  }
-  //}
-  //}
-  //std::cerr << "End of printing." << std::endl;
+  
+  for (size_t i=0; i<numCells; ++i) {
+   size_t numVertices= T.cell(i).numVertex();
+   for (size_t j=0; j<numVertices; ++j) {
+     for (size_t k=j+1; k<numVertices; ++k) {
+  	if (connections[i][j][k]) {
+  	  std::cerr << "In cell " << i << " vertices " << j << " and " << k << " connected." << std::endl;  
+  	  size_t numDimension = vertexData[0].size();
+  	  size_t v1 = T.cell(i).vertex(j)->index();
+  	  size_t v2 = T.cell(i).vertex(k)->index();
+  	  for (size_t d=0; d<numDimension; ++d) {
+  	    std::cout << vertexData[v1][d] << " ";
+  	  }
+  	  std::cout << i << std::endl;
+  	  for (size_t d=0; d<numDimension; ++d) {
+  	    std::cout << vertexData[v2][d] << " ";
+  	  }
+  	  std::cout << i << std::endl;
+  	  std::cout << std::endl;
+  	}
+   }
+  }
+  }
+  std::cerr << "End of printing." << std::endl;
   // END printing
 }
 
