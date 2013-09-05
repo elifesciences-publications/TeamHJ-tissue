@@ -20,6 +20,7 @@
 #include "mechanical.h"
 #include "mechanicalSpring.h"
 #include "mechanicalTRBS.h"
+#include "bending.h"
 #include "network.h"
 #include "sisterVertex.h"
 
@@ -232,6 +233,10 @@ else if(idValue=="VertexFromParabolid")
    return new VertexFromTRBScenterTriangulationConcentrationHillMT(paraValue, indValue);
   else if (idValue == "FiberModel")
     return new FiberModel(paraValue, indValue);
+
+  // bending.h (.cc)
+  else if (idValue == "Bending::NeighborCenter")
+    return new Bending::NeighborCenter(paraValue, indValue);
 
   //creation.h,creation.cc
   else if(idValue=="CreationZero")
