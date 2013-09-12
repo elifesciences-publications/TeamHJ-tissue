@@ -349,7 +349,7 @@ class VertexFromTRBSMT : public BaseReaction {
 /// Poisson_Trans
 /// MF_flag(0/1) 
 /// neighborWeight 
-/// unusedparameter 
+/// max_stress(if 0 absolute stress anisotropy is calculated)
 /// plane-strain/stress-flag 
 /// MT-angle 
 /// MT-feedback-flag 
