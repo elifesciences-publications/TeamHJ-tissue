@@ -3850,7 +3850,6 @@ void Tissue::removeTwoVertex( size_t index )
 
 void Tissue::sortCellWallAndCellVertex(Cell *cell) 
 {	
-	std::cerr << "Tissue::sortCellWallAndCellVertex()" << std::endl;
 	std::vector<size_t> sortedFlag(numCell());
 	size_t numSorted=0;
 	if( !cell )		
@@ -4626,7 +4625,7 @@ void Tissue::printInitTri(std::ostream &os)
   // Print wall data
   os << numW << " 1 " << w[0].size()-1 << std::endl;
   for( size_t i=0 ; i<numW ; ++i ) {
-    assert( wa[i].size() );
+//     assert( wa[i].size() );
     for( size_t j=0 ; j<w[i].size() ; ++j )
       os << w[i][j] << " ";
     os << std::endl;

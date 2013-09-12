@@ -327,6 +327,40 @@ bool ply::ply_parser::parse(std::istream& istream)
               return false;
             }
           }
+          else if ((size_type_string == type_traits<int32>::name()) || (size_type_string == type_traits<int32>::old_name())) {
+            warning_callback_(line_number_, "size_type of type int32 can not be handled properly. Converting to uint32, negative values will be misinterpreted");
+            typedef uint32 size_type;
+            if ((scalar_type_string == type_traits<int8>::name()) || (scalar_type_string == type_traits<int8>::old_name())) {
+              parse_list_property_definition<size_type, int8>(name);
+            }
+            else if ((scalar_type_string == type_traits<int16>::name()) || (scalar_type_string == type_traits<int16>::old_name())) {
+              parse_list_property_definition<size_type, int16>(name);
+            }
+            else if ((scalar_type_string == type_traits<int32>::name()) || (scalar_type_string == type_traits<int32>::old_name())) {
+              parse_list_property_definition<size_type, int32>(name);
+            }
+            else if ((scalar_type_string == type_traits<uint8>::name()) || (scalar_type_string == type_traits<uint8>::old_name())) {
+              parse_list_property_definition<size_type, uint8>(name);
+            }
+            else if ((scalar_type_string == type_traits<uint16>::name()) || (scalar_type_string == type_traits<uint16>::old_name())) {
+              parse_list_property_definition<size_type, uint16>(name);
+            }
+            else if ((scalar_type_string == type_traits<uint32>::name()) || (scalar_type_string == type_traits<uint32>::old_name())) {
+              parse_list_property_definition<size_type, uint32>(name);
+            }
+            else if ((scalar_type_string == type_traits<float32>::name()) || (scalar_type_string == type_traits<float32>::old_name())) {
+              parse_list_property_definition<size_type, float32>(name);
+            }
+            else if ((scalar_type_string == type_traits<float64>::name()) || (scalar_type_string == type_traits<float64>::old_name())) {
+              parse_list_property_definition<size_type, float64>(name);
+            }
+            else {
+              if (error_callback_) {
+                error_callback_(line_number_, "parse error");
+              }
+              return false;
+            }
+          }
           else {
             if (error_callback_) {
               error_callback_(line_number_, "parse error");

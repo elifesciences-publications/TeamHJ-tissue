@@ -9,15 +9,46 @@
 #include <vector>
 
 class Tissue;
-// class PLY_reader;
-//-----------------------------------------------------------------------------
 // example of usage:
 // Tissue T;
 // //... initialize T ...
 // PLY_file plyfile("output.ply");
 // plyfile << T;
+//-----------------------------------------------------------------------------
+class PLY_output_options
+{
+public:
+  
+    PLY_output_options() : m_center_triangulation_output(false), m_bare_geometry_output(false)
+    {
+    }
+    /// @brief Sets output option for center triangulation
+    bool& center_triangulation_output() 
+    {
+        return m_center_triangulation_output;
+    }
+    bool center_triangulation_output() const 
+    {
+        return m_center_triangulation_output;
+    }
+    /// @brief Sets output option for bare geometry
+    bool& bare_geometry_output() 
+    {
+        return m_bare_geometry_output;
+    }
+    bool bare_geometry_output() const 
+    {
+        return m_bare_geometry_output;
+    }
+private:
+    /// @brief Flag for center triangulation output
+    bool m_center_triangulation_output;
+    /// @brief Flag for bare geometry output
+    bool m_bare_geometry_output;
+};
+//-----------------------------------------------------------------------------
 /// @brief Handles a ply file for writing a Tissue.
-class PLY_file
+class PLY_file : public PLY_output_options
 {
 public:
     /// @brief Empty constructor
@@ -32,40 +63,22 @@ public:
     void close();
     /// @brief Outputs current Tissue
     void operator<<(Tissue const& t);
-    /// @brief Sets output option for center triangulation
-    void center_triangulation_output(bool b);
+
 private:
     /// @brief Name of the ply file
     std::string filename;
-    /// @brief Flag for center triangulation output 
-    bool m_center_triangulation;
-    /// @brief Outputs current Tissue
-    void write(Tissue const& t);
     friend class PLY_reader;
 };
 //-----------------------------------------------------------------------------
-// class PLY_parser
-// {
-// public:
-//     typedef boost::char_separator<char> Separator;
-//     typedef boost::tokenizer<Separator> Tokenizer;
-//     typedef Tokenizer::iterator Token_iterator;
-//     /// @brief Constructor
-//     PLY_parser(PLY_file const& f);
-//     /// @brief Extracts information from header
-//     void parse_header();
-// private:
-//     /// @brief PLY input file stream associated with parser
-//     std::ifstream m_input;
-//     /// @brief
-//     int m_num_vert;
-//     /// @brief
-//     int m_num_wall;
-//     /// @brief
-//     int m_num_cell;
-//     
-//     Separator m_sep;
-//     Tokenizer m_tok;
-// };
+class PLY_ostream : public PLY_output_options
+{
+public:
+    PLY_ostream(std::ostream &os);
+    /// @brief PLY_ostream output of current Tissue
+    PLY_ostream& operator<<(Tissue const& t);
+private:
+    /// @brief associated ostream
+    std::ostream &m_os;
+};
 //-----------------------------------------------------------------------------
 #endif

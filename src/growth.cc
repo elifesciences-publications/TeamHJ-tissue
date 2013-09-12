@@ -227,7 +227,7 @@ namespace WallGrowth {
       size_t lengthIndex = variableIndex(0,0);
       size_t lengthStartIndex = lengthIndex+3;//assuming 3D
       
-      for (size_t i=0; i<numCells; ++i) {
+      for (size_t i=0; i<T.numCell(); ++i) {
 	for (size_t k=0; k<T.cell(i).numVertex(); ++k) {
 	  double arg = parameter(0);
 	  if (parameter(1)==1) {//linearFlag (prop to length)

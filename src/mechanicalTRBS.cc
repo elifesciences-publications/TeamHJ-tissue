@@ -4038,7 +4038,7 @@ derivs(Tissue &T,
 
   for( size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex ) {
     
-    size_t numWalls = T.cell(cellIndex).numWall();
+    const size_t numWalls = T.cell(cellIndex).numWall();
     totalEnergyIso   +=cellData[cellIndex][isoEnergyIndex];
     totalEnergyAniso +=cellData[cellIndex][anisoEnergyIndex];
     

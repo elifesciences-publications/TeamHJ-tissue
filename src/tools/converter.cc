@@ -17,6 +17,7 @@
 #include "../wall.h"
 #include "../pvd_file.h"
 #include "../ply_reader.h"
+#include <VTUostream.h>
 
 int main(int argc,char *argv[]) {
   
@@ -137,6 +138,10 @@ int main(int argc,char *argv[]) {
     PLY_file pf(initFile.c_str());
     PLY_reader P;
     P.read(pf,T);
+    //Sort all cellWalls and cellVertices to comply with area calculations
+  //and plotting
+  T.sortCellWallAndCellVertex();
+  T.checkConnectivity(verboseFlag);
     //T.readInitPly(initFile.c_str(),verboseFlag); ...yet to be defined...
   }
   else {
@@ -167,20 +172,48 @@ int main(int argc,char *argv[]) {
     }
     T.printInitFem(std::cout);
   }
-  else if (outputFormat.compare("organism")==0) {
-    if (verboseFlag) {
-      std::cerr << "Printing output using organism format (init + neigh)." << std::endl;
+    else if (outputFormat.compare("organism")==0) {
+        if (verboseFlag) {
+            std::cerr << "Printing output using organism format (init + neigh)." << std::endl;
+        }
+        T.printInitOrganism(std::cout);
     }
-    T.printInitOrganism(std::cout);
-  }
-  else if (outputFormat.compare("ply")==0) {
-    if (verboseFlag) {
-      std::cerr << "Printing output using ply format." << std::endl;
+    else if (outputFormat.compare("ply")==0) {
+        if (verboseFlag) {
+            std::cerr << "Printing output using ply format." << std::endl;
+        }
+        PLY_ostream ply_os(std::cout);
+        ply_os.bare_geometry_output() = false;
+        ply_os.center_triangulation_output() = false;
+        ply_os << T;
+        //T.printInitPly(std::cout);
     }
-    T.printInitPly(std::cout);
-  }
-  else {
-    std::cerr << "Warning: main() - Format " << outputFormat << " not recognized. "
+    else if (outputFormat.compare("pvd")==0) {
+        std::cout << "<?xml version=\"1.0\"?> " << std::endl;
+        std::cout << "<VTKFile type=\"Collection\" version=\"0.1\" > " << std::endl;
+        std::cout << "<Collection> " << std::endl;
+
+        // Data file name
+        std::cout << "<DataSet timestep=\"0\" part=\"0\" file=\"cells.vtu\"/>" << std::endl;
+        std::cout << "<DataSet timestep=\"0\" part=\"1\" file=\"walls.vtu\"/>" << std::endl;
+
+        // Close headers
+        std::cout << "</Collection> " << std::endl;
+        std::cout << "</VTKFile> " << std::endl;
+        
+        std::ofstream vtu_f("cells.vtu");
+        VTUostream vtuos(vtu_f);
+        vtuos.write_cells(T);
+        vtuos.close();
+        vtu_f.close();
+        vtu_f.open("walls.vtu");
+        vtuos.open(vtu_f);
+        vtuos.write_walls(T);
+        vtuos.close();
+        vtu_f.close();
+    }
+    else {
+        std::cerr << "Warning: main() - Format " << outputFormat << " not recognized. "
 	      << "No outputwritten." << std::endl;
       }
   if (verboseFlag) {

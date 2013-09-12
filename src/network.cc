@@ -2213,7 +2213,7 @@ derivs(Tissue &T,
 
   assert( aI<cellData[0].size() &&
 	  pI<cellData[0].size() &&
-	  awI<wallData[0].size() &&
+// 	  awI<wallData[0].size() &&
 	  pwI<wallData[0].size() );
 
 

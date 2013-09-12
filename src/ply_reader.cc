@@ -7,10 +7,12 @@
 #include "tissue.h"
 #include "cell.h"
 #include "wall.h"
+#include <set>
 
+#define NDEBUG_OUTPUT
 using namespace std::tr1::placeholders;
 //----------------------------------------------------------------------------
-PLY_reader::PLY_reader() : m_ply_file(NULL), m_tissue(NULL), m_position(3)
+PLY_reader::PLY_reader() : m_ply_file(NULL), m_tissue(NULL), m_position(3), m_index(INVALID_SIZE)
 {
 }
 //----------------------------------------------------------------------------
@@ -24,6 +26,10 @@ void PLY_reader::read(PLY_file const&f, Tissue &t)
 
     m_ply_file = &f;
     m_tissue = &t;
+    //reset counters for entities
+    m_v_counter = 0;
+    m_f_counter = 0;
+    m_e_counter = 0;
     std::string filename  = m_ply_file->filename;
 
     parser.info_callback(std::tr1::bind(&PLY_reader::info_callback, this, std::tr1::ref(filename), _1, _2));
@@ -40,15 +46,24 @@ void PLY_reader::read(PLY_file const&f, Tissue &t)
     ply::ply_parser::list_property_definition_callbacks_type list_property_definition_callbacks;
     ply::at<ply::uint8, ply::uint32>(list_property_definition_callbacks) = std::tr1::bind(&PLY_reader::list_property_definition_callback<ply::uint8, ply::uint32>, this, _1, _2);
     ply::at<ply::uint8, ply::float32>(list_property_definition_callbacks) = std::tr1::bind(&PLY_reader::list_property_definition_callback<ply::uint8, ply::float32>, this, _1, _2);
+    ply::at<ply::uint32, ply::int32>(list_property_definition_callbacks) = std::tr1::bind(&PLY_reader::list_property_definition_callback<ply::uint32, ply::int32>, this, _1, _2);
     parser.list_property_definition_callbacks(list_property_definition_callbacks);
 
     parser.parse(filename);
-    
-    set_cell_wall_connectivity(t);
+//     std::cout <<"parsed\n";
+    if(!t.numWall())
+      infer_walls_from_cells(t);
+    else
+      set_cell_wall_connectivity(t);
+#ifndef NDEBUG_OUTPUT
+    std::cout << "n_cell = " << t.numCell() << ", n_wall = " << t.numWall() << ", n_vertex = " << t.numVertex() << "\n";
+    std::cout << "vertices size = " << m_vertices.size() << "\n";
+#endif
 }
 //----------------------------------------------------------------------------
 std::tr1::tuple<std::tr1::function<void()>, std::tr1::function<void()> > PLY_reader::element_definition_callback(const std::string& element_name, std::size_t count)
 {
+//     std::cout <<"parsing element: " << element_name << "\n";
     if (element_name == "vertex") {
         m_tissue->setNumVertex(count);
         return std::tr1::tuple<std::tr1::function<void()>, std::tr1::function<void()> >(
@@ -77,7 +92,7 @@ std::tr1::tuple<std::tr1::function<void()>, std::tr1::function<void()> > PLY_rea
 //----------------------------------------------------------------------------
 void PLY_reader::vertex_begin()
 {
-
+    m_index = INVALID_SIZE;
 }
 //----------------------------------------------------------------------------
 void PLY_reader::vertex_x_callback(ply::float32 x)
@@ -97,40 +112,60 @@ void PLY_reader::vertex_z_callback(ply::float32 z)
 //----------------------------------------------------------------------------
 void PLY_reader::vertex_index_callback(ply::uint32 i)
 {
-    m_index = i;
+    m_index = i-index_base();
+    assert(m_index < m_tissue->numVertex());
 }
 //----------------------------------------------------------------------------
 void PLY_reader::vertex_end()
 {
+    if (m_index == INVALID_SIZE)
+        m_index = m_v_counter;
+    assert(m_index < m_tissue->numVertex());
+
     Vertex * v = m_tissue->vertexP(m_index);
     v->setIndex(m_index);
     v->setPosition(m_position);
+    ++m_v_counter;
 }
 //----------------------------------------------------------------------------
 void PLY_reader::face_begin()
 {
+//    std::cout << "face begin";
     m_vertices.clear();
     m_variables.clear();
+    m_index = INVALID_SIZE;
+//    std::cout << "-\n";
 }
 //----------------------------------------------------------------------------
-void PLY_reader::face_vertex_indices_begin(ply::uint8 size)
-{
-    m_vertices.reserve(size);
-}
-//----------------------------------------------------------------------------
-void PLY_reader::face_vertex_indices_element(ply::uint32 vertex_index)
-{
-    m_vertices.push_back( m_tissue->vertexP(vertex_index) );
-}
+//void PLY_reader::face_vertex_indices_begin(ply::uint8 size)
+//{
+//    m_vertices.reserve(size);
+//}
+////----------------------------------------------------------------------------
+//void PLY_reader::face_vertex_indices_element(ply::uint32 vertex_index)
+//{
+//    m_vertices.push_back( m_tissue->vertexP(vertex_index) );
+//}
+////----------------------------------------------------------------------------
+//void PLY_reader::face_vertex_indices_begin(ply::uint32 size)
+//{
+//    m_vertices.reserve(size);
+//}
+////----------------------------------------------------------------------------
+//void PLY_reader::face_vertex_indices_element(ply::int32 vertex_index)
+//{
+//    m_vertices.push_back( m_tissue->vertexP(vertex_index) );
+//}
 //----------------------------------------------------------------------------
 void PLY_reader::face_vertex_indices_end()
 {
-  
+
 }
 //----------------------------------------------------------------------------
 void PLY_reader::face_index_callback(ply::uint32 i)
 {
-    m_index = i;
+    m_index = i-index_base();
+//     assert(m_index < m_tissue->numCell());
 }
 //----------------------------------------------------------------------------
 void PLY_reader::face_variables_begin(ply::uint8 size)
@@ -150,12 +185,12 @@ void PLY_reader::face_variables_end()
 //----------------------------------------------------------------------------
 void PLY_reader::face_center_vertex_begin(ply::uint8 size)
 {
-    m_ceter_vertex.reserve(size);
+    m_center_vertex.reserve(size);
 }
 //----------------------------------------------------------------------------
 void PLY_reader::face_center_vertex_element(ply::float32 variable)
 {
-    m_ceter_vertex.push_back(variable);
+    m_center_vertex.push_back(variable);
 }
 //----------------------------------------------------------------------------
 void PLY_reader::face_center_vertex_end()
@@ -180,18 +215,29 @@ void PLY_reader::face_edges_lengths_end()
 //----------------------------------------------------------------------------
 void PLY_reader::face_end()
 {
+//    std::cout << "face_end";
+    if (m_index == INVALID_SIZE)
+        m_index = m_f_counter;
+    assert(m_index < m_tissue->numCell());
+    //construct face
     Cell * c = m_tissue->cellP(m_index);
     c->setIndex(m_index);
+    //add vertices
     c->setVertex(m_vertices);
+    //add variables
     c->setNumVariable(m_variables.size());
     c->setVariable(m_variables);
-    c->setCenterPosition(m_ceter_vertex);
+    //additional cell data
+    c->setCenterPosition(m_center_vertex);
     c->setEdgeLength(m_edges_lengths);
     std::vector<Vertex*>::iterator it, v_end;
+    // connect vertices to cells
     for (it = m_vertices.begin(), v_end = m_vertices.end(); it != v_end; ++it)
     {
         (*it)->addCell(c);
     }
+    ++m_f_counter;
+//    std::cout << "-\n";
 }
 //----------------------------------------------------------------------------
 void PLY_reader::edge_begin()
@@ -203,21 +249,28 @@ void PLY_reader::edge_begin()
 //----------------------------------------------------------------------------
 void PLY_reader::edge_source_callback(ply::uint32 size)
 {
+//     std::cout << "source: " << size  << "(" << m_tissue->numVertex() << ")\n";
+    assert(size < m_tissue->numVertex());
     m_vertices[0] = m_tissue->vertexP(size);
 }
 //----------------------------------------------------------------------------
 void PLY_reader::edge_target_callback(ply::uint32 size)
 {
+//     std::cout << "target: " << size  << "(" << m_tissue->numVertex() << ")\n";
+    assert(size < m_tissue->numVertex());
     m_vertices[1] = m_tissue->vertexP(size);
 }
 //----------------------------------------------------------------------------
 void PLY_reader::edge_index_callback(ply::uint32 i)
 {
-    m_index = i;
+//     std::cout << "index: " << i  << "(" << m_tissue->numWall() << ")\n";
+    m_index = i-index_base();
+//     assert(m_index < m_tissue->numWall());
 }
 //----------------------------------------------------------------------------
 void PLY_reader::edge_variables_begin(ply::uint8 size)
 {
+//     std::cout << "edge variables: " << size  << "\n";
     m_variables.reserve(size);
 }
 //----------------------------------------------------------------------------
@@ -233,16 +286,27 @@ void PLY_reader::edge_variables_end()
 //----------------------------------------------------------------------------
 void PLY_reader::edge_end()
 {
+    if (m_index == INVALID_SIZE)
+        m_index = m_e_counter;
+    assert(m_index < m_tissue->numWall());
+//     std::cout << "edge: " << m_index  << "(" << m_tissue->numWall() << ")\n";
+//     std::cout << "vertices: " << m_vertices[0]->index() << ", " <<  m_vertices[1]->index() << "(" << m_tissue->numVertex() << ")\n";
+//     std::cout << "variables: " << m_variables.size() << "\n";
     Wall * w = m_tissue->wallP(m_index);
     w->setIndex(m_index);
+    //set edge vertices
     w->setVertex(m_vertices[0], m_vertices[1]);
+    //set edge variables
     w->setNumVariable(m_variables.size());
     w->setVariable(m_variables);
     std::vector<Vertex*>::iterator it, v_end;
+    //set vertex edges
     for (it = m_vertices.begin(), v_end = m_vertices.end(); it != v_end; ++it)
     {
         (*it)->addWall(w);
     }
+    ++m_e_counter;
+//     std::cout << "edge end\n";
 }
 //----------------------------------------------------------------------------
 void PLY_reader::info_callback(const std::string& filename, std::size_t line_number, const std::string& message)
@@ -272,7 +336,7 @@ void PLY_reader::set_cell_wall_connectivity(Tissue &t)
         Wall * w = t.wallP(i);
         v1_cells.clear();
         v2_cells.clear();
-        
+
         //for each vertex of the wall find intersection of its cells
         Vertex *v1 = w->vertex1();
         Vertex *v2 = w->vertex2();
@@ -282,12 +346,28 @@ void PLY_reader::set_cell_wall_connectivity(Tissue &t)
             v2_cells.push_back(v2->cell(j)->index());
         std::sort(v1_cells.begin(), v1_cells.end());
         std::sort(v2_cells.begin(), v2_cells.end());
-        std::vector<size_t>::iterator it=std::set_intersection (v1_cells.begin(), v1_cells.end(), v2_cells.begin(), v2_cells.end(), v1_cells.begin());
+        std::vector<size_t>::iterator it;
+#ifndef NDEBUG_OUTPUT
+        std::cout << "v1 : ";
+        for (it = v1_cells.begin(); it != v1_cells.end(); ++it)
+            std::cout << *it << " ";
+        std::cout <<"(" << v1_cells.size() << ")\n";
+        std::cout << "v2 : ";
+        for (it = v2_cells.begin(); it != v2_cells.end(); ++it)
+            std::cout << *it << " ";
+        std::cout <<"(" << v1_cells.size() << ")\n";
+#endif
+        it=std::set_intersection (v1_cells.begin(), v1_cells.end(), v2_cells.begin(), v2_cells.end(), v1_cells.begin());
         v1_cells.resize(it-v1_cells.begin());
-
+#ifndef NDEBUG_OUTPUT
+        std::cout << "intersection : ";
+        for (it = v1_cells.begin(); it != v1_cells.end(); ++it)
+            std::cout << *it << " ";
+        std::cout <<"(" << v1_cells.size() << ")\n";
+#endif
         //set wall cells and cell walls acordingly
         assert(v1_cells.size() <= 2);
-        std::vector<Cell*> cells(2, NULL);
+        std::vector<Cell*> cells(2, t.background());
         std::vector<Cell*>::iterator cell_it = cells.begin();
         for (it = v1_cells.begin(); it != v1_cells.end(); ++it)
         {
@@ -297,5 +377,70 @@ void PLY_reader::set_cell_wall_connectivity(Tissue &t)
         }
         w->setCell(cells[0], cells[1]);
     }
+    for (size_t i = 0; i < t.numCell(); ++i)
+    {
+        Cell *c = t.cellP(i);
+//       c->sortWallAndVertex(t);
+    }
+}
+//----------------------------------------------------------------------------
+void PLY_reader::infer_walls_from_cells(Tissue &t)
+{
+    typedef std::set< Edge_element > Edge_set;
+    typedef std::pair<Edge_set::iterator,bool> Return_type;
+    Edge_set edges;
+    Return_type ret;
+
+    //iterate all cells assuming that the vertex order in each cell is cyclic
+    for (size_t i = 0; i < t.numCell(); ++i)
+    {
+        Cell *c = t.cellP(i);
+        size_t n_vertex = c->numVertex();
+        size_t iv1, iv2;
+        for (size_t j = 0; j < n_vertex; ++j)
+        {
+            iv1 = c->vertex(j)->index();
+            if (j == n_vertex-1)
+                iv2 = c->vertex(0)->index();
+            else
+                iv2 = c->vertex(j+1)->index();
+            
+            if (iv1 < iv2)
+                ret = edges.insert(std::make_pair(iv1,iv2));
+            else
+                ret = edges.insert(std::make_pair(iv2,iv1));
+
+            Edge_set::iterator it = ret.first;
+            Wall *wp;
+            if (ret.second) //new edge inserted
+            {
+                Vertex *v1 = t.vertexP(iv1);
+                Vertex *v2 = t.vertexP(iv2);
+                //figure out the index of a new edge in tissue
+                t.addWall(Wall());
+                size_t idx = t.numWall()-1;
+                //set the remaining index in the Edge_set element
+                it->index = idx;
+                //connect vertices with the wall and vice versa
+                wp = t.wallP(idx);
+                wp->setIndex(idx);
+                v1->addWall(wp);
+                v2->addWall(wp);
+                wp->setVertex(v1, v2);
+                //connect wall with the cell
+                wp->setCell1(c);
+            }
+            else //the edge already in tissue
+            {
+                size_t idx = it->index;
+                wp = t.wallP(idx);
+                //connect wall with the cell
+                wp->setCell2(c);
+            }
+            //connect cell with the wall
+            c->addWall(wp);
+        }
+    }
+
 }
 //----------------------------------------------------------------------------

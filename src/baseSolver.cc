@@ -404,7 +404,7 @@ void BaseSolver::print(std::ostream &os)
         ssCount << tCount;
         std::string fname = "tmp/output_" + ssCount.str() + ".ply";
         PLY_file plyFile(fname);
-        plyFile.center_triangulation_output(true);
+        plyFile.center_triangulation_output() = true;
         plyFile << *T_;
     }
   //
@@ -1235,7 +1235,7 @@ void BaseSolver::printInitTri(std::ostream &os) const
   // Print wall data
   os << numW << " 1 " << w[0].size()-1 << std::endl;
   for( size_t i=0 ; i<numW ; ++i ) {
-    assert( wa[i].size() );
+//     assert( wa[i].size() );
     for( size_t j=0 ; j<w[i].size() ; ++j )
       os << w[i][j] << " ";
     os << std::endl;
