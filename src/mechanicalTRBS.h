@@ -569,7 +569,7 @@ class VertexFromTRBScenterTriangulationConcentrationHillMT : public BaseReaction
 ///  n_hill
 ///  Y_matrix
 ///  Y_fiber
-///  initiate_flag 0/1
+///  initiate_flag (0:no initiation ,1: initiate with isotropic ,2: initiate with anisotropy from aniso_index)
 ///
 ///  anisotropy index.
 ///
