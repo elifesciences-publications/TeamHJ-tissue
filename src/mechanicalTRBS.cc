@@ -5582,13 +5582,34 @@ void FiberModel::initiate(Tissue &T,
                           DataMatrix &wallDerivs,
                           DataMatrix &vertexDerivs) {
   size_t numCell=cellData.size();
+  size_t AnisoIndex=variableIndex(0,0);
+  size_t YoungLIndex=variableIndex(1,0);
+  double Kh=parameter(3);
+  double Nh=parameter(4);
+  double youngMatrix=parameter(5);
+  double youngFiber=parameter(6);
+
   if (parameter(7)==1){
     for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) { // initiating with 0 anisotropy and isotropic material
-      cellData[cellIndex][variableIndex(0,0)] = 0;
-      cellData[cellIndex][variableIndex(1,0)] = parameter(5)+0.5*parameter(6); // youngL = youngMatrix + 0.5*youngFiber;
+      cellData[cellIndex][AnisoIndex] = 0;
+      cellData[cellIndex][YoungLIndex] = youngMatrix+0.5*youngFiber; // youngL = youngMatrix + 0.5*youngFiber;
       //std::cerr<< cellData[cellIndex][variableIndex(1,0)] << std::endl;
     }
   }
+  if (parameter(7)==2){
+    for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) { // initiating with 0 anisotropy and isotropic material
+      double anisotropy=cellData[cellIndex][AnisoIndex];
+      if ( parameter(2)==0 )
+	cellData[cellIndex][YoungLIndex]=youngMatrix+0.5*(1+anisotropy)* youngFiber;
+      
+      if ( parameter(2)==1 )
+	cellData[cellIndex][YoungLIndex] =  youngMatrix+ 
+	  0.5*(1+(std::pow(anisotropy,Nh) /(std::pow((1-anisotropy),Nh)*std::pow(Kh,Nh)
+					    +std::pow(anisotropy,Nh))))* youngFiber; 
+      //std::cerr<< cellData[cellIndex][variableIndex(1,0)] << std::endl;
+    }
+  }
+  
 }
 
 void FiberModel::derivs(Tissue &T,
