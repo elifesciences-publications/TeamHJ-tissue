@@ -15,7 +15,7 @@ MembraneDiffusionSimple(std::vector<double> &paraValue,
   
   //Do some checks on the parameters and variable indeces
   //
-  if( paraValue.size()!=12 ) {
+  if( paraValue.size()!=1 ) {
     std::cerr << "MembraneDiffusionSimple::"
 	      << "MembraneDiffusionSimple() "
 	      << "One parameters (Diffusion constant) used." << std::endl;
