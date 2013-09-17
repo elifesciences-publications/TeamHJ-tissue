@@ -17,7 +17,7 @@
 #include "../wall.h"
 #include "../pvd_file.h"
 #include "../ply_reader.h"
-#include <VTUostream.h>
+#include "../VTUostream.h"
 
 int main(int argc,char *argv[]) {
   
