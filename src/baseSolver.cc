@@ -519,7 +519,7 @@ void BaseSolver::print(std::ostream &os)
  }
 
  
-else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain  , to be modified  !!!!!!!!!!!!!!!!!!!!!1
+else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain  , to be modified  !!!
     
   os << T_->reaction(0)->parameter(8)<< " "<< cellData_[0][19] << " " << cellData_[0][20] << " " << cellData_[0][17] << std::endl;
     //        teta MT                          teta stress               teta Perp strain            teta strain                                 
@@ -541,8 +541,33 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain  ,
     //          Teta1          Teta2                    isoenergy                    anisoenergy                     total strain anisotropy
   }
 
-
-
+ else if( printFlag_==65 ) {// Print in vtu format and angle distribution at the end other data for Dorota data
+   std::string pvdFile = "tmp/tissue.pvd";
+   std::string cellFile = "tmp/VTK_cells.vtu";
+   std::string wallFile = "tmp/VTK_walls.vtu";
+   static size_t numCellVar = T_->cell(0).numVariable();
+   setTissueVariables(numCellVar);
+   if( tCount==0 ) {
+     PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
+   }
+   PVD_file::write(*T_,cellFile,wallFile,tCount);
+   if(tCount==numPrint_){
+     for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) {
+       if(cellData_[cellind][15]<75 && cellData_[cellind][15]>-75)
+         os << cellData_[cellind][40]<<" "  // celldata index
+	    << cellData_[cellind][41]<<" "  // MT anisotropy(data)
+	    << cellData_[cellind][50]<<" "  // areal growth (data) 
+	    << cellData_[cellind][19]<<" "  // stress aniso 
+	    << cellData_[cellind][19]<<" "  // area ratio
+	    << cellData_[cellind][19]<<" "  // angle between max_stress and MT
+	    << cellData_[cellind][19]<<" "  // angle between max_growth and max_strain
+	   
+	    <<std::endl;
+       
+     }
+   }
+ }
+  
   
   else if (printFlag_ == 96) {
     size_t dimensions = vertexData_[0].size();
