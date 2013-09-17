@@ -575,4 +575,46 @@ class AuxinPINBistabilityModelCell : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+///
+/// @brief A cell-wall based auxin transport model including PINs and an mutual repression
+/// between PINs at neighboring membranes in adjacent cells and PIN membrane diffusion
+///
+/// A complete (hopefully) pattern generating auxin model based on cell and wall
+/// compartments. It uses two compartments for each wall and a single for the cells.
+/// Auxin and PIN molecules are updated according to:
+///  
+/// @f[ \frac{A_i}{dt} = p_0 - p_1 A_i - p_2 \sum_{j} (A_i-A_j) - 
+///  p_4 \sum_{j} (P_{ij} A_i - P_{ji} A_j) @f]
+///  
+/// @f[ \frac{dP_i}{dt} = p_5 + p_6 A_i - p_7 P_i + \sum_j (1 - P_{ij}P_{ji}/2 + P_{ji}^2/2)P_{ij}^+ - p_3 \sum_j P_i @f] 
+///  
+/// @f[ \frac{dP_{ij}}{dt} = (from above) - D_{P} (2 P_{ij} - P_{ij+} - P_{ij+}) @f]
+///
+/// In the model file the reaction is given by:
+/// @verbatim
+/// AuxinPINBistabilityModelCellNew 9 2 2 1
+/// p_0 ... p_8
+/// ci_auxin ci_PIN
+/// wi_PIN
+/// @endverbatim
+///
+/// @Note the difference from AuxinPINBistabilityModelCell is that PIN is allowed to diffuse in the membrane.
+///
+class AuxinPINBistabilityModelCellNew : public BaseReaction {
+  
+ public:
+  
+  AuxinPINBistabilityModelCellNew(std::vector<double> &paraValue, 
+			   std::vector< std::vector<size_t> > 
+			   &indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
 #endif

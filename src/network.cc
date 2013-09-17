@@ -2273,3 +2273,179 @@ derivs(Tissue &T,
     }
   }
 }
+
+
+AuxinPINBistabilityModelCellNew::
+AuxinPINBistabilityModelCellNew(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > 
+			     &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=9 ) {
+    std::cerr << "AuxinPINBistabilityModelCellNew::"
+	      << "AuxinPINBistabilityModelCellNew() "
+	      << "9 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 2 ) {
+    std::cerr << "AuxinPINBistabilityModelCellNew::"
+	      << "AuxinPINBistabilityModelCellNew() "
+	      << "Two cell variable indices (first row) and one wall variable"
+	      << " index are used (PIN)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("AuxinPINBistabilityModelCellNew");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "D_a (auxin diffusion)";
+  tmp[1] = "phi (auxin driven PIN transport)";
+  tmp[2] = "gamma (PIN cycling rate)";
+  tmp[3] = "D_p (PIN diffusion on membrane)";
+  tmp[4] = "mu_a (auxin cytosolic regulation)";
+  tmp[5] = "mu_p (PIN cytosolic regulation)";
+  tmp[6] = "rho_max";
+  tmp[7] = "a_X";
+  tmp[8] = "rho_B";
+  setParameterId( tmp );
+}
+
+
+void AuxinPINBistabilityModelCellNew::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);//auxin
+  size_t pI = variableIndex(0,1);//pin
+  size_t pwI = variableIndex(1,0);//pin (membrane/wall)
+  size_t rwI = variableIndex(1,1);//pin endo rate (membrane/wall)
+
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  pwI<wallData[0].size() &&
+	  rwI<wallData[0].size() );
+
+  size_t i, j, k, numWalls, iNeighbor, kNext, kBefore, jNext, jBefore;
+  double lengthWall, lengthWallNeighbor, g_ij, g_ji, a_ij, cellVolume, fac;	
+
+  for (i=0; i<numCells; ++i) {
+    //cytosolic auxin concentration
+    cellDerivs[i][aI] += parameter(4)* (1 - cellData[i][aI]); 
+    //cytosolic PIN regulation
+    cellDerivs[i][pI] += parameter(5)* (cellData[i][aI] - cellData[i][pI]); 
+    
+    numWalls = T.cell(i).numWall();
+    cellVolume = T.cell(i).calculateVolume(vertexData);	
+    for (k=0; k<numWalls; ++k) {
+      j = T.cell(i).wall(k)->index();
+      lengthWall = T.cell(i).wall(k)->length();
+      g_ij = lengthWall/cellVolume;
+      // Checks if cell i is first or second neighbor to wall (wall variables are stored as pairs)
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
+	iNeighbor = T.cell(i).wall(k)->cell2()->index();
+	g_ji = lengthWall/T.cell(iNeighbor).calculateVolume(vertexData);
+	// cell-cell auxin transport
+	fac = parameter(0)*cellData[i][aI] +
+	  parameter(1)*cellData[i][aI]*wallData[j][pwI]; 
+	cellDerivs[i][aI] -= g_ij * fac;
+	cellDerivs[iNeighbor][aI] += g_ji * fac;
+	//PIN cycling
+	fac = parameter(2)*(wallData[j][pwI] - wallData[j][rwI]*cellData[i][pI]);
+	wallDerivs[j][pwI] -= fac;
+	cellDerivs[i][pI] += g_ij * fac;
+        //PIN endocytosis rate
+        a_ij = (cellData[i][aI] + cellData[iNeighbor][aI])/2; 
+	wallDerivs[j][rwI] += parameter(6)*a_ij /(parameter(7) + a_ij) - wallData[j][rwI]  + 0.5*(-wallData[j][rwI+1] + wallData[j][rwI])*wallData[j][rwI]*wallData[j][rwI + 1]/parameter(8);
+        //PIN diffusion on the membrane
+        //kNext = (k +1 )%numWalls;     
+        //jNext = T.cell(i).wall(kNext)->index();   
+	//lengthWallNeighbor = T.cell(i).wall(kNext)->length();
+	//fac = parameter(3)/(lengthWall* lengthWallNeighbor) * wallData[j][pwI];
+	//wallDerivs[j][pwI] -= fac;
+        //if( T.cell(i).wall(kNext)->cell1()->index() == i){wallDerivs[jNext][pwI] +=fac;}
+	//else{wallDerivs[jNext][pwI + 1] +=fac;}	
+ 	//kBefore = k > 0 ? k-1 : numWalls-1; 
+        //jBefore = T.cell(i).wall(kBefore)->index(); 	
+	//lengthWallNeighbor = T.cell(i).wall(kBefore)->length();
+	//fac = parameter(3)/(lengthWall* lengthWallNeighbor) * wallData[j][pwI];
+	//wallDerivs[j][pwI] -= fac;
+        //if( T.cell(i).wall(kBefore)->cell1()->index() == i){wallDerivs[jBefore][pwI] +=fac;}
+	//else{wallDerivs[jBefore][pwI + 1] +=fac;}	
+      }
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ){ 
+	iNeighbor = T.cell(i).wall(k)->cell1()->index();
+	g_ji = lengthWall/T.cell(iNeighbor).calculateVolume(vertexData);
+        // cell-cell auxin transport
+	fac = parameter(0)*cellData[i][aI] +
+	  parameter(1)*cellData[i][aI]*wallData[j][pwI+1];
+	cellDerivs[i][aI] -= g_ij * fac;
+	cellDerivs[iNeighbor][aI] +=  g_ji * fac;
+	//PIN cycling
+	fac = parameter(2)*(wallData[j][pwI+1] - wallData[j][rwI+1] * cellData[i][pI]);
+	wallDerivs[j][pwI+1] -= fac;
+	cellDerivs[i][pI] += g_ij * fac;
+	//PIN endocytosis rate
+        a_ij = (cellData[i][aI] + cellData[iNeighbor][aI])/2; 
+	wallDerivs[j][rwI+1] += parameter(6)*a_ij/(parameter(7) + a_ij) - wallData[j][rwI+1] + 0.5*(-wallData[j][rwI] + wallData[j][rwI+1])*wallData[j][rwI+1]*wallData[j][rwI]/parameter(8);
+        //PIN diffusion on the membrane
+        //if( T.cell(i).wall(k)->cell1()->index() == i ) {
+        //kNext = (k +1 )%numWalls;     
+        //jNext = T.cell(i).wall(kNext)->index();   
+	//lengthWallNeighbor = T.cell(i).wall(kNext)->length();
+	//fac = parameter(3)/(lengthWall* lengthWallNeighbor) * wallData[j][pwI];
+	//wallDerivs[j][pwI] -= fac;
+        //if( T.cell(i).wall(kNext)->cell1()->index() == i){wallDerivs[jNext][pwI] +=fac;}
+	//else{wallDerivs[jNext][pwI + 1] +=fac;}	
+ 	//kBefore = k > 0 ? k-1 : numWalls-1; 
+        //jBefore = T.cell(i).wall(kBefore)->index(); 	
+	//lengthWallNeighbor = T.cell(i).wall(kBefore)->length();
+	//fac = parameter(3)/(lengthWall* lengthWallNeighbor) * wallData[j][pwI];
+	//wallDerivs[j][pwI] -= fac;
+        //if( T.cell(i).wall(kBefore)->cell1()->index() == i){wallDerivs[jBefore][pwI] +=fac;}
+	//else{wallDerivs[jBefore][pwI + 1] +=fac;}	
+      }      
+      //
+      //PIN diffusion on the membrane
+      //
+      size_t pwIadd=1;//Two variables per wall, setting which to use
+      if( T.cell(i).wall(k)->cell1()->index() == i ) {
+	pwIadd=0;
+      }
+      kNext = (k +1 )%numWalls;     
+      jNext = T.cell(i).wall(kNext)->index();   
+      lengthWallNeighbor = T.cell(i).wall(kNext)->length();
+      fac = parameter(3)/(lengthWall* lengthWallNeighbor) * wallData[j][pwI+pwIadd];
+      wallDerivs[j][pwIadd] -= fac;
+      if( T.cell(i).wall(kNext)->cell1()->index() == i) {
+	wallDerivs[jNext][pwI] +=fac;
+      }
+      else {
+	wallDerivs[jNext][pwI + 1] +=fac;
+      }	
+      kBefore = k > 0 ? k-1 : numWalls-1; 
+      jBefore = T.cell(i).wall(kBefore)->index(); 	
+      lengthWallNeighbor = T.cell(i).wall(kBefore)->length();
+      fac = parameter(3)/(lengthWall* lengthWallNeighbor) * wallData[j][pwI+pwIadd];
+      wallDerivs[j][pwI+pwIadd] -= fac;
+      if( T.cell(i).wall(kBefore)->cell1()->index() == i) {
+	wallDerivs[jBefore][pwI] +=fac;
+      }
+      else {
+	wallDerivs[jBefore][pwI + 1] +=fac;
+      }	
+    }
+  }
+}

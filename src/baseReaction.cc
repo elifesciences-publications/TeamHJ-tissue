@@ -293,6 +293,8 @@ else if(idValue=="VertexFromParabolid")
     return new AuxinPINBistabilityModel(paraValue,indValue); 
   else if(idValue=="AuxinPINBistabilityModelCell")
     return new AuxinPINBistabilityModelCell(paraValue,indValue); 
+  else if(idValue=="AuxinPINBistabilityModelCellNew")
+    return new AuxinPINBistabilityModelCellNew(paraValue,indValue); 
 
   //directionReaction.h, directionUpdate.cc
   else if (idValue == "ContinousMTDirection")
