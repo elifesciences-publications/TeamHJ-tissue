@@ -557,11 +557,12 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain  ,
          os << cellData_[cellind][40]<<" "  // celldata index
 	    << cellData_[cellind][41]<<" "  // MT anisotropy(data)
 	    << cellData_[cellind][50]<<" "  // areal growth (data) 
-	    << cellData_[cellind][19]<<" "  // stress aniso 
+	    << cellData_[cellind][18]<<" "  // stress aniso 
 	    << cellData_[cellind][19]<<" "  // area ratio
-	    << cellData_[cellind][19]<<" "  // angle between max_stress and MT
-	    << cellData_[cellind][19]<<" "  // angle between max_growth and max_strain
-	   
+	    << cellData_[cellind][12]<<" "  // angle between max_stress and MT
+	    << cellData_[cellind][13]<<" "  // angle between max_growth and max_strain
+	    << cellData_[cellind][49]<<" "  // max_growth_rate(data)
+	    << cellData_[cellind][11]<<" "  // max_strain   
 	    <<std::endl;
        
      }
