@@ -2369,6 +2369,7 @@ derivs(Tissue &T,
         //PIN endocytosis rate
         a_ij = (cellData[i][aI] + cellData[iNeighbor][aI])/2; 
 	wallDerivs[j][rwI] += parameter(6)*a_ij /(parameter(7) + a_ij) - wallData[j][rwI]  + 0.5*(-wallData[j][rwI+1] + wallData[j][rwI])*wallData[j][rwI]*wallData[j][rwI + 1]/parameter(8);
+
         //PIN diffusion on the membrane
         //kNext = (k +1 )%numWalls;     
         //jNext = T.cell(i).wall(kNext)->index();   
@@ -2400,6 +2401,7 @@ derivs(Tissue &T,
 	//PIN endocytosis rate
         a_ij = (cellData[i][aI] + cellData[iNeighbor][aI])/2; 
 	wallDerivs[j][rwI+1] += parameter(6)*a_ij/(parameter(7) + a_ij) - wallData[j][rwI+1] + 0.5*(-wallData[j][rwI] + wallData[j][rwI+1])*wallData[j][rwI+1]*wallData[j][rwI]/parameter(8);
+
         //PIN diffusion on the membrane
         //if( T.cell(i).wall(k)->cell1()->index() == i ) {
         //kNext = (k +1 )%numWalls;     
@@ -2428,7 +2430,7 @@ derivs(Tissue &T,
       jNext = T.cell(i).wall(kNext)->index();   
       lengthWallNeighbor = T.cell(i).wall(kNext)->length();
       fac = parameter(3)/(lengthWall* lengthWallNeighbor) * wallData[j][pwI+pwIadd];
-      wallDerivs[j][pwIadd] -= fac;
+      wallDerivs[j][pwI+pwIadd] -= fac;
       if( T.cell(i).wall(kNext)->cell1()->index() == i) {
 	wallDerivs[jNext][pwI] +=fac;
       }

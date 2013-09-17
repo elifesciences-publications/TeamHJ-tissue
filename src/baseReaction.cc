@@ -10,6 +10,7 @@
 #include "baseReaction.h"
 
 #include "adhocReaction.h"
+#include "bending.h"
 #include "cellTime.h"
 #include "centerTriangulation.h"
 #include "creation.h"
@@ -20,8 +21,8 @@
 #include "mechanical.h"
 #include "mechanicalSpring.h"
 #include "mechanicalTRBS.h"
-#include "bending.h"
 #include "network.h"
+#include "transport.h"
 #include "sisterVertex.h"
 
 //#include"massAction.h"
@@ -257,7 +258,9 @@ else if(idValue=="VertexFromParabolid")
     return new HillGeneralTwo(paraValue,indValue); 
   else if(idValue=="HillGeneralThree")
     return new HillGeneralThree(paraValue,indValue); 
-
+  //transport.h,transport.cc
+  else if(idValue=="MembraneDiffusionSimple")
+    return new MembraneDiffusionSimple(paraValue,indValue); 
   //network.h,network.cc
   else if(idValue=="AuxinModelSimple1")
     return new AuxinModelSimple1(paraValue,indValue); 
