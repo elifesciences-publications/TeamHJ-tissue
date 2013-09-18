@@ -553,16 +553,17 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain  ,
    PVD_file::write(*T_,cellFile,wallFile,tCount);
    if(tCount==numPrint_){
      for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) {
-       if(cellData_[cellind][15]<75 && cellData_[cellind][15]>-75)
-         os << cellData_[cellind][40]<<" "  // celldata index
-	    << cellData_[cellind][41]<<" "  // MT anisotropy(data)
-	    << cellData_[cellind][50]<<" "  // areal growth (data) 
-	    << cellData_[cellind][18]<<" "  // stress aniso 
-	    << cellData_[cellind][19]<<" "  // area ratio
-	    << cellData_[cellind][12]<<" "  // angle between max_stress and MT
-	    << cellData_[cellind][13]<<" "  // angle between max_growth and max_strain
-	    << cellData_[cellind][49]<<" "  // max_growth_rate(data)
-	    << cellData_[cellind][11]<<" "  // max_strain   
+       if(cellData_[cellind][54]==1)
+         os << cellData_[cellind][40]<<" "  // 1 celldata index
+	    << cellData_[cellind][41]<<" "  // 2 MT anisotropy(data)
+	    << cellData_[cellind][50]<<" "  // 3 areal growth (data) 
+	    << cellData_[cellind][18]<<" "  // 4 stress aniso 
+	    << cellData_[cellind][19]<<" "  // 5 area ratio
+	    << cellData_[cellind][12]<<" "  // 6 angle between max_stress and MT
+	    << cellData_[cellind][13]<<" "  // 7 angle between max_growth and max_strain
+	    << cellData_[cellind][49]<<" "  // 8 max_growth_rate(data)
+	    << cellData_[cellind][11]<<" "  // 9 max_strain  
+	    << cellData_[cellind][54]<<" "  // 10 info boundary and empty cells 
 	    <<std::endl;
        
      }
