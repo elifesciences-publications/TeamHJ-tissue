@@ -3852,26 +3852,38 @@ void Tissue::sortCellWallAndCellVertex(Cell *cell)
 {	
 	std::vector<size_t> sortedFlag(numCell());
 	size_t numSorted=0;
-	if( !cell )		
-		cell = this->cellP(0);
-	sortCellRecursive(cell, sortedFlag, numSorted);
-	//std::cerr << "Tissue::sortCellWallAndCellVertex() " << numSorted << " of " << numCell()
-	//				<< " sorted recursively." << std::endl;
+	if( !cell ) { //sort all		
+	  size_t startSortIndex=0;
+	  do {
+	    if (!sortedFlag[startSortIndex]) {
+	      cell = this->cellP(startSortIndex);	  
+	      sortCellRecursive(cell, sortedFlag, numSorted);
+	    }
+	    startSortIndex++;
+	    //std::cerr << "Tissue::sortCellWallAndCellVertex() numSorted = " << numSorted 
+	    //	      << " startSortIndex = " << startSortIndex << std::endl;
+	  } while (numSorted<numCell() && startSortIndex<numCell());
+	}
+	else { //sort recursively around given cell (at division?)
+	  sortCellRecursive(cell, sortedFlag, numSorted);
+	}
+	std::cerr << "Tissue::sortCellWallAndCellVertex() " << numSorted << " of " << numCell()
+		  << " faces (cells) sorted recursively." << std::endl;
 }
 
 void Tissue::sortCellRecursive( Cell* cell, std::vector<size_t> &sortedFlag, size_t &numSorted)
 {
-	if (sortedFlag[cell->index()])
-		return;
-	cell->sortWallAndVertex(*this);
-	sortedFlag[cell->index()]++;
-	numSorted++;
-	for (size_t k=0; k<cell->numWall(); ++k) {
-		Cell *cellNext = cell->cellNeighbor(k);
-		if (cellNext!=background())
-			sortCellRecursive(cellNext,sortedFlag,numSorted);
-	}
-	return;
+  if (sortedFlag[cell->index()])
+    return;
+  cell->sortWallAndVertex(*this);
+  sortedFlag[cell->index()]++;
+  numSorted++;
+  for (size_t k=0; k<cell->numWall(); ++k) {
+    Cell *cellNext = cell->cellNeighbor(k);
+    if (cellNext!=background())
+      sortCellRecursive(cellNext,sortedFlag,numSorted);
+  }
+  return;
 }
 
 void Tissue::checkConnectivity(size_t verbose) 
