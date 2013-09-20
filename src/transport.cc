@@ -66,7 +66,7 @@ derivs(Tissue &T,
       if( T.cell(i).wall(k)->cell1()->index() == i ) {
 	pwIadd=0;
       }
-      double fac = parameter(3)*wallData[j][pwI+pwIadd];
+      double fac = parameter(0)*wallData[j][pwI+pwIadd];
       wallDerivs[j][pwI+pwIadd] -= fac;
 
       size_t kNext = (k+1)%numWalls;     

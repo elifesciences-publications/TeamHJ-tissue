@@ -1,4 +1,4 @@
-/**
+/*
  * Filename     : cell.h
  * Description  : A class describing a two-dimensional cell
  * Author(s)    : Henrik Jonsson (henrik@thep.lu.se)

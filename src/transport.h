@@ -52,5 +52,4 @@ class MembraneDiffusionSimple : public BaseReaction {
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
 };
-
-#endif;
+#endif
