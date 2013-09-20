@@ -564,6 +564,7 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain  ,
 	    << cellData_[cellind][49]<<" "  // 8 max_growth_rate(data)
 	    << cellData_[cellind][11]<<" "  // 9 max_strain  
 	    << cellData_[cellind][54]<<" "  // 10 info boundary and empty cells 
+	    << cellData_[cellind][14]<<" "  // 11 MT_growth angle
 	    <<std::endl;
        
      }
