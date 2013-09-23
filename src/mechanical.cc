@@ -99,11 +99,12 @@ namespace CenterTriangulation {
 		<< "Uses two parameters K_force and normalizeVolumeFlag (= 0 or 1).\n";
       exit(EXIT_FAILURE);
     }
-    if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+    if( indValue.size() != 1 || indValue[0].size() != 2 ) {
       std::cerr << "CenterTriangulation::VertexFRomCellPressure::"
 		<< "VertexFromCellPressure() " << std::endl
 		<< "Start of additional Cell variable indices (center(x,y,z) "
 		<< "L_1,...,L_n, n=num vertex) is given in first level." 
+		<< "concentration index is given in second level. "
 		<< std::endl;    
       exit(EXIT_FAILURE);
     }
@@ -148,13 +149,44 @@ namespace CenterTriangulation {
       for (size_t k = 0; k < tmpCell.numVertex(); ++k) {
 	size_t v1I = tmpCell.vertex(k)->index();
 	size_t v2I = tmpCell.vertex((k + 1) % (tmpCell.numVertex()))->index();
+
+	// std::vector<double> nCell(dimension),nWall(dimension);
+	// //normal to the triangle plane
+	// nCell[0]=(vertexData[v1I][1]-cellCenter[1])*(vertexData[v2I][2]-cellCenter[2])-(vertexData[v1I][2]-cellCenter[2])*(vertexData[v2I][1]-cellCenter[1]);
+	// nCell[1]=(vertexData[v1I][2]-cellCenter[2])*(vertexData[v2I][0]-cellCenter[0])-(vertexData[v1I][0]-cellCenter[0])*(vertexData[v2I][2]-cellCenter[2]);
+	// nCell[2]=(vertexData[v1I][0]-cellCenter[0])*(vertexData[v2I][1]-cellCenter[1])-(vertexData[v1I][1]-cellCenter[1])*(vertexData[v2I][0]-cellCenter[0]);
+	// //normal to the wall outward
+	// nWall[0]=(vertexData[v2I][1]-vertexData[v1I][1])*nCells[2]-(vertexData[v2I][2]-vertexData[v1I][2])*nCells[1];
+	// nWall[1]=(vertexData[v2I][2]-vertexData[v1I][2])*nCells[0]-(vertexData[v2I][0]-vertexData[v1I][0])*nCells[2];
+	// nWall[2]=(vertexData[v2I][0]-vertexData[v1I][0])*nCells[1]-(vertexData[v2I][1]-vertexData[v1I][1])*nCells[0];
+
+	// double dxNorm = 0.0;
+        // dxNorm =nWall[0]*nWall[0]+nWall[1]*nWall[1]+nWall[2]*nWall[2]; 
+	// if (dxNorm>0.0) {
+	//   dxNorm = std::sqrt(dxNorm);
+	//   for( size_t d=0 ; d<dimension ; ++d ) {
+	//     nWall[d] /=dxNorm;
+	//   }
+	// }
+	// else {
+	//   std::cerr << "CellTriangulationVertexFromCellPressure::derivs() "
+	// 	    << "strange wall length or direction." << std::endl;
+	// }
+
+
+
+
 	std::vector<double> x0(dimension),dx(dimension);
 	double dxNorm = 0.0;
 	for( size_t d=0 ; d<dimension ; ++d ) {
 	  x0[d] = 0.5*(vertexData[v1I][d] + vertexData[v2I][d]);
-	  // Caveat: This is  normal to the wall in the triangle plane
+	  // Caveat: This is NOT  normal to the wall in the triangle plane
 	  dx[d] = x0[d]-cellCenter[d];
 	}
+
+
+
+
 	double wallLength = 0.0;
 	double wallFactor = 0.0; // dx.wallVector/wallVector^2 for making dx perpendicular to the wall 
 	std::vector<double> wallVector(dimension);
@@ -196,6 +228,10 @@ namespace CenterTriangulation {
 	    double cellVolume = tmpCell.calculateVolume(vertexData);                                  
 	    factor /= std::fabs(cellVolume);         
 	  }
+	if(variableIndex(0,1)!=0) {
+	  factor*=cellData[cellI][variableIndex(0,1)];
+	}
+
 	factor *= wallLength;    
 	for( size_t d=0 ; d<dimension ; ++d ) {
 	  vertexDerivs[v1I][d] += factor * dx[d];
