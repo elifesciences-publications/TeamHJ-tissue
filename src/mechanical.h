@@ -78,9 +78,10 @@ namespace CenterTriangulation {
   /// In a model file, the reaction is given by
   ///
   /// @verbatim
-  /// CenterTriangulation:VertexFromCellPressure 2 1 1
+  /// CenterTriangulation:VertexFromCellPressure 2 1 2
   /// P V_normflag(=0/1)
   /// startIndex 
+  /// concentraion_index(if 0 pressure is constant)
   /// @endverbatim
   ///
   /// where the startindex is marking the start of internal edge varibales (x,y,z,L_1,...).
@@ -121,7 +122,7 @@ namespace CenterTriangulation {
 		DataMatrix &wallDerivs,
 		DataMatrix &vertexDerivs );
   };
-
+ 
   ///
   /// @brief Updates vertices from a cell pressure potential linearly increasing in a given time span
   ///
