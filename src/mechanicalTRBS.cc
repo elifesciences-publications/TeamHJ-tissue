@@ -1199,14 +1199,14 @@ VertexFromTRBSMT(std::vector<double> &paraValue,
   }
 
   if( (indValue.size()!=1 && indValue.size()!=3) ||
-      indValue[0].size()!=9 ||
+      indValue[0].size()!=10 ||
       (indValue.size()==3 && (indValue[1].size()!=0 && indValue[1].size()!=1 && indValue[1].size()!=2 && indValue[1].size()!=3 )) ||
       (indValue.size()==3 && (indValue[2].size()!=0 && indValue[2].size()!=1 && indValue[2].size()!=2)) 
       ) { 
     std::cerr << "VertexFromTRBSMT::"
 	      << "VertexFromTRBSMT() "
               << "resting length index and MT direction initial index and strain and stress anisotropy indices and " 
-              << "indices for storing area ratio, isotropic energy and anisotropic energy and young_fiber and MTstress given in first level." 
+              << "indices for storing area ratio, isotropic energy and anisotropic energy and young_fiber and MTstress and stress tensor(6 components) given in first level." 
               << "Optionally two additional levels can be given where the strain and perpendicular direction to strain in cell plane and 2nd strain" 
               << "directions/values(dx dy dz value) can be stored at given indices at second level."
               << "If no index given at second level, strain will not be stored, if one index given strain will be stored"
@@ -1299,11 +1299,22 @@ derivs(Tissue &T,
   size_t dimension = 3;
   assert (dimension==vertexData[0].size());
   size_t numCells = T.numCell();
-  size_t wallLengthIndex = variableIndex(0,0);
   size_t numWalls = 3; // defined only for triangles 
   
   double TotalVolume=0;
   double deltaVolume=0;
+
+  size_t wallLengthIndex   =variableIndex(0,0);
+  size_t MTindex           =variableIndex(0,1);	 
+  size_t strainAnIndex     =variableIndex(0,2);	
+  size_t stressAnIndex     =variableIndex(0,3);	
+  size_t areaRatioIndex    =variableIndex(0,4);	
+  size_t isoEnergyIndex    =variableIndex(0,5);	
+  size_t anisoEnergyIndex  =variableIndex(0,6);	
+  size_t youngLIndex       =variableIndex(0,7);	
+  size_t MTstressIndex     =variableIndex(0,8);	
+  size_t stressTensorIndex =variableIndex(0,9);	
+ 
 
 
   for( size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex ) {
@@ -1320,12 +1331,16 @@ derivs(Tissue &T,
     double poissonT   = parameter(3);
     double TETA= parameter(8); 
 
+
     size_t v1 = T.cell(cellIndex).vertex(0)->index();
     size_t v2 = T.cell(cellIndex).vertex(1)->index();
     size_t v3 = T.cell(cellIndex).vertex(2)->index();
     size_t w1 = T.cell(cellIndex).wall(0)->index();
     size_t w2 = T.cell(cellIndex).wall(1)->index();
     size_t w3 = T.cell(cellIndex).wall(2)->index();
+
+
+
 
     //std::cerr<< "cell "<< cellIndex<< " vertices  "<< v1<<" "<< v2 << " "<< v3 << " walls  "<< w1 <<" "<< w2 << " "<< w3<< std::endl;
     
@@ -1339,7 +1354,7 @@ derivs(Tissue &T,
       youngT = youngMatrix; 
     }
     if( parameter(4)==1){  // material anisotropy via FiberModel
-      youngL = cellData[cellIndex][variableIndex(0,7)]; 
+      youngL = cellData[cellIndex][youngLIndex]; 
       youngT = 2*youngMatrix+youngFiber-youngL; 
     }
     
@@ -1377,14 +1392,14 @@ derivs(Tissue &T,
     double TETA1=parameter(5);
     if ( parameter(9)==1 ) {  // aniso direction from TETA 
       if ( cellIndex==0 || cellIndex==2) {
-	cellData[cellIndex][variableIndex(0,1)]=std::cos(TETA1);  
-	cellData[cellIndex][variableIndex(0,1)+1]=std::sin(TETA1);
-	cellData[cellIndex][variableIndex(0,1)+2]=0;
+	cellData[cellIndex][MTindex ]=std::cos(TETA1);  
+	cellData[cellIndex][MTindex +1]=std::sin(TETA1);
+	cellData[cellIndex][MTindex +2]=0;
       }
       if ( cellIndex==1 || cellIndex==3) {
-	cellData[cellIndex][variableIndex(0,1)]=std::cos(TETA);  
-	cellData[cellIndex][variableIndex(0,1)+1]=std::sin(TETA);
-	cellData[cellIndex][variableIndex(0,1)+2]=0;
+	cellData[cellIndex][MTindex ]=std::cos(TETA);  
+	cellData[cellIndex][MTindex +1]=std::sin(TETA);
+	cellData[cellIndex][MTindex +2]=0;
       }
     }
     // if ( parameter(9)==1 ) {  // aniso direction from TETA 
@@ -1395,9 +1410,9 @@ derivs(Tissue &T,
     
     // Aniso vector in current shape in global coordinate system
     double AnisoCurrGlob[3];
-    AnisoCurrGlob[0] = cellData[cellIndex][variableIndex(0,1)];
-    AnisoCurrGlob[1] = cellData[cellIndex][variableIndex(0,1)+1];
-    AnisoCurrGlob[2] = cellData[cellIndex][variableIndex(0,1)+2];
+    AnisoCurrGlob[0] = cellData[cellIndex][MTindex ];
+    AnisoCurrGlob[1] = cellData[cellIndex][MTindex +1];
+    AnisoCurrGlob[2] = cellData[cellIndex][MTindex +2];
     
 
     std::vector<double> restingLength(numWalls);
@@ -1485,10 +1500,7 @@ derivs(Tissue &T,
                                         {-1/Qb , (Qa-Qb)/(Qb*Qc) , 1 },       
                                         { 1/Qb ,     -Qa/(Qb*Qc) , 0 }  };
             
-      // std::cerr<< "cell "<< cellIndex<< " shape vactor 0 : "<< ShapeVectorCurrent[0][0]<<"  "<< ShapeVectorCurrent[0][1]<<"  "<< ShapeVectorCurrent[0][2]<< std::endl;
-      // std::cerr<< "cell "<< cellIndex<< " shape vactor 1 : "<< ShapeVectorCurrent[1][0]<<"  "<< ShapeVectorCurrent[1][1]<<"  "<< ShapeVectorCurrent[1][2]<< std::endl;
-      // std::cerr<< "cell "<< cellIndex<< " shape vactor 2 : "<< ShapeVectorCurrent[2][0]<<"  "<< ShapeVectorCurrent[2][1]<<"  "<< ShapeVectorCurrent[2][2]<< std::endl;
-      
+    
       // Local coordinates of the resting shape ( counterclockwise )
       double RestingAngle1=std::acos(  (restingLength[0]*restingLength[0]+restingLength[1]*restingLength[1]-restingLength[2]*restingLength[2])/
                                        (restingLength[0]*restingLength[1]*2)    );
@@ -1501,9 +1513,7 @@ derivs(Tissue &T,
       double ShapeVectorResting[3][3]={ {  0   ,       1/Pc      , 0 }, 
                                         {-1/Pb , (Pa-Pb)/(Pb*Pc) , 1 },       
                                         { 1/Pb ,     -Pa/(Pb*Pc) , 0 }  };
-      // std::cerr<< "cell "<< cellIndex<< " shape vactor 0 : "<< ShapeVectorResting[0][0]<<"  "<< ShapeVectorResting[0][1]<<"  "<< ShapeVectorResting[0][2]<< std::endl;
-      // std::cerr<< "cell "<< cellIndex<< " shape vactor 1 : "<< ShapeVectorResting[1][0]<<"  "<< ShapeVectorResting[1][1]<<"  "<< ShapeVectorResting[1][2]<< std::endl;
-      // std::cerr<< "cell "<< cellIndex<< " shape vactor 2 : "<< ShapeVectorResting[2][0]<<"  "<< ShapeVectorResting[2][1]<<"  "<< ShapeVectorResting[2][2]<< std::endl;
+     
       
       // //Strain tensor  (clockwise ordering of nodes/edges)
       // double CurrentAngle2=std::acos(  (length[1]*length[1]+length[2]*length[2]-length[0]*length[0])/
@@ -1518,21 +1528,7 @@ derivs(Tissue &T,
       //                                   {-1/Qb , (Qa-Qb)/(Qb*Qc) }  };
 
      
-      // static aniso direction
-      // AnisoCurrGlob[0] =1;
-      // AnisoCurrGlob[1] =0;
-      // AnisoCurrGlob[2] =0;
-
-      // // dynamic aniso direction      
-      // AnisoCurrGlob[0] =cellData[cellIndex][0];
-      // AnisoCurrGlob[1] =cellData[cellIndex][1];
-      // AnisoCurrGlob[2] =cellData[cellIndex][2];
-
-      //std::cerr<< "cell "<< cellIndex<< std::endl;
-      //std::cerr<<position[0][0]<<"  "<<position[0][1]<<"  "<<position[0][2]<< std::endl;
-      //std::cerr<<position[1][0]<<"  "<<position[1][1]<<"  "<<position[1][2]<< std::endl;
-      //std::cerr<<position[2][0]<<"  "<<position[2][1]<<"  "<<position[2][2]<< std::endl;      
-      //std::cerr<< "cell "<< cellIndex<< " anisoVector current global "<<AnisoCurrGlob[0]<<"  "<<AnisoCurrGlob[1]<<"  "<<AnisoCurrGlob[2]<< std::endl;
+    
 
       // Rotation Matrix for changing coordinate systems for both Local to Global( Strain Tensor) and Global to Local( Aniso Vector in the current shape)
       double rotation[3][3];  
@@ -1589,14 +1585,6 @@ derivs(Tissue &T,
       AnisoCurrLocal[1]=rotation[0][1]*AnisoCurrGlob[0]+rotation[1][1]*AnisoCurrGlob[1]+rotation[2][1]*AnisoCurrGlob[2];
       AnisoCurrLocal[2]=rotation[0][2]*AnisoCurrGlob[0]+rotation[1][2]*AnisoCurrGlob[1]+rotation[2][2]*AnisoCurrGlob[2];
      
-
-
-
-
-
-
-
-
 
 
       double positionLocal[3][2]={ {Qa , Qc}, 
@@ -1664,16 +1652,6 @@ derivs(Tissue &T,
 
 
 
-
-
-
-
-
-
-
-
-
-
       double AnisoMeasure=std::sqrt(AnisoRestLocal[0]*AnisoRestLocal[0]+AnisoRestLocal[1]*AnisoRestLocal[1]);
       // std::cerr<< "cell "<< cellIndex<<" AnisoMeasure "<< AnisoMeasure<<std::endl;
       
@@ -1704,28 +1682,12 @@ derivs(Tissue &T,
 
       //  std::cerr<< "cell "<< cellIndex<<"  numerator  " << (ShapeVectorResting[2][0]*AnisoRestLocal[0]+ShapeVectorResting[2][1]*AnisoRestLocal[1])/
       //                      std::sqrt(ShapeVectorResting[2][0]*ShapeVectorResting[2][0]+ShapeVectorResting[2][1]*ShapeVectorResting[2][1])  << std::endl;    
-      //  std::cerr<< "cell "<< cellIndex<< " Q 0, 1 , 2:  " << Qa<<" , "<<Qb << " , " << Qc  << std::endl;
-      //  std::cerr<< "cell "<< cellIndex<< " P 0, 1 , 2:  " << Pa<<" , "<<Pb << " , " << Pc  << std::endl;
-      //  std::cerr<<"cell "<<cellIndex<< "   tet 0, 1 , 2:  " << teta[0]<<" , "<<teta[1] << " , " << teta[2]  << std::endl;
-      
-      // a sample collection of fixed angles 
-      
-      // if (cellIndex==1){
-      //   teta[0]=0;
-      //   teta[1]=(3*3.14159265)/4;
-      //   teta[2]=3.14159265/2;
-      // }
-      // if (cellIndex==0){
-      //   teta[0]=3.14159265;
-      //   teta[1]=(3.14159265)/4;
-      //   teta[2]=3.14159265/2;
-      // }
-
+    
 
 
 
       
-      // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STRAIN and STRESS TENSOR (BEGIN) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      // >>>>>>>>>>>>>>>>>>>>>> STRAIN and STRESS TENSOR (BEGIN) <<<<<<<<<<<<<<<<<<<<
       
       // deformation gradiant tensor F =Sigma i=1,2,3 Qi x Di
       // strain tensor in resting shape E=0.5(FtF-I)
@@ -1928,7 +1890,7 @@ derivs(Tissue &T,
       // double sigratio=0.2; 
       //double sigmafactor=1;
       // if( anisoimpact <=sigratio)   sigmafactor=(sigratio-anisoimpact)/(1-anisoimpact);
-      // // cellData[cellIndex][variableIndex(0,3)] :  total stress aniso
+      // // cellData[cellIndex][stressAnIndex ] :  total stress aniso
       // else  sigmafactor=0;
      
       double StressTensor[3][3];
@@ -2052,34 +2014,34 @@ derivs(Tissue &T,
       // std::cerr<<" cell   "<<cellIndex<<"   wall   "<<w1<<  "  cell neighbohr  "<<(cell1->cellNeighbor(0))->index() <<std::endl;
       // std::cerr<<" cell   "<<cellIndex<<"   wall   "<<w2<<  "  cell neighbohr  "<<(cell1->cellNeighbor(1))->index() <<std::endl;
       // std::cerr<<" cell   "<<cellIndex<<"   wall   "<<w3<<  "  cell neighbohr  "<<(cell1->cellNeighbor(2))->index() <<std::endl;
-      cellData[cellIndex][26]=StressTensor[0][0];
-      cellData[cellIndex][27]=StressTensor[1][1];
-      cellData[cellIndex][28]=StressTensor[2][2];
-      cellData[cellIndex][29]=StressTensor[0][1];
-      cellData[cellIndex][30]=StressTensor[0][2];
-      cellData[cellIndex][31]=StressTensor[1][2];
+      cellData[cellIndex][stressTensorIndex]=StressTensor[0][0];
+      cellData[cellIndex][stressTensorIndex+1]=StressTensor[1][1];
+      cellData[cellIndex][stressTensorIndex+2]=StressTensor[2][2];
+      cellData[cellIndex][stressTensorIndex+3]=StressTensor[0][1];
+      cellData[cellIndex][stressTensorIndex+4]=StressTensor[0][2];
+      cellData[cellIndex][stressTensorIndex+5]=StressTensor[1][2];
       
       
       
       
       // stress component along MT direction 
-      temp = std::sqrt ( cellData[cellIndex][variableIndex(0,1)  ] * cellData[cellIndex][variableIndex(0,1)  ] +
-			 cellData[cellIndex][variableIndex(0,1)+1] * cellData[cellIndex][variableIndex(0,1)+1] +
-			 cellData[cellIndex][variableIndex(0,1)+2] * cellData[cellIndex][variableIndex(0,1)+2]  );
-      cellData[cellIndex][variableIndex(0,1)  ] /=temp;
-      cellData[cellIndex][variableIndex(0,1)+1] /=temp;
-      cellData[cellIndex][variableIndex(0,1)+2] /=temp;
+      temp = std::sqrt ( cellData[cellIndex][MTindex   ] * cellData[cellIndex][MTindex   ] +
+			 cellData[cellIndex][MTindex +1] * cellData[cellIndex][MTindex +1] +
+			 cellData[cellIndex][MTindex +2] * cellData[cellIndex][MTindex +2]  );
+      cellData[cellIndex][MTindex   ] /=temp;
+      cellData[cellIndex][MTindex +1] /=temp;
+      cellData[cellIndex][MTindex +2] /=temp;
       
-      cellData[cellIndex][variableIndex(0,8)  ] =
-	cellData[cellIndex][variableIndex(0,1)     ] *cellData[cellIndex][variableIndex(0,1)     ] *StressTensor[0][0]  +
-	cellData[cellIndex][variableIndex(0,1)     ] *cellData[cellIndex][variableIndex(0,1)+1] *StressTensor[0][1]  +
-	cellData[cellIndex][variableIndex(0,1)     ] *cellData[cellIndex][variableIndex(0,1)+2] *StressTensor[0][2]  +
-	cellData[cellIndex][variableIndex(0,1)+1] *cellData[cellIndex][variableIndex(0,1)     ] *StressTensor[1][0]  +
-	cellData[cellIndex][variableIndex(0,1)+1] *cellData[cellIndex][variableIndex(0,1)+1] *StressTensor[1][1]  +
-	cellData[cellIndex][variableIndex(0,1)+1] *cellData[cellIndex][variableIndex(0,1)+2] *StressTensor[1][2]  +
-	cellData[cellIndex][variableIndex(0,1)+2] *cellData[cellIndex][variableIndex(0,1)     ] *StressTensor[2][0]  +
-	cellData[cellIndex][variableIndex(0,1)+2] *cellData[cellIndex][variableIndex(0,1)+1] *StressTensor[2][1]  +
-	cellData[cellIndex][variableIndex(0,1)+2] *cellData[cellIndex][variableIndex(0,1)+2] *StressTensor[2][2]       ;
+      cellData[cellIndex][MTstressIndex] =
+	cellData[cellIndex][MTindex   ] *cellData[cellIndex][MTindex   ] *StressTensor[0][0]  +
+	cellData[cellIndex][MTindex   ] *cellData[cellIndex][MTindex +1] *StressTensor[0][1]  +
+	cellData[cellIndex][MTindex   ] *cellData[cellIndex][MTindex +2] *StressTensor[0][2]  +
+	cellData[cellIndex][MTindex +1] *cellData[cellIndex][MTindex   ] *StressTensor[1][0]  +
+	cellData[cellIndex][MTindex +1] *cellData[cellIndex][MTindex +1] *StressTensor[1][1]  +
+	cellData[cellIndex][MTindex +1] *cellData[cellIndex][MTindex +2] *StressTensor[1][2]  +
+	cellData[cellIndex][MTindex +2] *cellData[cellIndex][MTindex   ] *StressTensor[2][0]  +
+	cellData[cellIndex][MTindex +2] *cellData[cellIndex][MTindex +1] *StressTensor[2][1]  +
+	cellData[cellIndex][MTindex +2] *cellData[cellIndex][MTindex +2] *StressTensor[2][2]       ;
   
       //  std::cerr <<"strain tensor " << std::endl;
       // std::cerr <<" Stress  "<< StrainTensor[0][0] <<" Sxy  "<< StrainTensor[0][1] <<" Sxz  "<< StrainTensor[0][2] << std::endl
@@ -2257,8 +2219,8 @@ derivs(Tissue &T,
        
 
        // storing a measure for strain anisotropy in cell vector
-       if (std::abs(maximalStrainValue)<0.0000001) cellData[cellIndex][variableIndex(0,2)]=0;
-       if (std::abs(maximalStrainValue)>= 0.0000001) cellData[cellIndex][variableIndex(0,2)]=1-std::abs(maximalStrainValue2/maximalStrainValue);
+       if (std::abs(maximalStrainValue)<0.0000001) cellData[cellIndex][strainAnIndex]=0;
+       if (std::abs(maximalStrainValue)>= 0.0000001) cellData[cellIndex][strainAnIndex]=1-std::abs(maximalStrainValue2/maximalStrainValue);
        
        // storing   strain direction/value in cellData
        if (numVariableIndexLevel()==3 && (numVariableIndex(1)==1 || numVariableIndex(1)==2 || numVariableIndex(1)==3) ) {// storing maximal strain
@@ -2316,26 +2278,26 @@ derivs(Tissue &T,
        
        //<<<<<<<<<<<<<<<<<<<<<<<< angles between  vectors and circumferential direction <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       
-       temp=std::sqrt(cellData[cellIndex][variableIndex(0,1)]*cellData[cellIndex][variableIndex(0,1)]+     // 12 --> MT
-                      cellData[cellIndex][variableIndex(0,1)+1]*cellData[cellIndex][variableIndex(0,1)+1]);
-       if(temp<0.000001){
-         cellData[cellIndex][12]=pi/2;
-       }
-       else{
-         cellData[cellIndex][12]=std::atan(cellData[cellIndex][variableIndex(0,1)+2]/temp);
-       }
+       // temp=std::sqrt(cellData[cellIndex][variableIndex(0,1)]*cellData[cellIndex][variableIndex(0,1)]+     // 12 --> MT
+       //                cellData[cellIndex][variableIndex(0,1)+1]*cellData[cellIndex][variableIndex(0,1)+1]);
+       // if(temp<0.000001){
+       //   cellData[cellIndex][12]=pi/2;
+       // }
+       // else{
+       //   cellData[cellIndex][12]=std::atan(cellData[cellIndex][variableIndex(0,1)+2]/temp);
+       // }
        
-       temp=std::sqrt(eigenVectorStrain[0][Istrain]*eigenVectorStrain[0][Istrain]+                                   // 13 --> Strain
-                      eigenVectorStrain[1][Istrain]*eigenVectorStrain[1][Istrain] );
-       if(temp<0.000000001){
-         cellData[cellIndex][13]=pi/2;
-       }
-       else{
-         cellData[cellIndex][13]=std::atan(eigenVectorStrain[2][Istrain]/temp);
-       }
+       // temp=std::sqrt(eigenVectorStrain[0][Istrain]*eigenVectorStrain[0][Istrain]+                                   // 13 --> Strain
+       //                eigenVectorStrain[1][Istrain]*eigenVectorStrain[1][Istrain] );
+       // if(temp<0.000000001){
+       //   cellData[cellIndex][13]=pi/2;
+       // }
+       // else{
+       //   cellData[cellIndex][13]=std::atan(eigenVectorStrain[2][Istrain]/temp);
+       // }
 
       
-       cellData[cellIndex][15]=position[0][2]; // z coordinate of 0th vertex of the cell                                  // 15 --> Z coordinate
+       // cellData[cellIndex][15]=position[0][2]; // z coordinate of 0th vertex of the cell                                  // 15 --> Z coordinate
       
        
        
@@ -2406,18 +2368,9 @@ derivs(Tissue &T,
 
  
 
-
-        //cellData[cellIndex][19]=TetaPerpStress;
-        //cellData[cellIndex][20]= strainZ;
-        //cellData[cellIndex][21]= areaRatio;
-        // cellData[cellIndex][21]= TetaStress;
-        // cellData[cellIndex][22]= TetaStrain; 
-        // cellData[cellIndex][23]= TetaPerp;
-        // cellData[cellIndex][19]= TETA;
-        // cellData[cellIndex][20]=EnergyIso+EnergyAniso;    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        cellData[cellIndex][variableIndex(0,4)]= Area/restingArea; //area ratio
-        cellData[cellIndex][variableIndex(0,5)]=EnergyIso;    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        cellData[cellIndex][variableIndex(0,6)]=EnergyAniso;  
+        cellData[cellIndex][areaRatioIndex]  =Area/restingArea; //area ratio
+        cellData[cellIndex][isoEnergyIndex]  =EnergyIso;        //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        cellData[cellIndex][anisoEnergyIndex]=EnergyAniso;  
         
   }
    
@@ -2447,62 +2400,62 @@ derivs(Tissue &T,
     int counter=0;
     for (int nn=0 ; nn<3 ; nn++){
       if (neighbor[nn]<numCells && neighbor[nn]>-1){
-	StressTensor[0][0]+=neighborweight*cellData[neighbor[nn]][26];
+	StressTensor[0][0]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex];
 	counter+=1;
       }
     }
     StressTensor[0][0]/=counter;
-    StressTensor[0][0]+=(1-neighborweight)*cellData[cellIndex][26];
+    StressTensor[0][0]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex];
 
     counter=0;
     for (int nn=0 ; nn<3 ; nn++){
       if (neighbor[nn]<numCells && neighbor[nn]>-1){
-	StressTensor[1][1]+=neighborweight*cellData[neighbor[nn]][27];
+	StressTensor[1][1]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex+1];
 	counter+=1;
       }
     }
     StressTensor[1][1]/=counter;
-    StressTensor[1][1]+=(1-neighborweight)*cellData[cellIndex][27];
+    StressTensor[1][1]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+1];
 
     counter=0;
     for (int nn=0 ; nn<3 ; nn++){
       if (neighbor[nn]<numCells && neighbor[nn]>-1){
-	StressTensor[2][2]+=neighborweight*cellData[neighbor[nn]][28];
+	StressTensor[2][2]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex+2];
 	counter+=1;
       }
     }
     StressTensor[2][2]/=counter;
-    StressTensor[2][2]+=(1-neighborweight)*cellData[cellIndex][28];
+    StressTensor[2][2]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+2];
 
     counter=0;
     for (int nn=0 ; nn<3 ; nn++){
       if (neighbor[nn]<numCells && neighbor[nn]>-1){
-	StressTensor[0][1]+=neighborweight*cellData[neighbor[nn]][29];
+	StressTensor[0][1]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex+3];
 	counter+=1;
       }
     }
     StressTensor[0][1]/=counter;
-    StressTensor[0][1]+=(1-neighborweight)*cellData[cellIndex][29];
+    StressTensor[0][1]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+3];
 
     counter=0;
     for (int nn=0 ; nn<3 ; nn++){
       if (neighbor[nn]<numCells && neighbor[nn]>-1){
-	StressTensor[2][0]+=neighborweight*cellData[neighbor[nn]][30];
+	StressTensor[2][0]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex+4];
 	counter+=1;
       }
     }
     StressTensor[2][0]/=counter;
-    StressTensor[2][0]+=(1-neighborweight)*cellData[cellIndex][30];
+    StressTensor[2][0]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+4];
 
     counter=0;
     for (int nn=0 ; nn<3 ; nn++){
       if (neighbor[nn]<numCells && neighbor[nn]>-1){
-	StressTensor[1][2]+=neighborweight*cellData[neighbor[nn]][31];
+	StressTensor[1][2]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex+5];
 	counter+=1;
       }
     }
     StressTensor[1][2]/=counter;
-    StressTensor[1][2]+=(1-neighborweight)*cellData[cellIndex][31];
+    StressTensor[1][2]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+5];
     
     StressTensor[0][2]=StressTensor[2][0];
     StressTensor[1][0]=StressTensor[0][1];
@@ -2614,8 +2567,8 @@ derivs(Tissue &T,
     
     
     // storing a measure for stress anisotropy in cell vector
-    if (std::abs(maximalStressValue)<0.000001) cellData[cellIndex][variableIndex(0,3)]=0;
-    if (std::abs(maximalStressValue)>= 0.000001) cellData[cellIndex][variableIndex(0,3)]=1-std::abs(maximalStressValue2/maximalStressValue);
+    if (std::abs(maximalStressValue)<0.000001) cellData[cellIndex][stressAnIndex ]=0;
+    if (std::abs(maximalStressValue)>= 0.000001) cellData[cellIndex][stressAnIndex ]=1-std::abs(maximalStressValue2/maximalStressValue);
     
     
         
@@ -2792,13 +2745,13 @@ VertexFromTRBScenterTriangulationMT(std::vector<double> &paraValue,
     exit(0);
   }
   
-  if( parameter(4)!=0 && parameter(4)!=1 && parameter(4)!=2 ) {
-    std::cerr << " VertexFromTRBScenterTriangulationMT::"
-	      << " VertexFromTRBScenterTriangulationMT() "
-	      << " 5th parameter must be 0 or 1  "
-              << " 0: constant material anisotropy, 1: material anisotropy via FiberModel  2: for energy landscape(see the code, do not use until you are sure)" << std::endl;
-    exit(0);
-  }
+  // if( parameter(4)!=0 && parameter(4)!=1 && parameter(4)!=2 ) {
+  //   std::cerr << " VertexFromTRBScenterTriangulationMT::"
+  // 	      << " VertexFromTRBScenterTriangulationMT() "
+  // 	      << " 5th parameter must be 0 or 1  "
+  //             << " 0: constant material anisotropy, 1: material anisotropy via FiberModel  2: for energy landscape(see the code, do not use until you are sure)" << std::endl;
+  //   exit(0);
+  // }
 
   
   if( parameter(7)!=0 && parameter(7)!=1 ) {
@@ -2902,6 +2855,20 @@ derivs(Tissue &T,
     if( parameter(4)==2){  // for varrying material anisotropy with constant overall stiffness for energy landscape
       youngL =youngFiber; 
       youngT =youngMatrix-youngL;  // here youngMatrix is total stiffness
+    }
+    if( parameter(4)<0){  // for heterogeneous stiffness
+      double hFactor=0;
+      double Hthreshold=0.01;
+      if (std::abs(cellData[cellIndex][youngLIndex])>Hthreshold){
+	hFactor=Hthreshold;
+      }
+      else{
+	hFactor=std::abs(cellData[cellIndex][youngLIndex]);
+      }
+      hFactor *=std::abs(parameter(4)); // factor for heterogeneity      
+      
+      youngL = youngMatrix+youngFiber-hFactor*(youngMatrix+youngFiber); 
+      youngT = youngMatrix-hFactor*(youngMatrix); 
     }
     // double youngMatrixA=1;
     // if( parameter(4)==2){  // for varrying material anisotropy with constant overall stiffness for energy landscape
