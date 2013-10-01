@@ -571,6 +571,23 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain  ,
    }
  }
   
+ else if( printFlag_==66 ) {// Print in vtu format and strain data  at the end PLoS/fig2F
+   std::string pvdFile = "tmp/tissue.pvd";
+   std::string cellFile = "tmp/VTK_cells.vtu";
+   std::string wallFile = "tmp/VTK_walls.vtu";
+   static size_t numCellVar = T_->cell(0).numVariable();
+   setTissueVariables(numCellVar);
+   if( tCount==0 ) {
+     PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
+   }
+   PVD_file::write(*T_,cellFile,wallFile,tCount);
+   if(tCount==numPrint_){
+     for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) 
+       os << cellData_[cellind][11] <<" " // principal strain value  
+	  << cellData_[cellind][15] <<" "//  2nd strain value
+	  <<std::endl;
+   }
+ }
   
   else if (printFlag_ == 96) {
     size_t dimensions = vertexData_[0].size();
