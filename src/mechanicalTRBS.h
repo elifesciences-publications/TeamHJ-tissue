@@ -230,7 +230,7 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 ///
 /// @verbatim
 ///
-/// VertexFromTRBSMT 10 1 9
+/// VertexFromTRBSMT 10 1 10
 /// 
 /// Y_matrix 
 /// Y_fiber 
@@ -238,9 +238,10 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 /// Poisson_Trans
 /// MF_flag(0/1) 
 /// neighborWeight 
-/// unusedparameter 
+/// max stress for stress aniso 
 /// plane-strain/stress-flag 
-/// MT-angle MT-feedback-flag 
+/// MT-angle 
+/// MT-feedback-flag 
 /// 
 /// L_ij-index 
 /// MT_cellIndex 
@@ -251,10 +252,11 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 /// anisoEnergyIndex 
 /// YoungL-index
 /// MTstress
+/// start index for stress tensor
 ///
 /// or
 ///
-/// VertexFromTRBSMT 10 3 8 0/1/2/3 0/1/2
+/// VertexFromTRBSMT 10 3 10 0/1/2/3 0/1/2
 ///
 /// Y_matrix
 /// Y_fiber
@@ -276,6 +278,7 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 /// anisoEnergyIndex
 /// YoungL-index
 /// MTstress
+/// start index for stress tensor
 ///
 /// optional index for storing strain(0: no strain,
 ///                                   1: strain, 
@@ -347,7 +350,8 @@ class VertexFromTRBSMT : public BaseReaction {
 /// Y_fiber 
 /// Poisson_Long
 /// Poisson_Trans
-/// MF_flag(0/1) 
+/// MF_flag(0/1/2 or <0: if heterogeneity is considered, the value for this 
+///                     flag is the scale factor for heterogeneity) 
 /// neighborWeight 
 /// max_stress(if 0 absolute stress anisotropy is calculated)
 /// plane-strain/stress-flag 
@@ -362,7 +366,7 @@ class VertexFromTRBSMT : public BaseReaction {
 /// areaRatioIndex 
 /// isoEnergyIndex 
 /// anisoEnergyIndex 
-/// youngL-index 
+/// youngL-index/heterpogeneity_index 
 /// MTstressIndex 
 /// stressTensorIndex 
 /// normalVectorIndex
