@@ -1803,7 +1803,7 @@ initiate(Tissue &T,
 								    (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
 	    }
 	    
-	    if(variableIndex(0,2)==1) {
+	    if(variableIndex(0,2)==1) {      // exclude_corner
 	      
 	      size_t vertexIndex1 = T.cell(cellIndex).vertex(vertex1)->index();
 	      size_t vertexPlusIndex;
