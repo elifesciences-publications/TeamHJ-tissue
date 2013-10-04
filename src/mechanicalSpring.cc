@@ -1984,6 +1984,8 @@ void VertexFromExternalSpringFromPerpVertex::update(Tissue &T,
 	    if(variableIndex(0,0)==4 && distance>restinglength) restinglength+=h*Kgrowth ;
 	    if(variableIndex(0,0)==5 && distance>restinglength) restinglength+=h*Kgrowth*restinglength ;
 	    if(variableIndex(0,0)==6 && distance>restinglength) restinglength+=h*Kgrowth*(distance-restinglength) ;
+	    if(variableIndex(0,0)==7) restinglength+=20*h*Kgrowth*(distance-restinglength)-h*Kgrowth*restinglength;
+
 	    connections[cellIndex][verIndex1][verIndex2]=restinglength;
 	  }
 	  

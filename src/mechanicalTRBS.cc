@@ -2388,7 +2388,7 @@ derivs(Tissue &T,
     // std::cerr<<" cell   "<<cellIndex<<"   wall   " <<  "  cell neighbohr  "<<(cell1->cellNeighbor(1))->index() <<std::endl;
     // std::cerr<<" cell   "<<cellIndex<<"   wall   "<<  "  cell neighbohr  "<<(cell1->cellNeighbor(2))->index() <<std::endl;
     //std::cerr<<" cell   "<<cellIndex<<  "  cell neighbohr  "<<neighbor[nn] <<std::endl;	
-    int neighbor[3];  
+    std::vector<size_t>  neighbor(3);  
     neighbor[0]=(cell1->cellNeighbor(0))->index();
     neighbor[1]=(cell1->cellNeighbor(1))->index();
     neighbor[2]=(cell1->cellNeighbor(2))->index();
@@ -4035,7 +4035,7 @@ derivs(Tissue &T,
     double StressTensor[3][3]={{0,0,0},{0,0,0},{0,0,0}};
     
     int counter=0;
-    for (int nn=0 ; nn<numWalls ; nn++){
+    for (size_t nn=0 ; nn<numWalls ; nn++){
       if (neighbor[nn]<numCells && neighbor[nn]>-1){
 
   	StressTensor[0][0]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex  ];
@@ -4481,11 +4481,11 @@ derivs(Tissue &T,
     double youngT = parameter(3) + 
       parameter(4)*Kpow/( Kpow+std::pow(cellData[cellIndex][concIndex],parameter(7)) );
     double poissonT =parameter(5);
-
+    
     double StrainCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};
     double StressCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};
     double TotalCellRestingArea=0;
-
+    
     
     // One triangle per 'vertex' in cyclic order
     for (size_t k=0; k<numWalls; ++k) { 
@@ -4978,21 +4978,21 @@ derivs(Tissue &T,
       length[2]=temp;
       
       
-      int k;
+      int kPerm;
       for ( int m=0 ; m<3 ; ++m )
         {
           for ( int coor=0 ; coor<3 ; ++coor ) 
             derIprim1[m][coor]=0;
           for ( int i=0 ; i<3 ; ++i )
             {            
-              if ((i==0 && m==1)||(i==1 && m==0)) k=2;
-              if ((i==0 && m==2)||(i==2 && m==0)) k=1;
-              if ((i==1 && m==2)||(i==2 && m==1)) k=0; 
+              if ((i==0 && m==1)||(i==1 && m==0)) kPerm=2;
+              if ((i==0 && m==2)||(i==2 && m==0)) kPerm=1;
+              if ((i==1 && m==2)||(i==2 && m==1)) kPerm=0; 
               //else {
-              //std::cerr << "mechanicalTRBS::derivs() k not given a value..." << std::endl;
+              //std::cerr << "mechanicalTRBS::derivs() kPerm not given a value..." << std::endl;
               //exit(-1);
               //}
-              if (i!=m) DiDm=-0.5*cotan[k]/restingArea;
+              if (i!=m) DiDm=-0.5*cotan[kPerm]/restingArea;
               if (i==m) DiDm=0.25*restingLength[i]*restingLength[i] / (restingArea*restingArea);
               for ( int coor=0 ; coor<3 ; ++coor ) 
                 derIprim1[m][coor]=derIprim1[m][coor]+2*DiDm*position[m][coor];
@@ -5004,10 +5004,10 @@ derivs(Tissue &T,
         { 
           for ( int j=0 ; j<3 ; ++j )
             {
-              if ((i==0 && j==1)||(i==1 && j==0)) k=2; 
-              if ((i==0 && j==2)||(i==2 && j==0)) k=1; 
-              if ((i==1 && j==2)||(i==2 && j==1)) k=0;  
-              if (i!=j) QiQj=Rcirc2-(length[k]*length[k])*0.5; 
+              if ((i==0 && j==1)||(i==1 && j==0)) kPerm=2; 
+              if ((i==0 && j==2)||(i==2 && j==0)) kPerm=1; 
+              if ((i==1 && j==2)||(i==2 && j==1)) kPerm=0;  
+              if (i!=j) QiQj=Rcirc2-(length[kPerm]*length[kPerm])*0.5; 
               if (i==j) QiQj=Rcirc2;              
               aDi=0.5*cos(teta[i])*restingLength[i]/restingArea;
               aDj=0.5*cos(teta[j])*restingLength[j]/restingArea;
@@ -5037,23 +5037,23 @@ derivs(Tissue &T,
                 for ( int r=0 ; r<3 ; ++r )
                   { for ( int s=0 ; s<3 ; ++s )
                       {     
-                        if ((r==0 && s==1)||(r==1 && s==0)) k=2;
-                        if ((r==0 && s==2)||(r==2 && s==0)) k=1;
-                        if ((r==1 && s==2)||(r==2 && s==1)) k=0; 
-                        //if ( s!=r ) QrQs=Rcirc2-(length[k]*length[k])*0.5;
+                        if ((r==0 && s==1)||(r==1 && s==0)) kPerm=2;
+                        if ((r==0 && s==2)||(r==2 && s==0)) kPerm=1;
+                        if ((r==1 && s==2)||(r==2 && s==1)) kPerm=0; 
+                        //if ( s!=r ) QrQs=Rcirc2-(length[kPerm]*length[kPerm])*0.5;
                         //if ( s==r ) QrQs=Rcirc2;
                         QrQs=position[r][0]*position[s][0]+position[r][1]*position[s][1]+position[r][2]*position[s][2];
                         
-                        if ((n==0 && r==1)||(n==1 && r==0)) k=2; 
-                        if ((n==0 && r==2)||(n==2 && r==0)) k=1; 
-                        if ((n==1 && r==2)||(n==2 && r==1)) k=0;    
-                        if ( n!=r )  DnDr=-0.5*cotan[k]/restingArea;
+                        if ((n==0 && r==1)||(n==1 && r==0)) kPerm=2; 
+                        if ((n==0 && r==2)||(n==2 && r==0)) kPerm=1; 
+                        if ((n==1 && r==2)||(n==2 && r==1)) kPerm=0;    
+                        if ( n!=r )  DnDr=-0.5*cotan[kPerm]/restingArea;
                         if ( n==r )  DnDr=0.25*restingLength[n]*restingLength[n] / (restingArea*restingArea);
                         
-                        if ((s==0 && p==1)||(s==1 && p==0)) k=2; 
-                        if ((s==0 && p==2)||(s==2 && p==0)) k=1; 
-                        if ((s==1 && p==2)||(s==2 && p==1)) k=0;   
-                        if ( s!=p ) DsDp=-0.5*cotan[k]/restingArea;
+                        if ((s==0 && p==1)||(s==1 && p==0)) kPerm=2; 
+                        if ((s==0 && p==2)||(s==2 && p==0)) kPerm=1; 
+                        if ((s==1 && p==2)||(s==2 && p==1)) kPerm=0;   
+                        if ( s!=p ) DsDp=-0.5*cotan[kPerm]/restingArea;
                         if ( s==p ) DsDp=0.25*restingLength[s]*restingLength[s] / (restingArea*restingArea);
                         
                         aDs=0.5*cos(teta[s])*restingLength[s]/restingArea;
