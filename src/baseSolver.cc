@@ -519,10 +519,13 @@ void BaseSolver::print(std::ostream &os)
  }
 
  
-else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain  , to be modified  !!!
+else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain  
     
-  os << T_->reaction(0)->parameter(8)<< " "<< cellData_[0][19] << " " << cellData_[0][20] << " " << cellData_[0][17] << std::endl;
-    //        teta MT                          teta stress               teta Perp strain            teta strain                                 
+  os <<T_->reaction(0)->parameter(8)<< " "   // teta MT       
+     << std::acos(cellData_[0][23]) << " "               // teta stress  
+     << std::acos(cellData_[0][24]) << " "               // teta strain    
+     << std::acos(cellData_[0][22]) << std::endl;        // teta MT
+ 
   }
 
 
