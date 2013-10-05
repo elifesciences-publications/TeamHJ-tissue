@@ -1626,11 +1626,12 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
 			 std::vector< std::vector<size_t> > &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
-  if( paraValue.size()!=6 ) {
+  if( paraValue.size()!=7 ) {
     std::cerr << "VertexFromExternalSpringFromPerpVertex::"
 	      << "VertexFromExternalSpringFromPerpVertex() "
-	      << "Uses six parameters spring constant K, frac_adhesion,"
-	      << " Lmaxfactor, growth_rate, intraction-angle and corner_angle. "<< std::endl;
+	      << "Uses seven parameters spring constant K, frac_adhesion,"
+	      << "Lmaxfactor, growth_rate, intraction-angle, corner_angle "
+	      << "and growth_rate_decay_rate . "<< std::endl;
 
     exit(0);
   }
@@ -1658,6 +1659,7 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
   tmp[3] = "growth_rate";
   tmp[4] = "intraction_angle";
   tmp[5] = "corner_angle";
+  tmp[6] = "growth_rate_decay_rate";
   
   setParameterId( tmp ); 
 }
@@ -1992,7 +1994,7 @@ void VertexFromExternalSpringFromPerpVertex::update(Tissue &T,
 	}
     }
   }
-  
+  setParameter(3,parameter(3)*parameter(6));
   
 }
 
