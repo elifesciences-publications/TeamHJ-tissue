@@ -675,7 +675,7 @@ class VertexFromExternalSpring : public BaseReaction {
 ///
 /// @verbatim
 ///
-/// VertexFromExternalSpringFromPerpVertex 7 1 4 
+/// VertexFromExternalSpringFromPerpVertex 8 1 4 
 /// K   
 /// f_adh 
 /// Lmaxfactor 
@@ -683,8 +683,9 @@ class VertexFromExternalSpring : public BaseReaction {
 /// intraction_angle 
 /// corner_angle
 /// growth_rate_decay_rate
+/// growthStress
 ///
-/// growth_flag (0:non ,1: ,2: ,3: ,4: ,5: ,6: )
+/// growth_flag (0:non ,1: ,2: ,3: ,4: ,5: ,6: 7: 8: )
 /// connection_flag (1: constraint on the first node only, 2: for both)
 /// exclude_corner_flag (0:include corners, 1: exclude corners)
 /// initiate_flag       (0: for all vertices, 
@@ -699,7 +700,7 @@ class VertexFromExternalSpringFromPerpVertex : public BaseReaction {
   size_t Npairs;
   std:: vector<std::vector<std::vector<double> > >  connections;
   std:: vector<std::vector<double> >  vertexVec;
-
+  
  public:
   ///
   /// @brief Main constructor
