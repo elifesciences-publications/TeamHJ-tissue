@@ -1625,12 +1625,12 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
 			 std::vector< std::vector<size_t> > &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
-  if( paraValue.size()!=7 ) {
+  if( paraValue.size()!=8 ) {
     std::cerr << "VertexFromExternalSpringFromPerpVertex::"
 	      << "VertexFromExternalSpringFromPerpVertex() "
 	      << "Uses seven parameters spring constant K, frac_adhesion,"
-	      << "Lmaxfactor, growth_rate, intraction-angle, corner_angle "
-	      << "and growth_rate_decay_rate . "<< std::endl;
+	      << "Lmaxfactor, growth_rate, intraction-angle, corner_angle, "
+	      << "growth_rate_stress. "<< std::endl;
 
     exit(0);
   }
@@ -1659,7 +1659,8 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
   tmp[4] = "intraction_angle";
   tmp[5] = "corner_angle";
   tmp[6] = "growth_rate_decay_rate";
-  
+  tmp[7] = "growth_rate_stress";
+
   setParameterId( tmp ); 
 }
 
@@ -1953,10 +1954,20 @@ void VertexFromExternalSpringFromPerpVertex::update(Tissue &T,
 {
   double Lmaxfactor=parameter(2);
   double Kgrowth=parameter(3);
-  
+  double KgrowthStress=parameter(7);
+
   //size_t Npairs=indValue[1].size();
   size_t dimension=vertexData[0].size();
-	size_t numCells = T.numCell();
+
+  std:: vector<int> hasSister; 
+  hasSister.resize(T.numVertex());
+  size_t NsisterPairs = T.numSisterVertex();
+  for(size_t is=0 ; is<NsisterPairs ; is++) {
+    hasSister[T.sisterVertex(is,0)]=1; 
+    hasSister[T.sisterVertex(is,1)]=1; 
+  }
+  
+  size_t numCells = T.numCell();
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
     size_t numVertices= T.cell(cellIndex).numVertex();
     for (size_t verIndex1=0 ; verIndex1< numVertices ; verIndex1++){
@@ -1985,9 +1996,16 @@ void VertexFromExternalSpringFromPerpVertex::update(Tissue &T,
 	      restinglength+=h*Kgrowth*restinglength ;
 	    else if(variableIndex(0,0)==6 && distance>restinglength) 
 	      restinglength+=h*Kgrowth*(distance-restinglength) ;
-	    else if (variableIndex(0,0)==7) {
-	      restinglength += 10.*h*Kgrowth*(distance-restinglength);
-	      restinglength -= h*Kgrowth*restinglength;
+	  
+	     if(variableIndex(0,0)==7) restinglength+=h*KgrowthStress*(distance-restinglength)+h*Kgrowth*restinglength;
+	    if(variableIndex(0,0)==8) {
+	      if(hasSister[vertex1]==1 || hasSister[vertex2]==1)
+		restinglength+=h*Kgrowth*restinglength ;
+	      else{
+		restinglength+=h*KgrowthStress*restinglength ;
+		std::cerr<<"broken sisters"<<std::endl;
+	      }
+	    }
 	    }
 	    else {
 	      std::cerr << "VertexFromExternalSpringFromPerpVertex::update()"
