@@ -1962,42 +1962,42 @@ void VertexFromExternalSpringFromPerpVertex::update(Tissue &T,
     for (size_t verIndex1=0 ; verIndex1< numVertices ; verIndex1++){
       size_t vertex1 = T.cell(cellIndex).vertex(verIndex1)->index();
       for (size_t verIndex2=0 ; verIndex2< numVertices ; verIndex2++)
-				if (verIndex2!=verIndex1 && connections[cellIndex][verIndex1][verIndex2]!=0){
-					double restinglength=connections[cellIndex][verIndex1][verIndex2];
-					size_t vertex2= T.cell(cellIndex).vertex(verIndex2)->index();
-					
-					double distance=0;
-					for( size_t d=0 ; d<dimension ; d++ ) 
-						distance += (vertexData[vertex2][d]-vertexData[vertex1][d])*(vertexData[vertex2][d]-vertexData[vertex1][d]);
-					
-					distance=std::sqrt(distance);
-					
-					if (restinglength>0){ 
-						if(variableIndex(0,0)==1) 
-							restinglength+=h*Kgrowth;
-						else if(variableIndex(0,0)==2) 
-							restinglength+=h*Kgrowth*restinglength ;
-						else if(variableIndex(0,0)==3) 
-							restinglength+=h*Kgrowth*(distance-restinglength) ;
-						else if(variableIndex(0,0)==4 && distance>restinglength) 
-							restinglength+=h*Kgrowth ;
-						else if(variableIndex(0,0)==5 && distance>restinglength) 
-							restinglength+=h*Kgrowth*restinglength ;
-						else if(variableIndex(0,0)==6 && distance>restinglength) 
-							restinglength+=h*Kgrowth*(distance-restinglength) ;
-						else if (variableIndex(0,0)==7) {
-							restinglength += 10.*h*Kgrowth*(distance-restinglength);
-							restinglength -= h*Kgrowth*restinglength;
-						}
-						else {
-							std::cerr << "VertexFromExternalSpringFromPerpVertex::update()"
-												<< std::endl << "Wrong growth rule index given!"
-												<< std::endl;
-							std::exit(EXIT_FAILURE);
-						}
-						connections[cellIndex][verIndex1][verIndex2]=restinglength;
-					}					
-				}
+	if (verIndex2!=verIndex1 && connections[cellIndex][verIndex1][verIndex2]!=0){
+	  double restinglength=connections[cellIndex][verIndex1][verIndex2];
+	  size_t vertex2= T.cell(cellIndex).vertex(verIndex2)->index();
+	  
+	  double distance=0;
+	  for( size_t d=0 ; d<dimension ; d++ ) 
+	    distance += (vertexData[vertex2][d]-vertexData[vertex1][d])*(vertexData[vertex2][d]-vertexData[vertex1][d]);
+	  
+	  distance=std::sqrt(distance);
+	  
+	  if (restinglength>0){ 
+	    if(variableIndex(0,0)==1) 
+	      restinglength+=h*Kgrowth;
+	    else if(variableIndex(0,0)==2) 
+	      restinglength+=h*Kgrowth*restinglength ;
+	    else if(variableIndex(0,0)==3) 
+	      restinglength+=h*Kgrowth*(distance-restinglength) ;
+	    else if(variableIndex(0,0)==4 && distance>restinglength) 
+	      restinglength+=h*Kgrowth ;
+	    else if(variableIndex(0,0)==5 && distance>restinglength) 
+	      restinglength+=h*Kgrowth*restinglength ;
+	    else if(variableIndex(0,0)==6 && distance>restinglength) 
+	      restinglength+=h*Kgrowth*(distance-restinglength) ;
+	    else if (variableIndex(0,0)==7) {
+	      restinglength += 10.*h*Kgrowth*(distance-restinglength);
+	      restinglength -= h*Kgrowth*restinglength;
+	    }
+	    else {
+	      std::cerr << "VertexFromExternalSpringFromPerpVertex::update()"
+			<< std::endl << "Wrong growth rule index given!"
+			<< std::endl;
+	      std::exit(EXIT_FAILURE);
+	    }
+	    connections[cellIndex][verIndex1][verIndex2]=restinglength;
+	  }					
+	}
     }
   }
   setParameter(3,parameter(3)*parameter(6));
