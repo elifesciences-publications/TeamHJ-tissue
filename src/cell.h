@@ -42,8 +42,10 @@ class Cell {
   std::vector<Wall*> wall_;
   std::vector<Vertex*> vertex_;
   std::vector<double> variable_;
+	// For center triangulation
   std::vector<double> centerPosition_;
   std::vector<double> edgeLength_;
+
   double volume_;
   size_t mitosisFlag_;
   Wall* directionWall_;
