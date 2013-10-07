@@ -2006,7 +2006,7 @@ void VertexFromExternalSpringFromPerpVertex::update(Tissue &T,
 		std::cerr<<"broken sisters"<<std::endl;
 	      }
 	    }
-	    }
+	    
 	    else {
 	      std::cerr << "VertexFromExternalSpringFromPerpVertex::update()"
 			<< std::endl << "Wrong growth rule index given!"
