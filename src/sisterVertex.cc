@@ -132,6 +132,8 @@ namespace SisterVertex {
 	distance = std::sqrt(distance);
 	if (distance<=parameter(0)) {//add pair to sisterVertex vector
 	  T.addSisterVertex(i,j);
+	  std::cerr << "SisterVertex::InitiateFromDistance::initiate() added sisters "
+		    << i << " " << j << std::endl;
 	}
       }
     }
@@ -160,13 +162,13 @@ namespace SisterVertex {
 		<< "Spring() "
 		<< "Uses one or two parameters, k_spring and [lengthFractionBreak]." 
 		<< std::endl;
-      exit(0);
+      exit(EXIT_FAILURE);
     }
     if( indValue.size() != 0 ) {
       std::cerr << "SisterVertex::Spring::"
 		<< "Spring() "
 		<< "No index given.\n";
-      exit(0);
+      exit(EXIT_FAILURE);
     }
     //Set the variable values
     //
@@ -205,9 +207,8 @@ namespace SisterVertex {
   void Spring::
   update(Tissue &T,
 	 DataMatrix &cellData,
-	 DataMatrix &vertexData,
 	 DataMatrix &wallData,
-	 DataMatrix &vertexDerivs,
+	 DataMatrix &vertexData,
 	 double h)
   {
     if (numParameter()==2) {
@@ -224,19 +225,26 @@ namespace SisterVertex {
 	distance = std::sqrt(distance);
 	if (distance>parameter(1)) {
 	  remove.push_back(i);
+	  //std::cerr << "SisterVertex::Spring::update() Marked for removal sisterVertex between "
+	  //	    << T.sisterVertex(i,0) << " " << T.sisterVertex(i,1) << " " << i << std::endl;
+
 	}
       }
       // Remove sistervertex pairs marked
       if (remove.size()) {
-	for (size_t k=remove.size()-1; k>=0; ++k) {
+	for (size_t k=remove.size()-1; (k>=0 && k<remove.size()); --k) {
 	  size_t i = remove[k];
 	  size_t NN = T.numSisterVertex()-1;
 	  // If last element, remove it
 	  if (i==NN) {
-	    T.sisterVertexPopBack();
+	    //std::cerr << "SisterVertex::Spring::update() Removed (last) sisterVertex between "
+	    //	      << T.sisterVertex(i,0) << " " << T.sisterVertex(i,1) << std::endl;
+	    T.sisterVertexPopBack();	    
 	  }
 	  else {
 	    // If not last element, copy last element to i and then remove last element
+	    //std::cerr << "SisterVertex::Spring::update() Remove sisterVertex between "
+	    //	      << T.sisterVertex(i,0) << " " << T.sisterVertex(i,1) << std::endl;
 	    T.setSisterVertex(i,0,T.sisterVertex(NN,0));
 	    T.setSisterVertex(i,1,T.sisterVertex(NN,1));
 	    T.sisterVertexPopBack();	    

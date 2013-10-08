@@ -764,7 +764,28 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
     }
     std::cout << "\n";
   }
-  
+  // For printing internal edges in reaction VertexFromExternalSpringFromPerpVertex
+  // Very ad hoc assuming reaction having index 3 in model file (fourth reaction)
+  //
+  else if (printFlag_==101) {
+    size_t reactionIndex = 3;
+    if (T_->reaction(reactionIndex)->id() != "VertexFromExternalSpringFromPerpVertex") {
+      std::cerr << "BaseSolver::print() with printFlag 101. Wrong name of reaction "
+		<< reactionIndex << " in reaction list, no printing." << std::endl;     
+    }
+    else T_->reaction(reactionIndex)->printState(T_,cellData_,wallData_,vertexData_);
+    std::string pvdFile = "tmp/tissue.pvd";
+    std::string cellFile = "tmp/VTK_cells.vtu";
+    std::string wallFile = "tmp/VTK_walls.vtu";
+    static size_t numCellVar = T_->cell(0).numVariable();
+    setTissueVariables(numCellVar);
+    if( tCount==0 ) {
+      PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
+    }
+    PVD_file::write(*T_,cellFile,wallFile,tCount);
+  }
+
+
   ///
   /// For printing pin1 also in membranes
   ///

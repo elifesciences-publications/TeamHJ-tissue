@@ -206,9 +206,8 @@ namespace SisterVertex {
     ///
     void update(Tissue &T,
 		DataMatrix &cellData,
-		DataMatrix &vertexData,
 		DataMatrix &wallData,
-		DataMatrix &vertexDerivs,
+		DataMatrix &vertexData,
 		double h);  
   };
   

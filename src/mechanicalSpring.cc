@@ -1628,11 +1628,11 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
   if( paraValue.size()!=8 ) {
     std::cerr << "VertexFromExternalSpringFromPerpVertex::"
 	      << "VertexFromExternalSpringFromPerpVertex() "
-	      << "Uses seven parameters spring constant K, frac_adhesion,"
+	      << "Uses eight parameters spring constant K, frac_adhesion,"
 	      << "Lmaxfactor, growth_rate, intraction-angle, corner_angle, "
-	      << "growth_rate_stress. "<< std::endl;
+	      << "growthDecay, growth_rate_stress. "<< std::endl;
 
-    exit(0);
+    exit(EXIT_FAILURE);
   }
   if( indValue.size() != 1 || indValue[0].size()!=4 ) {
     std::cerr << " VertexFromExternalSpringFromPerpVertex::"
@@ -1643,7 +1643,7 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
 	      << " and initiate flag (0: for all vertices, 1: only"
 	      << " the vertices in the sisterVertex list)" 
 	      << " constraint on connections." << std::endl;
-    exit(0);
+    exit(EXIT_FAILURE);
   }
   //Set the variable values
   setId("VertexFromExternalSpringFromPerpVertex");
@@ -1709,8 +1709,8 @@ initiate(Tissue &T,
       size_t vertexMinusIndex;
       if (vertex!=0 )
 	vertexMinusIndex = T.cell(cellIndex).vertex(vertex-1)->index();
-	else
-	  vertexMinusIndex= T.cell(cellIndex).vertex(numVertices-1)->index();
+      else
+	vertexMinusIndex= T.cell(cellIndex).vertex(numVertices-1)->index();
       if ( vertex!=numVertices-1 )
 	vertexPlusIndex = T.cell(cellIndex).vertex(vertex+1)->index();
       else
@@ -1792,7 +1792,7 @@ initiate(Tissue &T,
 	  //if (tmp==0) 
 	  //  std::cerr<<"cell "<<cellIndex<<" N  " << vertexIndex1 <<" N " << vertexIndex2 <<" "<< N1N2<<" teta "<< teta<<std::endl;
 	  if(variableIndex(0,3)==0 || (variableIndex(0,3)==1 && hasSister[vertexIndex1]==1 )){
-
+	    
 	    if(variableIndex(0,2)==0){
 	      if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
 		connections[cellIndex][vertex1][vertex2]= std::sqrt(
@@ -1855,31 +1855,33 @@ initiate(Tissue &T,
   
   //size_t Npairs=variableIndex(1).size();    
   // Print the edges gnuplot style to check connectivity
-  
-  for (size_t i=0; i<numCells; ++i) {
-   size_t numVertices= T.cell(i).numVertex();
-   for (size_t j=0; j<numVertices; ++j) {
-     for (size_t k=j+1; k<numVertices; ++k) {
-  	if (connections[i][j][k]) {
-  	  std::cerr << "In cell " << i << " vertices " << j << " and " << k << " connected." << std::endl;  
-  	  size_t numDimension = vertexData[0].size();
-  	  size_t v1 = T.cell(i).vertex(j)->index();
-  	  size_t v2 = T.cell(i).vertex(k)->index();
-  	  for (size_t d=0; d<numDimension; ++d) {
-  	    std::cout << vertexData[v1][d] << " ";
-  	  }
-  	  std::cout << i << std::endl;
-  	  for (size_t d=0; d<numDimension; ++d) {
-  	    std::cout << vertexData[v2][d] << " ";
-  	  }
-  	  std::cout << i << std::endl;
-  	  std::cout << std::endl;
-  	}
-   }
+  size_t printFlag=0;
+  if (printFlag) {
+    for (size_t i=0; i<numCells; ++i) {
+      size_t numVertices= T.cell(i).numVertex();
+      for (size_t j=0; j<numVertices; ++j) {
+	for (size_t k=j+1; k<numVertices; ++k) {
+	  if (connections[i][j][k]) {
+	    std::cerr << "In cell " << i << " vertices " << j << " and " << k << " connected." << std::endl;  
+	    size_t numDimension = vertexData[0].size();
+	    size_t v1 = T.cell(i).vertex(j)->index();
+	    size_t v2 = T.cell(i).vertex(k)->index();
+	    for (size_t d=0; d<numDimension; ++d) {
+	      std::cout << vertexData[v1][d] << " ";
+	    }
+	    std::cout << i << std::endl;
+	    for (size_t d=0; d<numDimension; ++d) {
+	      std::cout << vertexData[v2][d] << " ";
+	    }
+	    std::cout << i << std::endl;
+	    std::cout << std::endl;
+	  }
+	}
+      }
+    }
+    std::cerr << "End of printing." << std::endl;
+    // END printing
   }
-  }
-  std::cerr << "End of printing." << std::endl;
-  // END printing
 }
 
 
@@ -1979,7 +1981,8 @@ void VertexFromExternalSpringFromPerpVertex::update(Tissue &T,
 	  
 	  double distance=0;
 	  for( size_t d=0 ; d<dimension ; d++ ) 
-	    distance += (vertexData[vertex2][d]-vertexData[vertex1][d])*(vertexData[vertex2][d]-vertexData[vertex1][d]);
+	    distance += (vertexData[vertex2][d]-vertexData[vertex1][d])*
+	      (vertexData[vertex2][d]-vertexData[vertex1][d]);
 	  
 	  distance=std::sqrt(distance);
 	  
@@ -1995,9 +1998,11 @@ void VertexFromExternalSpringFromPerpVertex::update(Tissue &T,
 	    else if(variableIndex(0,0)==5 && distance>restinglength) 
 	      restinglength+=h*Kgrowth*restinglength ;
 	    else if(variableIndex(0,0)==6 && distance>restinglength) 
-	      restinglength+=h*Kgrowth*(distance-restinglength) ;
-	  
-	    else if(variableIndex(0,0)==7) restinglength+=h*KgrowthStress*(distance-restinglength)+h*Kgrowth*restinglength;
+	      restinglength+=h*Kgrowth*(distance-restinglength) ;	  
+	    else if(variableIndex(0,0)==7) {
+	      restinglength += h*KgrowthStress*(distance-restinglength)
+		+ h*Kgrowth*restinglength;
+	    }
 	    else if(variableIndex(0,0)==8) {
 	      if(hasSister[vertex1]==1 || hasSister[vertex2]==1)
 		restinglength+=h*Kgrowth*restinglength ;
@@ -2022,7 +2027,50 @@ void VertexFromExternalSpringFromPerpVertex::update(Tissue &T,
   //std::cerr << parameter(3) << std::endl;
 }
 
+void VertexFromExternalSpringFromPerpVertex::
+printState(Tissue *T,
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData, 
+	   std::ostream &os)
+{
+  static size_t index=0;
+  size_t counter=0; 
+  size_t dimension = vertexData[0].size();
+  size_t numCells = T->numCell();
+  for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
+    size_t numVertices= T->cell(cellIndex).numVertex();
+    for (size_t verIndex1=0 ; verIndex1< numVertices ; verIndex1++){
+      size_t vertex1 = T->cell(cellIndex).vertex(verIndex1)->index();
+      for (size_t verIndex2=0 ; verIndex2< numVertices ; verIndex2++)
+	if (verIndex2!=verIndex1 && connections[cellIndex][verIndex1][verIndex2]!=0){
+	  double restingLength=connections[cellIndex][verIndex1][verIndex2];
+	  size_t vertex2= T->cell(cellIndex).vertex(verIndex2)->index();
+	  double distance=0;
+	  for( size_t d=0 ; d<dimension ; d++ )
+	    distance += (vertexData[vertex2][d]-vertexData[vertex1][d])*
+	      (vertexData[vertex2][d]-vertexData[vertex1][d]);	  
+	  distance=std::sqrt(distance);
 
+	  //vertex1
+	  os << index << " " << counter << " ";
+	  for( size_t d=0 ; d<dimension ; d++ )
+	    os << vertexData[vertex1][d] << " ";
+	  os << restingLength << " " << distance << " " 
+	     << parameter(3)*restingLength+parameter(7)*(distance-restingLength) << std::endl;
+	  //vertex2
+	  os << index << " " << counter << " ";
+	  for( size_t d=0 ; d<dimension ; d++ )
+	    os << vertexData[vertex2][d] << " ";
+	  os << restingLength << " " << distance
+	     << parameter(3)*restingLength+parameter(7)*(distance-restingLength) << std::endl;
+	  os << std::endl;
+	  counter++;
+	}
+    }
+  }
+  index++;
+}
 
 
 

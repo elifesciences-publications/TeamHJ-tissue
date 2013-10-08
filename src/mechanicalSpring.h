@@ -747,8 +747,22 @@ class VertexFromExternalSpringFromPerpVertex : public BaseReaction {
               DataMatrix &wallData,
               DataMatrix &vertexData, 
               double h);
-
-
+  ///
+  /// @brief Prints internal variables for plotting
+  ///
+  /// Plots the internal edges for plotting using gnuplot. The format is 
+  /// t_i i x1 y1 [z1] edgeLength
+  /// t_i i x2 y2 [z2] edgeLength
+  /// for each internal edge.
+  ///
+  /// @note Requires the BaseSolver::print() function to call printState()
+  /// @see BaseReaction::printState()
+  ///
+  void printState(Tissue *T,
+		  DataMatrix &cellData,
+		  DataMatrix &wallData,
+		  DataMatrix &vertexData, 
+		  std::ostream &os=std::cout);
 };
 
 

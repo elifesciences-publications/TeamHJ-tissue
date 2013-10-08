@@ -290,10 +290,23 @@ class BaseReaction {
   /// Prints the data structure in a format readable for (re)creating a reaction.
   /// It is defined as virtual for the BaseReaction class (and will exit if not
   /// defined for the specific reaction) and relies upon that it is properly
-  /// defined for the specific reaction to give a good output. NOTE: In the
-  /// current implementation, the print function is typically not used.
+  /// defined for the specific reaction to give a good output.
+  ///
+  /// @note In the current implementation, the print function is typically not used.
   ///
   virtual void print( std::ofstream &os );
+
+  ///
+  /// @brief Prints internal variables stored by a reaction
+  ///
+  /// This allows for printing internal variable/parameter values as specified
+  /// by individual reactions. The BaseReaction version does not do anything.
+  /// 
+  virtual void printState(Tissue *T,
+			  DataMatrix &cellData,
+			  DataMatrix &wallData,
+			  DataMatrix &vertexData, 
+			  std::ostream &os=std::cout);
 };
 
 inline std::string BaseReaction::id() const {

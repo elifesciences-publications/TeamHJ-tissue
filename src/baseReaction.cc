@@ -423,8 +423,17 @@ void BaseReaction::update(Tissue &T,
 {
 }
 
-void BaseReaction::print( std::ofstream &os ) {
+void BaseReaction::print( std::ofstream &os ) 
+{
   std::cerr << "BaseReaction::print(ofstream) should not be used. "
 	    << "Should always be mapped onto one of the real types.\n";
   exit(0);
+}
+
+void BaseReaction::printState(Tissue *T,
+			      DataMatrix &cellData,
+			      DataMatrix &wallData,
+			      DataMatrix &vertexData, 
+			      std::ostream &os)
+{
 }
