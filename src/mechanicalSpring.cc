@@ -1997,12 +1997,12 @@ void VertexFromExternalSpringFromPerpVertex::update(Tissue &T,
 	    else if(variableIndex(0,0)==6 && distance>restinglength) 
 	      restinglength+=h*Kgrowth*(distance-restinglength) ;
 	  
-	     if(variableIndex(0,0)==7) restinglength+=h*KgrowthStress*(distance-restinglength)+h*Kgrowth*restinglength;
-	    if(variableIndex(0,0)==8) {
+	    else if(variableIndex(0,0)==7) restinglength+=h*KgrowthStress*(distance-restinglength)+h*Kgrowth*restinglength;
+	    else if(variableIndex(0,0)==8) {
 	      if(hasSister[vertex1]==1 || hasSister[vertex2]==1)
 		restinglength+=h*Kgrowth*restinglength ;
 	      else{
-		restinglength+=h*KgrowthStress*restinglength ;
+		restinglength+=h*KgrowthStress*restinglength;
 		std::cerr<<"broken sisters"<<std::endl;
 	      }
 	    }
