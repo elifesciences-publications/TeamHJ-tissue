@@ -35,10 +35,24 @@
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// VertexFromWallSpring 2 2 1 0/1
+/// VertexFromWallSpring 2 1 1
+/// K_force K_adh
+/// L_ij-index
+///
+/// or
+///
+/// VertexFromWallSpring 2 2 1 1
+/// K_force K_adh
+/// L_ij-index
+/// Forcesave-index
+///
+/// or
+///
+/// VertexFromWallSpring 3 3 1 1/0 1
 /// K_force K_adh
 /// L_ij-index
 /// [Forcesave-index]
+/// wall_type_index
 /// @endverbatim
 ///
 /// Alternatively if no force save index is supplied the first line
@@ -765,6 +779,112 @@ class VertexFromExternalSpringFromPerpVertex : public BaseReaction {
 		  std::ostream &os=std::cout);
 };
 
+
+////////////////////////////////////////////////////////////
+
+///
+/// @brief Sets external  breakable springs between vertices which see eachother 
+/// in a given angle intervall respect to the normal direction to their membrane.
+///
+/// This function has a spring constant and adhision factor 
+///
+/// @f[ F=-K*f_{adh}*(L_0-X) @f]
+///
+/// when the distance between vertices is greater than Lmax Force becomes zero.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+///
+/// VertexFromExternalSpringFromPerpVertex1 8 1 4 
+/// K   
+/// f_adh 
+/// Lmaxfactor 
+/// growth_rate  
+/// intraction_angle 
+/// corner_angle
+/// growth_rate_decay_rate
+/// growthStress
+///
+/// growth_flag (0:non ,1: ,2: ,3: ,4: ,5: ,6: 7: 8: )
+/// connection_flag (1: constraint on the first node only, 2: for both)
+/// exclude_corner_flag (0:include corners, 1: exclude corners)
+/// initiate_flag       (0: for all vertices, 
+///                      1: only the vertices in the sisterVertex list)
+/// @endverbatim
+///
+///
+class VertexFromExternalSpringFromPerpVertex1 : public BaseReaction {
+ 
+ private: 
+  
+  size_t Npairs;
+  std:: vector<std::vector<std::vector<double> > >  connections;
+  std:: vector<std::vector<double> >  vertexVec;
+  
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  VertexFromExternalSpringFromPerpVertex1(std::vector<double> &paraValue, 
+			   std::vector< std::vector<size_t> > &indValue );
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///  
+  void initiate(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);
+
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData, 
+              double h);
+  ///
+  /// @brief Prints internal variables for plotting
+  ///
+  /// Plots the internal edges for plotting using gnuplot. The format is 
+  /// t_i i x1 y1 [z1] edgeLength
+  /// t_i i x2 y2 [z2] edgeLength
+  /// for each internal edge.
+  ///
+  /// @note Requires the BaseSolver::print() function to call printState()
+  /// @see BaseReaction::printState()
+  ///
+  void printState(Tissue *T,
+		  DataMatrix &cellData,
+		  DataMatrix &wallData,
+		  DataMatrix &vertexData, 
+		  std::ostream &os=std::cout);
+};
 
 
 
