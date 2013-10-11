@@ -1547,7 +1547,7 @@ void VertexFromExternalSpring::initiate(Tissue &T,
   size_t dimension=vertexData[0].size();
   
   
-  double distance=std::sqrt(distance);
+  //double distance=std::sqrt(distance);
   
   for (size_t i=0 ; i< Npairs ; i++){
     Kspring[i]=parameter(0);
