@@ -125,8 +125,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromExternalSpring(paraValue,indValue);
   else if(idValue=="VertexFromExternalSpringFromPerpVertex")
     return new VertexFromExternalSpringFromPerpVertex(paraValue,indValue);
- else if(idValue=="VertexFromExternalSpringFromPerpVertex1")
-    return new VertexFromExternalSpringFromPerpVertex1(paraValue,indValue);
+ else if(idValue=="VertexFromExternalSpringFromPerpVertexDynamic")
+    return new VertexFromExternalSpringFromPerpVertexDynamic(paraValue,indValue);
   else if (idValue=="VertexFromWallSpringAsymmetric" ||
 	   idValue=="VertexFromEpidermalWallSpringAsymmetric" ||
 	   idValue=="VertexFromEpidermalCellWallSpringAsymmetric") {
