@@ -1482,19 +1482,6 @@ derivs(Tissue &T,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 VertexFromExternalSpring::
 VertexFromExternalSpring(std::vector<double> &paraValue, 
 			 std::vector< std::vector<size_t> > &indValue ) 
@@ -1658,6 +1645,7 @@ void VertexFromExternalSpring::update(Tissue &T,
   //std::cerr<<"resting   "<<restinglength[14]<<std::endl; 
 }
 
+
 VertexFromExternalSpringFromPerpVertex::
 VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue, 
 			 std::vector< std::vector<size_t> > &indValue ) 
@@ -1702,6 +1690,7 @@ VertexFromExternalSpringFromPerpVertex(std::vector<double> &paraValue,
   setParameterId( tmp ); 
 }
 
+
 void VertexFromExternalSpringFromPerpVertex::
 initiate(Tissue &T,
 	 DataMatrix &cellData,
@@ -1712,45 +1701,44 @@ initiate(Tissue &T,
 	 DataMatrix &vertexDerivs) 
 {   
   size_t numCells = T.numCell();
-  size_t totalVertices=0;
   connections.resize(numCells);
   for (size_t cellIndex = 0; cellIndex <numCells; cellIndex++){
-    size_t numVertices= T.cell(cellIndex).numVertex();
-    totalVertices+=numVertices;
-    connections[cellIndex].resize(numVertices);
-    for (size_t verIndex = 0; verIndex < numVertices; verIndex++)
+    size_t numCellVertices= T.cell(cellIndex).numVertex();
+    connections[cellIndex].resize(numCellVertices);
+    for (size_t vertexCellIndex = 0; vertexCellIndex < numCellVertices; vertexCellIndex++)
       {
 	//size_t vertex = T.cell(cellIndex).vertex(verIndex)->index();
-	connections[cellIndex][verIndex].resize(numVertices,0);
+	connections[cellIndex][vertexCellIndex].resize(numCellVertices,0);
       }
   }
   
   std:: vector<int> hasSister;
-  hasSister.resize(totalVertices);
+  hasSister.resize(T.numVertex());
   size_t NsisterPairs = T.numSisterVertex();
   for(size_t is=0 ; is<NsisterPairs ; is++) {
     hasSister[T.sisterVertex(is,0)]=1; 
     hasSister[T.sisterVertex(is,1)]=1; 
   }
   
-  vertexVec.resize(totalVertices);
+  vertexVec.resize(T.numVertex());
   
-  for(size_t i=0 ; i<totalVertices ; i++) 
+  for(size_t i=0 ; i<T.numVertex() ; i++) 
     vertexVec[i].resize(3,0);
+
   // calculating normals to the membrane
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
-    size_t numVertices= T.cell(cellIndex).numVertex();
-    for (size_t vertex=0 ; vertex< numVertices ; vertex++){
+    size_t numCellVertices= T.cell(cellIndex).numVertex();
+    for (size_t vertexCellIndex=0 ; vertexCellIndex< numCellVertices ; vertexCellIndex++){
       
-      size_t vertexIndex = T.cell(cellIndex).vertex(vertex)->index();
+      size_t vertexIndex = T.cell(cellIndex).vertex(vertexCellIndex)->index();
       size_t vertexPlusIndex;
       size_t vertexMinusIndex;
-      if (vertex!=0 )
-	vertexMinusIndex = T.cell(cellIndex).vertex(vertex-1)->index();
+      if (vertexCellIndex!=0 )
+	vertexMinusIndex = T.cell(cellIndex).vertex(vertexCellIndex-1)->index();
       else
-	vertexMinusIndex= T.cell(cellIndex).vertex(numVertices-1)->index();
-      if ( vertex!=numVertices-1 )
-	vertexPlusIndex = T.cell(cellIndex).vertex(vertex+1)->index();
+	vertexMinusIndex= T.cell(cellIndex).vertex(numCellVertices-1)->index();
+      if ( vertexCellIndex!=numCellVertices-1 )
+	vertexPlusIndex = T.cell(cellIndex).vertex(vertexCellIndex+1)->index();
       else
 	vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
       
@@ -1758,8 +1746,12 @@ initiate(Tissue &T,
       position[1] = vertexData[vertexIndex];
       position[2] = vertexData[vertexPlusIndex];
       // position[0][2] z for vertexMinus
-      double right[3]={position[2][0]-position[1][0] ,position[2][1]-position[1][1] ,position[2][2]-position[1][2] };
-      double left[3]={position[0][0]-position[1][0] ,position[0][1]-position[1][1] ,position[0][2]-position[1][2] };
+      double right[3]={position[2][0]-position[1][0] ,
+		       position[2][1]-position[1][1] ,
+		       position[2][2]-position[1][2] };
+      double left[3]={position[0][0]-position[1][0] ,
+		      position[0][1]-position[1][1] ,
+		      position[0][2]-position[1][2] };
       double tmp=std::sqrt(right[0]*right[0]+right[1]*right[1]+right[2]*right[2]);
       if (tmp!=0){
 	right[0]/=tmp;
@@ -1785,21 +1777,20 @@ initiate(Tissue &T,
 	vertexVec[vertexIndex][0]=right[0];
 	vertexVec[vertexIndex][1]=right[1];
       }
-      
     }
   }
   
   //setting internal actins
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
-    size_t numVertices= T.cell(cellIndex).numVertex();
-    for (size_t vertex1=0 ; vertex1< numVertices ; vertex1++){
+    size_t numCellVertices= T.cell(cellIndex).numVertex();
+    for (size_t vertexCellIndex1=0 ; vertexCellIndex1< numCellVertices ; vertexCellIndex1++){
       
-      size_t vertexIndex1 = T.cell(cellIndex).vertex(vertex1)->index();
+      size_t vertexIndex1 = T.cell(cellIndex).vertex(vertexCellIndex1)->index();
       DataMatrix position(2,vertexData[vertexIndex1]);
       
-      for (size_t vertex2=0 ; vertex2< numVertices ; vertex2++)
-  	if (vertex2!=vertex1){
-  	  size_t vertexIndex2= T.cell(cellIndex).vertex(vertex2)->index();
+      for (size_t vertexCellIndex2=0 ; vertexCellIndex2< numCellVertices ; vertexCellIndex2++)
+  	if (vertexCellIndex2!=vertexCellIndex1){
+  	  size_t vertexIndex2= T.cell(cellIndex).vertex(vertexCellIndex2)->index();
 	  position[1] = vertexData[vertexIndex2];
 	  
   	  // double  N1N2=
@@ -1826,17 +1817,16 @@ initiate(Tissue &T,
 	  //if (tmp==0) 
 	  //  std::cerr<<"cell "<<cellIndex<<" N  " << vertexIndex1 <<" N " << vertexIndex2 <<" "<< N1N2<<" teta "<< teta<<std::endl;
 	  if(variableIndex(0,3)==0 || (variableIndex(0,3)==1 && hasSister[vertexIndex1]==1 )){
-	    
-	    if(variableIndex(0,2)==0){
+	    if(variableIndex(0,2)==0){       // no constrain on corners
 	      if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
-		connections[cellIndex][vertex1][vertex2]= std::sqrt(
-								    (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-								    (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+		connections[cellIndex][vertexCellIndex1][vertexCellIndex2]
+		  = std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+			      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
 	      
 	      if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
-		connections[cellIndex][vertex1][vertex2]= std::sqrt(
-								    (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-								    (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+		connections[cellIndex][vertexCellIndex1][vertexCellIndex2]
+		  = std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+			      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
 	    }
 	    
 	    if(variableIndex(0,2)==1) {      // exclude_corner
@@ -1845,12 +1835,12 @@ initiate(Tissue &T,
 	      size_t vertexPlusIndex;
 	      size_t vertexMinusIndex;
 	      
-	      if (vertex1!=0 )
-		vertexMinusIndex = T.cell(cellIndex).vertex(vertex1-1)->index();
+	      if (vertexCellIndex1!=0 )
+		vertexMinusIndex = T.cell(cellIndex).vertex(vertexCellIndex1-1)->index();
 	      else
-		vertexMinusIndex= T.cell(cellIndex).vertex(numVertices-1)->index();
-	      if ( vertex1!=numVertices-1 )
-		vertexPlusIndex = T.cell(cellIndex).vertex(vertex1+1)->index();
+		vertexMinusIndex= T.cell(cellIndex).vertex(numCellVertices-1)->index();
+	      if ( vertexCellIndex1!=numCellVertices-1 )
+		vertexPlusIndex = T.cell(cellIndex).vertex(vertexCellIndex1+1)->index();
 	      else
 		vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
 	      
@@ -1858,27 +1848,25 @@ initiate(Tissue &T,
 		vertexVec[vertexMinusIndex][1]*vertexVec[vertexPlusIndex][1];
 	      if (cornerAngle > std::cos(3.1416*(180-parameter(5))/180)){
 		if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
-		  connections[cellIndex][vertex1][vertex2]= std::sqrt(
-								      (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-								      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+		  connections[cellIndex][vertexCellIndex1][vertexCellIndex2]=
+		    std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+			      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
 		
 		if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
-		  connections[cellIndex][vertex1][vertex2]= std::sqrt(
-								      (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-								      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+		  connections[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
+		    std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+			      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
 	      }
 	    }
 	  }
-	  
-  	  connections[cellIndex][vertex2][vertex1]=connections[cellIndex][vertex1][vertex2];
+	  connections[cellIndex][vertexCellIndex2][vertexCellIndex1]=
+	    connections[cellIndex][vertexCellIndex1][vertexCellIndex2];
 	  
   	}
       
     }
   }
- 
-
-
+  
   
   // for(size_t zx=0; zx<numCells;zx++){
   //   std::cerr<<"cell  "<<zx<<std::endl;
@@ -1886,7 +1874,10 @@ initiate(Tissue &T,
   //   for (int a=1;a<numV;a++)
   //     for (int b=1;b<numV;b++)
   // 	if (connections[zx][a][b]!=0)
+  // 	  {
   // 	  std::cerr<<"a,b  "<<a<<" , "<<b<<" connections["<<zx<<"][a][b] is "<<connections[zx][a][b]<<std::endl;
+	 
+  // 	  }
   // }
   
   //size_t Npairs=variableIndex(1).size();    
@@ -1894,9 +1885,9 @@ initiate(Tissue &T,
   size_t printFlag=0;
   if (printFlag) {
     for (size_t i=0; i<numCells; ++i) {
-      size_t numVertices= T.cell(i).numVertex();
-      for (size_t j=0; j<numVertices; ++j) {
-	for (size_t k=j+1; k<numVertices; ++k) {
+      size_t numCellVertices= T.cell(i).numVertex();
+      for (size_t j=0; j<numCellVertices; ++j) {
+	for (size_t k=j+1; k<numCellVertices; ++k) {
 	  if (connections[i][j][k]) {
 	    std::cerr << "In cell " << i << " vertices " << j << " and " << k << " connected." << std::endl;  
 	    size_t numDimension = vertexData[0].size();
@@ -1918,7 +1909,6 @@ initiate(Tissue &T,
     std::cerr << "End of printing." << std::endl;
     // END printing
   }
- 
 }
 
 
@@ -2116,17 +2106,16 @@ printState(Tissue *T,
 }
 
 
-
 ////////////////////////////////////////////////////////////////
 
-VertexFromExternalSpringFromPerpVertex1::
-VertexFromExternalSpringFromPerpVertex1(std::vector<double> &paraValue, 
+VertexFromExternalSpringFromPerpVertexDynamic::
+VertexFromExternalSpringFromPerpVertexDynamic(std::vector<double> &paraValue, 
 			 std::vector< std::vector<size_t> > &indValue ) 
 {  
   // Do some checks on the parameters and variable indeces
   if( paraValue.size()!=8 ) {
-    std::cerr << "VertexFromExternalSpringFromPerpVertex1::"
-	      << "VertexFromExternalSpringFromPerpVertex1() "
+    std::cerr << "VertexFromExternalSpringFromPerpVertexDynamic::"
+	      << "VertexFromExternalSpringFromPerpVertexDynamic() "
 	      << "Uses eight parameters spring constant K, frac_adhesion,"
 	      << "Lmaxfactor, growth_rate, intraction-angle, corner_angle, "
 	      << "growthDecay, growth_rate_stress. "<< std::endl;
@@ -2134,8 +2123,8 @@ VertexFromExternalSpringFromPerpVertex1(std::vector<double> &paraValue,
     exit(EXIT_FAILURE);
   }
   if( indValue.size() != 1 || indValue[0].size()!=4 ) {
-    std::cerr << " VertexFromExternalSpringFromPerpVertex1::"
-	      << " VertexFromExternalSpringFromPerpVertex1()"
+    std::cerr << " VertexFromExternalSpringFromPerpVertexDynamic::"
+	      << " VertexFromExternalSpringFromPerpVertexDynamic()"
 	      << " one level four indices for gowth flag" 
 	      << " connection_flag (constraint on first vertex(1)"
 	      << " or both vertices(2)), exclude_corner_flag,"
@@ -2145,7 +2134,7 @@ VertexFromExternalSpringFromPerpVertex1(std::vector<double> &paraValue,
     exit(EXIT_FAILURE);
   }
   //Set the variable values
-  setId("VertexFromExternalSpringFromPerpVertex1");
+  setId("VertexFromExternalSpringFromPerpVertexDynamic");
   setParameter(paraValue);  
   setVariableIndex(indValue);
   
@@ -2163,7 +2152,7 @@ VertexFromExternalSpringFromPerpVertex1(std::vector<double> &paraValue,
   setParameterId( tmp ); 
 }
 
-void VertexFromExternalSpringFromPerpVertex1::
+void VertexFromExternalSpringFromPerpVertexDynamic::
 initiate(Tissue &T,
 	 DataMatrix &cellData,
 	 DataMatrix &wallData,
@@ -2175,12 +2164,12 @@ initiate(Tissue &T,
   size_t numCells = T.numCell();
   connections.resize(numCells);
   for (size_t cellIndex = 0; cellIndex <numCells; cellIndex++){
-    size_t numVertices= T.cell(cellIndex).numVertex();
-    connections[cellIndex].resize(numVertices);
-    for (size_t verIndex = 0; verIndex < numVertices; verIndex++)
+    size_t numCellVertices= T.cell(cellIndex).numVertex();
+    connections[cellIndex].resize(numCellVertices);
+    for (size_t vertexCellIndex = 0; vertexCellIndex < numCellVertices; vertexCellIndex++)
       {
 	//size_t vertex = T.cell(cellIndex).vertex(verIndex)->index();
-	connections[cellIndex][verIndex].resize(numVertices,0);
+	connections[cellIndex][vertexCellIndex].resize(numCellVertices,0);
       }
   }
   
@@ -2199,18 +2188,18 @@ initiate(Tissue &T,
 
   // calculating normals to the membrane
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
-    size_t numVertices= T.cell(cellIndex).numVertex();
-    for (size_t vertex=0 ; vertex< numVertices ; vertex++){
+    size_t numCellVertices= T.cell(cellIndex).numVertex();
+    for (size_t vertexCellIndex=0 ; vertexCellIndex< numCellVertices ; vertexCellIndex++){
       
-      size_t vertexIndex = T.cell(cellIndex).vertex(vertex)->index();
+      size_t vertexIndex = T.cell(cellIndex).vertex(vertexCellIndex)->index();
       size_t vertexPlusIndex;
       size_t vertexMinusIndex;
-      if (vertex!=0 )
-	vertexMinusIndex = T.cell(cellIndex).vertex(vertex-1)->index();
+      if (vertexCellIndex!=0 )
+	vertexMinusIndex = T.cell(cellIndex).vertex(vertexCellIndex-1)->index();
       else
-	vertexMinusIndex= T.cell(cellIndex).vertex(numVertices-1)->index();
-      if ( vertex!=numVertices-1 )
-	vertexPlusIndex = T.cell(cellIndex).vertex(vertex+1)->index();
+	vertexMinusIndex= T.cell(cellIndex).vertex(numCellVertices-1)->index();
+      if ( vertexCellIndex!=numCellVertices-1 )
+	vertexPlusIndex = T.cell(cellIndex).vertex(vertexCellIndex+1)->index();
       else
 	vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
       
@@ -2249,25 +2238,20 @@ initiate(Tissue &T,
 	vertexVec[vertexIndex][0]=right[0];
 	vertexVec[vertexIndex][1]=right[1];
       }
-      
-      //if (cellIndex==2)  
-      // std::cerr<<vertexMinus<<"  " << vertex <<"  " << vertexPlus<<std::endl;
-      // std::cerr<<" N  " << vertexIndex <<"  " <<  vertexVec[vertexIndex][0]
-      //	  <<" "<< vertexVec[vertexIndex][1]<<std::endl;
     }
   }
   
   //setting internal actins
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
-    size_t numVertices= T.cell(cellIndex).numVertex();
-    for (size_t vertex1=0 ; vertex1< numVertices ; vertex1++){
+    size_t numCellVertices= T.cell(cellIndex).numVertex();
+    for (size_t vertexCellIndex1=0 ; vertexCellIndex1< numCellVertices ; vertexCellIndex1++){
       
-      size_t vertexIndex1 = T.cell(cellIndex).vertex(vertex1)->index();
+      size_t vertexIndex1 = T.cell(cellIndex).vertex(vertexCellIndex1)->index();
       DataMatrix position(2,vertexData[vertexIndex1]);
       
-      for (size_t vertex2=0 ; vertex2< numVertices ; vertex2++)
-  	if (vertex2!=vertex1){
-  	  size_t vertexIndex2= T.cell(cellIndex).vertex(vertex2)->index();
+      for (size_t vertexCellIndex2=0 ; vertexCellIndex2< numCellVertices ; vertexCellIndex2++)
+  	if (vertexCellIndex2!=vertexCellIndex1){
+  	  size_t vertexIndex2= T.cell(cellIndex).vertex(vertexCellIndex2)->index();
 	  position[1] = vertexData[vertexIndex2];
 	  
   	  // double  N1N2=
@@ -2296,14 +2280,14 @@ initiate(Tissue &T,
 	  if(variableIndex(0,3)==0 || (variableIndex(0,3)==1 && hasSister[vertexIndex1]==1 )){
 	    if(variableIndex(0,2)==0){       // no constrain on corners
 	      if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
-		connections[cellIndex][vertex1][vertex2]= std::sqrt(
-								    (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-								    (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+		connections[cellIndex][vertexCellIndex1][vertexCellIndex2]
+		  = std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+			      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
 	      
 	      if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
-		connections[cellIndex][vertex1][vertex2]= std::sqrt(
-								    (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-								    (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+		connections[cellIndex][vertexCellIndex1][vertexCellIndex2]
+		  = std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+			      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
 	    }
 	    
 	    if(variableIndex(0,2)==1) {      // exclude_corner
@@ -2312,12 +2296,12 @@ initiate(Tissue &T,
 	      size_t vertexPlusIndex;
 	      size_t vertexMinusIndex;
 	      
-	      if (vertex1!=0 )
-		vertexMinusIndex = T.cell(cellIndex).vertex(vertex1-1)->index();
+	      if (vertexCellIndex1!=0 )
+		vertexMinusIndex = T.cell(cellIndex).vertex(vertexCellIndex1-1)->index();
 	      else
-		vertexMinusIndex= T.cell(cellIndex).vertex(numVertices-1)->index();
-	      if ( vertex1!=numVertices-1 )
-		vertexPlusIndex = T.cell(cellIndex).vertex(vertex1+1)->index();
+		vertexMinusIndex= T.cell(cellIndex).vertex(numCellVertices-1)->index();
+	      if ( vertexCellIndex1!=numCellVertices-1 )
+		vertexPlusIndex = T.cell(cellIndex).vertex(vertexCellIndex1+1)->index();
 	      else
 		vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
 	      
@@ -2325,18 +2309,19 @@ initiate(Tissue &T,
 		vertexVec[vertexMinusIndex][1]*vertexVec[vertexPlusIndex][1];
 	      if (cornerAngle > std::cos(3.1416*(180-parameter(5))/180)){
 		if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
-		  connections[cellIndex][vertex1][vertex2]= std::sqrt(
-								      (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-								      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+		  connections[cellIndex][vertexCellIndex1][vertexCellIndex2]=
+		    std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+			      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
 		
 		if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
-		  connections[cellIndex][vertex1][vertex2]= std::sqrt(
-								      (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-								      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+		  connections[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
+		    std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+			      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
 	      }
 	    }
 	  }
-	  connections[cellIndex][vertex2][vertex1]=connections[cellIndex][vertex1][vertex2];
+	  connections[cellIndex][vertexCellIndex2][vertexCellIndex1]=
+	    connections[cellIndex][vertexCellIndex1][vertexCellIndex2];
 	  
   	}
       
@@ -2361,9 +2346,9 @@ initiate(Tissue &T,
   size_t printFlag=0;
   if (printFlag) {
     for (size_t i=0; i<numCells; ++i) {
-      size_t numVertices= T.cell(i).numVertex();
-      for (size_t j=0; j<numVertices; ++j) {
-	for (size_t k=j+1; k<numVertices; ++k) {
+      size_t numCellVertices= T.cell(i).numVertex();
+      for (size_t j=0; j<numCellVertices; ++j) {
+	for (size_t k=j+1; k<numCellVertices; ++k) {
 	  if (connections[i][j][k]) {
 	    std::cerr << "In cell " << i << " vertices " << j << " and " << k << " connected." << std::endl;  
 	    size_t numDimension = vertexData[0].size();
@@ -2388,7 +2373,7 @@ initiate(Tissue &T,
 }
 
 
-void VertexFromExternalSpringFromPerpVertex1::
+void VertexFromExternalSpringFromPerpVertexDynamic::
 derivs(Tissue &T,
        DataMatrix &cellData,
        DataMatrix &wallData,
@@ -2400,73 +2385,67 @@ derivs(Tissue &T,
   double fad=parameter(1);
   //size_t Npairs=indValue[1].size();
   size_t dimension=vertexData[0].size();
-
+  
   size_t numCells = T.numCell();
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
-    size_t numVertices= T.cell(cellIndex).numVertex();
-    for (size_t verIndex1=0 ; verIndex1< numVertices ; verIndex1++){
+    size_t numCellVertices= T.cell(cellIndex).numVertex();
+    for (size_t vertexCellIndex1=0 ; vertexCellIndex1< numCellVertices-1 ; vertexCellIndex1++){
       
-      size_t vertex1 = T.cell(cellIndex).vertex(verIndex1)->index();
-     
+      size_t vertexIndex1 = T.cell(cellIndex).vertex(vertexCellIndex1)->index();
       
-      for (size_t verIndex2=0 ; verIndex2< numVertices ; verIndex2++)
-  	if (verIndex2!=verIndex1 && connections[cellIndex][verIndex1][verIndex2]!=0){
-  	  size_t vertex2= T.cell(cellIndex).vertex(verIndex2)->index();
-  	 
+      for (size_t vertexCellIndex2=vertexCellIndex1+1 ; vertexCellIndex2< numCellVertices ; vertexCellIndex2++)
+  	if (vertexCellIndex2!=vertexCellIndex1 && connections[cellIndex][vertexCellIndex1][vertexCellIndex2]!=0){
+  	  size_t vertexIndex2= T.cell(cellIndex).vertex(vertexCellIndex2)->index();
 	  
 	  double distance=0;
 	  
 	  for( size_t d=0 ; d<dimension ; d++ ) 
-	    distance += (vertexData[vertex2][d]-vertexData[vertex1][d])*(vertexData[vertex2][d]-vertexData[vertex1][d]);
+	    distance += (vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d])
+	      *(vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d]);
 	  
 	  distance=std::sqrt(distance);
-  	double coeff=0;
-	if ( connections[cellIndex][verIndex1][verIndex2]>0.0)
-	  coeff=parameter(0)*((1.0/connections[cellIndex][verIndex1][verIndex2])-(1.0/distance));
-	
-	if( distance <= 0.0 && connections[cellIndex][verIndex1][verIndex2] <=0.0 ) 
-	  coeff = 0.0;
-	
-	if( distance>connections[cellIndex][verIndex1][verIndex2])
-	  coeff *=fad;
-	//Update both vertices for each dimension
-	for(size_t d=0 ; d<dimension ; d++ ) {
-	  double div = coeff*(vertexData[vertex2][d]-vertexData[vertex1][d]);
-	  if ( connections[cellIndex][verIndex1][verIndex2]>0){
-	    vertexDerivs[vertex1][d] += div;
-	    vertexDerivs[vertex2][d] -= div;
+	  double coeff=0;
+	  if ( connections[cellIndex][vertexCellIndex1][vertexCellIndex2]>0.0)
+	    coeff=parameter(0)*((1.0/connections[cellIndex][vertexCellIndex1][vertexCellIndex2])-(1.0/distance));
+	  
+	  if( distance <= 0.0 && connections[cellIndex][vertexCellIndex1][vertexCellIndex2] <=0.0 ) 
+	    coeff = 0.0;
+	  
+	  if( distance>connections[cellIndex][vertexCellIndex1][vertexCellIndex2])
+	    coeff *=fad;
+	  //Update both vertices for each dimension
+	  for(size_t d=0 ; d<dimension ; d++ ) {
+	    double div = coeff*(vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d]);
+	    if ( connections[cellIndex][vertexCellIndex1][vertexCellIndex2]>0){
+	      vertexDerivs[vertexIndex1][d] += div;
+	      vertexDerivs[vertexIndex2][d] -= div;
+	    }
+	    // if ( distance<.1*restinglength[i]){
+	    //   double force=vertexDerivs[vertex1][d];
+	    //   vertexDerivs[vertex1][d] +=vertexDerivs[v2][d];
+	    //   vertexDerivs[vertex2][d] +=force;
+	    // }  
 	  }
-	  // if ( distance<.1*restinglength[i]){
-	  //   double force=vertexDerivs[vertex1][d];
-	  //   vertexDerivs[vertex1][d] +=vertexDerivs[v2][d];
-	  //   vertexDerivs[vertex2][d] +=force;
-	  // }  
 	}
-	}
-      
     }
-    
-    
   }  
-  
 }
 
-void VertexFromExternalSpringFromPerpVertex1::update(Tissue &T,
+void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
 				      DataMatrix &cellData,
 				      DataMatrix &wallData,
 				      DataMatrix &vertexData, 
 				      double h) 
-{
-  // double Lmaxfactor=parameter(2);
+{ // double Lmaxfactor=parameter(2);
   double Kgrowth=parameter(3);
   double KgrowthStress=parameter(7);
-
+  
   //size_t Npairs=indValue[1].size();
   size_t dimension=vertexData[0].size();
-
+  
   size_t numCells = T.numCell(); 
   //size_t numTotalVertices = T.numVertex();
-
+  
   // setting flag for sistership
   std:: vector<int> hasSister; 
   hasSister.resize(T.numVertex());
@@ -2475,25 +2454,22 @@ void VertexFromExternalSpringFromPerpVertex1::update(Tissue &T,
     hasSister[T.sisterVertex(is,0)]=1; 
     hasSister[T.sisterVertex(is,1)]=1; 
   }
-
-
-
-
+  
   // internal actin and membrane normal update
-    // updating normals to the membrane Counterclockwise sorting of vertices
+  // updating normals to the membrane Counterclockwise sorting of vertices
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
-    size_t numVertices= T.cell(cellIndex).numVertex();
-    for (size_t vertex=0 ; vertex< numVertices ; vertex++){
+    size_t numCellVertices= T.cell(cellIndex).numVertex();
+    for (size_t vertexCellIndex=0 ; vertexCellIndex< numCellVertices ; vertexCellIndex++){
       
-      size_t vertexIndex = T.cell(cellIndex).vertex(vertex)->index();
+      size_t vertexIndex = T.cell(cellIndex).vertex(vertexCellIndex)->index();
       size_t vertexPlusIndex;
       size_t vertexMinusIndex;
-      if (vertex!=0 )
-  	vertexMinusIndex = T.cell(cellIndex).vertex(vertex-1)->index();
+      if (vertexCellIndex!=0 )
+  	vertexMinusIndex = T.cell(cellIndex).vertex(vertexCellIndex-1)->index();
       else
-  	vertexMinusIndex= T.cell(cellIndex).vertex(numVertices-1)->index();
-      if ( vertex!=numVertices-1 )
-  	vertexPlusIndex = T.cell(cellIndex).vertex(vertex+1)->index();
+  	vertexMinusIndex= T.cell(cellIndex).vertex(numCellVertices-1)->index();
+      if ( vertexCellIndex!=numCellVertices-1 )
+  	vertexPlusIndex = T.cell(cellIndex).vertex(vertexCellIndex+1)->index();
       else
   	vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
       DataMatrix position(3,vertexData[vertexMinusIndex]);
@@ -2531,36 +2507,32 @@ void VertexFromExternalSpringFromPerpVertex1::update(Tissue &T,
   	vertexVec[vertexIndex][0]=right[0];
   	vertexVec[vertexIndex][1]=right[1];
       }
-      
-   
     }
   }
- 
+  
   //updating internal actins
   std:: vector<std::vector<std::vector<double> > >  connectionsNew;
-   connectionsNew.resize(numCells);
-   for (size_t cellIndex = 0; cellIndex <numCells; cellIndex++){
-     size_t numVertices= T.cell(cellIndex).numVertex();
-     connectionsNew[cellIndex].resize(numVertices);
-     for (size_t verIndex = 0; verIndex < numVertices; verIndex++)
-       {
-	 //size_t vertex = T.cell(cellIndex).vertex(verIndex)->index();
-	 connectionsNew[cellIndex][verIndex].resize(numVertices,0);
-       }
-   }
-   
-
-
+  connectionsNew.resize(numCells);
+  for (size_t cellIndex = 0; cellIndex <numCells; cellIndex++){
+    size_t numCellVertices= T.cell(cellIndex).numVertex();
+    connectionsNew[cellIndex].resize(numCellVertices);
+    for (size_t vertexCellIndex = 0; vertexCellIndex < numCellVertices; vertexCellIndex++)
+      {
+	//size_t vertex = T.cell(cellIndex).vertex(verIndex)->index();
+	connectionsNew[cellIndex][vertexCellIndex].resize(numCellVertices,0);
+      }
+  }
+  
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
-    size_t numVertices= T.cell(cellIndex).numVertex();
-    for (size_t vertex1=0 ; vertex1< numVertices ; vertex1++){
+    size_t numCellVertices= T.cell(cellIndex).numVertex();
+    for (size_t vertexCellIndex1=0 ; vertexCellIndex1< numCellVertices ; vertexCellIndex1++){
       
-      size_t vertexIndex1 = T.cell(cellIndex).vertex(vertex1)->index();
+      size_t vertexIndex1 = T.cell(cellIndex).vertex(vertexCellIndex1)->index();
       DataMatrix position(2,vertexData[vertexIndex1]);
       
-      for (size_t vertex2=0 ; vertex2< numVertices ; vertex2++)
-  	if (vertex2!=vertex1){
-  	  size_t vertexIndex2= T.cell(cellIndex).vertex(vertex2)->index();
+      for (size_t vertexCellIndex2=0 ; vertexCellIndex2< numCellVertices ; vertexCellIndex2++)
+  	if (vertexCellIndex2!=vertexCellIndex1){
+  	  size_t vertexIndex2= T.cell(cellIndex).vertex(vertexCellIndex2)->index();
   	  position[1] = vertexData[vertexIndex2];
 	  
   	  // double  N1N2=
@@ -2586,19 +2558,19 @@ void VertexFromExternalSpringFromPerpVertex1::update(Tissue &T,
 	  
   	  //if (tmp==0) 
   	  //  std::cerr<<"cell "<<cellIndex<<" N  " << vertexIndex1 <<" N " << vertexIndex2 <<" "<< N1N2<<" teta "<< teta<<std::endl;
-         
+	  
   	  if(variableIndex(0,3)==0 || (variableIndex(0,3)==1 && hasSister[vertexIndex1]==1 )){
-
+	    
   	    if(variableIndex(0,2)==0){       // no constrain on corners
 	      if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
-  		connectionsNew[cellIndex][vertex1][vertex2]= std::sqrt(
-  								    (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-  								    (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
-	     
+  		connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
+		  std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+			     (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	      
   	      if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
-  		connectionsNew[cellIndex][vertex1][vertex2]= std::sqrt(
-  								    (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-  								    (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+  		connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
+	  	 std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+			   (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
 	      
   	    }
 	    
@@ -2608,12 +2580,12 @@ void VertexFromExternalSpringFromPerpVertex1::update(Tissue &T,
   	      size_t vertexPlusIndex;
   	      size_t vertexMinusIndex;
 	      
-  	      if (vertex1!=0 )
-  		vertexMinusIndex = T.cell(cellIndex).vertex(vertex1-1)->index();
+  	      if (vertexCellIndex1!=0 )
+  		vertexMinusIndex = T.cell(cellIndex).vertex(vertexCellIndex1-1)->index();
   	      else
-  		vertexMinusIndex= T.cell(cellIndex).vertex(numVertices-1)->index();
-  	      if ( vertex1!=numVertices-1 )
-  		vertexPlusIndex = T.cell(cellIndex).vertex(vertex1+1)->index();
+  		vertexMinusIndex= T.cell(cellIndex).vertex(numCellVertices-1)->index();
+  	      if ( vertexCellIndex1!=numCellVertices-1 )
+  		vertexPlusIndex = T.cell(cellIndex).vertex(vertexCellIndex1+1)->index();
   	      else
   		vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
 	       
@@ -2623,61 +2595,51 @@ void VertexFromExternalSpringFromPerpVertex1::update(Tissue &T,
 
   	      if (cornerAngle > std::cos(3.1416*(180-parameter(5))/180)){	 
   		if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
-  		  connectionsNew[cellIndex][vertex1][vertex2]= std::sqrt(
-  								      (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-  								      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+  		  connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
+		    std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+			      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
 	
   		if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
-  		  connectionsNew[cellIndex][vertex1][vertex2]= std::sqrt(
-  								      (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-  								      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
-
+  		  connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
+                    std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+			      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
   	      }
-
   	    }
-
   	  }
 	  //std::cerr<< "up to here"<<std::endl;
-  	  connectionsNew[cellIndex][vertex2][vertex1]=connectionsNew[cellIndex][vertex1][vertex2];
-	 
+  	  connectionsNew[cellIndex][vertexCellIndex2][vertexCellIndex1]=
+	    connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]; 
   	}
-      
     }
   }
- 
+  
   // setting new connections if there were no connection already and keeping the old ones
   for(size_t iNew=0; iNew< numCells ;iNew++){
-    size_t numVertices = T.cell(iNew).numVertex();
-    for(size_t jNew=0; jNew< numVertices ;jNew++)
-      for(size_t kNew=0; kNew< numVertices ;kNew++){
+    size_t numCellVertices = T.cell(iNew).numVertex();
+    for(size_t jNew=0; jNew< numCellVertices ;jNew++)
+      for(size_t kNew=0; kNew< numCellVertices ;kNew++){
   	if(connections[iNew][jNew][kNew]==0)
   	  connections[iNew][jNew][kNew]=connectionsNew[iNew][jNew][kNew];
   	else if(connectionsNew[iNew][jNew][kNew]==0)
   	  connections[iNew][jNew][kNew]=0;
       }
   }
-
-
+  
   // End of internal actin and membrane normal update
  
- 
-
-
-  // growth rules
- 
+  // growth rules  
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
-    size_t numVertices= T.cell(cellIndex).numVertex();
-    for (size_t verIndex1=0 ; verIndex1< numVertices ; verIndex1++){
-      size_t vertex1 = T.cell(cellIndex).vertex(verIndex1)->index();
-      for (size_t verIndex2=0 ; verIndex2< numVertices ; verIndex2++)
-	if (verIndex2!=verIndex1 && connections[cellIndex][verIndex1][verIndex2]!=0){
-	  double restinglength=connections[cellIndex][verIndex1][verIndex2];
-	  size_t vertex2= T.cell(cellIndex).vertex(verIndex2)->index();
-	  
+    size_t numCellVertices= T.cell(cellIndex).numVertex();
+    for (size_t vertexCellIndex1=0 ; vertexCellIndex1< numCellVertices ; vertexCellIndex1++){
+      size_t vertexIndex1 = T.cell(cellIndex).vertex(vertexCellIndex1)->index();
+      for (size_t vertexCellIndex2=0 ; vertexCellIndex2< numCellVertices ; vertexCellIndex2++)
+	if (vertexCellIndex2!=vertexCellIndex1 && connections[cellIndex][vertexCellIndex1][vertexCellIndex2]!=0){
+	  double restinglength=connections[cellIndex][vertexCellIndex1][vertexCellIndex2];
+	  size_t vertexIndex2= T.cell(cellIndex).vertex(vertexCellIndex2)->index();
 	  double distance=0;
 	  for( size_t d=0 ; d<dimension ; d++ ) 
-	    distance += (vertexData[vertex2][d]-vertexData[vertex1][d])*
-	      (vertexData[vertex2][d]-vertexData[vertex1][d]);
+	    distance += (vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d])*
+	      (vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d]);
 	  
 	  distance=std::sqrt(distance);
 	  
@@ -2700,21 +2662,20 @@ void VertexFromExternalSpringFromPerpVertex1::update(Tissue &T,
 		+ h*Kgrowth*restinglength;
 	    }
 	    else if(variableIndex(0,0)==8) {
-	      if(hasSister[vertex1]==1 || hasSister[vertex2]==1)
+	      if(hasSister[vertexIndex1]==1 || hasSister[vertexIndex2]==1)
 		restinglength+=h*Kgrowth*restinglength ;
 	      else{
 		restinglength+=h*KgrowthStress*restinglength;
 		//std::cerr<<"broken sisters"<<std::endl;
 	      }
 	    }
-	   
 	    else {
-	      std::cerr << "VertexFromExternalSpringFromPerpVertex1::update()"
+	      std::cerr << "VertexFromExternalSpringFromPerpVertexDynamic::update()"
 			<< std::endl << "Wrong growth rule index given!"
 			<< std::endl;
 	      std::exit(EXIT_FAILURE);
 	    }
-	    connections[cellIndex][verIndex1][verIndex2]=restinglength;
+	    connections[cellIndex][vertexCellIndex1][vertexCellIndex2]=restinglength;
 	  }					
 	}
     }
@@ -2724,7 +2685,7 @@ void VertexFromExternalSpringFromPerpVertex1::update(Tissue &T,
   //std::cerr << parameter(3) << std::endl;
 }
 
-void VertexFromExternalSpringFromPerpVertex1::
+void VertexFromExternalSpringFromPerpVertexDynamic::
 printState(Tissue *T,
 	   DataMatrix &cellData,
 	   DataMatrix &wallData,
@@ -2736,29 +2697,29 @@ printState(Tissue *T,
   size_t dimension = vertexData[0].size();
   size_t numCells = T->numCell();
   for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
-    size_t numVertices= T->cell(cellIndex).numVertex();
-    for (size_t verIndex1=0 ; verIndex1< numVertices ; verIndex1++){
-      size_t vertex1 = T->cell(cellIndex).vertex(verIndex1)->index();
-      for (size_t verIndex2=0 ; verIndex2< numVertices ; verIndex2++)
-	if (verIndex2!=verIndex1 && connections[cellIndex][verIndex1][verIndex2]!=0){
-	  double restingLength=connections[cellIndex][verIndex1][verIndex2];
-	  size_t vertex2= T->cell(cellIndex).vertex(verIndex2)->index();
+    size_t numCellVertices= T->cell(cellIndex).numVertex();
+    for (size_t vertexCellIndex1=0 ; vertexCellIndex1< numCellVertices ; vertexCellIndex1++){
+      size_t vertexIndex1 = T->cell(cellIndex).vertex(vertexCellIndex1)->index();
+      for (size_t vertexCellIndex2=0 ; vertexCellIndex2< numCellVertices ; vertexCellIndex2++)
+	if (vertexCellIndex2!=vertexCellIndex1 && connections[cellIndex][vertexCellIndex1][vertexCellIndex2]!=0){
+	  double restingLength=connections[cellIndex][vertexCellIndex1][vertexCellIndex2];
+	  size_t vertexIndex2= T->cell(cellIndex).vertex(vertexCellIndex2)->index();
 	  double distance=0;
 	  for( size_t d=0 ; d<dimension ; d++ )
-	    distance += (vertexData[vertex2][d]-vertexData[vertex1][d])*
-	      (vertexData[vertex2][d]-vertexData[vertex1][d]);	  
+	    distance += (vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d])*
+	      (vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d]);	  
 	  distance=std::sqrt(distance);
 
 	  //vertex1
 	  os << index << " " << counter << " ";
 	  for( size_t d=0 ; d<dimension ; d++ )
-	    os << vertexData[vertex1][d] << " ";
+	    os << vertexData[vertexIndex1][d] << " ";
 	  os << restingLength << " " << distance << " " 
 	     << parameter(3)*restingLength+parameter(7)*(distance-restingLength) << std::endl;
 	  //vertex2
 	  os << index << " " << counter << " ";
 	  for( size_t d=0 ; d<dimension ; d++ )
-	    os << vertexData[vertex2][d] << " ";
+	    os << vertexData[vertexIndex2][d] << " ";
 	  os << restingLength << " " << distance
 	     << parameter(3)*restingLength+parameter(7)*(distance-restingLength) << std::endl;
 	  os << std::endl;
