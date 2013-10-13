@@ -497,7 +497,7 @@ void BaseSolver::print(std::ostream &os)
   
 
   
- else if( printFlag_==61 ) {// Print in vtu format and angle distribution at the end
+ else if( printFlag_==61 ) {// Print in vtu format and angle distribution at the end PLoS/fig3
    std::string pvdFile = "tmp/tissue.pvd";
    std::string cellFile = "tmp/VTK_cells.vtu";
    std::string wallFile = "tmp/VTK_walls.vtu";
@@ -510,10 +510,16 @@ void BaseSolver::print(std::ostream &os)
    if(tCount==numPrint_){
      for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) {
        if(cellData_[cellind][15]<75 && cellData_[cellind][15]>-75)
-         os << cellData_[cellind][12] <<" "<< cellData_[cellind][13] <<" "<< cellData_[cellind][14] <<" "<< cellData_[cellind][15]
-	   //             teta MT                                 teta strain                                teta stress                                      z coordinate
-            <<" "<< cellData_[cellind][23]<< " "<< cellData_[cellind][24]<<" "<< cellData_[cellind][11]<<" "<< cellData_[cellind][32]<< " "<<cellData_[cellind][19]<<std::endl;
-       //            teta MT stress                   teta strain stress             max strain               2nd strain             area ratio
+         os << cellData_[cellind][12] <<" "        //   teta MT  
+	    << cellData_[cellind][13] <<" "        //   teta strain  
+	    << cellData_[cellind][14] <<" "        //   teta stress
+	    << cellData_[cellind][15] <<" "        //   z coordinate
+	    << cellData_[cellind][23] <<" "        //   teta MT stress
+	    << cellData_[cellind][24] <<" "        //   teta strain stress  
+	    << cellData_[cellind][11] <<" "        //   max strain
+	    << cellData_[cellind][32] <<" "        //   2nd strain    
+	    << cellData_[cellind][19] <<std::endl; //   area ratio
+    
      }
    }
  }
@@ -768,8 +774,9 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
   // Very ad hoc assuming reaction having index 3 in model file (fourth reaction)
   //
   else if (printFlag_==101) {
-    size_t reactionIndex = 3;
-    if (T_->reaction(reactionIndex)->id() != "VertexFromExternalSpringFromPerpVertex") {
+    size_t reactionIndex = 4;
+    if (T_->reaction(reactionIndex)->id() != "VertexFromExternalSpringFromPerpVertex"
+	&& T_->reaction(reactionIndex)->id() != "VertexFromExternalSpringFromPerpVertexDynamic" ) {
       std::cerr << "BaseSolver::print() with printFlag 101. Wrong name of reaction "
 		<< reactionIndex << " in reaction list, no printing." << std::endl;     
     }
