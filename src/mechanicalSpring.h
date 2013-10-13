@@ -796,7 +796,7 @@ class VertexFromExternalSpringFromPerpVertex : public BaseReaction {
 ///
 /// @verbatim
 ///
-/// VertexFromExternalSpringFromPerpVertex1 8 1 4 
+/// VertexFromExternalSpringFromPerpVertexDynamic 8 1 4 
 /// K   
 /// f_adh 
 /// Lmaxfactor 
@@ -814,7 +814,7 @@ class VertexFromExternalSpringFromPerpVertex : public BaseReaction {
 /// @endverbatim
 ///
 ///
-class VertexFromExternalSpringFromPerpVertex1 : public BaseReaction {
+class VertexFromExternalSpringFromPerpVertexDynamic : public BaseReaction {
  
  private: 
   
@@ -835,7 +835,7 @@ class VertexFromExternalSpringFromPerpVertex1 : public BaseReaction {
   ///
   /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
   ///
-  VertexFromExternalSpringFromPerpVertex1(std::vector<double> &paraValue, 
+  VertexFromExternalSpringFromPerpVertexDynamic(std::vector<double> &paraValue, 
 			   std::vector< std::vector<size_t> > &indValue );
   ///
   /// @brief Derivative function for this reaction class
