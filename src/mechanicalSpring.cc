@@ -2446,6 +2446,29 @@ void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
   size_t numCells = T.numCell(); 
   //size_t numTotalVertices = T.numVertex();
   
+  // //updating the grid matrix 
+  // Xmin;
+  // Xmax;
+  // Ymin;
+  // Ymax;
+  // nx;
+  // ny;
+
+  // dX=(Xmax-Xmin)/nx;
+  // dY=(Ymax-Ymin)/ny;
+ 
+  // grid.resize(nx);
+  // for(size_t i=0; i<nx;i++)
+  //   grid[i].resize(ny);
+  // for(size_t vertexIndex=0; vertexIndex<T.numVertex(); vertexIndex++)
+  //   grid[std::floor((vertexData[vertexIndex][0]-Xmin)/dX)]
+
+
+
+
+
+
+
   // setting flag for sistership
   std:: vector<int> hasSister; 
   hasSister.resize(T.numVertex());
@@ -2532,9 +2555,10 @@ void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
       
       for (size_t vertexCellIndex2=0 ; vertexCellIndex2< numCellVertices ; vertexCellIndex2++)
   	if (vertexCellIndex2!=vertexCellIndex1){
+
+
   	  size_t vertexIndex2= T.cell(cellIndex).vertex(vertexCellIndex2)->index();
   	  position[1] = vertexData[vertexIndex2];
-	  
   	  // double  N1N2=
   	  //   vertexVec[vertexIndex1][0]*vertexVec[vertexIndex2][0]+
   	  //   vertexVec[vertexIndex1][1]*vertexVec[vertexIndex2][1];
@@ -2542,6 +2566,51 @@ void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
   	  double v1v2[2]={vertexData[vertexIndex2][0]-vertexData[vertexIndex1][0],
   			  vertexData[vertexIndex2][1]-vertexData[vertexIndex1][1]};
 	  
+	  //line intersect test
+
+	  bool intersect=false;
+	  size_t vertexCellIndex1pre=numCellVertices-1;
+	  if(vertexCellIndex1>0) vertexCellIndex1pre=vertexCellIndex1-1;
+	  size_t vertexCellIndex2pre=numCellVertices-1;
+	  if(vertexCellIndex2>0) vertexCellIndex2pre=vertexCellIndex2-1;
+
+	  for (size_t intersectV=0; intersectV<numCellVertices ;intersectV++)
+	    if(intersectV!=vertexCellIndex1 && intersectV!=vertexCellIndex2 &&
+	       intersectV!=vertexCellIndex1pre && intersectV!=vertexCellIndex2pre)
+	      {
+		size_t intersectVnext;
+		if(intersectV<numCellVertices-1)
+		  intersectVnext=intersectV+1;
+		else
+		  intersectVnext=0;
+		size_t VIndex = T.cell(cellIndex).vertex(intersectV)->index();
+		size_t VnextIndex = T.cell(cellIndex).vertex(intersectVnext)->index();
+		double UU[2]={vertexData[VnextIndex][0]-vertexData[VIndex][0],
+			      vertexData[VnextIndex][1]-vertexData[VIndex][1]};
+		double qp[2]={vertexData[vertexIndex1][0]-vertexData[VIndex][0],
+			      vertexData[vertexIndex1][1]-vertexData[VIndex][1]};
+		double rs=UU[0]*v1v2[1]-UU[1]*v1v2[0];
+		if (rs==0 && qp[0]*UU[1]-qp[1]*UU[0]==0) //collinear: no actin;
+		  intersect=true;
+		else {
+		  double tt=(qp[0]*v1v2[1]-qp[1]*v1v2[0])/rs;
+		  double uu=(qp[0]*UU[1]-qp[1]*UU[0])/rs;
+		  if (tt>=0 && tt<=1 && uu>=0 && uu<=1) //they intersect : no actin;
+		    intersect=true;
+		  
+		}
+		// r=UU;
+		// s=v1v2;
+		// p=vertexData[VIndex][0],vertexData[VIndex][1];
+		// q=vertexData[vertexIndex1][0],vertexData[vertexIndex1][1];
+		// if (rxs=0 && (q-p)xr=0) collinear: no actin;
+		// else if (t=(q-p)x s/(rxs) && u=(q-p)x r/(rxs) && 0<= t,u<=1) they intersect : no actin;
+		// else it is ok;
+	      }
+	  // end of line intersect test
+	  
+
+
   	  double tmp=std::sqrt(v1v2[0]*v1v2[0]+v1v2[1]*v1v2[1]);
   	  if (tmp!=0){
   	    v1v2[0]/=tmp;
@@ -2556,56 +2625,57 @@ void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
   				 -vertexVec[vertexIndex2][1]*v1v2[1]
   				 );
 	  
-  	  //if (tmp==0) 
-  	  //  std::cerr<<"cell "<<cellIndex<<" N  " << vertexIndex1 <<" N " << vertexIndex2 <<" "<< N1N2<<" teta "<< teta<<std::endl;
-	  
-  	  if(variableIndex(0,3)==0 || (variableIndex(0,3)==1 && hasSister[vertexIndex1]==1 )){
-	    
-  	    if(variableIndex(0,2)==0){       // no constrain on corners
-	      if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
-  		connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
-		  std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-			     (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+  	  if (tmp==0)  
+	    std::cerr<<"cell "<<cellIndex<<"vertex " << vertexIndex1 
+		     <<" intersects with vertex " << vertexIndex2 <<std::endl;
+	  if (!intersect)
+	    if(variableIndex(0,3)==0 || (variableIndex(0,3)==1 && hasSister[vertexIndex1]==1 )){
 	      
-  	      if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
-  		connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
-	  	 std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-			   (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+	      if(variableIndex(0,2)==0){       // no constrain on corners
+		if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180)&& teta2<89 ) 
+		  connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
+		      std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+				 (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+		
+		if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
+		  connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
+		      std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+				(position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+		
+	      }
 	      
-  	    }
-	    
-  	    if(variableIndex(0,2)==1) {      // exclude_corner
-	      
-  	      // size_t vertexIndex1 = T.cell(cellIndex).vertex(vertex1)->index();
-  	      size_t vertexPlusIndex;
-  	      size_t vertexMinusIndex;
-	      
-  	      if (vertexCellIndex1!=0 )
-  		vertexMinusIndex = T.cell(cellIndex).vertex(vertexCellIndex1-1)->index();
-  	      else
-  		vertexMinusIndex= T.cell(cellIndex).vertex(numCellVertices-1)->index();
-  	      if ( vertexCellIndex1!=numCellVertices-1 )
-  		vertexPlusIndex = T.cell(cellIndex).vertex(vertexCellIndex1+1)->index();
-  	      else
-  		vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
-	       
-  	      double cornerAngle=vertexVec[vertexMinusIndex][0]*vertexVec[vertexPlusIndex][0]+
-  		vertexVec[vertexMinusIndex][1]*vertexVec[vertexPlusIndex][1];
-
-
-  	      if (cornerAngle > std::cos(3.1416*(180-parameter(5))/180)){	 
-  		if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
-  		  connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
-		    std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-			      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
-	
-  		if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
-  		  connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
-                    std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-			      (position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
-  	      }
-  	    }
-  	  }
+	      if(variableIndex(0,2)==1) {      // exclude_corner
+		
+		// size_t vertexIndex1 = T.cell(cellIndex).vertex(vertex1)->index();
+		size_t vertexPlusIndex;
+		size_t vertexMinusIndex;
+		
+		if (vertexCellIndex1!=0 )
+		  vertexMinusIndex = T.cell(cellIndex).vertex(vertexCellIndex1-1)->index();
+		else
+		  vertexMinusIndex= T.cell(cellIndex).vertex(numCellVertices-1)->index();
+		if ( vertexCellIndex1!=numCellVertices-1 )
+		  vertexPlusIndex = T.cell(cellIndex).vertex(vertexCellIndex1+1)->index();
+		else
+		  vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
+		
+		double cornerAngle=vertexVec[vertexMinusIndex][0]*vertexVec[vertexPlusIndex][0]+
+		  vertexVec[vertexMinusIndex][1]*vertexVec[vertexPlusIndex][1];
+		
+		
+		if (cornerAngle > std::cos(3.1416*(180-parameter(5))/180)){	 
+		  if (variableIndex(0,1)==1 && teta1<(parameter(4)*3.1416/180) ) 
+		    connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
+		      std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+				(position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+		  
+		  if (variableIndex(0,1)==2 && teta1<(parameter(4)*3.1416/180) && teta2<(parameter(4)*3.1416/180)) 
+		    connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]= 
+		      std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+				(position[0][1]-position[1][1])*(position[0][1]-position[1][1])); 
+		}
+	      }
+	    }
 	  //std::cerr<< "up to here"<<std::endl;
   	  connectionsNew[cellIndex][vertexCellIndex2][vertexCellIndex1]=
 	    connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]; 
