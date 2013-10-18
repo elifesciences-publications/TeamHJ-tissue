@@ -889,5 +889,77 @@ class VertexFromExternalSpringFromPerpVertexDynamic : public BaseReaction {
 
 
 
+///
+/// @brief applie a repulstion spring force with a given constant
+/// between nodes on the vertices of two cells
+/// in the places that membranes intersect.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+///
+/// cellcellRepulsion 1 0 
+/// K   
+/// checking_radius
+///
+/// @endverbatim
+///
+///
+class cellcellRepulsion : public BaseReaction {
+ 
+ private: 
+  
+  std:: vector<std::vector<double> >  vertexVec;
+  std:: vector<std::vector<int> > grid;
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  cellcellRepulsion(std::vector<double> &paraValue, 
+			   std::vector< std::vector<size_t> > &indValue );
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///  
+  void initiate(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);
+
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData, 
+              double h);
+};
+
+
+
 
 #endif
