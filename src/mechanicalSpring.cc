@@ -192,6 +192,7 @@ namespace CenterTriangulation {
 	distance = std::sqrt(distance);
 	double edgeLength=cellData[i][lengthIndex+k];
 	double coeff = parameter(0)*((1.0/edgeLength)-(1.0/distance));
+        //double coeff = parameter(0)*(distance-edgeLength)*(distance-edgeLength)*(distance-edgeLength)/(distance*edgeLength);
 	if( distance <= 0.0 && edgeLength <=0.0 ) {
 	  //std::cerr << i << " " << k << " - " << edgeLength << " " 
 	  //<< distance << std::endl;
@@ -2350,7 +2351,7 @@ initiate(Tissue &T,
       for (size_t j=0; j<numCellVertices; ++j) {
 	for (size_t k=j+1; k<numCellVertices; ++k) {
 	  if (connections[i][j][k]) {
-	    std::cerr << "In cell " << i << " vertices " << j << " and " << k << " connected." << std::endl;  
+	    //std::cerr << "In cell " << i << " vertices " << j << " and " << k << " connected." << std::endl;  
 	    size_t numDimension = vertexData[0].size();
 	    size_t v1 = T.cell(i).vertex(j)->index();
 	    size_t v2 = T.cell(i).vertex(k)->index();
@@ -2413,6 +2414,9 @@ derivs(Tissue &T,
 	  
 	  if( distance>connections[cellIndex][vertexCellIndex1][vertexCellIndex2])
 	    coeff *=fad;
+	  
+	  coeff*=(wallData[ T.vertex(vertexIndex1).wall(0)->index()][0]
+		  +wallData[ T.vertex(vertexIndex1).wall(1)->index()][0])/0.2;
 	  //Update both vertices for each dimension
 	  for(size_t d=0 ; d<dimension ; d++ ) {
 	    double div = coeff*(vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d]);
@@ -2446,25 +2450,7 @@ void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
   size_t numCells = T.numCell(); 
   //size_t numTotalVertices = T.numVertex();
   
-  // //updating the grid matrix 
-  // Xmin;
-  // Xmax;
-  // Ymin;
-  // Ymax;
-  // nx;
-  // ny;
-
-  // dX=(Xmax-Xmin)/nx;
-  // dY=(Ymax-Ymin)/ny;
  
-  // grid.resize(nx);
-  // for(size_t i=0; i<nx;i++)
-  //   grid[i].resize(ny);
-  // for(size_t vertexIndex=0; vertexIndex<T.numVertex(); vertexIndex++)
-  //   grid[std::floor((vertexData[vertexIndex][0]-Xmin)/dX)]
-
-
-
 
 
 
@@ -2559,9 +2545,7 @@ void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
 
   	  size_t vertexIndex2= T.cell(cellIndex).vertex(vertexCellIndex2)->index();
   	  position[1] = vertexData[vertexIndex2];
-  	  // double  N1N2=
-  	  //   vertexVec[vertexIndex1][0]*vertexVec[vertexIndex2][0]+
-  	  //   vertexVec[vertexIndex1][1]*vertexVec[vertexIndex2][1];
+  	
           
   	  double v1v2[2]={vertexData[vertexIndex2][0]-vertexData[vertexIndex1][0],
   			  vertexData[vertexIndex2][1]-vertexData[vertexIndex1][1]};
@@ -2599,13 +2583,7 @@ void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
 		    intersect=true;
 		  
 		}
-		// r=UU;
-		// s=v1v2;
-		// p=vertexData[VIndex][0],vertexData[VIndex][1];
-		// q=vertexData[vertexIndex1][0],vertexData[vertexIndex1][1];
-		// if (rxs=0 && (q-p)xr=0) collinear: no actin;
-		// else if (t=(q-p)x s/(rxs) && u=(q-p)x r/(rxs) && 0<= t,u<=1) they intersect : no actin;
-		// else it is ok;
+	
 	      }
 	  // end of line intersect test
 	  
@@ -2799,6 +2777,288 @@ printState(Tissue *T,
   }
   index++;
 }
+
+
+
+
+
+ 
+
+ ////////////////////////////////////////////////////////////////
+
+cellcellRepulsion::
+cellcellRepulsion(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=2 ) {
+    std::cerr << "cellcellRepulsion::"
+	      << "cellcellRepulsion() "
+	      << "Uses two parameters spring constant K and checking radius R "<< std::endl;
+
+    exit(EXIT_FAILURE);
+  }
+  if( indValue.size() != 0  ) {
+    std::cerr << " cellcellRepulsion::"
+	      << " cellcellRepulsion()"
+	      << " No index is used." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  //Set the variable values
+  setId("cellcellRepulsion");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "K_sp";
+  tmp[1] = "checking_radius";
+
+  setParameterId( tmp ); 
+}
+
+void cellcellRepulsion::
+initiate(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs) 
+{   
+  size_t numCells = T.numCell();
+  vertexVec.resize(T.numVertex());
+
+   // //updating the grid matrix 
+  // Xmin;
+  // Xmax;
+  // Ymin;
+  // Ymax;
+  // nx;
+  // ny;
+
+  // dX=(Xmax-Xmin)/nx;
+  // dY=(Ymax-Ymin)/ny;
+ 
+  // grid.resize(nx);
+  // for(size_t i=0; i<nx;i++)
+  //   grid[i].resize(ny);
+  // for(size_t vertexIndex=0; vertexIndex<T.numVertex(); vertexIndex++)
+  //   grid[std::floor((vertexData[vertexIndex][0]-Xmin)/dX)]
+
+
+
+  // vertexVec(0,1,2): normal;vertexVec(3): intersect flag; vertexVec(4):interference area 
+  for(size_t i=0 ; i<T.numVertex() ; i++) 
+    vertexVec[i].resize(5,0);
+
+  // calculating normals to the membrane
+  for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
+    size_t numCellVertices= T.cell(cellIndex).numVertex();
+    for (size_t vertexCellIndex=0 ; vertexCellIndex< numCellVertices ; vertexCellIndex++){
+      
+      size_t vertexIndex = T.cell(cellIndex).vertex(vertexCellIndex)->index();
+      size_t vertexPlusIndex;
+      size_t vertexMinusIndex;
+      if (vertexCellIndex!=0 )
+	vertexMinusIndex = T.cell(cellIndex).vertex(vertexCellIndex-1)->index();
+      else
+	vertexMinusIndex= T.cell(cellIndex).vertex(numCellVertices-1)->index();
+      if ( vertexCellIndex!=numCellVertices-1 )
+	vertexPlusIndex = T.cell(cellIndex).vertex(vertexCellIndex+1)->index();
+      else
+	vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
+      
+      DataMatrix position(3,vertexData[vertexMinusIndex]);
+      position[1] = vertexData[vertexIndex];
+      position[2] = vertexData[vertexPlusIndex];
+      // position[0][2] z for vertexMinus
+      double right[3]={position[2][0]-position[1][0] ,
+		       position[2][1]-position[1][1] ,
+		       position[2][2]-position[1][2] };
+      double left[3]={position[0][0]-position[1][0] ,
+		      position[0][1]-position[1][1] ,
+		      position[0][2]-position[1][2] };
+      double tmp=std::sqrt(right[0]*right[0]+right[1]*right[1]+right[2]*right[2]);
+      if (tmp!=0){
+	right[0]/=tmp;
+	right[1]/=tmp;
+	right[2]/=tmp;
+      }
+      tmp=std::sqrt(left[0]*left[0]+left[1]*left[1]+left[2]*left[2]);
+      if (tmp!=0){
+	left[0]/=tmp;
+	left[1]/=tmp;
+	left[2]/=tmp;
+      }
+      vertexVec[vertexIndex][0]=-(right[1]-left[1]);
+      vertexVec[vertexIndex][1]=right[0]-left[0];
+      tmp=std::sqrt(
+		    vertexVec[vertexIndex][0]*vertexVec[vertexIndex][0]+
+		    vertexVec[vertexIndex][1]*vertexVec[vertexIndex][1]);
+      if (tmp!=0){ 
+	vertexVec[vertexIndex][0]/=tmp;
+	vertexVec[vertexIndex][1]/=tmp;
+      }
+      else{ // if two consecutive edges overlay the right one is sellected!!
+	vertexVec[vertexIndex][0]=right[0];
+	vertexVec[vertexIndex][1]=right[1];
+      }
+    }
+  }
+  
+ 
+}
+
+
+void cellcellRepulsion::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  
+  
+  size_t dimension=vertexData[0].size();
+  
+  size_t numVertices = T.numVertex();
+  for (size_t vertexIndex=0 ; vertexIndex< numVertices ; vertexIndex++)
+    if (vertexVec[vertexIndex][3]==1)
+      {
+        double coeff=parameter(0);//*vertexVec[vertexIndex][4];
+	vertexDerivs[vertexIndex][0] = coeff*vertexVec[vertexIndex][0];
+	vertexDerivs[vertexIndex][1] = coeff*vertexVec[vertexIndex][1];
+	
+      }  
+}
+
+void cellcellRepulsion::update(Tissue &T,
+				      DataMatrix &cellData,
+				      DataMatrix &wallData,
+				      DataMatrix &vertexData, 
+				      double h) 
+{ 
+  size_t numCells = T.numCell();
+ 
+  // updating normals to the membrane Counterclockwise sorting of vertices
+  for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
+    size_t numCellVertices= T.cell(cellIndex).numVertex();
+    for (size_t vertexCellIndex=0 ; vertexCellIndex< numCellVertices ; vertexCellIndex++){
+      
+      size_t vertexIndex = T.cell(cellIndex).vertex(vertexCellIndex)->index();
+      size_t vertexPlusIndex;
+      size_t vertexMinusIndex;
+      if (vertexCellIndex!=0 )
+  	vertexMinusIndex = T.cell(cellIndex).vertex(vertexCellIndex-1)->index();
+      else
+  	vertexMinusIndex= T.cell(cellIndex).vertex(numCellVertices-1)->index();
+      if ( vertexCellIndex!=numCellVertices-1 )
+  	vertexPlusIndex = T.cell(cellIndex).vertex(vertexCellIndex+1)->index();
+      else
+  	vertexPlusIndex = T.cell(cellIndex).vertex(0)->index();
+      DataMatrix position(3,vertexData[vertexMinusIndex]);
+      position[1] = vertexData[vertexIndex];
+      position[2] = vertexData[vertexPlusIndex];
+      // position[0][2] z for vertexMinus
+      double right[3]={position[2][0]-position[1][0] ,
+  		       position[2][1]-position[1][1] ,
+  		       position[2][2]-position[1][2] };
+      double left[3]={position[0][0]-position[1][0] ,
+  		      position[0][1]-position[1][1] ,
+  		      position[0][2]-position[1][2] };
+      double tmp=std::sqrt(right[0]*right[0]+right[1]*right[1]+right[2]*right[2]);
+      if (tmp!=0){
+  	right[0]/=tmp;
+  	right[1]/=tmp;
+  	right[2]/=tmp;
+      }
+      tmp=std::sqrt(left[0]*left[0]+left[1]*left[1]+left[2]*left[2]);
+      if (tmp!=0){
+  	left[0]/=tmp;
+  	left[1]/=tmp;
+  	left[2]/=tmp;
+      }
+      vertexVec[vertexIndex][0]=-(right[1]-left[1]);
+      vertexVec[vertexIndex][1]=right[0]-left[0];
+      tmp=std::sqrt(
+  		    vertexVec[vertexIndex][0]*vertexVec[vertexIndex][0]+
+  		    vertexVec[vertexIndex][1]*vertexVec[vertexIndex][1]);
+      if (tmp!=0){ 
+  	vertexVec[vertexIndex][0]/=tmp;
+  	vertexVec[vertexIndex][1]/=tmp;
+      }
+      else{ // if two consecutive edges overlay the right one is sellected!!
+  	vertexVec[vertexIndex][0]=right[0];
+  	vertexVec[vertexIndex][1]=right[1];
+      }
+    }
+  }
+  // End  updating normals to the membrane
+ 
+  
+  //line intersect test 
+  size_t numVertices = T.numVertex();
+  for (size_t vertexIndex=0 ; vertexIndex< numVertices ; vertexIndex++)
+    vertexVec[vertexIndex][3]=0;
+ 
+  size_t numWalls = T.numWall();
+  for (size_t wallIndex1=0; wallIndex1<numWalls-1 ;wallIndex1++)
+    for (size_t wallIndex2=wallIndex1+1; wallIndex2<numWalls ;wallIndex2++){
+      bool intersect=false;
+      size_t v1=T.wall(wallIndex1).vertex1() ->index();
+      size_t v2=T.wall(wallIndex1).vertex2() ->index();
+      size_t u1=T.wall(wallIndex2).vertex1() ->index();
+      size_t u2=T.wall(wallIndex2).vertex2() ->index();
+      
+      double uvDistance=0.5*std::sqrt((vertexData[v1][0]+vertexData[v2][0]-vertexData[u1][0]-vertexData[u2][0])*
+				      (vertexData[v1][0]+vertexData[v2][0]-vertexData[u1][0]-vertexData[u2][0])+
+				      (vertexData[v1][1]+vertexData[v2][1]-vertexData[u1][1]-vertexData[u2][1])*
+				      (vertexData[v1][1]+vertexData[v2][1]-vertexData[u1][1]-vertexData[u2][1]));
+      if(uvDistance<parameter(1)){
+       	double rr[2]={vertexData[v2][0]-vertexData[v1][0],
+		      vertexData[v2][1]-vertexData[v1][1]};
+	double ss[2]={vertexData[u2][0]-vertexData[u1][0],
+		      vertexData[u2][1]-vertexData[u1][1]};
+	
+	double rs=rr[0]*ss[1]-rr[1]*ss[0];
+	
+	double qp[2]={vertexData[u1][0]-vertexData[v1][0],
+		      vertexData[u1][1]-vertexData[v1][1]};
+	
+	
+	//if (rs==0 && qp[0]*rr[1]-qp[1]*rr[0]==0) //collinear
+	//  intersect=true;
+	//else {
+	  double tt=(qp[0]*rr[1]-qp[1]*rr[0])/rs;
+	  double uu=(qp[0]*ss[1]-qp[1]*ss[0])/rs;
+	  if (tt>=0 && tt<=1 && uu>=0 && uu<=1)  //intersect 
+	    intersect=true;
+	  
+	  //}
+	
+	
+      }
+      std::cerr<<intersect<<std::endl;
+      if(intersect){
+      	vertexVec[v1][3]=vertexVec[v2][3]=vertexVec[u1][3]=vertexVec[u2][3]=1;
+	//	vertexVec[v1][4]=vertexVec[v2][4]=vertexVec[u1][4]=vertexVec[u2][4]=;
+      }
+    }
+  
+  
+ 
+  // End of line intersect test
+  
+  
+  
+ 
+  
+}
+
+
 
 
 
