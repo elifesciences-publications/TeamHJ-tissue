@@ -127,6 +127,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromExternalSpringFromPerpVertex(paraValue,indValue);
  else if(idValue=="VertexFromExternalSpringFromPerpVertexDynamic")
     return new VertexFromExternalSpringFromPerpVertexDynamic(paraValue,indValue);
+ else if(idValue=="cellcellRepulsion")
+    return new cellcellRepulsion(paraValue,indValue);
   else if (idValue=="VertexFromWallSpringAsymmetric" ||
 	   idValue=="VertexFromEpidermalWallSpringAsymmetric" ||
 	   idValue=="VertexFromEpidermalCellWallSpringAsymmetric") {
