@@ -4143,6 +4143,60 @@ derivs(Tissue &T,
 
 
 
+CalculateAngleVectorXYplane::CalculateAngleVectorXYplane(std::vector<double> &paraValue,
+                                           std::vector< std::vector<size_t> > &indValue )
+{ // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=0 ) {
+    std::cerr << "CalculateAngleVectorXYplane:: "
+	      << "CalculateAngleVectorXYplane() "
+	      << "Calculates abs(cos(...)) of angle between a vector and XY plane "
+              << "and stores it in the given index in cellData vector, uses no parameter "
+              << std::endl;
+    exit(0);
+  }
+ if( indValue.size() != 2 || indValue[0].size() != 1 || indValue[1].size() != 1 ) {
+    std::cerr << "CalculateAngleVectorXYplane:: "
+	      << "CalculateAngleVectorXYplane() "
+	      << "1st level with 1 variable index used: "
+              << "start index for the vector  "
+              << "2nd level with 1 variable index used: "
+              << "store index for cos(angle) "
+              << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("CalculateAngleVectorXYplane");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+
+}
+
+
+void CalculateAngleVectorXYplane::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  size_t numCells =T.numCell();
+  for(size_t cellIndex=0; cellIndex<numCells; ++cellIndex) 
+    { double teta=0;
+      double temp=std::sqrt( cellData[cellIndex][variableIndex(0,0)  ]*cellData[cellIndex][variableIndex(0,0)  ] +
+                            cellData[cellIndex][variableIndex(0,0)+1]*cellData[cellIndex][variableIndex(0,0)+1]  );
+      double pi=3.14159265;
+      if(temp<0.00000001)
+	teta=pi/2;
+      else
+	teta=std::atan(cellData[cellIndex][variableIndex(0,0)+2]/temp);
+       
+      cellData[cellIndex][variableIndex(1,0)]=teta;
+    }
+}
+
 
 
 AngleVector::AngleVector(std::vector<double> &paraValue,
