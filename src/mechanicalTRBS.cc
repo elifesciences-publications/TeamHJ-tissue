@@ -3349,7 +3349,7 @@ derivs(Tissue &T,
       strainZ +=restingArea*(1-poissonT*((2*lambdaT*trE+2*mioT*trE)+deltaS[0][0]+deltaS[1][1])/youngT);
       //std::cerr<< "cell "<< cellIndex<< " thickness :  " << strainZ << std::endl;
       
-      //<<<<<<<<<<<<<<<<<<<isotropic force from stress tensor <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      //<<<<<<<<<<<<<<<<<<<isotropic force from stress tensor <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
       // double ss[2][2];//lambda(trE)I+2mioE
       // ss[0][0]=lambdaT*trE+2*mioT*Egreen[0][0];
@@ -3376,9 +3376,8 @@ derivs(Tissue &T,
       // deltaFTPK[0][0]= rotation[0][0]*deltaFTPKlocal[0][0]+rotation[0][1]*deltaFTPKlocal[0][1];
       // deltaFTPK[0][1]= rotation[1][0]*deltaFTPKlocal[0][0]+rotation[1][1]*deltaFTPKlocal[0][1];
       // deltaFTPK[0][2]= rotation[2][0]*deltaFTPKlocal[0][0]+rotation[2][1]*deltaFTPKlocal[0][1];
-      //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-      // //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       double TPK[2][2];// 2nd Piola Kirchhoff stress tensor 
       TPK[0][0]=restingArea*(DeformGrad[0][0]*deltaS[0][0]+DeformGrad[0][1]*deltaS[1][0]);
       TPK[1][0]=restingArea*(DeformGrad[1][0]*deltaS[0][0]+DeformGrad[1][1]*deltaS[1][0]);
@@ -3413,7 +3412,7 @@ derivs(Tissue &T,
       deltaFTPK[2][2]= rotation[2][0]*deltaFTPKlocal[2][0]+rotation[2][1]*deltaFTPKlocal[2][1];
 
 
-      // //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      // //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
 
@@ -3905,27 +3904,10 @@ derivs(Tissue &T,
 
     
     //<<<<<<<<<<<<<<<<<<<<<<<< angles between  vectors and circumferential direction <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    
-    // temp=std::sqrt(cellData[cellIndex][variableIndex(0,1)]*cellData[cellIndex][variableIndex(0,1)]+     // 12 --> MT
-    // 		   cellData[cellIndex][variableIndex(0,1)+1]*cellData[cellIndex][variableIndex(0,1)+1]);
-    // if(temp<0.00000001){
-    //   cellData[cellIndex][12]=pi/2;
-    // }
-    // else{
-    //   cellData[cellIndex][12]=std::atan(cellData[cellIndex][variableIndex(0,1)+2]/temp);
-    // }
-    
-    // temp=std::sqrt(eigenVectorStrain[0][Istrain]*eigenVectorStrain[0][Istrain]+                                   // 13 --> Strain
-    // 		   eigenVectorStrain[1][Istrain]*eigenVectorStrain[1][Istrain] );
-    // if(temp<0.0000000001){
-    //   cellData[cellIndex][13]=pi/2;
-    // }
-    // else{
-    //   cellData[cellIndex][13]=std::atan(eigenVectorStrain[2][Istrain]/temp);
-    // }
+   
     
     
-    // cellData[cellIndex][15]= cellData[cellIndex][comIndex+2]; // z coordinate of central vertex of the cell        // 15 --> Z coordinate
+    cellData[cellIndex][15]= cellData[cellIndex][comIndex+2]; // z coordinate of central vertex of the cell // 15 --> Z coordinate
     
        
        
@@ -3979,10 +3961,9 @@ derivs(Tissue &T,
     // cellData[cellIndex][14]=TetaStrain;
 
      
-    // std::cerr<<cellData[cellIndex][25]<<std::endl;
-
+  
     
-    // cellData[cellIndex][19]=TetaPerpStress;
+    
     // cellData[cellIndex][20]= strainZ;
     // cellData[cellIndex][21]= TetaStress;
     // cellData[cellIndex][22]= TetaStrain; 
@@ -4239,26 +4220,7 @@ derivs(Tissue &T,
     }
     
 
-    //temporary
-    //if (cellIndex==451 ||cellIndex==391 ){
-	 
-    //std::cerr <<" "<<std::endl;	
-   //std::cerr <<"cell  "<<cellIndex<<"  stress vector  "<<eigenVectorStress[0][Istress]<<" "<<eigenVectorStress[1][Istress] <<" "<<eigenVectorStress[2][Istress]<<std::endl;
-    //std::cerr <<"cell  "<<cellIndex<<"  stress eigen  "<< maximalStressValue<<" "<< maximalStressValue2 <<" "<< maximalStressValue3<<std::endl;
-    //std::cerr <<" "<<std::endl;
-    //  }
-
-
-
-
-
-
-
-
-
-
-
-
+   
 
 
     // storing a measure for stress anisotropy in cell vector
@@ -4271,20 +4233,7 @@ derivs(Tissue &T,
 	cellData[cellIndex][stressAnIndex]=(1-std::abs(maximalStressValue2/maximalStressValue))*(maximalStressValue/parameter(6));
     }    
 
-    
-     // ---------------angles stress with circumferental direction- begin
-    temp=std::sqrt(eigenVectorStress[0][Istress]*eigenVectorStress[0][Istress]+                                // 14 --> Stress
-		   eigenVectorStress[1][Istress]*eigenVectorStress[1][Istress] );
-    if(temp<0.0000001){
-      cellData[cellIndex][14]=pi/2;
-    }
-    else{
-      cellData[cellIndex][14]=std::atan(eigenVectorStress[2][Istress]/temp);
-    } 
-    // ---------------angles stress with circumferental direction- end
-    
-    
-    
+ 
     
     
     
