@@ -178,9 +178,9 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new PerpendicularWallPressure(paraValue, indValue);
   else if (idValue == "VertexFromCellPlane")
     return new VertexFromCellPlane(paraValue, indValue);
- else if (idValue == "VertexFromCellPlaneLinear")
+  else if (idValue == "VertexFromCellPlaneLinear")
     return new VertexFromCellPlaneLinear(paraValue, indValue);
- else if (idValue == "VertexFromCellPlaneLinearCenterTriangulation")
+  else if (idValue == "VertexFromCellPlaneLinearCenterTriangulation")
     return new VertexFromCellPlaneLinearCenterTriangulation(paraValue, indValue);
   else if (idValue == "VertexFromCellPlaneSpatial")
     return new VertexFromCellPlaneSpatial(paraValue, indValue);
@@ -202,7 +202,7 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromForceLinear(paraValue,indValue);
   else if(idValue=="VertexFromBall")
     return new VertexFromBall(paraValue,indValue);
-else if(idValue=="VertexFromParabolid")
+  else if(idValue=="VertexFromParabolid")
     return new VertexFromParabolid(paraValue,indValue);
   else if(idValue=="VertexFromExternalWall")
     return new VertexFromExternalWall(paraValue,indValue);
@@ -210,6 +210,8 @@ else if(idValue=="VertexFromParabolid")
     return new TemplateVolumeChange(paraValue,indValue);
   else if(idValue=="CalculateAngleVectors")
     return new CalculateAngleVectors(paraValue,indValue);
+  else if(idValue=="CalculateAngleVectorXYplane")
+    return new CalculateAngleVectorXYplane(paraValue,indValue);
   else if(idValue=="AngleVector")
     return new AngleVector(paraValue,indValue);
   else if(idValue=="VertexFromHypocotylGrowth")
@@ -234,7 +236,7 @@ else if(idValue=="VertexFromParabolid")
     return new VertexFromTRBSMT(paraValue, indValue);
   else if (idValue == "VertexFromTRBScenterTriangulationMT")
     return new VertexFromTRBScenterTriangulationMT(paraValue, indValue);
- else if (idValue == "VertexFromTRBScenterTriangulationConcentrationHillMT")
+  else if (idValue == "VertexFromTRBScenterTriangulationConcentrationHillMT")
    return new VertexFromTRBScenterTriangulationConcentrationHillMT(paraValue, indValue);
   else if (idValue == "FiberModel")
     return new FiberModel(paraValue, indValue);
