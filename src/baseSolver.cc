@@ -507,7 +507,7 @@ void BaseSolver::print(std::ostream &os)
      PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
    }
    PVD_file::write(*T_,cellFile,wallFile,tCount);
-   if(tCount==numPrint_){
+   if(tCount==numPrint_-1){
      for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) {
        if(cellData_[cellind][15]<75 && cellData_[cellind][15]>-75)  // indices relate to the  model files
          os << cellData_[cellind][12] <<" "        //   teta MT     
