@@ -509,11 +509,11 @@ void BaseSolver::print(std::ostream &os)
    PVD_file::write(*T_,cellFile,wallFile,tCount);
    if(tCount==numPrint_){
      for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) {
-       if(cellData_[cellind][15]<75 && cellData_[cellind][15]>-75)
-         os << cellData_[cellind][12] <<" "        //   teta MT  
+       if(cellData_[cellind][15]<75 && cellData_[cellind][15]>-75)  // indices relate to the  model files
+         os << cellData_[cellind][12] <<" "        //   teta MT     
 	    << cellData_[cellind][13] <<" "        //   teta strain  
 	    << cellData_[cellind][14] <<" "        //   teta stress
-	    << cellData_[cellind][15] <<" "        //   z coordinate
+	    << cellData_[cellind][15] <<" "        //   z coordinate ( see reaction VertexFromTRBSCenterTri..MT L3910 )
 	    << cellData_[cellind][23] <<" "        //   teta MT stress
 	    << cellData_[cellind][24] <<" "        //   teta strain stress  
 	    << cellData_[cellind][11] <<" "        //   max strain
