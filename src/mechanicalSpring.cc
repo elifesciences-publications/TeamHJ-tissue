@@ -103,7 +103,7 @@ derivs(Tissue &T,
     distance = std::sqrt(distance);
     double wallLength=wallData[i][wallLengthIndex];
     double coeff = parameter(0)*((1.0/wallLength)-(1.0/distance));
-    
+    //double coeff = parameter(0)*(distance-wallLength)*(distance-wallLength)*(distance-wallLength)/(distance*wallLength);
     // Use different spring elasticity if wall type is provided in wall vector
     if(numParameter()==3 && wallData[i][variableIndex(2,0)] ==1 ){
       coeff = parameter(2)*((1.0/wallLength)-(1.0/distance));
@@ -192,7 +192,7 @@ namespace CenterTriangulation {
 	distance = std::sqrt(distance);
 	double edgeLength=cellData[i][lengthIndex+k];
 	double coeff = parameter(0)*((1.0/edgeLength)-(1.0/distance));
-        //double coeff = parameter(0)*(distance-edgeLength)*(distance-edgeLength)*(distance-edgeLength)/(distance*edgeLength);
+       
 	if( distance <= 0.0 && edgeLength <=0.0 ) {
 	  //std::cerr << i << " " << k << " - " << edgeLength << " " 
 	  //<< distance << std::endl;
@@ -2549,7 +2549,7 @@ void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
           
   	  double v1v2[2]={vertexData[vertexIndex2][0]-vertexData[vertexIndex1][0],
   			  vertexData[vertexIndex2][1]-vertexData[vertexIndex1][1]};
-	  
+	  if (std::sqrt(v1v2[0]*v1v2[0]+v1v2[1]*v1v2[1])<1.5){
 	  //line intersect test
 
 	  bool intersect=false;
@@ -2658,6 +2658,9 @@ void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
   	  connectionsNew[cellIndex][vertexCellIndex2][vertexCellIndex1]=
 	    connectionsNew[cellIndex][vertexCellIndex1][vertexCellIndex2]; 
   	}
+
+	}// here
+
     }
   }
   
@@ -2730,6 +2733,7 @@ void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
   } // end of growth rules
   // growth decay
   setParameter(3,parameter(3)*parameter(6));
+  setParameter(7,parameter(7)*parameter(6));
   //std::cerr << parameter(3) << std::endl;
 }
 
@@ -3004,57 +3008,62 @@ void cellcellRepulsion::update(Tissue &T,
   for (size_t vertexIndex=0 ; vertexIndex< numVertices ; vertexIndex++)
     vertexVec[vertexIndex][3]=0;
  
-  size_t numWalls = T.numWall();
-  for (size_t wallIndex1=0; wallIndex1<numWalls-1 ;wallIndex1++)
-    for (size_t wallIndex2=wallIndex1+1; wallIndex2<numWalls ;wallIndex2++){
-      bool intersect=false;
-      size_t v1=T.wall(wallIndex1).vertex1() ->index();
-      size_t v2=T.wall(wallIndex1).vertex2() ->index();
-      size_t u1=T.wall(wallIndex2).vertex1() ->index();
-      size_t u2=T.wall(wallIndex2).vertex2() ->index();
-      
-      double uvDistance=0.5*std::sqrt((vertexData[v1][0]+vertexData[v2][0]-vertexData[u1][0]-vertexData[u2][0])*
-				      (vertexData[v1][0]+vertexData[v2][0]-vertexData[u1][0]-vertexData[u2][0])+
-				      (vertexData[v1][1]+vertexData[v2][1]-vertexData[u1][1]-vertexData[u2][1])*
-				      (vertexData[v1][1]+vertexData[v2][1]-vertexData[u1][1]-vertexData[u2][1]));
-      if(uvDistance<parameter(1)){
-       	double rr[2]={vertexData[v2][0]-vertexData[v1][0],
-		      vertexData[v2][1]-vertexData[v1][1]};
-	double ss[2]={vertexData[u2][0]-vertexData[u1][0],
-		      vertexData[u2][1]-vertexData[u1][1]};
-	
-	double rs=rr[0]*ss[1]-rr[1]*ss[0];
-	
-	double qp[2]={vertexData[u1][0]-vertexData[v1][0],
-		      vertexData[u1][1]-vertexData[v1][1]};
-	
-	
-	//if (rs==0 && qp[0]*rr[1]-qp[1]*rr[0]==0) //collinear
-	//  intersect=true;
-	//else {
-	  double tt=(qp[0]*rr[1]-qp[1]*rr[0])/rs;
-	  double uu=(qp[0]*ss[1]-qp[1]*ss[0])/rs;
-	  if (tt>=0 && tt<=1 && uu>=0 && uu<=1)  //intersect 
-	    intersect=true;
-	  
-	  //}
-	
-	
-      }
-      std::cerr<<intersect<<std::endl;
-      if(intersect){
-      	vertexVec[v1][3]=vertexVec[v2][3]=vertexVec[u1][3]=vertexVec[u2][3]=1;
-	//	vertexVec[v1][4]=vertexVec[v2][4]=vertexVec[u1][4]=vertexVec[u2][4]=;
-      }
-    }
-  
-  
+
  
-  // End of line intersect test
-  
-  
-  
- 
+  for( size_t cellIndex1=0; cellIndex1<numCells-1; cellIndex1++)
+    for( size_t cellIndex2=cellIndex1+1; cellIndex2<numCells; cellIndex2++)
+      {
+	size_t numCell1Walls=T.cell(cellIndex1).numWall();
+	size_t numCell2Walls=T.cell(cellIndex2).numWall();
+	                                	
+	for (size_t wallCell1Index=0; wallCell1Index<numCell1Walls ;wallCell1Index++)
+	  for (size_t wallCell2Index=0; wallCell2Index<numCell2Walls ;wallCell2Index++) {
+	    size_t wallIndex1=T.cell(cellIndex1).wall(wallCell1Index) -> index();      
+	    size_t wallIndex2=T.cell(cellIndex2).wall(wallCell2Index) -> index(); 
+	    
+	    bool intersect=false;
+	    size_t v1=T.wall(wallIndex1).vertex1() ->index();
+	    size_t v2=T.wall(wallIndex1).vertex2() ->index();
+	    size_t u1=T.wall(wallIndex2).vertex1() ->index();
+	    size_t u2=T.wall(wallIndex2).vertex2() ->index();
+	    
+	    double uvDistance=0.5*std::sqrt((vertexData[v1][0]+vertexData[v2][0]-vertexData[u1][0]-vertexData[u2][0])*
+					    (vertexData[v1][0]+vertexData[v2][0]-vertexData[u1][0]-vertexData[u2][0])+
+					    (vertexData[v1][1]+vertexData[v2][1]-vertexData[u1][1]-vertexData[u2][1])*
+					    (vertexData[v1][1]+vertexData[v2][1]-vertexData[u1][1]-vertexData[u2][1]));
+	    if(uvDistance<parameter(1)){
+	      double rr[2]={vertexData[v2][0]-vertexData[v1][0],
+			    vertexData[v2][1]-vertexData[v1][1]};
+	      double ss[2]={vertexData[u2][0]-vertexData[u1][0],
+			    vertexData[u2][1]-vertexData[u1][1]};
+	      
+	      double rs=rr[0]*ss[1]-rr[1]*ss[0];
+	      
+	      double qp[2]={vertexData[u1][0]-vertexData[v1][0],
+			    vertexData[u1][1]-vertexData[v1][1]};
+	      
+	      
+	      if (rs==0 && qp[0]*rr[1]-qp[1]*rr[0]==0) //collinear
+		intersect=true;
+	      else {
+		double tt=(qp[0]*rr[1]-qp[1]*rr[0])/rs;
+		double uu=(qp[0]*ss[1]-qp[1]*ss[0])/rs;
+		if (tt>=0 && tt<=1 && uu>=0 && uu<=1)  //intersect 
+		  intersect=true;
+		
+	      }
+	      
+	      
+	    }
+	    //d::cerr<<intersect<<std::endl;
+	    if(intersect){
+	      vertexVec[v1][3]=vertexVec[v2][3]=vertexVec[u1][3]=vertexVec[u2][3]=1;
+	      //	vertexVec[v1][4]=vertexVec[v2][4]=vertexVec[u1][4]=vertexVec[u2][4]=;
+	    }
+	  }
+   
+		
+      }  // End of line intersect test
   
 }
 
