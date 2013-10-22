@@ -419,26 +419,40 @@ void BaseSolver::print(std::ostream &os)
   
   else if( printFlag_==51 ) {  // paper I fig2ai and fig2aii
     
-    os << vertexData_[2][0] << " " <<vertexData_[2][1] << " " << cellData_[0][7] <<" "<< cellData_[0][15] <<" " << cellData_[0][19] << std::endl;
-    //        x deflection             y deflection                stress 1                stress 2                 area ratio                
+    os << vertexData_[2][0] << " "              //    x deflection     
+       << vertexData_[2][1] << " "              //    y deflection   
+       << cellData_[0][7]   << " "              //    stress 1  
+       << cellData_[0][15]  << " "              //    stress 2    
+       << cellData_[0][19]  << std::endl;       //    area ratio   
   }
   
   else if( printFlag_==52 ) {  // paper I fig2B1
     
-    os << T_->reaction(0)->parameter(0)<< " " << T_->reaction(0)->parameter(2)<< " " << cellData_[0][7] << " " << cellData_[0][15] <<" " << cellData_[0][17] << std::endl;
-    //        Young modulus                           Poisson ratio                       stress 1                   stress 2                  thickness
+    os << T_->reaction(0)->parameter(0)<< " "   //    Young modulus  
+       << T_->reaction(0)->parameter(2)<< " "   //    Poisson ratio 
+       << cellData_[0][7]  << " "               //    stress 1 
+       << cellData_[0][15] <<" "                //    stress 2      
+       << cellData_[0][17] << std::endl;        //    thickness
+   
   }
   
-  else if( printFlag_==53 ) {  // paper I fig2C
-    
-    os <<(T_->reaction(0)->parameter(0)+T_->reaction(0)->parameter(1))/T_->reaction(0)->parameter(0)<< " " << cellData_[0][12] << " " << cellData_[0][16] << std::endl;
-    //        YoungL/YoungT                                                                                      stress 1                   stress 2
+  else if( printFlag_==53 ) {  // PLoS figS1B
+    double YoungLtoYoungT=
+      (T_->reaction(0)->parameter(0)+T_->reaction(0)->parameter(1))/
+       T_->reaction(0)->parameter(0);
+   
+    os << YoungLtoYoungT   << " "                   // YoungL/YoungT
+       << cellData_[0][7] << " "                   // stress 1 
+       << cellData_[0][15] << std::endl;            // stress 2
   }
 
  else if( printFlag_==54 ) {  // paper I fig2D
     
-    os << T_->reaction(0)->parameter(8)<< " " << cellData_[0][7] << " " << cellData_[0][11] <<" " << cellData_[0][19]<< std::endl;
-    //        aniso direction                        stress 1                  stress 2                area ratio
+    os << T_->reaction(0)->parameter(8)<< " "       //  aniso direction 
+       << cellData_[0][7]  << " "                   //  stress 1
+       << cellData_[0][11] << " "                   //  stress 2
+       << cellData_[0][19] << std::endl;            //  area ratio
+  
   }
 
   else if( printFlag_==55 ) {
