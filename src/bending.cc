@@ -199,6 +199,54 @@ namespace Bending {
   {
   }
 
+  void AngleInitiate::
+  initiate(Tissue &T,
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs )
+  {
+    size_t numCells = T.numCell();
+    size_t dimension = T.vertex(0).numPosition();
+    size_t Ti = variableIndex(0,0);
+    for (size_t i=0; i<numCells; ++i) {
+      size_t numWalls = T.cell(i).numWall();
+      for (size_t k=0; k<numWalls; ++k) {
+	size_t kp = k<numWalls-1 ? k+1 : 0;
+	size_t km = k>0 ? k-1 : numWalls-1;
+	
+	// Get global vertex indices
+	size_t j = T.cell(i).vertex(k)->index();
+	size_t jp = T.cell(i).vertex(kp)->index();
+	size_t jm = T.cell(i).vertex(km)->index();
+	
+	// Get edges
+	//size_t ep = T.cell(i).wall(k)->index();
+	size_t em = T.cell(i).wall(km)->index();
+	
+	// Calculate angle \Theta = acos(n1 \dot n2) - \pi
+	double scalarProd = 0.;
+	double Lp = 0.;
+	double Lm = 0.;
+	for (size_t d=0; d<dimension; ++d) {
+	  double dm = vertexData[j][d]-vertexData[jm][d]; 
+	  double dp = vertexData[jp][d]-vertexData[j][d]; 
+	  scalarProd += dm*dp;
+	  Lp += dp*dp; 
+	  Lm += dm*dm;
+	}
+	Lp = std::sqrt(Lp);
+	Lm = std::sqrt(Lm);
+	scalarProd /= Lp*Lm;
+	double theta = std::acos(scalarProd) - 3.14159; 
+	// Setting 'stored' angle to current angle
+	wallData[em][Ti] = theta;
+      }
+    }      
+  }
+  
   AngleRelax::
   AngleRelax(std::vector<double> &paraValue, 
 	     std::vector< std::vector<size_t> > 

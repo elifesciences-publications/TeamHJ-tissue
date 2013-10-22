@@ -213,8 +213,21 @@ namespace Bending {
 		DataMatrix &cellDerivs,
 		DataMatrix &wallDerivs,
 		DataMatrix &vertexDerivs );
-  };
 
+    ///
+    /// @brief Reaction initiation applied before simulation starts
+    ///
+    /// @see BaseReaction::initiate(Tissue &T,...)
+    ///
+    void initiate(Tissue &T,
+		  DataMatrix &cellData,
+		  DataMatrix &wallData,
+		  DataMatrix &vertexData,
+		  DataMatrix &cellDerivs,
+		  DataMatrix &wallDerivs,
+		  DataMatrix &vertexDerivs );
+  };
+  
   /// 
   /// @brief Initiates an angle variable to the current value of the angle at vertices
   ///
