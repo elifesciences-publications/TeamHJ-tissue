@@ -244,6 +244,12 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   // bending.h (.cc)
   else if (idValue == "Bending::NeighborCenter")
     return new Bending::NeighborCenter(paraValue, indValue);
+  else if (idValue == "Bending::Angle")
+    return new Bending::Angle(paraValue, indValue);
+  else if (idValue == "Bending::AngleInitiate")
+    return new Bending::AngleInitiate(paraValue, indValue);
+  else if (idValue == "Bending::AngleRelax")
+    return new Bending::AngleRelax(paraValue, indValue);
 
   //creation.h,creation.cc
   else if(idValue=="CreationZero")

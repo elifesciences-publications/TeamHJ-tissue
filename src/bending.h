@@ -110,12 +110,12 @@ namespace Bending {
   /// @f[ \frac{dx_{+}}{dt} = k_{\Theta} (\Theta-\Theta^{t}) \frac{1}{(1 - F^2)^{0.5}}
   /// \frac{1}{g} [(x-x_-)+(x-x_+) \frac{f x_1}{g x_2}] @f]
   ///
-  /// The reaction expects a strength of the bending force, and the edge variable index for the length (=0). 
+  /// The reaction expects a strength of the bending force, and the edge variable index for the angle. 
   /// The prefered angle is stored as a second wall variable. In a model file it is defined as:
   /// @verbatim
-  /// Bending::Angle 1 1 2
+  /// Bending::Angle 1 1 1
   /// k_theta
-  /// L_index Theta^t_index
+  /// Theta^t_index
   /// @endverbatim
   ///
   /// @See Bending::AngleRelax for how to update the prefered angle towards the current.
@@ -171,11 +171,11 @@ namespace Bending {
   /// where x1, x2, are the two edges joined at the vertex, -/+ comes from if the structure is convex/concave. 
   ///
   /// @verbatim
-  /// Bending::AngleInitiate 0 1 2
-  /// L_index Theta^t_index
+  /// Bending::AngleInitiate 0 1 1
+  /// Theta^t_index
   /// @endverbatim
   ///
-  /// where the first index is the wall length index (=0) and the second is where the angle is stored.
+  /// where the index is where the angle is stored (as wall variable).
   ///
   /// @See Bending::Angle for how to update the vertices towards this angle 
   /// @See Bending::AngleRelax for how to update the prefered angle towards the current.
@@ -215,6 +215,63 @@ namespace Bending {
 		DataMatrix &vertexDerivs );
   };
 
-  
+  /// 
+  /// @brief Initiates an angle variable to the current value of the angle at vertices
+  ///
+  /// Sets the prefered angle for a vertex to the initial calculated value.
+  /// The angle is calculated by
+  ///
+  /// @f[ \Theta = acos(F) \pm \Pi @f]
+  ///
+  /// with
+  ///
+  /// @f[ F = \frac{x_1 \dot x_2}{|x_1||x_2|} = \frac{f}{g} @f]
+  ///
+  /// where x1, x2, are the two edges joined at the vertex, -/+ comes from if the structure is convex/concave. 
+  ///
+  /// @verbatim
+  /// Bending::AngleRelax 0 1 2
+  /// L_index Theta^t_index
+  /// @endverbatim
+  ///
+  /// where the first index is the wall length index (=0) and the second is where the angle is stored.
+  ///
+  /// @See Bending::Angle for how to update the vertices towards this angle 
+  /// @See Bending::AngleInitiate for how to initiate the angle variable to the current at start.
+  ///
+  class AngleRelax : public BaseReaction {
+    
+  public:
+    ///
+    /// @brief Main constructor
+    ///
+    /// This is the main constructor which sets the parameters and variable
+    /// indices that defines the reaction.
+    ///
+    /// @param paraValue vector with parameters
+    ///
+    /// @param indValue vector of vectors with variable indices
+    ///
+    /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+    ///
+    AngleRelax(std::vector<double> &paraValue, 
+	       std::vector< std::vector<size_t> > 
+	       &indValue );
+    
+    ///
+    /// @brief Derivative function for this reaction class
+    ///
+    /// For this reaction nothing is added to the derivative
+    ///
+    /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+    ///
+    void derivs(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
+  };  
 }
 #endif
