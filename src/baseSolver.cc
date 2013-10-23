@@ -463,30 +463,45 @@ void BaseSolver::print(std::ostream &os)
   
   else if( printFlag_==56 ) {  // energy landscape for a single element
     
-    os << T_->reaction(5)->parameter(0)<< " " << T_->reaction(5)->parameter(1)<< " "<< T_->reaction(0)->parameter(8)<< " " << cellData_[0][23] << " " << cellData_[0][24] << " " << cellData_[0][25] <<" "<< cellData_[0][20] << " " << cellData_[0][21] <<" " << cellData_[0][19] <<" " << cellData_[0][18] <<" "<<cellData_[0][17] << std::endl;
-    // forceX, forceY, TetaMT, TetaStress, TetaStrain, TetaPerp, isoEnergy, anisoEnergy, area ratio, StressAniso, StrainAniso
+    os << T_->reaction(5)->parameter(0)<< " "  //  forceX
+       << T_->reaction(5)->parameter(1)<< " "  //  forceY
+       << T_->reaction(0)->parameter(8)<< " "  //  TetaMT
+       << cellData_[0][23] << " "              //  TetaStress
+       << cellData_[0][24] << " "              //  TetaStrain
+       << cellData_[0][25] << " "              //  TetaPerp
+       << cellData_[0][20] << " "              //  isoEnergy
+       << cellData_[0][21] << " "              //  anisoEnergy
+       << cellData_[0][19] << " "              //  area ratio
+       << cellData_[0][18] << " "              //  StressAniso
+       << cellData_[0][17] << std::endl;       //  StrainAniso
     //os << T_->reaction(0)->parameter(0);
   }
   
  else if( printFlag_==57 ) {  // stress test 
     
-   os << T_->reaction(0)->parameter(2)<< " " << T_->reaction(2)->parameter(1)<< " " 
-     //         poisson(1)                                                            force-Y(2)
-      << T_->reaction(0)->parameter(1)<< " " << T_->reaction(0)->parameter(8)<< " " 
-     //         young  (3)                                                          aniso vector direction(4)
-      << cellData_[0][7] << " " << cellData_[0][11] <<" " << cellData_[0][19]<<" "<< cellData_[0][18]<<" "
-     //      stress 1   (5)                            stress 2  (6)                   stress aniso(7)                   strain aniso(8)
-      << cellData_[0][22]<<" "<< cellData_[0][23]<<" "<< cellData_[0][24]<<" "
-     //        area ratio(9)                      iso-energy(10)              aniso-energy(11)                    
-      << 400/(vertexData_[2][1]-vertexData_[1][1])<<" "<<100/(vertexData_[1][0]-vertexData_[0][0])<< std::endl;
-    //        true stress1 (12)                                                                true stress2 (13)
+   os << T_->reaction(0)->parameter(2)<< " "                     //  poisson(1)   
+      << T_->reaction(2)->parameter(1)<< " "                     //  force-Y(2)
+      << T_->reaction(0)->parameter(1)<< " "                     //  young  (3)      
+      << T_->reaction(0)->parameter(8)<< " "                     //  aniso vector direction(4)
+      << cellData_[0][7] << " "                                  //  stress 1   (5) 
+      << cellData_[0][11] <<" "                                  //  stress 2  (6)   
+      << cellData_[0][19]<<" "                                   //  stress aniso(7)     
+      << cellData_[0][18]<<" "                                   //  strain aniso(8)
+      << cellData_[0][22]<<" "                                   //  area ratio(9)          
+      << cellData_[0][23]<<" "                                   //  iso-energy(10)        
+      << cellData_[0][24]<<" "                                   //  aniso-energy(11)          
+      << 400/(vertexData_[2][1]-vertexData_[1][1])<<" "          //  true stress1 (12)       
+      << 100/(vertexData_[1][0]-vertexData_[0][0])<< std::endl;  //  true stress2 (13)
   }    
 
  else if( printFlag_==58 ) {  // isotropy impact on reducing the stiffness
     
-   os << 1-(T_->reaction(0)->parameter(1))<< " " << cellData_[0][18] <<" " << cellData_[0][20] <<" " << cellData_[0][24] <<" " << cellData_[0][25] << std::endl;
-    //      youngF(as anisotropy messure         area ratio                   total energy              iso energy                aniso energy
-  }   
+   os << 1-(T_->reaction(0)->parameter(1))<< " "  //    youngF(as anisotropy messure
+      << cellData_[0][18] <<" "                   //    area ratio  
+      << cellData_[0][20] <<" "                   //    total energy      
+      << cellData_[0][24] <<" "                   //    iso energy        
+      << cellData_[0][25] << std::endl;           //    aniso energy
+ }   
 
  else if( printFlag_==59 ) {// Print in vtu format and some other data
    std::string pvdFile = "tmp/tissue.pvd";
@@ -498,14 +513,20 @@ void BaseSolver::print(std::ostream &os)
      PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
    }
    PVD_file::write(*T_,cellFile,wallFile,tCount);
-   os << cellData_[0][25] << " " << cellData_[1][25] << " " << cellData_[2][25] << std::endl;
+   os << cellData_[0][25] << " " 
+      << cellData_[1][25] << " " 
+      << cellData_[2][25] << std::endl;
    
  }
 
  else if( printFlag_==60 ) {  //paper I fig3  parameter scan for alighnmen between MT stress and P-strain
    
-   os << T_->reaction(1)->parameter(1)<< " " << T_->reaction(6)->parameter(1)<< " " << cellData_[0][18] << " " << cellData_[0][23] << " " << cellData_[0][24] << std::endl;
-   //        young-Fiber                          forceY                            stress-anisotropy         cos(tet(MT,stress))  cos(tet(stress,strain))
+   os << T_->reaction(1)->parameter(1)<< " " 
+      << T_->reaction(6)->parameter(1)<< " " 
+      << cellData_[0][18] << " " 
+      << cellData_[0][23] << " " 
+      << cellData_[0][24] << std::endl;
+   //        young-Fiber     forceY    stress-anisotropy    cos(tet(MT,stress))  cos(tet(stress,strain))
    //os << T_->reaction(0)->parameter(0);
  }
   
@@ -552,16 +573,22 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
 
  else if( printFlag_==63 ) {  // energy landscape for quad for stress feedback
     
-    os << T_->reaction(0)->parameter(8)<< " " << T_->reaction(0)->parameter(5)<< " " << cellData_[0][19] << " " << cellData_[0][20] << " " 
-       << cellData_[0][17]+cellData_[1][17]+cellData_[2][17]+cellData_[3][17]  << std::endl;
-    //          Teta1          Teta2                    isoenergy                    anisoenergy                     total strain anisotropy
+   os << T_->reaction(0)->parameter(8)<< " " 
+      << T_->reaction(0)->parameter(5)<< " " 
+      << cellData_[0][19] << " " 
+      << cellData_[0][20] << " " 
+      << cellData_[0][17]+cellData_[1][17]+cellData_[2][17]+cellData_[3][17]  << std::endl;
+   //    Teta1     Teta2     isoenergy     anisoenergy    total strain anisotropy
   }
   
  else if( printFlag_==64 ) {  // energy landscape for quad for stress feedback centertriangulated
     
-    os << T_->reaction(0)->parameter(8)<< " " << T_->reaction(0)->parameter(10)<< " " << cellData_[0][19] << " " << cellData_[0][20] << " " 
-       << cellData_[0][17]+cellData_[1][17]+cellData_[2][17]+cellData_[3][17]  << std::endl;
-    //          Teta1          Teta2                    isoenergy                    anisoenergy                     total strain anisotropy
+   os << T_->reaction(0)->parameter(8)<< " " 
+      << T_->reaction(0)->parameter(10)<< " " 
+      << cellData_[0][19] << " " 
+      << cellData_[0][20] << " " 
+      << cellData_[0][17]+cellData_[1][17]+cellData_[2][17]+cellData_[3][17]  << std::endl;
+    //  Teta1    Teta2   isoenergy  anisoenergy   total strain anisotropy
   }
 
  else if( printFlag_==65 ) {// Print in vtu format and angle distribution at the end other data for Dorota data
