@@ -1,7 +1,7 @@
 //
 // Filename     : mechanicalTRBS.cc
 // Description  : Classes describing updates due to mechanical triangular biquadratic springs
-// Author(s)    : Henrik Jonsson  (henrik@thep.lu.se)
+// Author(s)    : Behruz Bozorg, Henrik Jonsson (henrik@thep.lu.se)
 // Created      : February 2011
 // Revision     : $Id:$
 //
@@ -475,7 +475,7 @@ derivs(Tissue &T,
 
 
       //Shape vectors in Current shape (counterclockwise ordering of nodes/edges)     ShapeVectorCurrent[3][3]  calculated above   
-      //.............................. ( or clockwise ordering of nodes/edges)
+    
           
 
       //square of radius of circumstancing circle in resting shape
@@ -648,15 +648,7 @@ derivs(Tissue &T,
     for (int r=0 ; r<3 ; r++) 
       for (int s=0 ; s<3 ; s++)    
         StressCellGlobal[r][s]= StressCellGlobal[r][s]/TotalCellRestingArea; 
-    
-    // std::cerr <<" Sxx  "<< StrainCellGlobal[0][0] <<" Sxy  "<< StrainCellGlobal[0][1] <<" Sxz  "<< StrainCellGlobal[0][2] << std::endl
-    //           <<" Syx  "<< StrainCellGlobal[1][0] <<" Syy  "<< StrainCellGlobal[1][1] <<" Syz  "<< StrainCellGlobal[1][2] << std::endl
-    //           <<" Szx  "<< StrainCellGlobal[2][0] <<" Szy  "<< StrainCellGlobal[2][1] <<" Szz  "<< StrainCellGlobal[2][2] << std::endl <<std::endl;
-    
-    // std::cerr <<" Sxx  "<< StressCellGlobal[0][0] <<" Sxy  "<< StressCellGlobal[0][1] <<" Sxz  "<< StressCellGlobal[0][2] << std::endl
-    //           <<" Syx  "<< StressCellGlobal[1][0] <<" Syy  "<< StressCellGlobal[1][1] <<" Syz  "<< StressCellGlobal[1][2] << std::endl
-    //           <<" Szx  "<< StressCellGlobal[2][0] <<" Szy  "<< StressCellGlobal[2][1] <<" Szz  "<< StressCellGlobal[2][2] << std::endl <<std::endl;
-       
+   
     
     // eigenvalue/eigenvectors of averaged STRAIN and STRESS tensors in global coordinate system. (Jacobi method)
 
@@ -825,10 +817,10 @@ derivs(Tissue &T,
     
 
 
-      // storing normal dirrection to  strain in cellData  ????????? not ready YET
+      // storing normal dirrection to  strain in cellData  
      
       // normal to the cell plane in global direction is Zcurrent[], vector product gives the perpendicular strain direction
-      // double NormalCurrent[3]; //= normal to the PCA plane in the current cell shape?????????????????????????????????????????????? not ready YET
+     
       // double PerpStrain[3];
       // PerpStrain[0]=NormalCurrent[1]*eigenVectorStrain[2][Istrain]-NormalCurrent[2]*eigenVectorStrain[1][Istrain];
       // PerpStrain[1]=NormalCurrent[2]*eigenVectorStrain[0][Istrain]-NormalCurrent[0]*eigenVectorStrain[2][Istrain];
@@ -1301,8 +1293,8 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t numWalls = 3; // defined only for triangles 
   
-  double TotalVolume=0;
-  double deltaVolume=0;
+  // double TotalVolume=0;
+  // double deltaVolume=0;
 
   size_t wallLengthIndex   =variableIndex(0,0);
   size_t MTindex           =variableIndex(0,1);	 
@@ -1346,8 +1338,8 @@ derivs(Tissue &T,
     
    
 
-    double youngL;
-    double youngT;    
+    double youngL=1;
+    double youngT=1;    
 
     if( parameter(4)==0 ){ // constant anisotropic material
       youngL = youngMatrix+youngFiber;
@@ -1433,7 +1425,7 @@ derivs(Tissue &T,
     //Anisotropic Correction is based on difference between Lam Coefficients of Longitudinal and Transverse dirrections:
     double deltaLam=lambdaL-lambdaT;
     double deltaMio=mioL-mioT;
-    double deltaMio1=(youngL-youngT)/2;
+    // double deltaMio1=(youngL-youngT)/2;
     // double deltaLam=AnisoMeasure*(lambdaL-lambdaT);
     // double deltaMio=AnisoMeasure*(mioL-mioT);
     
@@ -1496,9 +1488,9 @@ derivs(Tissue &T,
       double Qc=std::sin(CurrentAngle1)*length[0];
       double Qb=length[1];
       // shape vector matrix = inverse of coordinate matrix ( only first two elements i.e. ShapeVector[3][2] )      
-      double ShapeVectorCurrent[3][3]={ {  0   ,       1/Qc      , 0 }, 
-                                        {-1/Qb , (Qa-Qb)/(Qb*Qc) , 1 },       
-                                        { 1/Qb ,     -Qa/(Qb*Qc) , 0 }  };
+      // double ShapeVectorCurrent[3][3]={ {  0   ,       1/Qc      , 0 }, 
+      //                                   {-1/Qb , (Qa-Qb)/(Qb*Qc) , 1 },       
+      //                                   { 1/Qb ,     -Qa/(Qb*Qc) , 0 }  };
             
     
       // Local coordinates of the resting shape ( counterclockwise )
@@ -1611,44 +1603,7 @@ derivs(Tissue &T,
       
 
 
-      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      // // std::cerr<< "cell "<< cellIndex<< " anisoVector current local "<<AnisoCurrLocal[0]<<"  "<<AnisoCurrLocal[1]<<"  "<<AnisoCurrLocal[2]<< std::endl;			        
-      // // Center of Mass for current shape in local coordinate														        
-      // double CMCurrentLocal[2]={(Qa+Qb)/3, Qc/3};																        
-      // 																					        
-      // // Tip of the ansotropy vector drown from the center of mass in the current shape											        
-      // double  ACurrLocal[2] = {CMCurrentLocal[0]+AnisoCurrLocal[0],CMCurrentLocal[1]+AnisoCurrLocal[1]};									        
-      // 																					        
-      // //std::cerr<< "cell "<< cellIndex<< " tip of anisoVector in local current "<<ACurrLocal[0]<<"  "<<ACurrLocal[1]<< std::endl;						        
-      // 																					        
-      // // Baricentric Coordinates of tip of anisotropy vector in the current shape wihich is equivalent to the baricentric coordinate of the corresponding point in the resting shape 
-      // double ABari[3];																			        
-      // ABari[0]=ShapeVectorCurrent[0][0]*ACurrLocal[0]+ShapeVectorCurrent[0][1]*ACurrLocal[1]+ShapeVectorCurrent[0][2];							        
-      // ABari[1]=ShapeVectorCurrent[1][0]*ACurrLocal[0]+ShapeVectorCurrent[1][1]*ACurrLocal[1]+ShapeVectorCurrent[1][2];							        
-      // ABari[2]=ShapeVectorCurrent[2][0]*ACurrLocal[0]+ShapeVectorCurrent[2][1]*ACurrLocal[1]+ShapeVectorCurrent[2][2];							        
-      // //std::cerr<< "cell "<< cellIndex<< " baricentric coor of tip of anisoVector in local current "<<ABari[0]<<"  "<<ABari[1]<<"  "<<ABari[2]<< std::endl;			        
-      // 																					        
-      // 																					        
-      // // Local coordinates of tip of AnisoVector in the resting shape from multyplying ABari by position matrix in the local resting shape coordinates      			        
-      // double ARestLocal[2];																			        
-      // ARestLocal[0]=Pa*ABari[0]+Pb*ABari[2];																	        
-      // ARestLocal[1]=Pc*ABari[0];																		        
-      // //std::cerr<< "cell "<< cellIndex<< " tip of anisoVector in local rest "<<ARestLocal[0]<<"  "<<ARestLocal[1]<< std::endl;     						        
-      // 																					        
-      // 																					        
-      // // Center of Mass for resting shape in local coordinate														        
-      // double CMRestingLocal[2]={(Pa+Pb)/3, Pc/3};																        
-      //       																					        
-      // // Aniso Vector in the resting shape in local coordinate system													        
-      // double AnisoRestLocal[2]={ARestLocal[0]-CMRestingLocal[0],ARestLocal[1]-CMRestingLocal[1]};										        
-      // //std::cerr<< "cell "<< cellIndex<< " anisoVector Rest "<<AnisoRestLocal[0]<<"  "<<AnisoRestLocal[1]<<"  "<<AnisoRestLocal[2]<< std::endl;    				        
-      // 																					        
-      // // Anisotropy measure or magnitude of the projection of anisotropy vector on the cell plane in the resting shape 							        
-      // //this measure is considered as a factor controling the anisotropy properties of the cell										        
-      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     
-
-
+    
 
 
 
@@ -1804,8 +1759,7 @@ derivs(Tissue &T,
         
       strainZ =1-poissonT*((2*lambdaT*trE+2*mioT*trE)+deltaS[0][0]+deltaS[1][1])/youngT;
 
-      //<<<<<<<<<<<<<<<<<<<isotropic force from stress tensor <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
+      //<<<<<<<<<<<<<<<<<<<isotropic force from stress tensor <<<<<<<<<<<<<<<<<<<<<<<<<<
       // double ss[2][2];//lambda(trE)I+2mioE
       // ss[0][0]=lambdaT*trE+2*mioT*Egreen[0][0];
       // ss[0][1]=            2*mioT*Egreen[0][1];
@@ -1831,9 +1785,9 @@ derivs(Tissue &T,
       // deltaFTPK[0][0]= rotation[0][0]*deltaFTPKlocal[0][0]+rotation[0][1]*deltaFTPKlocal[0][1];
       // deltaFTPK[0][1]= rotation[1][0]*deltaFTPKlocal[0][0]+rotation[1][1]*deltaFTPKlocal[0][1];
       // deltaFTPK[0][2]= rotation[2][0]*deltaFTPKlocal[0][0]+rotation[2][1]*deltaFTPKlocal[0][1];
-      //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-      // //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      // //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       double TPK[2][2];// 2nd Piola Kirchhoff stress tensor 
       TPK[0][0]=restingArea*(DeformGrad[0][0]*deltaS[0][0]+DeformGrad[0][1]*deltaS[1][0]);
       TPK[1][0]=restingArea*(DeformGrad[1][0]*deltaS[0][0]+DeformGrad[1][1]*deltaS[1][0]);
@@ -1868,7 +1822,7 @@ derivs(Tissue &T,
       deltaFTPK[2][2]= rotation[2][0]*deltaFTPKlocal[2][0]+rotation[2][1]*deltaFTPKlocal[2][1];
 
 
-      // //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      // //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
       double deltaSFt[2][2];
@@ -1901,7 +1855,7 @@ derivs(Tissue &T,
      
  
       //Shape vectors in Current shape (counterclockwise ordering of nodes/edges)     ShapeVectorCurrent[3][3]  calculated above   
-      //.............................. ( or clockwise ordering of nodes/edges)
+      
           
  
       //square of radius of circumstancing circle in resting shape
@@ -2043,12 +1997,8 @@ derivs(Tissue &T,
 	cellData[cellIndex][MTindex +2] *cellData[cellIndex][MTindex +1] *StressTensor[2][1]  +
 	cellData[cellIndex][MTindex +2] *cellData[cellIndex][MTindex +2] *StressTensor[2][2]       ;
   
-      //  std::cerr <<"strain tensor " << std::endl;
-      // std::cerr <<" Stress  "<< StrainTensor[0][0] <<" Sxy  "<< StrainTensor[0][1] <<" Sxz  "<< StrainTensor[0][2] << std::endl
-      //           <<" Syx  "<< StrainTensor[1][0] <<" Syy  "<< StrainTensor[1][1] <<" Syz  "<< StrainTensor[1][2] << std::endl
-      //           <<" Szx  "<< StrainTensor[2][0] <<" Szy  "<< StrainTensor[2][1] <<" Szz  "<< StrainTensor[2][2] << std::endl <<std::endl;
-      
-      // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STRAIN and STRESS TENSORS (END) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     
+      // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STRAIN and STRESS TENSORS (END) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       
       // eigenvalues/eigenvectors of strain tensor in global coordinate system. (Jacobi method)
       
@@ -2204,19 +2154,7 @@ derivs(Tissue &T,
          PerpStrain[2]=eigenVectorStrain[2][Istrain];
        }
        
-       //   if (dimension==2)
-       //     {
-       //       cellData[cellIndex][0]=PerpStrain[0];        
-       //       cellData[cellIndex][1]=PerpStrain[1];
-       //     }
-       //   if (dimension==3)
-       //     {
-       //       cellData[cellIndex][0]=PerpStrain[0];
-       //       cellData[cellIndex][1]=PerpStrain[1];
-       //       cellData[cellIndex][2]=PerpStrain[2];
-       //       // cellData[cellIndex][3]=10*maximalStrainValue;  //NOTE maximal Strain and Stress Values should be used somewhere this is an option
-       //     }
-       
+  
 
        // storing a measure for strain anisotropy in cell vector
        if (std::abs(maximalStrainValue)<0.0000001) cellData[cellIndex][strainAnIndex]=0;
@@ -2275,34 +2213,8 @@ derivs(Tissue &T,
 
        
 
-       
-       //<<<<<<<<<<<<<<<<<<<<<<<< angles between  vectors and circumferential direction <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-      
-       // temp=std::sqrt(cellData[cellIndex][variableIndex(0,1)]*cellData[cellIndex][variableIndex(0,1)]+     // 12 --> MT
-       //                cellData[cellIndex][variableIndex(0,1)+1]*cellData[cellIndex][variableIndex(0,1)+1]);
-       // if(temp<0.000001){
-       //   cellData[cellIndex][12]=pi/2;
-       // }
-       // else{
-       //   cellData[cellIndex][12]=std::atan(cellData[cellIndex][variableIndex(0,1)+2]/temp);
-       // }
-       
-       // temp=std::sqrt(eigenVectorStrain[0][Istrain]*eigenVectorStrain[0][Istrain]+                                   // 13 --> Strain
-       //                eigenVectorStrain[1][Istrain]*eigenVectorStrain[1][Istrain] );
-       // if(temp<0.000000001){
-       //   cellData[cellIndex][13]=pi/2;
-       // }
-       // else{
-       //   cellData[cellIndex][13]=std::atan(eigenVectorStrain[2][Istrain]/temp);
-       // }
-
-      
-       // cellData[cellIndex][15]=position[0][2]; // z coordinate of 0th vertex of the cell                                  // 15 --> Z coordinate
-      
-       
-       
-       //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-       
+   
+    
        
        //---- Anisotropic Correction Force-------------------------------
        double deltaF[3][3];
@@ -2384,10 +2296,7 @@ derivs(Tissue &T,
     totalEnergyAniso +=cellData[cellIndex][variableIndex(0,6)];
 
     Cell *  cell1=&(T.cell(cellIndex));
-    // std::cerr<<" cell   "<<cellIndex<<"   wall   " <<  "  cell neighbohr  "<<(cell1->cellNeighbor(0))->index() <<std::endl;
-    // std::cerr<<" cell   "<<cellIndex<<"   wall   " <<  "  cell neighbohr  "<<(cell1->cellNeighbor(1))->index() <<std::endl;
-    // std::cerr<<" cell   "<<cellIndex<<"   wall   "<<  "  cell neighbohr  "<<(cell1->cellNeighbor(2))->index() <<std::endl;
-    //std::cerr<<" cell   "<<cellIndex<<  "  cell neighbohr  "<<neighbor[nn] <<std::endl;	
+	
     std::vector<size_t>  neighbor(3);  
     neighbor[0]=(cell1->cellNeighbor(0))->index();
     neighbor[1]=(cell1->cellNeighbor(1))->index();
@@ -2620,7 +2529,7 @@ derivs(Tissue &T,
     }
     
     
-  }//-----------------------------
+  }
 
     cellData[0][variableIndex(0,5)]=totalEnergyIso ;
     cellData[0][variableIndex(0,6)]=totalEnergyAniso ;
@@ -2837,13 +2746,10 @@ derivs(Tissue &T,
     double poissonT   = parameter(3);
     double TETA       = parameter(8);  
 
-    // for printFlag 53
-    //cellData[cellIndex][11]=youngMatrix;
-    //cellData[cellIndex][11]=(youngMatrix+youngFiber)/youngMatrix;    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    //cellData[cellIndex][12]=poissonL;                               //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   
-    double youngL;
-    double youngT;
+  
+    double youngL=1;
+    double youngT=1;
     if( parameter(4)==0 ){ // constant anisotropic material
       youngL = youngMatrix+youngFiber;
       youngT = youngMatrix; 
@@ -2870,14 +2776,10 @@ derivs(Tissue &T,
       youngL = youngMatrix+youngFiber-hFactor*(youngMatrix+youngFiber); 
       youngT = youngMatrix-hFactor*(youngMatrix); 
     }
-    // double youngMatrixA=1;
-    // if( parameter(4)==2){  // for varrying material anisotropy with constant overall stiffness for energy landscape
-      
-    //   youngMatrixA =youngMatrix-youngL-20;  // here youngMatrix is total stiffness
-    // }
+   
 
 
-    double lambdaL, mioL, lambdaT, mioT,lambdaTmatrix, mioTmatrix;
+    double lambdaL, mioL, lambdaT, mioT; // ,lambdaTmatrix, mioTmatrix;
     
     if (parameter(7)==0){      
       // Lame coefficients based on plane strain (for 3D 0<poisson<0.5)
@@ -2886,9 +2788,7 @@ derivs(Tissue &T,
       lambdaT=youngT*poissonT/((1+poissonT)*(1-2*poissonT));
       mioT=youngT/(2*(1+poissonT));
 
-      // lambdaTmatrix=youngMatrixA*poissonT/((1+poissonT)*(1-2*poissonT));
-      // mioTmatrix=youngMatrixA/(2*(1+poissonT));
-
+   
     } 
     else{      
       // Lame coefficients based on plane stress (for 3D 0<poisson<0.5)
@@ -2914,7 +2814,7 @@ derivs(Tissue &T,
     double TotalCellRestingArea=0;
     double TotalCellArea=0;
     double EnergyIso=0;     
-    double EnergyIsoFiber=0;            
+    //double EnergyIsoFiber=0;            
     double EnergyAniso=0;
     double strainZ=0;
 
@@ -3223,7 +3123,7 @@ derivs(Tissue &T,
 
      
     
-       // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STRAIN and STRESS TENSOR (BEGIN) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+       // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STRAIN and STRESS TENSOR (BEGIN) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       
       // deformation gradiant tensor F =Sigma i=1,2,3 Qi x Di
       // strain tensor in resting shape E=0.5(FtF-I)
@@ -3438,12 +3338,6 @@ derivs(Tissue &T,
       StressTensor[1][1]=sigmafactor*Sigma[1][1]+deltasigmafactor*deltaSigma[1][1];
 
 
-      // std::cerr <<"stress tensor " << std::endl;
-      // std::cerr <<" Sxx  "<< StressTensor[0][0] <<" Sxy  "<< StressTensor[0][1] <<" Sxz  "<< StressTensor[0][2] << std::endl
-      //           <<" Syx  "<< StressTensor[1][0] <<" Syy  "<< StressTensor[1][1] <<" Syz  "<< StressTensor[1][2] << std::endl
-      //           <<" Szx  "<< StressTensor[2][0] <<" Szy  "<< StressTensor[2][1] <<" Szz  "<< StressTensor[2][2] << std::endl <<std::endl;
-
-
       
 
 
@@ -3523,7 +3417,7 @@ derivs(Tissue &T,
 
       TotalCellRestingArea=TotalCellRestingArea+restingArea;
       TotalCellArea=TotalCellArea+Area;
-      // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STRAIN and STRESS TENSORS (END) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STRAIN and STRESS TENSORS (END) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
    
     //---- Anisotropic Correction Force-------------------------------
@@ -3539,9 +3433,9 @@ derivs(Tissue &T,
         double  I1=trE;
 
         // energy
-        EnergyIso +=( (lambdaT/2)*I1*I1 + mioT*I2 )*restingArea; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        //EnergyIsoFiber +=( (deltaLamIsoFiber/2)*I1*I1 + deltaMioIsoFiber*I2 )*restingArea; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        EnergyAniso +=( (deltaLam/2)*I4*I1 + deltaMio*I5 )*restingArea; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        EnergyIso +=( (lambdaT/2)*I1*I1 + mioT*I2 )*restingArea; //<<<<<<<<<<<<<<<<<<<<<
+      
+        EnergyAniso +=( (deltaLam/2)*I4*I1 + deltaMio*I5 )*restingArea; //<<<<<<<<<<<<<<<<<<<<<<<<<<<
        
         //Forces of vertices   
         double Force[3][3];                                           
@@ -3575,11 +3469,7 @@ derivs(Tissue &T,
           +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][2]-position[2][2])
           + deltaF[2][2];  
         
-        // std::cerr << "Forces (cell " << cellIndex << "):" << std::endl 
-        // 	      << Force[0][0] << " " << Force[0][1] << " " << Force[0][2] << std::endl
-        // 	      << Force[1][0] << " " << Force[1][1] << " " << Force[1][2] << std::endl
-        // 	      << Force[2][0] << " " << Force[2][1] << " " << Force[2][2] << std::endl;
-        
+       
         // adding TRBSMT forces to the total vertexDerives
         
         cellDerivs[cellIndex][comIndex  ] += Force[0][0];
@@ -3760,20 +3650,7 @@ derivs(Tissue &T,
           maximalStrainValue=StrainCellGlobal[2][2];
           Istrain=2;
         }
-      // if (std::abs(StrainCellGlobal[1][1])>std::abs(maximalStrainValue)) 
-      //   {
-      //     maximalStrainValue=StrainCellGlobal[1][1];
-      //     Istrain=1;
-      //   }
-      // if (std::abs(StrainCellGlobal[2][2])>std::abs(maximalStrainValue)) 
-      //   {
-      //     maximalStrainValue=StrainCellGlobal[2][2];
-      //     Istrain=2;
-      //   }
-      
-
-      // std::cerr<<"maximal Strain direction "<< eigenVectorStrain[0][Istrain] <<" "<< eigenVectorStrain[1][Istrain] <<" "<< eigenVectorStrain[2][Istrain] <<std::endl;  
-      // std::cerr<<"maximal Strain value "<< maximalStrainValue <<std::endl;  
+   
 
       // 2nd maximalstrain direction/value
       double maximalStrainValue2,maximalStrainValue3;
@@ -3798,7 +3675,7 @@ derivs(Tissue &T,
       maximalStrainValue2=StrainCellGlobal[Istrain2][Istrain2];
       maximalStrainValue3=StrainCellGlobal[Istrain3][Istrain3];
       
-      if(std::abs(normalGlob[0]*eigenVectorStrain[0][Istrain]+   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<????????????????
+      if(std::abs(normalGlob[0]*eigenVectorStrain[0][Istrain]+   //<<<<<<<<<<<<<<<<<<
                   normalGlob[1]*eigenVectorStrain[1][Istrain]+
                   normalGlob[2]*eigenVectorStrain[2][Istrain]) > .7) {
 
@@ -3915,52 +3792,7 @@ derivs(Tissue &T,
   
 
 
-    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< energy and angles of stress, strain...
-    // double TetaStress=std:: acos( eigenVectorStress[0][Istress]/
-    //                               std:: sqrt( eigenVectorStress[0][Istress]*eigenVectorStress[0][Istress]+
-    //                                           eigenVectorStress[1][Istress]*eigenVectorStress[1][Istress] ) );
-    // if (eigenVectorStress[0][Istress] < 0 && eigenVectorStress[1][Istress] >= 0 ) 
-    //   { TetaStress= TetaStress-3.1416;
-    //   }
-    // if (eigenVectorStress[0][Istress] < 0 && eigenVectorStress[1][Istress] < 0 ) 
-    //   { TetaStress=-TetaStress+3.1416;
-    //   }
-    // if (eigenVectorStress[0][Istress] > 0 && eigenVectorStress[1][Istress] < 0 ) 
-    //   { TetaStress=-TetaStress;
-    //   }
-    
-    // double TetaStrain=std:: acos( eigenVectorStrain[0][Istrain]/
-    //                               std:: sqrt(eigenVectorStrain[0][Istrain]*eigenVectorStrain[0][Istrain]+
-    //                                          eigenVectorStrain[1][Istrain]*eigenVectorStrain[1][Istrain] ) );
-    // if (eigenVectorStrain[0][Istrain] < 0 && eigenVectorStrain[1][Istrain] >= 0 ) 
-    //   { TetaStrain= TetaStrain-3.1416;
-    //   }
-    // if (eigenVectorStrain[0][Istrain] < 0 && eigenVectorStrain[1][Istrain] < 0 ) 
-    //   { TetaStrain=-TetaStrain+3.1416;
-    //   }
-    // if (eigenVectorStrain[0][Istrain] > 0 && eigenVectorStrain[1][Istrain] < 0 ) 
-    //   { TetaStrain=-TetaStrain;
-    //   }
-    
-    
-    // double  TetaPerp=std:: acos( PerpStrain[0]/
-    //                              std:: sqrt(PerpStrain[0]*PerpStrain[0]+
-    //                                         PerpStrain[1]*PerpStrain[1] ) );
-    // if (PerpStrain[0] < 0 && PerpStrain[1] >= 0 ) 
-    //   { TetaPerp= TetaPerp-3.1416;
-    //   }
-    // if (PerpStrain[0] < 0 && PerpStrain[1] < 0 ) 
-    //   { TetaPerp=-TetaPerp+3.1416;
-    //   }
-    // if (PerpStrain[0] > 0 && PerpStrain[1] < 0 ) 
-    //   { TetaPerp=-TetaPerp;
-    //   }
-    
-    // cellData[cellIndex][12]=TetaPerp;
-    // cellData[cellIndex][13]=TetaStress;
-    // cellData[cellIndex][14]=TetaStrain;
-
-     
+  
   
     
     
@@ -4052,13 +3884,7 @@ derivs(Tissue &T,
     
     
     
-    // // normalizing  MT direction vector 
-    // double temp = std::sqrt ( cellData[cellIndex][variableIndex(0,1)  ] * cellData[cellIndex][variableIndex(0,1)  ] +
-    // 			      cellData[cellIndex][variableIndex(0,1)+1] * cellData[cellIndex][variableIndex(0,1)+1] +
-    // 			      cellData[cellIndex][variableIndex(0,1)+2] * cellData[cellIndex][variableIndex(0,1)+2]  );
-    // cellData[cellIndex][variableIndex(0,1)  ] /=temp;
-    // cellData[cellIndex][variableIndex(0,1)+1] /=temp;
-    // cellData[cellIndex][variableIndex(0,1)+2] /=temp;
+  
     
     // stress component along MT direction 
     cellData[cellIndex][MTstressIndex ] =
@@ -4288,7 +4114,7 @@ derivs(Tissue &T,
 
 
 
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 // void VertexFromTRBScenterTriangulationMT::
 // initiate(Tissue &T,
