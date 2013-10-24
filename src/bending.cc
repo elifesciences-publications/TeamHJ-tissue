@@ -145,11 +145,17 @@ namespace Bending {
 	Lm = std::sqrt(Lm);
 	double gDenom = 1.0/(Lp*Lm);// 1./g 
 	double F = f*gDenom;
+	// Ad hoc way to avoid inf for derivative...
+	if (F>0.999) F=0.999;
+	else if (F<-0.999) F=-0.999;
+
 	double theta = std::acos(F) - 3.14159; 
 
 	double f0 = parameter(0)*(theta-wallData[em][Ti])*gDenom/(std::sqrt(1-F*F));
 	double f1 = f*gDenom*Lm/Lp;
 	double f2 = f*gDenom*Lp/Lm;
+	//std::cerr << i << " " << j << " " << em << "\t" << theta << " " << wallData[em][Ti] << "\t"
+	//<< F << " " << f0 << " " << f1 << " " << f2 << std::endl;  
 
 	// Update for each dimension the contribution to vertices jm, j, jp
 	for (size_t d=0; d<dimension; ++d) {
@@ -237,12 +243,16 @@ namespace Bending {
 	  Lp += dp*dp; 
 	  Lm += dm*dm;
 	}
+	//std::cerr << em << " " << scalarProd << " " << Lp << " " << Lm << "\t";
 	Lp = std::sqrt(Lp);
 	Lm = std::sqrt(Lm);
 	scalarProd /= Lp*Lm;
+	if (scalarProd>1.0) scalarProd=1.0;//To make sure it is not giving NaN
+	//std::cerr << em << " " << scalarProd << " " << Lp << " " << Lm << "\t";
 	double theta = std::acos(scalarProd) - 3.14159; 
 	// Setting 'stored' angle to current angle
 	wallData[em][Ti] = theta;
+	//std::cerr << em << " " << wallData[em][Ti] << std::endl;
       }
     }      
   }
@@ -313,6 +323,7 @@ namespace Bending {
 	Lp = std::sqrt(Lp);
 	Lm = std::sqrt(Lm);
 	scalarProd /= Lp*Lm;
+	if (scalarProd>1.0) scalarProd=1.0;
 	double theta = std::acos(scalarProd) - 3.14159; 
 	// Update stored angle towards current angle
 	wallDerivs[em][Ti] -= parameter(0)*(wallData[em][Ti]-theta); 
