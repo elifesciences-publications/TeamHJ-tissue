@@ -2440,7 +2440,7 @@ void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
 				      DataMatrix &wallData,
 				      DataMatrix &vertexData, 
 				      double h) 
-{ // double Lmaxfactor=parameter(2);
+{ double Lmax=parameter(2);
   double Kgrowth=parameter(3);
   double KgrowthStress=parameter(7);
   
@@ -2549,7 +2549,7 @@ void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
           
   	  double v1v2[2]={vertexData[vertexIndex2][0]-vertexData[vertexIndex1][0],
   			  vertexData[vertexIndex2][1]-vertexData[vertexIndex1][1]};
-	  if (std::sqrt(v1v2[0]*v1v2[0]+v1v2[1]*v1v2[1])<1.5){
+	  if (std::sqrt(v1v2[0]*v1v2[0]+v1v2[1]*v1v2[1])<Lmax){ // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	  //line intersect test
 
 	  bool intersect=false;
