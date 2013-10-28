@@ -97,6 +97,7 @@ protected:
   /// This is the main print function for output data during a simulation. It has a couple
   /// standard modes given as a flag in the input file (together with the number of time
   /// points to print):
+  ///
   /// @verbatim
   /// 0) Standard output for openGL developed plotting of cell and wall variables 
   /// 1) Standard vtu output assuming single wall compartment for wall variables

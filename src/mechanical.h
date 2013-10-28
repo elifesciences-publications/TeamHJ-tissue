@@ -1323,29 +1323,22 @@ class CalculateAngleVectorXYplane : public BaseReaction
 	      DataMatrix &vertexData,
 	      DataMatrix &cellDerivs,
 	      DataMatrix &wallDerivs,
-	      DataMatrix &vertexDerivs );
-
-  
+	      DataMatrix &vertexDerivs );  
 };
 
-
-
-
-
-
 ///
-/// @brief Calculates the angle between a 3d vector
-/// (starting from given indices) in cellData vector and a given axes(x,y,z) 
-/// and stores it in the given index in cellData vector, uses one parameter for specifying the axes 
+/// @brief Calculates the angle between a 3d vector (starting from given indices) 
+/// in cellData vector and a given axes(x,y,z).
 ///
-/// In a model file the reaction is defined as
+/// Uses one parameter for specifying the axes, and two variable indices. The first index specifies the start of
+/// the vector and the second where the angle is stored. 
 ///
+/// In a model file the reaction is defined as:
 /// @verbatim
 /// AngleVector 1 2 1 1
 /// axes_flag (0:X, 1:Y, 2:Z)
 /// start-index(the vector)   
-/// store-index(angle-deg) 
-///
+/// store-index(angle-deg)
 /// @endverbatim
 /// 
 class AngleVector : public BaseReaction 

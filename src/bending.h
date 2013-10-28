@@ -42,7 +42,7 @@ namespace Bending {
   /// L_index
   /// @endverbatim
   ///
-  /// @Note It might be good to add a maximal angle to allow for a bent structure.
+  /// @note It might be good to add a maximal angle to allow for a bent structure.
   ///
   class NeighborCenter : public BaseReaction {
     
@@ -112,14 +112,15 @@ namespace Bending {
   ///
   /// The reaction expects a strength of the bending force, and the edge variable index for the angle. 
   /// The prefered angle is stored as a second wall variable. In a model file it is defined as:
+  ///
   /// @verbatim
   /// Bending::Angle 1 1 1
   /// k_theta
   /// Theta^t_index
   /// @endverbatim
   ///
-  /// @See Bending::AngleRelax for how to update the prefered angle towards the current.
-  /// @See Bending::AngleInitiate will initiate the stored angle to the current measured angle.
+  /// @see Bending::AngleRelax for how to update the prefered angle towards the current.
+  /// @see Bending::AngleInitiate will initiate the stored angle to the current measured angle.
   ///
   class Angle : public BaseReaction {
     
@@ -177,8 +178,8 @@ namespace Bending {
   ///
   /// where the index is where the angle is stored (as wall variable).
   ///
-  /// @See Bending::Angle for how to update the vertices towards this angle 
-  /// @See Bending::AngleRelax for how to update the prefered angle towards the current.
+  /// @see Bending::Angle for how to update the vertices towards this angle 
+  /// @see Bending::AngleRelax for how to update the prefered angle towards the current.
   ///
   class AngleInitiate : public BaseReaction {
     
@@ -243,14 +244,14 @@ namespace Bending {
   /// where x1, x2, are the two edges joined at the vertex, -/+ comes from if the structure is convex/concave. 
   ///
   /// @verbatim
-  /// Bending::AngleRelax 0 1 2
-  /// L_index Theta^t_index
+  /// Bending::AngleRelax 0 1 1
+  /// Theta^t_index
   /// @endverbatim
   ///
-  /// where the first index is the wall length index (=0) and the second is where the angle is stored.
+  /// where the index is where the angle is stored (in wall variable).
   ///
-  /// @See Bending::Angle for how to update the vertices towards this angle 
-  /// @See Bending::AngleInitiate for how to initiate the angle variable to the current at start.
+  /// @see Bending::Angle for how to update the vertices towards this angle 
+  /// @see Bending::AngleInitiate for how to initiate the angle variable to the current at start.
   ///
   class AngleRelax : public BaseReaction {
     
