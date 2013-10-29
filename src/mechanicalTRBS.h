@@ -16,7 +16,7 @@
 /// @brief Triangular spring model for plates (2D walls) assuming
 /// triangular walls/cells.
 ///
-/// The update (in all dimensions) are given by
+/// @details The update (in all dimensions) are given by
 ///
 /// @f[ \frac{dx_i}{dt} = ... @f]
 ///
@@ -27,13 +27,11 @@
 /// Vis Comput Graph 14, 329-41 (2008)
 ///
 /// In a model file the reaction is defined as
-///
 /// @verbatim
 /// VertexFromTRBS 2 1 1
 /// Y_modulus P_coeff
 /// L_ij-index
 /// @endverbatim
-///
 ///
 class VertexFromTRBS : public BaseReaction {
   
@@ -71,7 +69,7 @@ class VertexFromTRBS : public BaseReaction {
 /// @brief Triangular spring model for plates (2D walls) assuming
 /// triangulation with a central point on the 2D wall/cell.
 ///
-/// The update (in all dimensions) are given by
+/// @details The update (in all dimensions) are given by
 ///
 /// @f[ \frac{dx_i}{dt} = ... @f]
 ///
@@ -82,7 +80,6 @@ class VertexFromTRBS : public BaseReaction {
 /// Vis Comput Graph 14, 329-41 (2008)
 ///
 /// In a model file the reaction is defined as
-///
 /// @verbatim
 /// VertexFromTRBScenterTriangulation 2 2 1 1
 /// Y_modulus P_coeff
@@ -147,7 +144,7 @@ class VertexFromTRBScenterTriangulation : public BaseReaction {
 /// triangulation with a central point on the 2D wall/cell
 /// concentration(auxin)-dependent Young's modulus.
 ///
-/// The update (in all dimensions) are given by
+/// @details The update (in all dimensions) are given by
 ///
 /// @f[ \frac{dx_i}{dt} = ... @f]
 ///
@@ -158,7 +155,6 @@ class VertexFromTRBScenterTriangulation : public BaseReaction {
 /// Vis Comput Graph 14, 329-41 (2008)
 ///
 /// In a model file the reaction is defined as
-///
 /// @verbatim
 /// VertexFromTRBScenterTriangulationConcentrationHill 5 2 2 1
 /// Y_modulus_min Y_modulus_max P_coeff K_hill n_hill
@@ -215,7 +211,7 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 /// @brief Triangular spring model with anisotropy for plates (2D walls) assuming
 /// triangular walls/cells.
 ///
-/// The update (in all dimensions) are given by
+/// @details The update (in all dimensions) are given by
 ///
 /// @f[ \frac{dx_i}{dt} = ... @f]
 ///
@@ -227,11 +223,8 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 /// anisotropic model.
 ///
 /// In a model file the reaction is defined as
-///
 /// @verbatim
-///
 /// VertexFromTRBSMT 10 1 10
-/// 
 /// Y_matrix 
 /// Y_fiber 
 /// Poisson_Long
@@ -289,10 +282,11 @@ class VertexFromTRBScenterTriangulationConcentrationHill : public BaseReaction {
 ///                                   1: stress, 
 ///                                   2: stress/2nd stress)
 ///
-///  @endverbatim
+/// @endverbatim
 /// In case of storing strain/stress direction/value, in 3(2) dimensions, 
 /// strain/stress values will be stored after  (3) components of vectors.  
 /// The value for perpendicular strain is maximal strain value.
+///
 class VertexFromTRBSMT : public BaseReaction {
   
  public:
@@ -549,21 +543,15 @@ class VertexFromTRBScenterTriangulationConcentrationHillMT : public BaseReaction
 		DataMatrix &vertexDerivs );  
 };
 
-
-
-
-
 ///
-/// @brief 
-/// Updates Young modulus of cells within "update" based on linear or nonlinear Fiber_model
-/// It uses anisotropy(stress or strain) that should be calculated by VertexFromTRBS... functions.
+/// @brief Updates Young modulus of cells within "update" based on linear or nonlinear Fiber_model.
+///
+/// @details It uses anisotropy(stress or strain) that should be calculated by VertexFromTRBS... functions.
 /// and velocity that should be calculated by "UpdateMTdirectionEquilibrium" function. It cooperates 
 /// with TRBS functions via cell vector component wich is introduced for storing longitudinal Young modulus.
 /// 
 /// In a model file the reaction is defined as
-///
 /// @verbatim
-///
 /// FiberModel 8 3 1 1 1
 /// 
 ///  k_rate
@@ -580,11 +568,8 @@ class VertexFromTRBScenterTriangulationConcentrationHillMT : public BaseReaction
 ///  Young_Longitudinal index
 ///
 ///  store index for velocity from "UpdateMTdirectionEquilibrium"
-///
 /// @endverbatim
 ///
-
-
 class FiberModel : public BaseReaction {
   
 public:

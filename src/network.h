@@ -13,8 +13,8 @@
 #include"tissue.h"
 #include"baseReaction.h"
 
-/// @brief A stress-based PIN1 and MT polarization model
 ///
+/// @brief A stress-based PIN1 and MT polarization model
 ///
 class AuxinModelStress : public BaseReaction {
   
@@ -36,7 +36,7 @@ class AuxinModelStress : public BaseReaction {
 ///
 /// @brief A linear polarization cell-based auxin transport model
 ///
-/// A complete pattern generating auxin model based on only cellular
+/// @details A complete pattern generating auxin model based on only cellular
 /// compartments. The four molecules A(uxin), P(IN), X(auxin induced
 /// molecule), and M(epidermally expressed molecule) are updated
 /// according to:
@@ -51,8 +51,7 @@ class AuxinModelStress : public BaseReaction {
 ///  
 /// @f[ P_{in} = \frac{P_i X_n}{(p_3 + \sum_{k}^{neigh} X_k)} @f]
 ///  
-/// In a model file the reaction is defined as
-///
+/// In a model file the reaction is defined as:
 /// @verbatim
 /// AuxinModelSimple1 12 1 4
 /// p_0 ... p_11
@@ -79,9 +78,9 @@ class AuxinModelSimple1 : public BaseReaction {
 ///
 /// @brief A 'linear polarization from wall signal'-based auxin transport model
 ///
-///A complete auxin transport model based on PIN polarization from a linear
-///feedback from a wall variable (X). PIN and auxin are updated
-///according to:
+/// @details A complete auxin transport model based on PIN polarization from a linear
+/// feedback from a wall variable (X). PIN and auxin are updated
+/// according to:
 ///
 /// @f[ \frac{dA_i}{dt} = p_0 - p_1 A_i + p_4 \sum_{neigh} (A_n-A_i) + @f] 
 /// @f[ p_3 \sum_{neigh} (P_{ni} A_n - P_{in} A_i) @f] 
@@ -94,8 +93,8 @@ class AuxinModelSimple1 : public BaseReaction {
 /// The column index for auxin, PIN, and X (in wall) should be given.
 ///
 /// In a model file, the reaction is given as:
-///
 /// @verbatim
+/// to come...
 /// @endverbatim
 ///
 class AuxinModelSimple1Wall : public BaseReaction {
@@ -118,27 +117,32 @@ class AuxinModelSimple1Wall : public BaseReaction {
 ///
 /// @brief A cell-based auxin transport model where the PIN polarization comes from wall stresses
 ///
-/// An auxin transport model for cellular auxin and where PIN polarization is based on stresses
+/// @details An auxin transport model for cellular auxin and where PIN polarization is based on stresses
 /// in a double wall compartment, i.e. the wall compartment between a cell pair is divided into
 /// two compartments, and stress is measured in the wall compartment neighbor to the specific cell.
 /// Auxin concentration is affecting the spring constants in wall pieces neighboring the cell.
 ///
 /// PIN and auxin are updated according to:
 ///
-///	dA_i/dt = p0 - p1*A_i +p2*\sum_{neigh} (A_n-A_i) + 
-///	p3*\sum_{neigh} (P_ni*A_n-P_in*A_i) 
+/// @f[ \frac{dA_i}{dt} = p_0 - p_1 A_i +p_2 \sum_{neigh} (A_n-A_i) + @f] 
+/// @f[ p_3 \sum_{neigh} (P_{ni} A_n - P_{in} A_i) @f] 
 ///
-///	dP_i/dt = p4 - p5*P_i 
+/// and
 ///
-///	P_in = P_i*X_in/(p_6+\sum_{k,neigh}X_ik)
+/// @f[ \frac{dP_i}{dt} = p_4 - p_5 P_i @f] 
 ///
-///     k_in = p_7 + p_8/(p_9+A_i)
+/// where
 ///
-/// where X_in is the stress in the wall (X_in = k_in*F/(k_in+k_ni).
+/// @f[P_{in} = P_i \frac{X_{in}}{(p_6 + \sum_{k,neigh} X_{ik})} @f]
+///
+/// @f[ k_{in} = p_7 + \frac{p_8}{(p_9+A_i)} @f]
+///
+/// where @f$X_{in}@f$ is the stress in the wall (@f$X_{in} = k_{in} F/(k_{in}+k_{ni})@f$).
 /// The column indices for auxin and PIN in cells are at first level, 
-/// and F k_1 k_2 in wall are at the second level of indices.
-/// k_1 and k_2 are set via the cell auxin concentrations and 1,2 are the order of cell neighbors.
-
+/// and @f$ F, k_1, k_2 @f$ in wall are at the second level of indices.
+/// @f$ k_1 @f$ and @f$ k_2 @f$ are set via the cell auxin concentrations and 1,2 
+/// are the order of cell neighbors.
+///
 class AuxinModelSimpleStress : public BaseReaction {
   
  public:
@@ -156,22 +160,24 @@ class AuxinModelSimpleStress : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
-//!A cell-based auxin transport model including AUX1 and PID
-/*!A complete pattern generating auxin model based on only cellular
-  compartments. The four molecules are updated according to:
-  
-  dA_i/dt = p0*M_i p1 - p2*A_i +p5*\sum_{neigh} (A_n-A_i) + 
-  p4*\sum_{neigh} (P_ni*A_n-P_in*A_i) 
-  
-  dP_i/dt = p6 - p7*P_i 
-  
-  dX_i/dt = p8*A_i - p9*X_i
-  
-  dM_i/dt = p10*\theta_L1 - p11*M_i
-  
-  In addition, the column index for auxin, PIN, AUX1, PID, X, 
-  and M should be given.
-*/
+///
+/// @brief A cell-based auxin transport model including AUX1 and PID
+///
+/// @details A complete pattern generating auxin model based on only cellular
+/// compartments. The four molecules are updated according to:
+///  
+/// @f[ \frac{dA_i}{dt} = p_0 M_i p_1 - p_2 A_i + p_5 \sum_{neigh} (A_n-A_i) + @f] 
+/// @f[ p_4 \sum_{neigh} (P_{ni} A_n - P_{in} A_i) @f] 
+///
+/// @f[ \frac{dP_i}{dt} = p_6 - p_7 P_i @f] 
+///  
+/// @f[ \frac{dX_i}{dt} = p_8 A_i - p_9 X_i @f]
+///
+/// @f[ \frac{dM_i}{dt} = p_{10} \theta_{L1} - p_{11} M_i @f]
+///
+/// In addition, the column index for auxin, PIN, AUX1, PID, X, 
+/// and M should be given in a model file.
+///
 class AuxinModelSimple2 : public BaseReaction {
   
  public:
@@ -189,22 +195,24 @@ class AuxinModelSimple2 : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
-//!A cell-based auxin transport model including AUX1 and PID
-/*!A complete pattern generating auxin model based on only cellular
-  compartments. The four molecules are updated according to:
-  
-  dA_i/dt = p0*M_i p1 - p2*A_i +p5*\sum_{neigh} (A_n-A_i) + 
-  p4*\sum_{neigh} (P_ni*A_n-P_in*A_i) 
-  
-  dP_i/dt = p6 - p7*P_i 
-  
-  dX_i/dt = p8*A_i - p9*X_i
-  
-  dM_i/dt = p10*\theta_L1 - p11*M_i
-  
-  In addition, the column index for auxin, PIN, AUX1, PID, X, 
-  and M should be given.
-*/
+///
+/// @brief A cell-based auxin transport model including AUX1 and PID
+///
+/// @details A complete pattern generating auxin model based on only cellular
+/// compartments. The four molecules are updated according to:
+///
+/// @f[ \frac{dA_i}{dt} = p_0 M_i p_1 - p_2 A_i + p_5 \sum_{neigh} (A_n-A_i) + @f] 
+/// @f[ p_4 \sum_{neigh} (P_{ni} A_n - P_{in} A_i) @f] 
+///
+/// @f[ \frac{dP_i}{dt} = p_6 - p_7 P_i @f] 
+///
+/// @f[ \frac{dX_i}{dt} = p_8 A_i - p_9 X_i @f]
+///
+/// @f[ \frac{dM_i}{dt} = p_{10} \theta_{L1} - p_{11} M_i @f]
+///
+/// In addition to the parameter values, the column index for auxin, PIN, AUX1, PID, X, 
+/// and M should be given in the model file.
+///
 class AuxinModelSimple3 : public BaseReaction {
   
  public:

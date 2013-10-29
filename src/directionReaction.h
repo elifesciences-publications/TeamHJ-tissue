@@ -15,18 +15,18 @@
 ///
 /// @brief Updates a direction continuosly towards a direction updated for the cell
 ///
-/// This function applies the update within the derivative and moves the
+/// @details This function applies the update within the derivative and moves the
 /// direction as a function of the differnce in angle.
-/// Note: it is only implemented for two dimensions.
 ///
 /// In a model file the reaction is defined as
-///
 /// @verbatim
 /// ContinousMTDirection 1 2 1 1
 /// k_rate
 /// target index
 /// MT index
 /// @endverbatim
+///
+/// @note It is only implemented for two dimensions.
 ///
 class ContinousMTDirection : public BaseReaction
 {
@@ -47,13 +47,12 @@ public:
 ///
 /// @brief Updates a direction continuosly towards a direction updated for the cell
 ///
-/// This function applies the update within the derivative and moves the
+/// @details This function applies the update within the derivative and moves the
 /// direction based on velocity vector proportional to the subtraction of 
 /// target vector and the direction which is going to be updated.
 /// Note: it is only implemented for three dimensions.
 ///
 /// In a model file the reaction is defined as
-///
 /// @verbatim
 /// ContinousMTDirection3d 1 2 1 1
 ///
@@ -64,8 +63,7 @@ public:
 /// MT index
 ///
 /// @endverbatim
-
-
+///
 class ContinousMTDirection3d : public BaseReaction
 {
 public:
@@ -84,24 +82,18 @@ public:
 ///
 /// @brief Updates a direction continuosly towards a direction updated for the cell
 ///
-/// This function applies the update within the update and moves the
+/// @details This function applies the update within the update and moves the
 /// direction toward a given direction using an Euler step directly on the direction vector.
 /// It normalizes the vector after the update.
 ///
 /// In a model file the reaction is defined as
-///
 /// @verbatim
-/// 
 /// UpdateMTDirection 1 2 1 1
-/// 
 /// k_rate
-/// 
 /// target index
-/// 
 /// MT index
-///
 /// @endverbatim
-
+///
 class UpdateMTDirection : public BaseReaction
 {
  public:
@@ -129,7 +121,7 @@ class UpdateMTDirection : public BaseReaction
 ///
 /// @brief Updates a direction continuosly towards a direction updated for the cell
 ///
-/// This function applies the update within the "update" and moves the
+/// @details This function applies the update within the "update" and moves the
 /// direction toward a given direction using an Euler step directly on the direction vector.
 /// The update is done only in the cells that are close "enough" to equilibrium. Equilibrium 
 /// is considered as a state in which the addition of absolute values of velocity vectors of 
@@ -137,27 +129,18 @@ class UpdateMTDirection : public BaseReaction
 /// It normalizes the vector after the update.
 ///
 /// In a model file the reaction is defined as
-///
 /// @verbatim
-///
 /// UpdateMTDirectionEquilibrium 3 4 1 1 1 2 
-///
 /// k_rate
 /// equilibrium velocity threshold
 /// stress difference threshold
-///
 /// target index
-///
 /// MT index
-///
 /// max-stress index
 /// MT-stress index
-///
 /// velocity store index
-///
 /// @endverbatim
-
-
+///
 class UpdateMTDirectionEquilibrium : public BaseReaction
 {
  public:
@@ -186,14 +169,12 @@ class UpdateMTDirectionEquilibrium : public BaseReaction
 ///
 /// @brief Updates a direction continuosly towards a direction updated for the cell
 ///
-/// This function applies the update within the update and moves the
+/// @details This function applies the update within the update and moves the
 /// direction toward a given direction using an Euler step directly on the direction vector.
 /// the update rate depends on both a user defined rate and a Hill function of a concentration 
-/// that can be stress or strain anisotropy
-/// It normalizes the vector after the update.
+/// that can be stress or strain anisotropy. It normalizes the vector after the update.
 ///
 /// In a model file the reaction is defined as
-///
 /// @verbatim
 /// UpdateMTDirectionConcenHill 3 3 1 1 1
 /// k_rate
@@ -203,7 +184,7 @@ class UpdateMTDirectionEquilibrium : public BaseReaction
 /// MT index
 /// concentration(anisotropy) index
 /// @endverbatim
-
+///
 class UpdateMTDirectionConcenHill : public BaseReaction
 {
  public:

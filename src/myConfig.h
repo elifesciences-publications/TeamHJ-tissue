@@ -22,7 +22,7 @@ typedef struct {
 ///
 /// @brief A singleton class to handle user configuration.
 ///
-/// The myConfig class handles user configuration. User
+/// @details The myConfig class handles user configuration. User
 /// configuration is read from the command line and from the file
 /// $HOME/.organism. 
 /// The following keys are supported: 
@@ -47,92 +47,91 @@ typedef struct {
 class myConfig
 {
  public:
-	///
-	/// @brief Initializes user configuration.
-	///
-	/// The function takes argc and argv from main() as arguments and
-	/// initializes user configuration. The function first reads the
-	/// file given by the third argument (in organism it is set to
-	/// $HOME/.organism and will then parse command line
-	/// arguments. In this way the user can override configuration
-	/// from .organism by command line arguments.
-	///
-	/// For the command line the function is looking for arguments
-	/// following this pattern:
-	/// @verbatim
-	/// ./binary -key1 arg11 arg12 -key2 arg21 arg22 ...
-	/// @endverbatim
-	///
-	/// The .organism configuration file located at $HOME/.organism
-	/// should be constructed according to this pattern:
-	/// @verbatim
-	/// key1 arg11 arg12 ...
-	/// key2 arg21 arg22 ...
-	/// ...  ...
-	/// @endverbatim
-	static std::vector<std::string> initConfig(int argc, char *argv[], const std::string &file);
-	static std::vector<std::string> initConfig(int argc, char *argv[]);
-
-	///
-	/// @brief Registers an option to the application.
-	///
-	/// The first argument is the name of the option. The second
-	/// arguments sepcifies the option's number of arguments.
-	///
-	static void registerOption(const std::string &key, size_t arguments);
-
-	///
-	/// @brief Get value from user configuration.
-	///
-	/// Returns the value for the argument given by index belonging to
-	/// the option given by key.
-	///
-	static std::string getValue(const std::string &key, size_t index);
-
-	///
-	/// @brief Get boolean value from user configuration.
-	///
-	/// This function is mainly used for options with no arguments, but
-	/// can also be used for options with a non-zero amount of
-	/// arguments.
-	///
-	static bool getBooleanValue(const std::string &key);
-
-	///
-	/// @brief Returns number of unparsed arguments from command line.
-	///
-	static int argc(void);
-
-	///
-	/// @brief Returns unparsed argument from command line.
-	///
-	static std::string argv(int index);
-
+  ///
+  /// @brief Initializes user configuration.
+  ///
+  /// @details The function takes argc and argv from main() as arguments and
+  /// initializes user configuration. The function first reads the
+  /// file given by the third argument (in organism it is set to
+  /// $HOME/.organism and will then parse command line
+  /// arguments. In this way the user can override configuration
+  /// from .organism by command line arguments.
+  ///
+  /// For the command line the function is looking for arguments
+  /// following this pattern:
+  /// @verbatim
+  /// ./binary -key1 arg11 arg12 -key2 arg21 arg22 ...
+  /// @endverbatim
+  /// The .organism configuration file located at $HOME/.organism
+  /// should be constructed according to this pattern:
+  /// @verbatim
+  /// key1 arg11 arg12 ...
+  /// key2 arg21 arg22 ...
+  /// ...  ...
+  /// @endverbatim
+  ///
+  static std::vector<std::string> initConfig(int argc, char *argv[], const std::string &file);
+  static std::vector<std::string> initConfig(int argc, char *argv[]);
+  
+  ///
+  /// @brief Registers an option to the application.
+  ///
+  /// The first argument is the name of the option. The second
+  /// arguments sepcifies the option's number of arguments.
+  ///
+  static void registerOption(const std::string &key, size_t arguments);
+  
+  ///
+  /// @brief Get value from user configuration.
+  ///
+  /// Returns the value for the argument given by index belonging to
+  /// the option given by key.
+  ///
+  static std::string getValue(const std::string &key, size_t index);
+  
+  ///
+  /// @brief Get boolean value from user configuration.
+  ///
+  /// This function is mainly used for options with no arguments, but
+  /// can also be used for options with a non-zero amount of
+  /// arguments.
+  ///
+  static bool getBooleanValue(const std::string &key);
+  
+  ///
+  /// @brief Returns number of unparsed arguments from command line.
+  ///
+  static int argc(void);
+  
+  ///
+  /// @brief Returns unparsed argument from command line.
+  ///
+  static std::string argv(int index);
+  
  private:
-	// Private constructor and destructor.
-	myConfig();
-	myConfig(int argc, char *argv[], const std::string &file);
-	myConfig(int argc, char *argv[]);
-
-	// Private functions hidden for readability.
-	void parseFile(const std::string &file);
-	void parseCommandLine(int argc, char *argv[]);
-
- 	// Contains user configuration.
-	static std::map< std::string, std::pair<std::vector<std::string>, bool> > configure_;
-	// Contains registered options.
-	static std::vector<ConfigOption> options_;
-	// Contains unparsed arguments from the command line.
-	static std::vector<std::string> argv_;
-
-	// The singleton instance.
-	static myConfig *instance_;
+  // Private constructor and destructor.
+  myConfig();
+  myConfig(int argc, char *argv[], const std::string &file);
+  myConfig(int argc, char *argv[]);
+  
+  // Private functions hidden for readability.
+  void parseFile(const std::string &file);
+  void parseCommandLine(int argc, char *argv[]);
+  
+  // Contains user configuration.
+  static std::map< std::string, std::pair<std::vector<std::string>, bool> > configure_;
+  // Contains registered options.
+  static std::vector<ConfigOption> options_;
+  // Contains unparsed arguments from the command line.
+  static std::vector<std::string> argv_;
+  
+  // The singleton instance.
+  static myConfig *instance_;
 };
-
 #endif /* MYCONFIG_H */
 
 /*
-namespace myConfig {
+  namespace myConfig {
 
 	///
 	/// @brief Initializes user configuration.

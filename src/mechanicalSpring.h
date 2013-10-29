@@ -890,20 +890,16 @@ class VertexFromExternalSpringFromPerpVertexDynamic : public BaseReaction {
 
 
 ///
-/// @brief applie a repulstion spring force with a given constant
+/// @brief A repulstion spring force with a given constant
 /// between nodes on the vertices of two cells
 /// in the places that membranes intersect.
 ///
-/// In a model file the reaction is defined as
-///
+/// @details In a model file the reaction is defined as
 /// @verbatim
-///
 /// cellcellRepulsion 1 0 
 /// K   
 /// checking_radius
-///
 /// @endverbatim
-///
 ///
 class cellcellRepulsion : public BaseReaction {
  

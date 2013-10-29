@@ -4294,16 +4294,12 @@ derivs(Tissue &T,
     }
 }
 
-
-
-
-
 VertexFromHypocotylGrowth::
 VertexFromHypocotylGrowth(std::vector<double> &paraValue, 
-		       std::vector< std::vector<size_t> > 
-		       &indValue ) 
+			  std::vector< std::vector<size_t> > 
+			  &indValue ) 
 {  
-  //Do some checks on the parameters and variable indeces
+  // Do some checks on the parameters and variable indeces
   //
   if( paraValue.size()!=4 ) {
     std::cerr << "VertexFromHypocotylGrowth::"
@@ -4311,13 +4307,13 @@ VertexFromHypocotylGrowth(std::vector<double> &paraValue,
 	      << "Applies forces F axially to the vertices in the region between Y0-a and Y0+a"
               << "uses 4 parameters: Y0, a, d and F" << std::endl
               << std::endl;
-    exit(0);
+    exit(EXIT_FAILURE);
   }
   if( indValue.size() != 0 ) {
     std::cerr << "VertexFromHypocotylGrowth::"
 	      << "VertexFromHypocotylGrowth() "
 	      << "No variable indices used." << std::endl;
-    exit(0);
+    exit(EXIT_FAILURE);
   }
   //Set the variable values
   //

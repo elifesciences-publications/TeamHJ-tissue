@@ -15,7 +15,7 @@
 ///
 /// @brief Updates vertices from a cell pressure potential, i.e. forces normal to edges
 ///
-/// A area rule in two dimensions is used to calculate the forces on vertex @$v@$ from a cell is
+/// @details A area rule in two dimensions is used to calculate the forces on vertex @$v@$ from a cell is
 ///
 /// @f[\frac{dx_v}{dt} = 0.5*p_0 (y_{v_r} - y_{v_l}) @f]
 /// @f[\frac{dy_v}{dt} = 0.5*p_0 (x_{v_l} - x_{v_r}) @f]
@@ -23,8 +23,7 @@
 /// where @$v_r,v_l@$ are right and left vertices in the sorted order. @$p_0$ represents the pressure,
 /// and if @$p_1=1@$, the pressure will be divided by the cell volume.
 ///
-/// In a model file, the reaction is given by
-///
+/// In a model file, the reaction is given by:
 /// @verbatim
 /// VertexFromCellPressure 2 0
 /// P V_normflag(=0/1)
@@ -69,14 +68,13 @@ namespace CenterTriangulation {
   ///
   /// @brief Updates vertices from a cell pressure potential
   ///
-  /// This function determines the direction of the pressure force term
+  /// @details This function determines the direction of the pressure force term
   /// from the position of the central mesh cell vertex to the center of the wall. 
   /// Applies a force proportional to the pressure (parameter(0)) and the 
   /// size of the wall. parameter(1) equal to 1 normalizes the force with cell volume. 
   /// (0 otherwise).
   ///
-  /// In a model file, the reaction is given by
-  ///
+  /// In a model file, the reaction is given by:
   /// @verbatim
   /// CenterTriangulation:VertexFromCellPressure 2 1 2
   /// P V_normflag(=0/1)
@@ -126,13 +124,12 @@ namespace CenterTriangulation {
   ///
   /// @brief Updates vertices from a cell pressure potential linearly increasing in a given time span
   ///
-  /// This function determines the direction of the pressure force term
+  /// @details This function determines the direction of the pressure force term
   /// from the position of the central mesh cell vertex to the center of the wall. 
   /// Applies a force proportional to the pressure (parameter(0)) and the 
   /// size of the wall.
   ///
-  /// In a model file the reaction is defined as
-  ///
+  /// In a model file the reaction is defined as:
   /// @verbatim
   /// CenterTriangulation:VertexFromCellPressureLinear 3 1 1
   /// P A_flag deltaT
@@ -391,10 +388,9 @@ class EpidermalVertexForce : public BaseReaction {
 
 
 ///
-/// @brief 
+/// @brief text 
 ///
-/// In a model file the reaction is defined as
-///
+/// @details In a model file the reaction is defined as
 /// @verbatim
 /// VertexFromPressureExperimental
 ///
@@ -421,10 +417,9 @@ class VertexFromPressureExperimental : public BaseReaction
 
 
 ///
-/// @brief 
+/// @brief text
 ///
-/// In a model file the reaction is defined as
-///
+/// @details In a model file the reaction is defined as:
 /// @verbatim
 /// CellVolumeExperimental 4 2 2 n
 ///
@@ -442,9 +437,7 @@ class VertexFromPressureExperimental : public BaseReaction
 /// Wall_length_index  cell_volume_index
 /// Force indices
 /// Optionally_index_for_saving_the_pressure
-
 /// @endverbatim
-///
 ///
 class CellVolumeExperimental : public BaseReaction
 {
@@ -495,7 +488,7 @@ class PerpendicularWallPressure : public BaseReaction
 /// @brief Updates vertices from a 'pressure' term defined to act in the cell normal
 /// direction.
 ///
-/// This function calculates the area of a cell and then distribute a force 'outwards'
+/// @details This function calculates the area of a cell and then distribute a force 'outwards'
 /// among the cell vertices. It relies on that the PCA cell planes have been calculated.
 /// A cell contributes to a vertex update with
 ///
@@ -507,7 +500,6 @@ class PerpendicularWallPressure : public BaseReaction
 /// set to zero (normally it should be set to 1).
 ///
 /// In a model file the reaction is defined as
-///
 /// @verbatim
 /// VertexFromCellPlane 2 0
 /// P A_flag
@@ -535,7 +527,7 @@ class VertexFromCellPlane : public BaseReaction
 /// @brief Updates vertices from a 'pressure' term defined to act in the cell normal
 /// direction. The pressure is applied increasingly (... linear in a given time span).
 ///
-/// This function calculates the area of a cell and then distribute a force 'outwards'
+/// @details This function calculates the area of a cell and then distribute a force 'outwards'
 /// among the cell vertices. It relies on that the PCA cell planes have been calculated.
 /// A cell contributes to a vertex update with
 ///
@@ -547,7 +539,6 @@ class VertexFromCellPlane : public BaseReaction
 /// set to zero (normally it should be set to 1).
 ///
 /// In a model file the reaction is defined as
-///
 /// @verbatim
 /// VertexFromCellPlaneLinear 3 0
 /// P A_flag deltaT
@@ -588,7 +579,9 @@ public:
 
 ///
 /// @brief Updates vertices from a 'pressure' term defined to act in the normal 
-/// direction  to  triangular  elements  of  the cell force for each triangular 
+/// direction  to  triangular  elements  of  the cell.
+///
+/// @details The force for each triangular 
 /// element is calculated according to  the  element's  current area and in the 
 /// direction of normal  to each  triangular  element. The force is distributed 
 /// equally on  nodes (including the centeral node). The  pressure  is  applied 
@@ -606,17 +599,13 @@ public:
 /// set to zero (normally it should be set to 1).
 ///
 /// In a model file the reaction is defined as
-///
 /// @verbatim
-///
 /// VertexFromCellPlaneLinearCenterTriangulation 3 1 1
-///
 /// P 
 /// Area_flag
 /// deltaT
 ///
 /// InternalVarStartIndex
-///
 /// @endverbatim
 ///
 /// @see CalculatePCAPlane
@@ -659,11 +648,9 @@ public:
 /// @brief Updates vertices from a 'pressure' term defined to act in the cell normal
 /// direction.
 ///
-/// This function calculates the area of a cell and then distribute a force 'outwards'
+/// @details This function calculates the area of a cell and then distribute a force 'outwards'
 /// among the cell vertices. It relies on that the PCA cell planes have been calculated.
 /// A cell contributes to a  ...............
-
-
 class VertexFromCellPlaneSpatial : public BaseReaction
 {
  private:
@@ -687,7 +674,7 @@ class VertexFromCellPlaneSpatial : public BaseReaction
 /// @brief Same as VertexFromCellPlane but with the strength dependent
 /// on a molecular concentration
 ///
-/// This class is the same 'pressure' from inside update as
+/// @details This class is the same 'pressure' from inside update as
 /// VertexFromCellPlane with the difference that the strength of the
 /// resulting force depends on the cellular concentration of a
 /// molecule described with a Hill formalism.
@@ -789,7 +776,7 @@ class VertexFromCellPlaneSphereCylinderConcentrationHill : public BaseReaction
 /// @brief Updates vertices from a 'pressure' term defined to act in the cell normal
 /// direction for triangular cells only.
 ///
-/// This function calculates the area of a cell and then distribute a force 'outwards'
+/// @details This function calculates the area of a cell and then distribute a force 'outwards'
 /// among the cell vertices. It relies on that the cells are triangular.
 /// A cell contributes to a vertex update with
 ///
@@ -799,15 +786,15 @@ class VertexFromCellPlaneSphereCylinderConcentrationHill : public BaseReaction
 /// cell normal component and @f$N_{vertex}@f$ is the number of vertices for the cell.
 /// An additional parameter @f$p_{2}@f$ can be used to not include the area factor if
 /// set to zero (normally it should be set to 1).
-/// as an indication for equilibrium state in case of elastic deformations the function calculates the volume between template and Z=Z0 plane.this volume is not used in calculations so Z0 value can be choosen arbitrarily. 
+/// As an indication for equilibrium state in case of elastic deformations the function 
+/// calculates the volume between template and Z=Z0 plane.this volume is not used in 
+/// calculations so Z0 value can be choosen arbitrarily. 
 ///
 /// In a model file the reaction is defined as
-///
 /// @verbatim
 /// VertexFromCellPlaneTriangular 3 0
 /// P A_flag Z0
 /// @endverbatim
-///
 ///
 class VertexFromCellPlaneTriangular : public BaseReaction
 {
@@ -827,8 +814,7 @@ class VertexFromCellPlaneTriangular : public BaseReaction
 ///
 /// @brief Updates list of vertices with a given force applied
 ///
-/// In a model file the reaction is defined as
-///
+/// @details In a model file the reaction is defined as
 /// @verbatim
 /// VertexFromForce 1/2/3(dimension) 1 (no of vertices)
 /// Force component(s)
@@ -837,7 +823,6 @@ class VertexFromCellPlaneTriangular : public BaseReaction
 /// ...
 /// @endverbatim
 /// 
-///
 class VertexFromForce : public BaseReaction {
   
  public:
@@ -873,10 +858,9 @@ class VertexFromForce : public BaseReaction {
 
 ///
 /// @brief Updates list of vertices with a given force applied where the force is 
-/// linearly increased from zero across a given time span (deltaT)
+/// linearly increased from zero across a given time span (deltaT).
 ///
-/// In a model file the reaction is defined as
-///
+/// @details In a model file the reaction is defined as
 /// @verbatim
 /// VertexFromForceLinear 1/2/3(dimension+1) 1 (no of vertices)
 /// Force component(s) deltaT
@@ -884,7 +868,6 @@ class VertexFromForce : public BaseReaction {
 /// 2nd vertex index
 /// ...
 /// @endverbatim
-/// 
 ///
 class VertexFromForceLinear : public BaseReaction {
   
@@ -935,23 +918,20 @@ class VertexFromForceLinear : public BaseReaction {
 };
 
 ///
-/// @brief Updates position of vertices assuming that a ball is moving with a given velocity vector into the ball
-///The force applied outward respect to ball proportional to (overlap)^(3/2)
+/// @brief Updates position of vertices assuming that a ball is moving with 
+/// a given velocity vector into the ball.
 ///
+/// @details The force applied outward respect to ball proportional to (overlap)^(3/2).
 /// In a model file the reaction is defined as
-///
 /// @verbatim
 /// VertexFromBall 5 0
 /// Radius Xc Yc Zc Kforce
 /// @endverbatim
-/// 
 /// or
-///
 /// @verbatim
 /// VertexFromBall 8 0
 /// Radius Xc Yc Zc Kforce dXc dYc dZc
 /// @endverbatim
-///
 /// where radius is the size of the 'ball' pushing at the tissue, Xc,Yc,Zc is the center 
 /// of the ball, and the optional dXc,dYc,dZc are the rates for moving the ball along the different
 /// directions (the movement is defined in the update function).
@@ -1003,11 +983,11 @@ class VertexFromBall : public BaseReaction {
 
 
 ///
-/// @brief Updates position of vertices assuming that a parabolid is moving with a given velocity(z) into the template
-///The force applied outward respect to the parabolid
+/// @brief Updates position of vertices assuming that a parabolid is moving with 
+/// a given velocity(z) into the template.
 ///
+/// @details The force applied outward respect to the parabolid.
 /// In a model file the reaction is defined as
-///
 /// @verbatim
 /// VertexFromParabolid 5 0
 /// a Xc Yc b Kforce
@@ -1017,8 +997,8 @@ class VertexFromBall : public BaseReaction {
 /// VertexFromParabolid 8 0
 /// a Xc Yc b Kforce VelocityZ
 /// @endverbatim
-///
-/// where the parabolid is defined by z=a((x-xc)2 +(y-yc)2)+b radius is the size of the 'ball' pushing at the tissue, Xc,Yc,Zc is the center 
+/// where the parabolid is defined by z=a((x-xc)2 +(y-yc)2)+b radius is the size 
+/// of the 'ball' pushing at the tissue, Xc,Yc,Zc is the center 
 /// of the ball, and the optional dXc,dYc,dZc are the rates for moving the ball along the different
 /// directions (the movement is defined in the update function).
 /// 
@@ -1070,16 +1050,14 @@ class VertexFromParabolid : public BaseReaction {
 
 ///
 /// @brief Updates position of vertices assuming that an external wall is moving with a given velocity vector 
-/// toward the meristem
-/// The force applied outward respect to wall proportional to (overlap)^(3/2)
+/// toward the meristem.
 ///
+/// @details The force applied outward respect to wall proportional to (overlap)^(3/2)
 /// In a model file the reaction is defined as
-
 /// @verbatim
 /// VertexFromExternalWall 12 0
 /// X0 Y0 Z0 nx ny nz Zmin Zmax dXc dYc dZc Kforce
 /// @endverbatim
-///
 /// where n is the normal vector to the 'wall' pushing at the tissue, X0,Y0,Z0 is a point on the wall
 /// and dXc,dYc,dZc are the rates for moving the wall along the different
 /// directions (the movement is defined in the update function).
@@ -1133,16 +1111,14 @@ class VertexFromExternalWall : public BaseReaction {
 
 ///
 /// @brief Calculates change in template volume and its time derivative 
-/// and total Derivative and stores them in the given indices in cellData vector
+/// and total Derivative and stores them in the given indices in cellData vector.
 ///
-/// In a model file the reaction is defined as
-///
+/// @details In a model file the reaction is defined as
 /// @verbatim
 /// TemplateVolumeChange 0 1 6
 /// cell-index-VolumeChange       component-index-VolumeChange
 /// cell-index-deltaVolumeChange  component-index-deltaVolumeChange
 /// cell-index-totalDerivative    component-index-totalDerivative
-///
 /// @endverbatim
 /// 
 class TemplateVolumeChange : public BaseReaction 
@@ -1217,15 +1193,14 @@ class TemplateVolumeChange : public BaseReaction
 ///
 /// @brief Calculates abs(cos(...)) of angle between two 3d vectors
 /// (starting from given indices) in cellData vector and stores it in the given 
-/// index in cellData vector, uses no parameter 
+/// index in cellData vector. 
 ///
-/// In a model file the reaction is defined as
-///
+/// @details This reaction uses no parameters. In a model file the 
+/// reaction is defined as
 /// @verbatim
 /// CalculateAngleVectors 0 2 2 1
 /// start-index(1st vector)   start-index(2nd vector) 
 /// store-index(angle-deg) 
-///
 /// @endverbatim
 /// 
 class CalculateAngleVectors : public BaseReaction 
@@ -1275,15 +1250,14 @@ class CalculateAngleVectors : public BaseReaction
 ///
 /// @brief Calculates abs(cos(...)) of angle between two a 3d vector
 /// (starting from given indices) in cellData vector and XY plane and stores it in the given 
-/// index in cellData vector, uses no parameter 
+/// index in cellData vector.
 ///
-/// In a model file the reaction is defined as
-///
+/// @details This reaction uses no parameters. In a model file the 
+/// reaction is defined as:
 /// @verbatim
 /// CalculateAngleVectorXYplane 0 2 1 1
 /// start-index(vector) 
 /// store-index(angle-deg) 
-///
 /// @endverbatim
 /// 
 class CalculateAngleVectorXYplane : public BaseReaction 
@@ -1330,7 +1304,8 @@ class CalculateAngleVectorXYplane : public BaseReaction
 /// @brief Calculates the angle between a 3d vector (starting from given indices) 
 /// in cellData vector and a given axes(x,y,z).
 ///
-/// Uses one parameter for specifying the axes, and two variable indices. The first index specifies the start of
+/// @details Uses one parameter for specifying the axes, and two variable indices. 
+/// The first index specifies the start of
 /// the vector and the second where the angle is stored. 
 ///
 /// In a model file the reaction is defined as:
@@ -1383,36 +1358,17 @@ class AngleVector : public BaseReaction
   
 };
 
-
-
-///
-/// @brief Updates position of vertices is an interwall on a cylinderical template 
-/// due to the force applied from a growing region in the center of the cylinder 
-/// (Hypocotyl axial growth) assuming that epidermis is connected to this regions by simple springs 
-///
-/// In a model file the reaction is defined as
-
-/// @verbatim
-/// VertexFromHypocotylGrowth 8 0
-/// Y0 a d delta lambda b K epsilon
-/// @endverbatim
-///
-/// 
-
 ///
 /// @brief Updates position of vertices in an interwall on a cylinderical template 
 /// due to the force applied axially and tensional to the regions with z between a and a+d(upward) 
 /// and -a and -a-d(downward) resembling Hypocotyl axial growth. 
 ///
-/// In a model file the reaction is defined as
-
+/// @details In a model file the reaction is defined as:
 /// @verbatim
 /// VertexFromHypocotylGrowth 4 0
 /// Y0 a d F
 /// @endverbatim
 ///
-/// 
-
 class VertexFromHypocotylGrowth : public BaseReaction {
   
  public:
@@ -1457,29 +1413,6 @@ class VertexFromHypocotylGrowth : public BaseReaction {
 	      double h);
   
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Do not use this reaction. Restricted area (unless you are a developer).
 class DebugReaction : public BaseReaction

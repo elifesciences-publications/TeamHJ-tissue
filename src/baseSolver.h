@@ -50,19 +50,17 @@ protected:
   /// @brief This function implements the factory method for initiating a
   /// numerical solver.
   ///
-  /// This function reads a solver id in the provided file and initiates a
+  /// @details This function reads a solver id in the provided file and initiates a
   /// numerical solver of the id type, which is returned. The Tissue (model)
   /// pointer is used to introduce the model to the solver. The initiation is
   /// continued by the individual solver classes since they use different
   /// parameters (see links below). The parameter file sent to the simulator
   /// binary looks like:
-  ///
   /// @verbatim 
   /// solverId 
   /// parameter_i ...
   /// ...
   /// @endverbatim
-  ///
   /// where the solverId is the name of the numerical method (class) used. The
   /// parameters used can be found in the links below which lists the
   /// currently available methods/classes.
@@ -79,7 +77,6 @@ protected:
   /// @brief Sets internal variables from values in the tissue.
   ///
   void getInit();
-  
   ///
   /// @brief Updates the tissue variables from the current state of the internal variables
   ///
@@ -89,15 +86,13 @@ protected:
   /// variables (not the same in each line of the cellData matrix) are stored in cellData, e.g.
   /// when centerTriangulation has been applied). 
   /// 
-  void setTissueVariables(size_t numCellVariable=size_t(-1));
-  
+  void setTissueVariables(size_t numCellVariable=size_t(-1)); 
   ///
   /// @brief General printing function
   ///
-  /// This is the main print function for output data during a simulation. It has a couple
+  /// @details This is the main print function for output data during a simulation. It has a couple
   /// standard modes given as a flag in the input file (together with the number of time
   /// points to print):
-  ///
   /// @verbatim
   /// 0) Standard output for openGL developed plotting of cell and wall variables 
   /// 1) Standard vtu output assuming single wall compartment for wall variables

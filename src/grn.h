@@ -15,9 +15,9 @@
 
 ///
 /// @brief This class describes a Hill-type production with activators and
-/// repressors
+/// repressors.
 ///
-/// This reaction is a Michaelis-Menten formalism for production with a
+/// @details This reaction is a Michaelis-Menten formalism for production with a
 /// restricting variable given by
 ///
 /// @f[ \frac{dy_{ij}}{dt} = p_0 \frac{y_{ik}^{p_2}}{p_1^{p_2}+y_{ik}^{p_2}}...
@@ -40,7 +40,6 @@
 /// produced_index
 /// activator_index
 /// @endverbatim
-///
 /// One repressor:
 /// @verbatim
 /// hill 3 3 1 0 1
@@ -48,7 +47,6 @@
 /// produced_index
 /// repressor_index
 /// @endverbatim
-///
 /// Two activators and one repressor:
 /// @verbatim
 /// hill 5 3 1 2 1
@@ -95,7 +93,7 @@ class Hill : public BaseReaction {
 /// @brief This class describes a simple Hill-type production where each bound/unbound state contributes
 /// and for a single transcription factor
 ///
-/// This reaction uses a single input and describes a Hill production (activation or repression) by
+/// @details This reaction uses a single input and describes a Hill production (activation or repression) by
 ///
 /// @f[ \frac{dy_{ij}}{dt} =
 /// \frac{p_0 p_2^{p_3} + p_1 y_{ik}^{p_3}}{p_2^{p_3}+y_{ik}^{p_3}}@f]
@@ -150,7 +148,7 @@ class HillGeneralOne : public BaseReaction {
 /// @brief This class describes a Hill-type production where each bound/unbound state contributes
 /// and for two transcription factors
 ///
-/// This reaction uses two inputs and describes a Hill production (activation and repression) by
+/// @details This reaction uses two inputs and describes a Hill production (activation and repression) by
 ///
 /// @f[ \frac{dy_{ij}}{dt} =
 /// \frac{p_0 p_4^{p_5} p_6^{p_7} + p_1 y_{ik}^{p_5} p_6^{p_7} + p_2 p_4^{p_5} y_{il}^{p_7} + 
@@ -207,7 +205,7 @@ class HillGeneralTwo : public BaseReaction {
 /// @brief This class describes a Hill-type production where each bound/unbound state contributes
 /// and for three transcription factors
 ///
-/// This reaction uses three inputs and describes a Hill production (activation and repression) by
+/// @details This reaction uses three inputs and describes a Hill production (activation and repression) by
 ///
 /// @f[ \frac{dy_{ij}}{dt} =
 /// \frac{p_0 p_8^{p_9} p_{10}^{p_{11}} p_{12}^{p_{13}} + p_1 y_{ik}^{p_9} p_{10}^{p_{11}} p_{12}^{p_{13}}

@@ -12,14 +12,14 @@
 #include"baseReaction.h"
 
 ///
-/// @brief Bending describes reactions that generates mechanical updates of bending moments
+/// @brief Bending describes reactions that generates mechanical updates of bending moments.
 ///
 namespace Bending {
   
   /// 
   /// @brief Creates a bending resistance by a force towards the line connecting the neighboring vertices 
   ///
-  /// This reaction applies a force acting on a vertex towards the weighted (by edge length) middle
+  /// @details This reaction applies a force acting on a vertex towards the weighted (by edge length) middle
   /// of the line connecting the left and right vertex neighbors within the cell. The force is a spring force
   /// acting as soon as the vertex is outside the line (i.e. the edges connected to the vertex have an angle
   /// in between). The update is given by
@@ -82,7 +82,7 @@ namespace Bending {
   /// 
   /// @brief Creates a bending resistance by forces to keep an angle at a specific value
   ///
-  /// Each vertex has a prefered angle, and a bendng moment is introduced to
+  /// @details Each vertex has a prefered angle, and a bendng moment is introduced to
   /// move vertices to keep this angle. The update for the angle at a specific vertex comes from the potential
   /// 
   /// @f[ V(\Theta,\Theta^{t}) = \frac{1}{2}k_{\Theta} (\Theta-\Theta^{t})^2 @f]
@@ -112,7 +112,6 @@ namespace Bending {
   ///
   /// The reaction expects a strength of the bending force, and the edge variable index for the angle. 
   /// The prefered angle is stored as a second wall variable. In a model file it is defined as:
-  ///
   /// @verbatim
   /// Bending::Angle 1 1 1
   /// k_theta
@@ -160,7 +159,7 @@ namespace Bending {
   /// 
   /// @brief Initiates an angle variable to the current value of the angle at vertices
   ///
-  /// Sets the prefered angle for a vertex to the initial calculated value.
+  /// @details Sets the prefered angle for a vertex to the initial calculated value.
   /// The angle is calculated by
   ///
   /// @f[ \Theta = acos(F) \pm \Pi @f]
@@ -171,11 +170,11 @@ namespace Bending {
   ///
   /// where x1, x2, are the two edges joined at the vertex, -/+ comes from if the structure is convex/concave. 
   ///
+  /// In a model file the reaction is defined by:
   /// @verbatim
   /// Bending::AngleInitiate 0 1 1
   /// Theta^t_index
   /// @endverbatim
-  ///
   /// where the index is where the angle is stored (as wall variable).
   ///
   /// @see Bending::Angle for how to update the vertices towards this angle 
@@ -232,7 +231,7 @@ namespace Bending {
   /// 
   /// @brief Initiates an angle variable to the current value of the angle at vertices
   ///
-  /// Sets the prefered angle for a vertex to the initial calculated value.
+  /// @details Sets the prefered angle for a vertex to the initial calculated value.
   /// The angle is calculated by
   ///
   /// @f[ \Theta = acos(F) \pm \Pi @f]
@@ -243,11 +242,11 @@ namespace Bending {
   ///
   /// where x1, x2, are the two edges joined at the vertex, -/+ comes from if the structure is convex/concave. 
   ///
+  /// In a model file the reaction is defined by:
   /// @verbatim
   /// Bending::AngleRelax 0 1 1
   /// Theta^t_index
   /// @endverbatim
-  ///
   /// where the index is where the angle is stored (in wall variable).
   ///
   /// @see Bending::Angle for how to update the vertices towards this angle 
