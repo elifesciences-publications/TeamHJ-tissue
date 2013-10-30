@@ -25,14 +25,12 @@ namespace SisterVertex {
   /// 
   /// @brief Initiates sister vertices by reading a list of pair indices from a file
   ///
-  /// This reaction initiates the sister vertices by reading pair indices from a file 
+  /// @details This reaction initiates the sister vertices by reading pair indices from a file 
   /// named 'sister' in the current directory. It uses no parameters or variableIndices
   /// and is called from a model file as
-  ///
   /// @verbatim
   /// SisterVertex::InitiateFromFile 0 0
   /// @endverbatim
-  ///
   /// It expects a file with a first line with number of sister pairs followed by
   /// pairs of vertex indices that are to become sisters:
   /// @verbatim
@@ -40,7 +38,6 @@ namespace SisterVertex {
   /// vertexIndex1 vertexIndex2
   /// ...
   /// @endverbatim
-  ///
   /// After the initiation it
   /// does not update the list.
   ///
@@ -96,7 +93,8 @@ namespace SisterVertex {
   /// 
   /// @brief Initiates sister vertices by adding vertex pairs that are close in space
   ///
-  /// This reaction will go through all vertices and add all closer than a distance, @f$d_{max}@f$
+  /// @details This reaction will go through all vertices and add all closer than a 
+  /// distance, @f$d_{max}@f$
   /// , from each other in the sisterVertex list. It will only initiate the list and not
   /// do any further updates. In a model file it is defined as
   /// @verbatim
@@ -214,11 +212,10 @@ namespace SisterVertex {
   /// 
   /// @brief Combines (adds) the derivatives for two sister vertices
   ///
-  /// This reaction adds up all derivative contribution for one sister node to the other
+  /// @details This reaction adds up all derivative contribution for one sister node to the other
   /// and vice versa. This leads to that they always move in concert.
   ///
   /// In a model file the reaction is given by
-  ///
   /// @verbatim
   /// SisterVertex::CombineDerivatives 0 0
   /// @endverbatim

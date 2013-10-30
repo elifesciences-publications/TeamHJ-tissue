@@ -25,7 +25,7 @@
 ///
 /// @brief Defines the properties of a two-dimensional cell tissue model
 ///
-/// The Tissue handles the update and information of the cells, walls,
+/// @details The Tissue handles the update and information of the cells, walls,
 /// vertices and species (molecules). It is
 /// the 'top' class for the defined model. It includes reactions
 /// updating more than one species simultaneously.
@@ -131,11 +131,10 @@ class Tissue {
   ///
   /// @brief Reads an initial tissue configuration from an open file
   ///
-  /// This function implements the reading of an init file. It first reads
+  /// @details This function implements the reading of an init file. It first reads
   /// some size information, then the connectivity for each wall. Then follows
   /// the vertex positions, wall length and variables, and cell variables.
   /// An init file has the format:
-  ///
   /// @verbatim
   /// N_cell N_wall N_vertex
   /// 
@@ -153,7 +152,6 @@ class Tissue {
   /// N_cell N_cellvar
   /// v_i1 [v_i2] ...
   /// ...
-  ///
   /// @endverbatim
   ///
   /// N_cell, N_wall, N_vertex - number of cells, walls, vertices.
@@ -264,7 +262,7 @@ class Tissue {
   ///
   /// @brief Reads a tissue model from an open file
   ///
-  /// This is the readModel function implementing the actual
+  /// @details This is the readModel function implementing the actual
   /// reading. First it reads a number of size parameters. Then it 
   /// reads all reactions (rules for updating variables), followed by
   /// all compartmentChanges (rules for adding/dividing and removing cells).
@@ -275,17 +273,14 @@ class Tissue {
   ///
   /// Here follows a detailed discussion on the format of the model file,
   /// divided into reasonable sub-parts. First, the number of entities are read:
-  ///
   /// @verbatim
   /// N_reaction N_compChange N_direction
   /// @endverbatim
-  ///
   /// N_reaction - number of reactions to be read. N_compChange - number
   /// of compartment changes to be read. N_direction - number of directions 
   /// in the model file (can be 0 or 1 in the current implementation). 
   ///
   /// Then N_reaction reactions are read in the format:
-  ///
   /// @verbatim
   /// reaction1 N_p^{r1} N_{il}^{r1} N_{i1}^{r1} ...
   /// p_1^{r1} p_2^{r1} ...
@@ -293,12 +288,10 @@ class Tissue {
   /// i_{21}^{r1} i_{22}^{r1} ...
   /// ...
   /// @endverbatim
-  ///
   /// Possible reactions can be found among the classes inheriting
   /// the class BaseReaction.
   ///
   /// Then N_compChange compartment changes are read in the format:
-  ///
   /// @verbatim
   /// compartmentChange1 N_p^{r1} N_{il}^{r1} N_{i1}^{r1} ...
   /// p_1^{r1} p_2^{r1} ...
@@ -306,17 +299,14 @@ class Tissue {
   /// i_{21}^{r1} i_{22}^{r1} ...
   /// ...
   /// @endverbatim
-  ///
   /// Possible compartment changes can be found among the classes inheriting
   /// the class BaseCompartmentChange.
   ///
   /// Finally, if N_direction=1 rules for defining a cell direction is read:
-  ///
   /// @verbatim
   ///  ...
   /// ...
   /// @endverbatim
-  ///
   /// Available (time) update rules and division rules for directions can be 
   /// found in classes inheriting BaseDirectionUpdate and 
   /// BaseDirectionDivision.
@@ -338,8 +328,8 @@ class Tissue {
   ///
   /// @brief Reads data from organism sphere format and creates a tissue
   ///
-  /// Reads data in an organism sphere format and generates a tissue via createTissueFromSpheres()
-  /// The assumed format is:
+  /// @details Reads data in an organism sphere format and generates a tissue via 
+  /// createTissueFromSpheres(). The assumed format is:
   /// @verbatim
   /// N_cell N_var
   /// x y [z] r
@@ -364,8 +354,8 @@ class Tissue {
   ///
   /// @brief Reads data in voronoi format and creates a tissue
   ///
-  /// Reads voronoi output from qhull? and generates a tissue via createTissueFromVoronoi()
-  /// The assumed format is:
+  /// @details Reads voronoi output from qhull? and generates a tissue via 
+  /// createTissueFromVoronoi(). The assumed format is:
   /// @verbatim
   /// to be completed...
   /// @endverbatim

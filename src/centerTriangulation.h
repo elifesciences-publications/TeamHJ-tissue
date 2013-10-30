@@ -18,7 +18,7 @@ namespace CenterTriangulation
   ///
   /// @brief Initiates a center triangulation, either from cells in tissue or from scratch
   ///
-  /// This reaction does not update the tissue. It only initiates a central triangulation of cells
+  /// @details This reaction does not update the tissue. It only initiates a central triangulation of cells
   /// and add variables to cellData at initiation. This is mainly used for triangular biquadratic
   /// spring models. One parameter (flag) can be provided and is setr to one if the central point and
   /// internal edges should be initiated from scratch even if they have been provided to the tissue
@@ -26,14 +26,14 @@ namespace CenterTriangulation
   /// should represents the end of the cellData vector (cell(i).numVariable()). 
   ///
   /// In a model file the reaction is given by
-  ///
   /// @verbatim
   /// CeterTriangulation::Initiate 0/1 1 1
   /// [overrideFlag]
   /// InternalVarStartIndex
   /// @endverbatim
   ///
-  /// @note The order of reactions may be of importance when using this reaction, e.g. if vertex are added on the walls.
+  /// @note The order of reactions may be of importance when using this reaction, 
+  /// e.g. if vertex are added on the walls.
   /// @see Tissue::readInitCenterTri()
   /// @see Cell::centerPosition()
   ///
