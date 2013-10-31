@@ -2313,7 +2313,8 @@ derivs(Tissue &T,
 	counter+=1;
       }
     }
-    StressTensor[0][0]/=counter;
+    if(counter !=0)
+      StressTensor[0][0]/=counter;
     StressTensor[0][0]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex];
 
     counter=0;
@@ -2323,7 +2324,8 @@ derivs(Tissue &T,
 	counter+=1;
       }
     }
-    StressTensor[1][1]/=counter;
+    if(counter !=0)
+      StressTensor[1][1]/=counter;
     StressTensor[1][1]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+1];
 
     counter=0;
@@ -2333,7 +2335,8 @@ derivs(Tissue &T,
 	counter+=1;
       }
     }
-    StressTensor[2][2]/=counter;
+    if(counter !=0)
+      StressTensor[2][2]/=counter;
     StressTensor[2][2]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+2];
 
     counter=0;
@@ -2343,7 +2346,8 @@ derivs(Tissue &T,
 	counter+=1;
       }
     }
-    StressTensor[0][1]/=counter;
+    if(counter !=0)
+      StressTensor[0][1]/=counter;
     StressTensor[0][1]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+3];
 
     counter=0;
@@ -2353,7 +2357,8 @@ derivs(Tissue &T,
 	counter+=1;
       }
     }
-    StressTensor[2][0]/=counter;
+    if(counter !=0)
+      StressTensor[2][0]/=counter;
     StressTensor[2][0]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+4];
 
     counter=0;
@@ -2363,9 +2368,15 @@ derivs(Tissue &T,
 	counter+=1;
       }
     }
-    StressTensor[1][2]/=counter;
+    if(counter !=0)
+      StressTensor[1][2]/=counter;
     StressTensor[1][2]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+5];
     
+
+    //std:: cerr<<counter<<std::endl;
+
+
+
     StressTensor[0][2]=StressTensor[2][0];
     StressTensor[1][0]=StressTensor[0][1];
     StressTensor[2][1]=StressTensor[1][2];
@@ -2481,20 +2492,20 @@ derivs(Tissue &T,
     
     
         
-    // ---------------angles stress with circumferental direction- begin
-   double  temp=std::sqrt(eigenVectorStress[0][Istress]*eigenVectorStress[0][Istress]+                                // 14 --> Stress
-		   eigenVectorStress[1][Istress]*eigenVectorStress[1][Istress] );
-    if(temp<0.000001){
-      cellData[cellIndex][14]=pi/2;
-    }
-    else{
-      cellData[cellIndex][14]=std::atan(eigenVectorStress[2][Istress]/temp);
-    } 
-    // ---------------angles stress with circumferental direction- end
+   //  // ---------------angles stress with circumferental direction- begin
+   // double  temp=std::sqrt(eigenVectorStress[0][Istress]*eigenVectorStress[0][Istress]+                                // 14 --> Stress
+   // 		   eigenVectorStress[1][Istress]*eigenVectorStress[1][Istress] );
+   //  if(temp<0.000001){
+   //    cellData[cellIndex][14]=pi/2;
+   //  }
+   //  else{
+   //    cellData[cellIndex][14]=std::atan(eigenVectorStress[2][Istress]/temp);
+   //  } 
+   //  // ---------------angles stress with circumferental direction- end
     
     
     
-
+    
 
     if (numVariableIndexLevel()==3 && (numVariableIndex(2)==1 || numVariableIndex(2)==2)) { // storing maximal stress
       if (dimension==2)
