@@ -2310,72 +2310,32 @@ derivs(Tissue &T,
     for (int nn=0 ; nn<3 ; nn++){
       if (neighbor[nn]<numCells && neighbor[nn]>-1){
 	StressTensor[0][0]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex];
-	counter+=1;
-      }
-    }
-    if(counter !=0)
-      StressTensor[0][0]/=counter;
-    StressTensor[0][0]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex];
-
-    counter=0;
-    for (int nn=0 ; nn<3 ; nn++){
-      if (neighbor[nn]<numCells && neighbor[nn]>-1){
 	StressTensor[1][1]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex+1];
-	counter+=1;
-      }
-    }
-    if(counter !=0)
-      StressTensor[1][1]/=counter;
-    StressTensor[1][1]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+1];
-
-    counter=0;
-    for (int nn=0 ; nn<3 ; nn++){
-      if (neighbor[nn]<numCells && neighbor[nn]>-1){
 	StressTensor[2][2]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex+2];
-	counter+=1;
-      }
-    }
-    if(counter !=0)
-      StressTensor[2][2]/=counter;
-    StressTensor[2][2]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+2];
-
-    counter=0;
-    for (int nn=0 ; nn<3 ; nn++){
-      if (neighbor[nn]<numCells && neighbor[nn]>-1){
 	StressTensor[0][1]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex+3];
-	counter+=1;
-      }
-    }
-    if(counter !=0)
-      StressTensor[0][1]/=counter;
-    StressTensor[0][1]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+3];
-
-    counter=0;
-    for (int nn=0 ; nn<3 ; nn++){
-      if (neighbor[nn]<numCells && neighbor[nn]>-1){
 	StressTensor[2][0]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex+4];
-	counter+=1;
-      }
-    }
-    if(counter !=0)
-      StressTensor[2][0]/=counter;
-    StressTensor[2][0]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+4];
-
-    counter=0;
-    for (int nn=0 ; nn<3 ; nn++){
-      if (neighbor[nn]<numCells && neighbor[nn]>-1){
 	StressTensor[1][2]+=neighborweight*cellData[neighbor[nn]][stressTensorIndex+5];
 	counter+=1;
       }
     }
-    if(counter !=0)
+    if(counter !=0){
+      StressTensor[0][0]/=counter;
+      StressTensor[1][1]/=counter;
+      StressTensor[2][2]/=counter;
+      StressTensor[0][1]/=counter;
+      StressTensor[2][0]/=counter;
       StressTensor[1][2]/=counter;
+    }
+
+    StressTensor[0][0]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex];
+    StressTensor[1][1]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+1];
+    StressTensor[2][2]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+2];
+    StressTensor[0][1]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+3];
+    StressTensor[2][0]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+4];
     StressTensor[1][2]+=(1-neighborweight)*cellData[cellIndex][stressTensorIndex+5];
-    
+        
 
     //std:: cerr<<counter<<std::endl;
-
-
 
     StressTensor[0][2]=StressTensor[2][0];
     StressTensor[1][0]=StressTensor[0][1];
