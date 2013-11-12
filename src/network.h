@@ -316,7 +316,7 @@ class AuxinTransportCellCellNoGeometry : public BaseReaction {
 };
 
 ///
-/// @brief A cell-wall based auxin transport model including PINs and ROPs
+/// @brief A cell-wall based auxin transport model including PINs and AUXs
 ///
 /// A complete pattern generating auxin model based on cell and wall
 /// compartments. It uses two compartments for each wall and a single for the cells.
@@ -388,22 +388,22 @@ class AuxinWallModel : public BaseReaction {
 /// wi_auxin wi_PIN wi_ROP
 /// @endverbatim
 ///
-// class AuxinROPModel : public BaseReaction {
+class AuxinROPModel : public BaseReaction {
   
-//  public:
+ public:
   
-//   AuxinROPModel(std::vector<double> &paraValue, 
-// 		    std::vector< std::vector<size_t> > 
-// 		    &indValue );
+  AuxinROPModel(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
   
-//   void derivs(Tissue &T,
-// 	      DataMatrix &cellData,
-// 	      DataMatrix &wallData,
-// 	      DataMatrix &vertexData,
-// 	      DataMatrix &cellDerivs,
-// 	      DataMatrix &wallDerivs,
-// 	      DataMatrix &vertexDerivs );
-// };
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
 
 ///
 /// A cell-wall based auxin transport model including PINs and ROPs.
