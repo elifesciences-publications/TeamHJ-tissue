@@ -7,6 +7,7 @@
 //
 #include <utility>
 #include <vector>
+#include <algorithm>
 #include "baseReaction.h"
 #include "mechanicalSpring.h"
 #include "tissue.h"
@@ -2933,8 +2934,8 @@ derivs(Tissue &T,
     if (vertexVec[vertexIndex][3]==1)
       {
         double coeff=parameter(0);//*vertexVec[vertexIndex][4];
-	vertexDerivs[vertexIndex][0] = coeff*vertexVec[vertexIndex][0];
-	vertexDerivs[vertexIndex][1] = coeff*vertexVec[vertexIndex][1];
+	vertexDerivs[vertexIndex][0] += coeff*vertexVec[vertexIndex][0];
+	vertexDerivs[vertexIndex][1] += coeff*vertexVec[vertexIndex][1];
 	
       }  
 }
@@ -3066,6 +3067,190 @@ void cellcellRepulsion::update(Tissue &T,
       }  // End of line intersect test
   
 }
+
+
+ ////////////////////////////////////////////////////////////////
+
+vertexFromSubstrate::
+vertexFromSubstrate(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=7 ) {
+    std::cerr << "vertexFromSubstrate::"
+	      << "vertexFromSubstrate() "
+	      << "Uses seven parameters (0)spring constant K , (1)stretch rate "
+	      << "                    (2,3)stretch direction , (4,5)center "<< std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if( indValue.size() != 0  ) {
+    std::cerr << " vertexFromSubstrate::"
+	      << " vertexFromSubstrate()"
+	      << " No index is used." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  //Set the variable values
+  setId("vertexFromSubstrate");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "K_sp";
+  tmp[1] = "stretch_rate";
+  tmp[2] = "x_direction";
+  tmp[3] = "y_direction";
+  tmp[4] = "x_center";
+  tmp[5] = "y_center";
+  tmp[6] = "vertex_percent";
+
+  setParameterId( tmp ); 
+}
+
+void vertexFromSubstrate::
+initiate(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs) 
+{ 
+  numAttachedCells=std::floor(parameter(6)*T.numCell()/100);
+  //std::vector<size_t> list;
+  list.resize(T.numCell());
+  for(size_t i=0 ;i<T.numCell() ; i++)
+    list[i]=i;
+
+  //srand(time(0));
+  std::random_shuffle(list.begin(), list.end());
+  
+  // numAttachedVertices=0;
+  // for (size_t i=0 ;i<numAttachedCells ; i++){
+  //   numAttachedVertices+=T.cell(list[i]).numVertex();
+  //  }
+  
+  vertexVec.resize(numAttachedCells);
+
+  for(size_t i=0 ;i<numAttachedCells ; i++){ 
+    vertexVec[i].resize(T.cell(list[i]).numVertex());
+    for(size_t j=0; j< T.cell(list[i]).numVertex() ; j++){
+      vertexVec[i][j].resize(2);
+      vertexVec[i][j][0]=vertexData[T.cell(list[i]).vertex(j) -> index()][0];
+      vertexVec[i][j][1]=vertexData[T.cell(list[i]).vertex(j) -> index()][1];
+    }
+   
+  }
+
+}   
+
+void vertexFromSubstrate::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  double coeff=parameter(0);
+  for(size_t i=0 ;i<numAttachedCells ; i++)
+    for(size_t j=0; j< T.cell(list[i]).numVertex() ; j++){
+      size_t verIndex=T.cell(list[i]).vertex(j) -> index();
+      vertexDerivs[verIndex][0] += coeff*(vertexVec[i][j][0]-vertexData[verIndex][0]);
+      vertexDerivs[verIndex][1] += coeff*(vertexVec[i][j][1]-vertexData[verIndex][1]);
+    }
+
+
+  // size_t numVertices = T.numVertex();
+  // for (size_t i=0 ; i< numAttachedVertices ; i++)
+  //   //if (vertexVec[vertexIndex][3]==1)
+  //     {
+  //       double coeff=parameter(0);//*vertexVec[vertexIndex][4];
+  // 	vertexDerivs[vertexVec[i][2]][0] += coeff*(vertexVec[i][0]-vertexData[vertexVec[i][2]][0]);
+  // 	vertexDerivs[vertexVec[i][2]][1] += coeff*(vertexVec[i][1]-vertexData[vertexVec[i][2]][1]);
+	
+  //     }  
+}
+
+void vertexFromSubstrate::update(Tissue &T,
+				      DataMatrix &cellData,
+				      DataMatrix &wallData,
+				      DataMatrix &vertexData, 
+				      double h) 
+{ 
+
+
+  for(size_t i=0 ;i<numAttachedCells ; i++)
+    for(size_t j=0; j< T.cell(list[i]).numVertex() ; j++)
+      vertexVec[i][j][0]+=h*(parameter(1)-1)*(vertexVec[i][j][0]-parameter(4));
+
+
+ 
+}
+
+// void vertexFromSubstrate::
+// initiate(Tissue &T,
+// 	 DataMatrix &cellData,
+// 	 DataMatrix &wallData,
+// 	 DataMatrix &vertexData,
+// 	 DataMatrix &cellDerivs,
+// 	 DataMatrix &wallDerivs,
+// 	 DataMatrix &vertexDerivs) 
+// { 
+//   numAttachedVertices=std::floor(parameter(6)*T.numVertex()/100);
+//   std::vector<size_t> list;
+//   list.resize(T.numVertex());
+//   for(size_t i=0 ;i<T.numVertex() ; i++)
+//     list[i]=i;
+
+//   srand(time(0));
+//   std::random_shuffle(list.begin(), list.end());
+
+//   vertexVec.resize(numAttachedVertices);
+
+//   for(size_t i=0 ;i<numAttachedVertices ; i++){ 
+//     vertexVec[i].resize(3,0);
+//     vertexVec[i][2]=list[i];
+//     vertexVec[i][0]=vertexData[vertexVec[i][2]][0];
+//     vertexVec[i][1]=vertexData[vertexVec[i][2]][1];
+//     std::cerr<<vertexVec[i][2]<<std::endl;
+//   }
+
+// }   
+
+// void vertexFromSubstrate::
+// derivs(Tissue &T,
+//        DataMatrix &cellData,
+//        DataMatrix &wallData,
+//        DataMatrix &vertexData,
+//        DataMatrix &cellDerivs,
+//        DataMatrix &wallDerivs,
+//        DataMatrix &vertexDerivs ) 
+// {  
+  
+//   size_t numVertices = T.numVertex();
+//   for (size_t i=0 ; i< numAttachedVertices ; i++)
+//     //if (vertexVec[vertexIndex][3]==1)
+//       {
+//         double coeff=parameter(0);//*vertexVec[vertexIndex][4];
+// 	vertexDerivs[vertexVec[i][2]][0] += coeff*(vertexVec[i][0]-vertexData[vertexVec[i][2]][0]);
+// 	vertexDerivs[vertexVec[i][2]][1] += coeff*(vertexVec[i][1]-vertexData[vertexVec[i][2]][1]);
+	
+//       }  
+// }
+
+// void vertexFromSubstrate::update(Tissue &T,
+// 				      DataMatrix &cellData,
+// 				      DataMatrix &wallData,
+// 				      DataMatrix &vertexData, 
+// 				      double h) 
+// { 
+//   for(size_t i=0 ; i<numAttachedVertices ; i++){ 
+//     vertexVec[i][0]+=h*(parameter(1)-1)*(vertexVec[i][0]-parameter(4));
+//   }
+  
+// }
 
 
 
