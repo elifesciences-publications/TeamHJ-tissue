@@ -20,23 +20,23 @@
 
 int main(int argc,char *argv[]) {
   //BEGIN testing ply format reader override
-  Tissue t;
-  std::string filename(argv[1]);
-  
-  PLY_file ply_f(filename);
-  std::cout << "creating reader\n";
-  PLY_reader ply_read;
-  std::cout << "reading " << filename << "\n";
-  ply_read.index_base() = 0;
-  ply_read.read(ply_f, t);
-  std::cout << "file read\n";
-  std::cout << "writing ply file ...\n";
-  PLY_file ply_out("tissue_write.ply");
-  ply_out.bare_geometry_output() = true;
-  ply_out << t;
-	
-  std::cout << "exiting\n";
-  return 0;
+//   Tissue t;
+//   std::string filename(argv[1]);
+//   
+//   PLY_file ply_f(filename);
+//   std::cout << "creating reader\n";
+//   PLY_reader ply_read;
+//   std::cout << "reading " << filename << "\n";
+//   ply_read.index_base() = 0;
+//   ply_read.read(ply_f, t);
+//   std::cout << "file read\n";
+//   std::cout << "writing ply file ...\n";
+//   PLY_file ply_out("tissue_write.ply");
+//   ply_out.bare_geometry_output() = true;
+//   ply_out << t;
+// 	
+//   std::cout << "exiting\n";
+//   return 0;
   //END testing ply format reader override
   //Command line handling
   myConfig::registerOption("init_output", 1);
