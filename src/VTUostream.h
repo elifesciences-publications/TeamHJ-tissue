@@ -94,8 +94,8 @@ public:
   operator Const_void_ptr() const
   {
     if (m_os)
-      return *m_os;
-    return 0;
+      return m_os;
+    return NULL;
   }
 
   std::ostream& os()
