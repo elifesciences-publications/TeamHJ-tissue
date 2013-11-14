@@ -129,16 +129,18 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromExternalSpringFromPerpVertexDynamic(paraValue,indValue);
  else if(idValue=="cellcellRepulsion")
     return new cellcellRepulsion(paraValue,indValue);
-  else if (idValue=="VertexFromWallSpringAsymmetric" ||
-	   idValue=="VertexFromEpidermalWallSpringAsymmetric" ||
-	   idValue=="VertexFromEpidermalCellWallSpringAsymmetric") {
-    std::cerr << "BaseReaction::BaseReaction() All *SpringAsymmetric have been renamed "
-	      << "*Spring." << std::endl;
-    exit(-1);
-  }
+ else if(idValue=="vertexFromSubstrate")
+   return new vertexFromSubstrate(paraValue,indValue);
+ else if (idValue=="VertexFromWallSpringAsymmetric" ||
+	  idValue=="VertexFromEpidermalWallSpringAsymmetric" ||
+	  idValue=="VertexFromEpidermalCellWallSpringAsymmetric") {
+   std::cerr << "BaseReaction::BaseReaction() All *SpringAsymmetric have been renamed "
+	     << "*Spring." << std::endl;
+   exit(-1);
+ }
   //Mechanical interactions between vertices
   //mechanical.h,mechanical.cc
-  else if(idValue=="VertexFromCellPowerdiagram")
+ else if(idValue=="VertexFromCellPowerdiagram")
     return new VertexFromCellPowerdiagram(paraValue,indValue);
   else if(idValue=="VertexFromCellPressure")
     return new VertexFromCellPressure(paraValue,indValue);
