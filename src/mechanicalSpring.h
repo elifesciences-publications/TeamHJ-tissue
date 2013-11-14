@@ -888,7 +888,6 @@ class VertexFromExternalSpringFromPerpVertexDynamic : public BaseReaction {
 
 
 
-
 ///
 /// @brief A repulstion spring force with a given constant
 /// between nodes on the vertices of two cells
@@ -901,6 +900,7 @@ class VertexFromExternalSpringFromPerpVertexDynamic : public BaseReaction {
 /// checking_radius
 /// @endverbatim
 ///
+
 class cellcellRepulsion : public BaseReaction {
  
  private: 
@@ -921,6 +921,78 @@ class cellcellRepulsion : public BaseReaction {
   /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
   ///
   cellcellRepulsion(std::vector<double> &paraValue, 
+			   std::vector< std::vector<size_t> > &indValue );
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///  
+  void initiate(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);
+
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData, 
+              double h);
+};
+
+///
+/// @brief Assumes the template on a stretching substrate 
+/// connected to the vertices with springs with a given constant
+/// @details In a model file the reaction is defined as
+/// @verbatim
+/// vertexFromSubstrate 7 0 
+/// K_sp
+/// stretch_rate
+/// x_direction
+/// y_direction
+/// x_center
+/// y_center
+/// vertex_percentage
+/// @endverbatim
+///
+
+class vertexFromSubstrate : public BaseReaction {
+ 
+ private: 
+  std:: vector<size_t> list;
+  std:: vector<std::vector<std::vector<double> > >  vertexVec;
+  //std:: vector<std::vector<double>>  vertexVec;
+  size_t numAttachedCells;
+  size_t numAttachedVertices;
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  vertexFromSubstrate(std::vector<double> &paraValue, 
 			   std::vector< std::vector<size_t> > &indValue );
   ///
   /// @brief Derivative function for this reaction class
