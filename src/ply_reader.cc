@@ -10,7 +10,7 @@
 #include <set>
 
 #define NDEBUG_OUTPUT
-using namespace std::tr1::placeholders;
+using namespace std::placeholders;
 //----------------------------------------------------------------------------
 PLY_reader::PLY_reader() : m_ply_file ( NULL ), m_tissue ( NULL ), m_position ( 3 ), m_index ( INVALID_SIZE )
 {
@@ -32,21 +32,21 @@ void PLY_reader::read ( PLY_file const&f, Tissue &t )
     m_e_counter = 0;
     std::string filename  = m_ply_file->filename;
 
-    parser.info_callback ( std::tr1::bind ( &PLY_reader::info_callback, this, std::tr1::ref ( filename ), _1, _2 ) );
-    parser.warning_callback ( std::tr1::bind ( &PLY_reader::warning_callback, this, std::tr1::ref ( filename ), _1, _2 ) );
-    parser.error_callback ( std::tr1::bind ( &PLY_reader::error_callback, this, std::tr1::ref ( filename ), _1, _2 ) );
+    parser.info_callback ( std::bind ( &PLY_reader::info_callback, this, std::ref ( filename ), _1, _2 ) );
+    parser.warning_callback ( std::bind ( &PLY_reader::warning_callback, this, std::ref ( filename ), _1, _2 ) );
+    parser.error_callback ( std::bind ( &PLY_reader::error_callback, this, std::ref ( filename ), _1, _2 ) );
 
-    parser.element_definition_callback ( std::tr1::bind ( &PLY_reader::element_definition_callback, this, _1, _2 ) );
+    parser.element_definition_callback ( std::bind ( &PLY_reader::element_definition_callback, this, _1, _2 ) );
 
     ply::ply_parser::scalar_property_definition_callbacks_type scalar_property_definition_callbacks;
-    ply::at<ply::float32> ( scalar_property_definition_callbacks ) = std::tr1::bind ( &PLY_reader::scalar_property_definition_callback<ply::float32>, this, _1, _2 );
-    ply::at<ply::uint32> ( scalar_property_definition_callbacks ) = std::tr1::bind ( &PLY_reader::scalar_property_definition_callback<ply::uint32>, this, _1, _2 );
+    ply::at<ply::float32> ( scalar_property_definition_callbacks ) = std::bind ( &PLY_reader::scalar_property_definition_callback<ply::float32>, this, _1, _2 );
+    ply::at<ply::uint32> ( scalar_property_definition_callbacks ) = std::bind ( &PLY_reader::scalar_property_definition_callback<ply::uint32>, this, _1, _2 );
     parser.scalar_property_definition_callbacks ( scalar_property_definition_callbacks );
 
     ply::ply_parser::list_property_definition_callbacks_type list_property_definition_callbacks;
-    ply::at<ply::uint8, ply::uint32> ( list_property_definition_callbacks ) = std::tr1::bind ( &PLY_reader::list_property_definition_callback<ply::uint8, ply::uint32>, this, _1, _2 );
-    ply::at<ply::uint8, ply::float32> ( list_property_definition_callbacks ) = std::tr1::bind ( &PLY_reader::list_property_definition_callback<ply::uint8, ply::float32>, this, _1, _2 );
-    ply::at<ply::uint32, ply::int32> ( list_property_definition_callbacks ) = std::tr1::bind ( &PLY_reader::list_property_definition_callback<ply::uint32, ply::int32>, this, _1, _2 );
+    ply::at<ply::uint8, ply::uint32> ( list_property_definition_callbacks ) = std::bind ( &PLY_reader::list_property_definition_callback<ply::uint8, ply::uint32>, this, _1, _2 );
+    ply::at<ply::uint8, ply::float32> ( list_property_definition_callbacks ) = std::bind ( &PLY_reader::list_property_definition_callback<ply::uint8, ply::float32>, this, _1, _2 );
+    ply::at<ply::uint32, ply::int32> ( list_property_definition_callbacks ) = std::bind ( &PLY_reader::list_property_definition_callback<ply::uint32, ply::int32>, this, _1, _2 );
     parser.list_property_definition_callbacks ( list_property_definition_callbacks );
 
     parser.parse ( filename );
@@ -61,36 +61,36 @@ void PLY_reader::read ( PLY_file const&f, Tissue &t )
 #endif
 }
 //----------------------------------------------------------------------------
-std::tr1::tuple<std::tr1::function<void() >, std::tr1::function<void() > > PLY_reader::element_definition_callback ( const std::string& element_name, std::size_t count )
+std::tuple<std::function<void() >, std::function<void() > > PLY_reader::element_definition_callback ( const std::string& element_name, std::size_t count )
 {
 //     std::cout <<"parsing element: " << element_name << "\n";
     if ( element_name == "vertex" )
     {
         m_tissue->setNumVertex ( count );
-        return std::tr1::tuple<std::tr1::function<void() >, std::tr1::function<void() > > (
-                   std::tr1::bind ( &PLY_reader::vertex_begin, this ),
-                   std::tr1::bind ( &PLY_reader::vertex_end, this )
+        return std::tuple<std::function<void() >, std::function<void() > > (
+                   std::bind ( &PLY_reader::vertex_begin, this ),
+                   std::bind ( &PLY_reader::vertex_end, this )
                );
     }
     else if ( element_name == "face" )
     {
         m_tissue->setNumCell ( count );
-        return std::tr1::tuple<std::tr1::function<void() >, std::tr1::function<void() > > (
-                   std::tr1::bind ( &PLY_reader::face_begin, this ),
-                   std::tr1::bind ( &PLY_reader::face_end, this )
+        return std::tuple<std::function<void() >, std::function<void() > > (
+                   std::bind ( &PLY_reader::face_begin, this ),
+                   std::bind ( &PLY_reader::face_end, this )
                );
     }
     else if ( element_name == "edge" )
     {
         m_tissue->setNumWall ( count );
-        return std::tr1::tuple<std::tr1::function<void() >, std::tr1::function<void() > > (
-                   std::tr1::bind ( &PLY_reader::edge_begin, this ),
-                   std::tr1::bind ( &PLY_reader::edge_end, this )
+        return std::tuple<std::function<void() >, std::function<void() > > (
+                   std::bind ( &PLY_reader::edge_begin, this ),
+                   std::bind ( &PLY_reader::edge_end, this )
                );
     }
     else
     {
-        return std::tr1::tuple<std::tr1::function<void() >, std::tr1::function<void() > > ( 0, 0 );
+        return std::tuple<std::function<void() >, std::function<void() > > ( 0, 0 );
     }
 }
 //----------------------------------------------------------------------------
