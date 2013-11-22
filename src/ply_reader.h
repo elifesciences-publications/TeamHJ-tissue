@@ -203,7 +203,7 @@ inline std::function <void (ply::uint32)> PLY_reader::scalar_property_definition
 template <>
 inline std::tuple<std::function<void (ply::uint8)>, std::function<void (ply::uint32)>, std::function<void ()> > PLY_reader::list_property_definition_callback(const std::string& element_name, const std::string& property_name)
 {
-    if ((element_name == "face") && (property_name == "vertex_index")) {
+    if ((element_name == "face") && (property_name == "vertex_index" || property_name == "vertex_indices")) {
         return std::tuple<std::function<void (ply::uint8)>, std::function<void (ply::uint32)>, std::function<void ()> >(
                    std::bind(&PLY_reader::face_vertex_indices_begin<ply::uint8>, this, std::placeholders::_1),
                    std::bind(&PLY_reader::face_vertex_indices_element<ply::uint32>, this, std::placeholders::_1),
@@ -216,9 +216,24 @@ inline std::tuple<std::function<void (ply::uint8)>, std::function<void (ply::uin
 }
 //-----------------------------------------------------------------------------
 template <>
+inline std::tuple<std::function<void (ply::uint8)>, std::function<void (ply::int32)>, std::function<void ()> > PLY_reader::list_property_definition_callback(const std::string& element_name, const std::string& property_name)
+{
+    if ((element_name == "face") && (property_name == "vertex_index"|| property_name == "vertex_indices")) {
+        return std::tuple<std::function<void (ply::uint8)>, std::function<void (ply::int32)>, std::function<void ()> >(
+                   std::bind(&PLY_reader::face_vertex_indices_begin<ply::uint8>, this, std::placeholders::_1),
+                   std::bind(&PLY_reader::face_vertex_indices_element<ply::int32>, this, std::placeholders::_1),
+                   std::bind(&PLY_reader::face_vertex_indices_end, this)
+               );
+    }
+    else {
+        return std::tuple<std::function<void (ply::uint8)>, std::function<void (ply::uint32)>, std::function<void ()> >(0, 0, 0);
+    }
+}
+//-----------------------------------------------------------------------------
+template <>
 inline std::tuple<std::function<void (ply::uint32)>, std::function<void (ply::int32)>, std::function<void ()> > PLY_reader::list_property_definition_callback(const std::string& element_name, const std::string& property_name)
 {
-    if ((element_name == "face") && (property_name == "vertex_index")) {
+    if ((element_name == "face") && (property_name == "vertex_index"|| property_name == "vertex_indices")) {
         return std::tuple<std::function<void (ply::uint32)>, std::function<void (ply::int32)>, std::function<void ()> >(
                    std::bind(&PLY_reader::face_vertex_indices_begin<ply::uint32>, this, std::placeholders::_1),
                    std::bind(&PLY_reader::face_vertex_indices_element<ply::int32>, this, std::placeholders::_1),

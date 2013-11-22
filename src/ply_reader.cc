@@ -47,6 +47,7 @@ void PLY_reader::read ( PLY_file const&f, Tissue &t )
     ply::at<ply::uint8, ply::uint32> ( list_property_definition_callbacks ) = std::bind ( &PLY_reader::list_property_definition_callback<ply::uint8, ply::uint32>, this, _1, _2 );
     ply::at<ply::uint8, ply::float32> ( list_property_definition_callbacks ) = std::bind ( &PLY_reader::list_property_definition_callback<ply::uint8, ply::float32>, this, _1, _2 );
     ply::at<ply::uint32, ply::int32> ( list_property_definition_callbacks ) = std::bind ( &PLY_reader::list_property_definition_callback<ply::uint32, ply::int32>, this, _1, _2 );
+    ply::at<ply::uint8, ply::int32> ( list_property_definition_callbacks ) = std::bind ( &PLY_reader::list_property_definition_callback<ply::uint8, ply::int32>, this, _1, _2 );
     parser.list_property_definition_callbacks ( list_property_definition_callbacks );
 
     parser.parse ( filename );
