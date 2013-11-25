@@ -138,7 +138,7 @@ int main(int argc,char *argv[]) {
     PLY_file pf(initFile.c_str());
     PLY_reader P;
     P.read(pf,T);
-    std::cerr << "ply read\n ";
+//     std::cerr << "ply read\n ";
     //Sort all cellWalls and cellVertices to comply with area calculations and plotting
   T.sortCellWallAndCellVertex();
   T.checkConnectivity(verboseFlag);
