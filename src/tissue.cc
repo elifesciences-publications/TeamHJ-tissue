@@ -3875,14 +3875,11 @@ void Tissue::sortCellRecursive( Cell* cell, std::vector<size_t> &sortedFlag, siz
 {
   if (sortedFlag[cell->index()])
     return;
-  std::cerr << "sortWallAndVertex\n";
   cell->sortWallAndVertex(*this);
   sortedFlag[cell->index()]++;
   numSorted++;
-  std::cerr << "numsort = " << numSorted << "; cell index = " << cell->index();
   for (size_t k=0; k<cell->numWall(); ++k) {
     Cell *cellNext = cell->cellNeighbor(k);
-    std::cerr << "; next index = " << cellNext->index() << "\n";
     if (cellNext!=background())
       sortCellRecursive(cellNext,sortedFlag,numSorted);
   }
