@@ -406,6 +406,7 @@ void PLY_reader::infer_walls_from_cells ( Tissue &t )
     Edge_set edges;
     Return_type ret;
 
+    Cell *bg = t.background();
     //iterate all cells assuming that the vertex order in each cell is cyclic
     for ( size_t i = 0; i < t.numCell(); ++i )
     {
@@ -442,8 +443,10 @@ void PLY_reader::infer_walls_from_cells ( Tissue &t )
                 v1->addWall ( wp );
                 v2->addWall ( wp );
                 wp->setVertex ( v1, v2 );
+                //need to set length and background cell for 'tissue' init output
+                wp->setLengthFromVertexPosition();
                 //connect wall with the cell
-                wp->setCell1 ( c );
+                wp->setCell( c, bg );
             }
             else //the edge already in tissue
             {
