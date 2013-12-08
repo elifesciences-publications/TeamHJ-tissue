@@ -1019,12 +1019,12 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
                                  );
         double restLength1=wallData_[1][0];
         double Length2=std::sqrt(
-                                 (vertexData_[2][0] - vertexData_[1][0])*
-                                 (vertexData_[2][0] - vertexData_[1][0])+
-                                 (vertexData_[2][1] - vertexData_[1][1])*
-                                 (vertexData_[2][1] - vertexData_[1][1])
+                                 (cellData_[0][35+0] - vertexData_[1][0])*
+                                 (cellData_[0][35+0] - vertexData_[1][0])+
+                                 (cellData_[0][35+1] - vertexData_[1][1])*
+                                 (cellData_[0][35+1] - vertexData_[1][1])
                                  );
-        double restLength2=cellData_[0][35];
+        double restLength2=cellData_[0][35+3];
 
         os <<  (Length0-restLength0)/restLength0 <<" " // edge0 strain (l-l0)/l0
            <<  restLength0                     <<" "//  edge0-principalStrain  angle   
