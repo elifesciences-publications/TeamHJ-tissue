@@ -1001,13 +1001,47 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
       PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
     }
     PVD_file::write(*T_,cellFile,wallFile,tCount);
-    if(tCount==numPrint_){
-      for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) 
-        os << cellData_[cellind][11] <<" " // principal strain value  
-           << cellData_[cellind][15] <<" "//  2nd strain value
+    //if(tCount==numPrint_){
+      for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) {
+        
+        double Length0=std::sqrt(
+                                 (vertexData_[0][0] - vertexData_[1][0])*
+                                 (vertexData_[0][0] - vertexData_[1][0])+
+                                 (vertexData_[0][1] - vertexData_[1][1])*
+                                 (vertexData_[0][1] - vertexData_[1][1])
+                                 );
+        double restLength0=wallData_[0][0];
+        double Length1=std::sqrt(
+                                 (vertexData_[2][0] - vertexData_[1][0])*
+                                 (vertexData_[2][0] - vertexData_[1][0])+
+                                 (vertexData_[2][1] - vertexData_[1][1])*
+                                 (vertexData_[2][1] - vertexData_[1][1])
+                                 );
+        double restLength1=wallData_[1][0];
+        double Length2=std::sqrt(
+                                 (vertexData_[2][0] - vertexData_[1][0])*
+                                 (vertexData_[2][0] - vertexData_[1][0])+
+                                 (vertexData_[2][1] - vertexData_[1][1])*
+                                 (vertexData_[2][1] - vertexData_[1][1])
+                                 );
+        double restLength2=cellData_[0][35];
+
+        os <<  (Length0-restLength0)/restLength0 <<" " // edge0 strain (l-l0)/l0
+           <<  restLength0                     <<" "//  edge0-principalStrain  angle   
+           <<  (Length1-restLength1)/restLength1 <<" "//  edge1 strain
+           <<  restLength1                     <<" "//  edge1-principalStrain  angle 
+           <<  (Length2-restLength2)/restLength2 <<" "//  edge2 strain
+           <<  restLength2       <<" "//  edge2-principalStrain  angle 
+           <<  cellData_[0][11]  <<" "//  principalStrain1
+           <<  cellData_[0][11]  <<" "//  principalStrain2
            <<std::endl;
-   }
+      }
+      // }
   }
+  
+  // cellData[cellIndex][lengthInternalIndex + wallindex]
+  // wallData[w2][wallLengthIndex]
+
 
   else
     std::cerr << "BaseSolver::print() Wrong printFlag value\n";
