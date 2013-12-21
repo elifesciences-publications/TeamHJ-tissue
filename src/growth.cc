@@ -5,6 +5,8 @@
 // Created      : April 2006
 // Revision     : $Id:$
 //
+#include <vector>
+#include <cmath>
 #include"growth.h"
 #include"baseReaction.h"
 
@@ -348,8 +350,369 @@ namespace WallGrowth {
 	}
       }
     }
-  }
 
+
+    ///////////////////////////////////strainTRBS begin
+
+    StrainTRBS::
+    StrainTRBS(std::vector<double> &paraValue, 
+	   std::vector< std::vector<size_t> > 
+	   &indValue ) {
+      
+      //Do some checks on the parameters and variable indeces
+      //
+      if( paraValue.size()!=2 ) {
+	std::cerr << "WallGrowthStrainTRBScenterTriangulation::"
+		  << "WallGrowthStrainTRBScenterTriangulation() "
+		  << "Uses two parameters k_growth, strain_threshold "
+                  << std::endl;
+	exit(0);
+      }
+      
+        
+      if( indValue.size() !=3 || 
+          indValue[0].size() !=1 || 
+          indValue[1].size() !=1 || 
+          indValue[2].size() !=3  ) {
+	std::cerr << "WallGrowthStrainTRBScenterTriangulation::"
+		  << "WallGrowthStrainTRBScenterTriangulation() "
+                  << "wall length index is given in first level,"
+		  << "Start of additional Cell variable indices (center(x,y,z) "
+		  << "L_1,...,L_n, n=num vertex) is given in second level, " 
+		  << "and strain1_value_strore_index and strain2_value_strore_index and "
+                  <<" strain_vector_start_store_index(3 components) at second level."
+		  << std::endl;
+	exit(0);
+      }
+      //Set the variable values
+      //
+      setId("WallGrowthStrainTRBScenterTriangulation");
+      setParameter(paraValue);  
+      setVariableIndex(indValue);
+      
+      //Set the parameter identities
+      //
+      std::vector<std::string> tmp( numParameter() );
+      tmp.resize( numParameter() );
+      tmp[0] = "k_growth";
+      tmp[1] = "s_threshold";
+      setParameterId( tmp );
+    }
+    
+    void StrainTRBS::
+    derivs(Tissue &T,
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs ) {}
+
+
+    void StrainTRBS::
+    update(Tissue &T,
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+           double h ) {
+
+      size_t dimension = 3;
+      size_t numCells = T.numCell();
+      size_t wallLengthIndex= variableIndex(0,0);
+      size_t comIndex = variableIndex(1,0);
+      size_t lengthInternalIndex = comIndex+dimension;
+      size_t strainValIndex1 = variableIndex(2,0);
+      size_t strainValIndex2 = variableIndex(2,1);
+      size_t strainVecIndex = variableIndex(2,2);
+      double strainThreshold=parameter(1);
+
+      std::vector<std::vector<double> > internalWallLenth(numCells),externalWallLength(numCells);
+
+      for (size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex) {
+        size_t numWalls = T.cell(cellIndex).numWall(); 
+        internalWallLenth[cellIndex].resize(numWalls);
+        externalWallLength[cellIndex].resize(numWalls);
+        for (size_t wallIndex=0; wallIndex<numWalls; ++wallIndex) { 
+          size_t wallIndexPlusOneMod = (wallIndex+1)%numWalls;
+          //size_t v1 = com;
+          size_t v2 = T.cell(cellIndex).vertex(wallIndex)->index();
+          size_t v3 = T.cell(cellIndex).vertex(wallIndexPlusOneMod)->index();
+          //size_t w1 = internal wallIndex
+          size_t w2 = T.cell(cellIndex).wall(wallIndex)->index();
+          //size_t w3 = internal wallIndex+1
+
+          DataMatrix position(3,vertexData[v2]);
+          for (size_t d=0; d<dimension; ++d)
+            position[0][d] = cellData[cellIndex][comIndex+d]; // com position
+          //position[1] = vertexData[v2]; // given by initiation
+          position[2] = vertexData[v3];
+          
+          std::vector<double> restingLength(3);
+          restingLength[0] = cellData[cellIndex][lengthInternalIndex + wallIndex];
+          restingLength[1] = wallData[w2][wallLengthIndex];
+          restingLength[2] = cellData[cellIndex][lengthInternalIndex + wallIndexPlusOneMod];
+         
+          std::vector<double> length(3);
+          length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
+                                 (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
+                                 (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
+          
+          length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
+          
+          length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
+                                 (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
+                                 (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
+          
+          std::vector<double> strainVec(3);
+          //double strainVecL;
+
+          for (size_t d=0; d< dimension; ++d)
+            strainVec[d]=cellData[cellIndex][strainVecIndex+d];
+          // strainVecL=std::sqrt(strainVec[0]*strainVec[0]+
+          //                      strainVec[1]*strainVec[1]+
+          //                      strainVec[2]*strainVec[2]);
+          
+
+
+          //Angles of the element ( assuming the order: 0,L0,1,L1,2,L2 clockwise )
+          // std::vector<double> Angle(3);
+          // // can be ommited by cotan(A)=.25*sqrt(4*b*b*c*c/K-1)
+          // Angle[0]=std::acos(  (restingLength[0]*restingLength[0]+
+          //                       restingLength[2]*restingLength[2]-
+          //                       restingLength[1]*restingLength[1])/
+          //                      (restingLength[0]*restingLength[2]*2)    );
+          // Angle[1]=std::acos(  (restingLength[0]*restingLength[0]+
+          //                       restingLength[1]*restingLength[1]-
+          //                       restingLength[2]*restingLength[2])/
+          //                      (restingLength[0]*restingLength[1]*2)    );
+          // Angle[2]=std::acos(  (restingLength[1]*restingLength[1]+
+          //                       restingLength[2]*restingLength[2]-
+          //                       restingLength[0]*restingLength[0])/
+          //                      (restingLength[1]*restingLength[2]*2)    );
+    
+          //Current shape local coordinate of the element  (counterclockwise ordering of nodes/edges)
+          double CurrentAngle1=std::acos(  (length[0]*length[0]+
+                                            length[1]*length[1]-
+                                            length[2]*length[2])/
+                                           (length[0]*length[1]*2)    );
+          
+          double Qa=std::cos(CurrentAngle1)*length[0];
+          double Qc=std::sin(CurrentAngle1)*length[0];
+          double Qb=length[1];
+          
+
+          double RestingAngle1=std::acos(  (restingLength[0]*restingLength[0]+
+                                            restingLength[1]*restingLength[1]-
+                                            restingLength[2]*restingLength[2])/
+                                           (restingLength[0]*restingLength[1]*2)    );
+          
+          
+
+          double Pa=std::cos(RestingAngle1)*restingLength[0];
+          double Pc=std::sin(RestingAngle1)*restingLength[0];
+          double Pb=restingLength[1];
+          
+          // shape vector matrix in resting shape in local coordinate system  = 
+          // inverse of coordinate matrix ( only first two elements i.e. ShapeVectorResting[3][2] )      
+          double ShapeVectorResting[3][3]={ {  0   ,       1/Pc      , 0 }, 
+                                            {-1/Pb , (Pa-Pb)/(Pb*Pc) , 1 },       
+                                            { 1/Pb ,     -Pa/(Pb*Pc) , 0 }  };
+          
+          
+
+          // Rotation Matrix for changing coordinate systems for both Local to 
+          // Global( Strain Tensor) and Global to Local( Aniso Vector in the current shape)
+          double rotation[3][3];  
+          
+          double tempA=std::sqrt((position[2][0]-position[1][0])*(position[2][0]-position[1][0])+
+                                 (position[2][1]-position[1][1])*(position[2][1]-position[1][1])+
+                                 (position[2][2]-position[1][2])*(position[2][2]-position[1][2])  );
+          
+          double tempB=std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+                                 (position[0][1]-position[1][1])*(position[0][1]-position[1][1])+
+                                 (position[0][2]-position[1][2])*(position[0][2]-position[1][2])  );
+
+         
+          double Xcurrent[3];      
+          Xcurrent[0]= (position[2][0]-position[1][0])/tempA;
+          Xcurrent[1]= (position[2][1]-position[1][1])/tempA;
+          Xcurrent[2]= (position[2][2]-position[1][2])/tempA;
+          
+          double Bcurrent[3];      
+          Bcurrent[0]= (position[0][0]-position[1][0])/tempB;
+          Bcurrent[1]= (position[0][1]-position[1][1])/tempB;
+          Bcurrent[2]= (position[0][2]-position[1][2])/tempB;
+          
+          double Zcurrent[3];      
+          Zcurrent[0]= Xcurrent[1]*Bcurrent[2]-Xcurrent[2]*Bcurrent[1];
+          Zcurrent[1]= Xcurrent[2]*Bcurrent[0]-Xcurrent[0]*Bcurrent[2];
+          Zcurrent[2]= Xcurrent[0]*Bcurrent[1]-Xcurrent[1]*Bcurrent[0];
+          
+          tempA=std:: sqrt(Zcurrent[0]*Zcurrent[0]+Zcurrent[1]*Zcurrent[1]+Zcurrent[2]*Zcurrent[2]);
+          
+          
+
+          Zcurrent[0]=Zcurrent[0]/tempA;
+          Zcurrent[1]=Zcurrent[1]/tempA;
+          Zcurrent[2]=Zcurrent[2]/tempA;
+          
+          double Ycurrent[3];      
+          Ycurrent[0]= Zcurrent[1]*Xcurrent[2]-Zcurrent[2]*Xcurrent[1];
+          Ycurrent[1]= Zcurrent[2]*Xcurrent[0]-Zcurrent[0]*Xcurrent[2];
+          Ycurrent[2]= Zcurrent[0]*Xcurrent[1]-Zcurrent[1]*Xcurrent[0];
+          
+          
+          rotation[0][0]=Xcurrent[0];
+          rotation[1][0]=Xcurrent[1];
+          rotation[2][0]=Xcurrent[2];
+          
+          rotation[0][1]=Ycurrent[0];
+          rotation[1][1]=Ycurrent[1];
+          rotation[2][1]=Ycurrent[2];
+          
+          rotation[0][2]=Zcurrent[0];
+          rotation[1][2]=Zcurrent[1];
+          rotation[2][2]=Zcurrent[2];      
+          
+          // rotating the growth vector from global coordinate system to the local in the current shape
+          double strainVecLocal[3];
+          strainVecLocal[0]=
+            rotation[0][0]*strainVec[0]+
+            rotation[1][0]*strainVec[1]+
+            rotation[2][0]*strainVec[2];
+          strainVecLocal[1]=
+            rotation[0][1]*strainVec[0]+
+            rotation[1][1]*strainVec[1]+
+            rotation[2][1]*strainVec[2];
+          strainVecLocal[2]=
+            rotation[0][2]*strainVec[0]+
+            rotation[1][2]*strainVec[1]+
+            rotation[2][2]*strainVec[2];
+          
+          double positionLocal[3][2]={ {Qa , Qc}, 
+                                       {0  , 0 },  
+                                       {Qb , 0 }  };
+          
+          double DeformGrad[2][2]={{0,0},{0,0}}; // F= Qi x Di
+          for ( int ii=0 ; ii<3 ; ++ii ) {
+            DeformGrad[0][0]=DeformGrad[0][0]+positionLocal[ii][0]*ShapeVectorResting[ii][0];
+            DeformGrad[1][0]=DeformGrad[1][0]+positionLocal[ii][1]*ShapeVectorResting[ii][0];
+            DeformGrad[0][1]=DeformGrad[0][1]+positionLocal[ii][0]*ShapeVectorResting[ii][1];
+            DeformGrad[1][1]=DeformGrad[1][1]+positionLocal[ii][1]*ShapeVectorResting[ii][1];
+          }
+
+          
+          
+          double strainRestLocal[3]={0,0,0};
+          
+          strainRestLocal[0]=DeformGrad[0][0]*strainVecLocal[0]+DeformGrad[1][0]*strainVecLocal[1];
+          strainRestLocal[1]=DeformGrad[0][1]*strainVecLocal[0]+DeformGrad[1][1]*strainVecLocal[1];
+          strainRestLocal[2]=strainVecLocal[2];
+          double tempAn=std::sqrt(strainRestLocal[0]*strainRestLocal[0]+
+                                  strainRestLocal[1]*strainRestLocal[1]+
+                                  strainRestLocal[2]*strainRestLocal[2]);
+          strainRestLocal[0]/=tempAn;
+          strainRestLocal[1]/=tempAn;
+          strainRestLocal[2]/=tempAn;
+          
+
+
+          std::vector<std::vector<double> > edgeRestLocal(3);
+          
+          for (size_t d=0; d< 3; ++d)
+            edgeRestLocal[d].resize(3);
+          
+          
+          edgeRestLocal[0][0]= -Pa;   //positionLocal[][0]-positionLocal[][0];
+          edgeRestLocal[0][1]= -Pc;   //positionLocal[][1]-positionLocal[][1];
+          //edgeRestLocal[0][2]= positionLocal[][2]-positionLocal[][2];
+          
+          edgeRestLocal[1][0]= Pb;    //positionLocal[][0]-positionLocal[][0];
+          edgeRestLocal[1][1]= 0;     //positionLocal[][1]-positionLocal[][1];
+          //edgeRestLocal[1][2]= positionLocal[][2]-positionLocal[][2];
+          
+          edgeRestLocal[2][0]= Pa-Pb; //positionLocal[][0]-positionLocal[][0];
+          edgeRestLocal[2][1]= Pc;    //positionLocal[][1]-positionLocal[][1];
+          //edgeRestLocal[2][2]= positionLocal[][2]-positionLocal[][2];
+          
+
+          std:: vector<double> cosTet(3);
+          std:: vector<double> sinTet(3);
+          for (size_t j=0; j< 3; ++j){
+            cosTet[j]=std::abs((strainRestLocal[0]*edgeRestLocal[j][0]+
+                                strainRestLocal[1]*edgeRestLocal[j][1])/
+                               restingLength[j]);
+            sinTet[j]=std::sqrt(1-cosTet[j]*cosTet[j]);
+    
+      }
+
+          //std::cerr<<"  "<< cosTet[0]<<"  "<<cosTet[1]<<"  "<<cosTet[2]<<"  "<<
+          
+          
+          double strainValue1=cellData[cellIndex][strainValIndex1];
+          double strainValue2=cellData[cellIndex][strainValIndex2];
+      
+          std::vector<std::vector<double> > restingComp(3);
+          for (size_t j=0; j< 3; ++j)
+            restingComp[j].resize(2);
+          
+          for (size_t j=0; j< 3; ++j){
+            restingComp[j][0]=restingLength[j]*cosTet[j];
+            restingComp[j][1]=restingLength[j]*sinTet[j];
+          }
+          
+
+         
+
+          //  if (strainValue1>strainThreshold ){
+          //   for (size_t j=0; j< 3; ++j)
+    
+          //     restingComp[j][0]+=restingComp[j][0]*parameter(0)*(strainValue1-strainThreshold);
+            
+            
+          // }
+
+
+          if (strainValue1>strainThreshold && strainValue2<strainThreshold){
+            for (size_t j=0; j< 3; ++j)
+    
+              restingComp[j][0]+=restingComp[j][0]*parameter(0)*(strainValue1-strainThreshold);
+            
+            
+          }
+          if (strainValue1>strainThreshold && strainValue2>strainThreshold){
+            for (size_t j=0; j< 3; ++j){
+              restingComp[j][0]+=restingComp[j][0]*parameter(0)*(strainValue1-strainThreshold);
+              restingComp[j][1]+=restingComp[j][1]*parameter(0)*(strainValue2-strainThreshold);
+            }
+            
+          }
+          
+    
+          
+          internalWallLenth[cellIndex][wallIndex]=std::sqrt(restingComp[0][0]*restingComp[0][0]+
+                                                 restingComp[0][1]*restingComp[0][1]);
+          externalWallLength[cellIndex][wallIndex]=std::sqrt(restingComp[1][0]*restingComp[1][0]+
+                                                  restingComp[1][1]*restingComp[1][1]);
+          
+    
+        } // walls
+
+        // updating wall length
+                
+      } // cells
+     
+      for (size_t cellIndex=0; cellIndex< T.numCell(); ++cellIndex)
+        for (size_t wallIndex=0; wallIndex< T.cell(cellIndex).numWall(); ++wallIndex){
+          cellData[cellIndex][lengthInternalIndex + wallIndex]= internalWallLenth[cellIndex][wallIndex]; 
+          wallData[T.cell(cellIndex).wall(wallIndex)->index()][wallLengthIndex]=externalWallLength[cellIndex][wallIndex];             
+        }
+      
+    }
+    ///////////////////////////////////strainTRBS end
+    
+  }
+  
   StressSpatial::
   StressSpatial(std::vector<double> &paraValue, 
 		std::vector< std::vector<size_t> > 
