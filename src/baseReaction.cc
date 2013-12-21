@@ -58,6 +58,10 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	   idValue == "WallGrowth::CenterTriangulation::Stress" ||
 	   idValue == "CenterTriangulation::WallGrowth::Stress")
     return new WallGrowth::CenterTriangulation::Stress(paraValue, indValue);
+  else if (idValue == "WallGrowthStrainTRBScenterTriangulation" ||
+	   idValue == "WallGrowth::CenterTriangulation::StrainTRBS" ||
+	   idValue == "CenterTriangulation::WallGrowth::StrainTRBS")
+    return new WallGrowth::CenterTriangulation::StrainTRBS(paraValue, indValue);
   else if(idValue == "WallGrowthStressSpatial" || idValue == "WallGrowth::StressSpatial")
     return new WallGrowth::StressSpatial(paraValue, indValue);
   else if(idValue == "WallGrowthStressSpatialSingle" || idValue == "WallGrowth::StressSpatialSingle")
