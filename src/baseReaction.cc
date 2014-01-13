@@ -58,10 +58,6 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
 	   idValue == "WallGrowth::CenterTriangulation::Stress" ||
 	   idValue == "CenterTriangulation::WallGrowth::Stress")
     return new WallGrowth::CenterTriangulation::Stress(paraValue, indValue);
-  else if (idValue == "WallGrowthStrainTRBScenterTriangulation" ||
-	   idValue == "WallGrowth::CenterTriangulation::StrainTRBS" ||
-	   idValue == "CenterTriangulation::WallGrowth::StrainTRBS")
-    return new WallGrowth::CenterTriangulation::StrainTRBS(paraValue, indValue);
   else if(idValue == "WallGrowthStressSpatial" || idValue == "WallGrowth::StressSpatial")
     return new WallGrowth::StressSpatial(paraValue, indValue);
   else if(idValue == "WallGrowthStressSpatialSingle" || idValue == "WallGrowth::StressSpatialSingle")
@@ -133,18 +129,16 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromExternalSpringFromPerpVertexDynamic(paraValue,indValue);
  else if(idValue=="cellcellRepulsion")
     return new cellcellRepulsion(paraValue,indValue);
- else if(idValue=="vertexFromSubstrate")
-   return new vertexFromSubstrate(paraValue,indValue);
- else if (idValue=="VertexFromWallSpringAsymmetric" ||
-	  idValue=="VertexFromEpidermalWallSpringAsymmetric" ||
-	  idValue=="VertexFromEpidermalCellWallSpringAsymmetric") {
-   std::cerr << "BaseReaction::BaseReaction() All *SpringAsymmetric have been renamed "
-	     << "*Spring." << std::endl;
-   exit(-1);
- }
+  else if (idValue=="VertexFromWallSpringAsymmetric" ||
+	   idValue=="VertexFromEpidermalWallSpringAsymmetric" ||
+	   idValue=="VertexFromEpidermalCellWallSpringAsymmetric") {
+    std::cerr << "BaseReaction::BaseReaction() All *SpringAsymmetric have been renamed "
+	      << "*Spring." << std::endl;
+    exit(-1);
+  }
   //Mechanical interactions between vertices
   //mechanical.h,mechanical.cc
- else if(idValue=="VertexFromCellPowerdiagram")
+  else if(idValue=="VertexFromCellPowerdiagram")
     return new VertexFromCellPowerdiagram(paraValue,indValue);
   else if(idValue=="VertexFromCellPressure")
     return new VertexFromCellPressure(paraValue,indValue);
@@ -262,6 +256,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new CreationZero(paraValue,indValue); 
   else if(idValue=="CreationOne")
     return new CreationOne(paraValue,indValue); 
+  else if(idValue=="CreationTwo")
+    return new CreationTwo(paraValue,indValue);   
   //degradation.h,degradation.cc
   else if(idValue=="DegradationOne")
     return new DegradationOne(paraValue,indValue); 
@@ -304,8 +300,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new AuxinTransportCellCellNoGeometry(paraValue,indValue); 
   else if(idValue=="AuxinWallModel")
     return new AuxinWallModel(paraValue,indValue); 
-  //  else if(idValue=="AuxinROPModel")
-  //return new AuxinROPModel(paraValue,indValue); 
+  else if(idValue=="AuxinROPModel")
+    return new AuxinROPModel(paraValue,indValue); 
   else if(idValue=="AuxinROPModel2")
     return new AuxinROPModel2(paraValue,indValue); 
   else if(idValue=="AuxinROPModel3")
@@ -314,8 +310,17 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new AuxinPINBistabilityModel(paraValue,indValue); 
   else if(idValue=="AuxinPINBistabilityModelCell")
     return new AuxinPINBistabilityModelCell(paraValue,indValue); 
+  else if(idValue=="AuxinExoBistability")
+    return new AuxinExoBistability(paraValue,indValue); 
   else if(idValue=="AuxinPINBistabilityModelCellNew")
-    return new AuxinPINBistabilityModelCellNew(paraValue,indValue); 
+    return new AuxinExoBistability(paraValue,indValue); 
+  else if(idValue=="SimpleROPModel")
+    return new SimpleROPModel(paraValue,indValue); 
+  else if(idValue=="SimpleROPModel2")
+    return new SimpleROPModel2(paraValue,indValue); 
+  else if(idValue=="SimpleROPModel3")
+    return new SimpleROPModel3(paraValue,indValue); 
+
 
   //directionReaction.h, directionUpdate.cc
   else if (idValue == "ContinousMTDirection")
