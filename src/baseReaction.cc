@@ -256,8 +256,7 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new CreationZero(paraValue,indValue); 
   else if(idValue=="CreationOne")
     return new CreationOne(paraValue,indValue); 
-  else if(idValue=="CreationTwo")
-    return new CreationTwo(paraValue,indValue);   
+  
   //degradation.h,degradation.cc
   else if(idValue=="DegradationOne")
     return new DegradationOne(paraValue,indValue); 
