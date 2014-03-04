@@ -963,11 +963,11 @@ void BaseSolver::print(std::ostream &os)
       size_t neighCount=0;
       for (size_t wallK=0; wallK<T_->cell(cellI).numWall(); ++wallK) {
 	size_t wallI = T_->cell(cellI).wall(wallK)->index();
-	if (T_->wall(wallI).cell1()->index()==cellI && ) {
+	if (T_->wall(wallI).cell1()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
 	  os << wallData_[wallI][pinIndexWall] << " ";
 	  neighCount++;
 	}
-	else if (T_->wall(wallI).cell2()->index()==cellI) {
+	else if (T_->wall(wallI).cell2()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
 	  os << wallData_[wallI][pinIndexWall+1] << " ";
 	  neighCount++;
 	}
