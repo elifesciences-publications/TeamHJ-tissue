@@ -948,13 +948,34 @@ void BaseSolver::print(std::ostream &os)
       // }
   }
   else if( printFlag_==103 ) {// Print cell and membrane values (e.g. for PIN) at same row
-    size_t pinIndexCell=;
-    size_t pinIndexWall=;
+    size_t auxinIndexCell=4;
+    size_t pinIndexCell=5;
+    size_t pinIndexWall=3;
     for (size_t cellI=0; cellI<cellData_.size(); ++cellI) {
-      os << T.cell(cellI).index() << " ";
+      // print cell variables
+      os << cellI << " " cellData_[cellI][auxinIndexCell] << " " << cellData_[cellI][pinIndexCell] << " ";
+      // print wall variables
+      if (T.cell(cellI).numWall() != 2) {
+	std::cerr "BaseSolver::print(), printFlag=103: Assuming TWO neighbors per cell!" << std::endl;
+	exit(EXIT_FAILURE);
+      }
+      for (wallK=0; wallK<T.cell(cellI).numWall(); ++wallK) {
+	size_t wallI = T.cell(cellI).wall(wallK)->index();
+	if (T.wall(wallI).cell1()->index()==cellI) {
+	  os << wallData_[wallI][pinIndexWall] << " ";
+	}
+	else if (T.wall(wallI).cell2()->index()==cellI) {
+	  os << wallData_[wallI][pinIndexWall+1] << " ";
+	}
+	else {
+	  std::cerr << "BaseSolver::print(), printFlag=103: Did not find cell " << cellI 
+		    << " as neighbor to wall " << wallI << "!" << std::endl;
+	  exit(EXIT_FAILURE);
+	}
+      }
     }
   }
-
+  
   // cellData[cellIndex][lengthInternalIndex + wallindex]
   // wallData[w2][wallLengthIndex]
 
