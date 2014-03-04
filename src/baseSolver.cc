@@ -960,21 +960,24 @@ void BaseSolver::print(std::ostream &os)
 	std::cerr << "BaseSolver::print(), printFlag=103: Assuming TWO neighbors per cell!" << std::endl;
 	exit(EXIT_FAILURE);
       }
+      size_t neighCount=0;
       for (size_t wallK=0; wallK<T_->cell(cellI).numWall(); ++wallK) {
 	size_t wallI = T_->cell(cellI).wall(wallK)->index();
-	if (T_->wall(wallI).cell1()->index()==cellI) {
+	if (T_->wall(wallI).cell1()->index()==cellI && ) {
 	  os << wallData_[wallI][pinIndexWall] << " ";
+	  neighCount++;
 	}
 	else if (T_->wall(wallI).cell2()->index()==cellI) {
 	  os << wallData_[wallI][pinIndexWall+1] << " ";
-	}
-	else {
-	  std::cerr << "BaseSolver::print(), printFlag=103: Did not find cell " << cellI 
-		    << " as neighbor to wall " << wallI << "!" << std::endl;
-	  exit(EXIT_FAILURE);
+	  neighCount++;
 	}
       }
       os << std::endl;
+      if (neighCount != 2) {
+	std::cerr << "BaseSolver::print(), printFlag=103: Did not find two neighbors for cell " << cellI 
+		  << "!" << std::endl;
+	exit(EXIT_FAILURE);
+      }
     }
   }
   
