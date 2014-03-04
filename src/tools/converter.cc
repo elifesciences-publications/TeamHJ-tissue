@@ -68,10 +68,10 @@ int main(int argc,char *argv[]) {
   verboseString = myConfig::getValue("verbose", 0);
   if( !verboseString.empty() ) {
     verboseFlag = atoi( verboseString.c_str() );
-    if( verboseFlag != 0 || verboseFlag !=1 || verboseFlag !=2) {
-      verboseFlag=0;
-      std::cerr << "Flag given to -verbose not recognized (0, 1, 2 allowed)."
+    if( verboseFlag != 0 && verboseFlag !=1 && verboseFlag !=2) {
+      std::cerr << "Flag given to -verbose not recognized [" << verboseFlag << "] (0, 1, 2 allowed)."
 		<< " Setting it to zero (silent)." << std::endl;
+      verboseFlag=0;
     }
   }
   
@@ -138,11 +138,11 @@ int main(int argc,char *argv[]) {
     PLY_file pf(initFile.c_str());
     PLY_reader P;
     P.read(pf,T);
-//     std::cerr << "ply read\n ";
+    //     std::cerr << "ply read\n ";
     std::cerr << "ncell = " << T.numCell() << "; nedge = " << T.numWall() << "; nvertex = " << T.numVertex() << "\n";
     //Sort all cellWalls and cellVertices to comply with area calculations and plotting
-//   T.sortCellWallAndCellVertex();
-//   T.checkConnectivity(verboseFlag);
+    T.sortCellWallAndCellVertex();
+    T.checkConnectivity(verboseFlag);
     //T.readInitPly(initFile.c_str(),verboseFlag); ...yet to be defined...
   }
   else {
