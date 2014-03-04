@@ -956,16 +956,16 @@ void BaseSolver::print(std::ostream &os)
       os << cellI << " " << cellData_[cellI][auxinIndexCell] << " " 
 	 << cellData_[cellI][pinIndexCell] << " ";
       // print wall variables
-      if (T.cell(cellI).numWall() != 2) {
+      if (T_->cell(cellI).numWall() != 2) {
 	std::cerr << "BaseSolver::print(), printFlag=103: Assuming TWO neighbors per cell!" << std::endl;
 	exit(EXIT_FAILURE);
       }
       for (size_t wallK=0; wallK<T.cell(cellI).numWall(); ++wallK) {
-	size_t wallI = T.cell(cellI).wall(wallK)->index();
-	if (T.wall(wallI).cell1()->index()==cellI) {
+	size_t wallI = T_->cell(cellI).wall(wallK)->index();
+	if (T_->wall(wallI).cell1()->index()==cellI) {
 	  os << wallData_[wallI][pinIndexWall] << " ";
 	}
-	else if (T.wall(wallI).cell2()->index()==cellI) {
+	else if (T_->wall(wallI).cell2()->index()==cellI) {
 	  os << wallData_[wallI][pinIndexWall+1] << " ";
 	}
 	else {
