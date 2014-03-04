@@ -960,7 +960,7 @@ void BaseSolver::print(std::ostream &os)
 	std::cerr << "BaseSolver::print(), printFlag=103: Assuming TWO neighbors per cell!" << std::endl;
 	exit(EXIT_FAILURE);
       }
-      for (size_t wallK=0; wallK<T.cell(cellI).numWall(); ++wallK) {
+      for (size_t wallK=0; wallK<T_->cell(cellI).numWall(); ++wallK) {
 	size_t wallI = T_->cell(cellI).wall(wallK)->index();
 	if (T_->wall(wallI).cell1()->index()==cellI) {
 	  os << wallData_[wallI][pinIndexWall] << " ";
