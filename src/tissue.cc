@@ -3850,36 +3850,47 @@ void Tissue::removeTwoVertex( size_t index )
 
 void Tissue::sortCellWallAndCellVertex(Cell *cell) 
 {	
-	std::vector<size_t> sortedFlag(numCell());
-	size_t numSorted=0;
-	if( !cell ) { //sort all		
-	  size_t startSortIndex=0;
-	  do {
-	    if (!sortedFlag[startSortIndex]) {
-	      cell = this->cellP(startSortIndex);	  
-	      sortCellRecursive(cell, sortedFlag, numSorted);
-	    }
-	    startSortIndex++;
-	    //std::cerr << "Tissue::sortCellWallAndCellVertex() numSorted = " << numSorted 
-	    //	      << " startSortIndex = " << startSortIndex << std::endl;
-	  } while (numSorted<numCell() && startSortIndex<numCell());
-	}
-	else { //sort recursively around given cell (at division?)
-	  sortCellRecursive(cell, sortedFlag, numSorted);
-	}
-	std::cerr << "Tissue::sortCellWallAndCellVertex() " << numSorted << " of " << numCell()
-		  << " faces (cells) sorted recursively." << std::endl;
+  std::vector<size_t> sortedFlag(numCell());
+  size_t numSorted=0;
+  if( !cell ) { //sort all		
+    size_t startSortIndex=0;
+    do {
+      if (!sortedFlag[startSortIndex]) {
+	cell = this->cellP(startSortIndex);	  
+	sortCellRecursive(cell, sortedFlag, numSorted);
+      }
+      startSortIndex++;
+      //std::cerr << "Tissue::sortCellWallAndCellVertex() numSorted = " << numSorted 
+      //	      << " startSortIndex = " << startSortIndex << std::endl;
+    } while (numSorted<numCell() && startSortIndex<numCell());
+  }
+  else { //sort recursively around given cell (at division?)
+    sortCellRecursive(cell, sortedFlag, numSorted);
+  }
+  std::cerr << "Tissue::sortCellWallAndCellVertex() " << numSorted << " of " << numCell()
+	    << " faces (cells) sorted recursively." << std::endl;
 }
 
 void Tissue::sortCellRecursive( Cell* cell, std::vector<size_t> &sortedFlag, size_t &numSorted)
 {
+  std::cerr << "Tissue::sortCellRecursive()\t" << numCell() << " " << numWall() << " " << numVertex() << "\t"
+	    << cell->index() << " " << sortedFlag[cell->index()] << " " << numSorted << std::endl;
   if (sortedFlag[cell->index()])
     return;
   cell->sortWallAndVertex(*this);
   sortedFlag[cell->index()]++;
   numSorted++;
+  std::cerr << "Tissue::sortCellRecursive()\t" << cell->numWall() << " " << cell->numVertex() << "\t"
+	    << cell->index() << " " << sortedFlag[cell->index()] << " " << numSorted << std::endl;
+  std::cerr << "Tissue::sortCellRecursive()\t" << cell->wall(0)->index() << " " << cell->vertex(0)->index() 
+	    << std::endl;
+  
   for (size_t k=0; k<cell->numWall(); ++k) {
+    std::cerr << "Tissue::sortCellRecursive() next \t" << cell->numWall() << " " << k << " "
+	      << cell->cellNeighbor(k) << " " << cell->cellNeighbor(k)->index() << std::endl;
     Cell *cellNext = cell->cellNeighbor(k);
+    std::cerr << "Tissue::sortCellRecursive() next \t" << numCell() << " " << numWall() << " " << numVertex() << "\t"
+	      << cellNext->index() << " " << sortedFlag[cellNext->index()] << " " << numSorted << std::endl;
     if (cellNext!=background())
       sortCellRecursive(cellNext,sortedFlag,numSorted);
   }
@@ -3892,6 +3903,9 @@ void Tissue::checkConnectivity(size_t verbose)
   size_t numC = numCell();
   // Check if all indices are used
   //
+  if (verbose>1) {
+    std::cerr << "Tissue::checkConnectivity() - Cecking indices." << std::endl;
+  }
   for (size_t i=0; i<numC; ++i) {
     if( verbose ) {
       if( cell(i).index() != i ) {
@@ -3930,6 +3944,9 @@ void Tissue::checkConnectivity(size_t verbose)
   }
   // Make sure all cellVertex(Wall) are real vertices(walls) via index
   //
+  if (verbose>1) {
+    std::cerr << "Tissue::checkConnectivity() - Cecking indices of cell->wall and cell->vertex." << std::endl;
+  }
   for( size_t k=0 ; k<numC ; ++k ) {
     for( size_t l=0 ; l<cell(k).numWall() ; ++l ) { 
       if( verbose ) {
@@ -3971,12 +3988,18 @@ void Tissue::checkConnectivity(size_t verbose)
   }
   //Make sure all wallVertex(Cell) are real vertices(cells) via index
   //
+  if (verbose>1) {
+    std::cerr << "Tissue::checkConnectivity() - Cecking indices of wall->cell and wall->vertex." << std::endl;
+  }
   for( size_t k=0 ; k<numWall() ; ++k ) {
     if( verbose ) {
+      std::cerr << "Tissue::checkConnectivity() WALL " << k << "(" << wall(k).index() << ")" << std::endl; 
+      std::cerr << "Tissue::checkConnectivity() WALL1 " << k << " " << wall(k).cell1() << " " << wall(k).cell1()->index() << std::endl; 
+      std::cerr << "Tissue::checkConnectivity() WALL2 " << k << " " << wall(k).cell2() << " " << wall(k).cell2()->index() << std::endl; 
       if( ( wall(k).cell1()->index()>=numCell() &&
 	    wall(k).cell1() != background() ) ||
 	  ( wall(k).cell2()->index()>=numCell() &&
-	    wall(k).cell2() != background() ) ) {
+	    wall(k).cell2() != background() ) || verbose>1) {
 	std::cerr << "Tissue::checkConnectivity() " << "Wall " << k 
 		  << " is connected to cell "
 		  << wall(k).cell1()->index() << " and "
@@ -4002,7 +4025,7 @@ void Tissue::checkConnectivity(size_t verbose)
     }
     if( verbose ) {
       if( wall(k).vertex1()->index()>=numVertex() ||
-	  wall(k).vertex2()->index()>=numVertex() ) {
+	  wall(k).vertex2()->index()>=numVertex() || verbose>1) {
 	std::cerr << "Tissue::checkConnectivity() " << "Wall " << k 
 		  << " is connected to vertex "
 		  << wall(k).vertex1()->index() << " and "
@@ -4028,6 +4051,9 @@ void Tissue::checkConnectivity(size_t verbose)
   
   //Make sure all vertexCell(Wall) are real cells(walls) via index
   //
+  if (verbose>1) {
+    std::cerr << "Tissue::checkConnectivity() - Cecking indices of vertex->cell and vertex->wall." << std::endl;
+  }
   for( size_t k=0 ; k<numVertex() ; ++k ) {
     for( size_t l=0 ; l<vertex(k).numCell() ; ++l ) { 
       if( verbose ) {

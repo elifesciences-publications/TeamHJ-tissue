@@ -447,6 +447,10 @@ void PLY_reader::infer_walls_from_cells ( Tissue &t )
                 wp->setLengthFromVertexPosition();
                 //connect wall with the cell
                 wp->setCell( c, bg );
+                wp->setCell2 ( t.background() );//Temporary for most 
+		// (overwritten second time reached (below), edge at boundary of tissue otherwise)
+		// Set the length to the distance between the two vertices
+		
             }
             else //the edge already in tissue
             {
