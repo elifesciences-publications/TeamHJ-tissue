@@ -367,6 +367,8 @@ void BaseSolver::print(std::ostream &os)
   //
   // Print cell variables for gnuplot
   //
+
+
   else if( printFlag_==5 ) {
     //Print the cells, first connected vertecis and then variables
     size_t Nc = cellData_.size();
@@ -567,42 +569,58 @@ void BaseSolver::print(std::ostream &os)
   // Ad hoc and temporary print flags
   //
   
-  else if( printFlag_==50 ) {  
-    os << cellData_[0][8] << " " << cellData_[0][3] <<" " << cellData_[0][12] << std::endl;    
+    else if( printFlag_==50 ) {
+    
+    os << cellData_[0][8] << " " << cellData_[0][3] <<" " << cellData_[0][12] << std::endl;
+    
   }
-  else if( printFlag_==51 ) {  // paper I fig2ai and fig2aii    
+  
+  else if( printFlag_==51 ) {  // paper I fig2ai and fig2aii
+    
     os << vertexData_[2][0] << " "              //    x deflection     
        << vertexData_[2][1] << " "              //    y deflection   
        << cellData_[0][7]   << " "              //    stress 1  
        << cellData_[0][15]  << " "              //    stress 2    
        << cellData_[0][19]  << std::endl;       //    area ratio   
   }
-  else if( printFlag_==52 ) {  // paper I fig2B1 
+  
+  else if( printFlag_==52 ) {  // paper I fig2B1
+    
     os << T_->reaction(0)->parameter(0)<< " "   //    Young modulus  
        << T_->reaction(0)->parameter(2)<< " "   //    Poisson ratio 
        << cellData_[0][7]  << " "               //    stress 1 
        << cellData_[0][15] <<" "                //    stress 2      
        << cellData_[0][17] << std::endl;        //    thickness
+   
   }
+  
   else if( printFlag_==53 ) {  // PLoS figS1B
     double YoungLtoYoungT=
       (T_->reaction(0)->parameter(0)+T_->reaction(0)->parameter(1))/
-      T_->reaction(0)->parameter(0);    
+       T_->reaction(0)->parameter(0);
+   
     os << YoungLtoYoungT   << " "                   // YoungL/YoungT
        << cellData_[0][7] << " "                   // stress 1 
        << cellData_[0][15] << std::endl;            // stress 2
   }
-  else if( printFlag_==54 ) {  // paper I fig2D    
+
+ else if( printFlag_==54 ) {  // paper I fig2D
+    
     os << T_->reaction(0)->parameter(8)<< " "       //  aniso direction 
        << cellData_[0][7]  << " "                   //  stress 1
        << cellData_[0][11] << " "                   //  stress 2
-       << cellData_[0][19] << std::endl;            //  area ratio    
+       << cellData_[0][19] << std::endl;            //  area ratio
+  
   }
-  else if( printFlag_==55 ) { 
-    os << cellData_[0][13] << " " <<cellData_[0][14] << " " << cellData_[0][3] <<" "
-       << cellData_[0][7] <<" " << cellData_[0][12] << std::endl;
+
+  else if( printFlag_==55 ) {
+    
+    os << cellData_[0][13] << " " <<cellData_[0][14] << " " << cellData_[0][3] <<" "<< cellData_[0][7] <<" " << cellData_[0][12] << std::endl;
   }
-  else if( printFlag_==56 ) {  // energy landscape for a single element    
+
+  
+  else if( printFlag_==56 ) {  // energy landscape for a single element
+    
     os << T_->reaction(5)->parameter(0)<< " "  //  forceX
        << T_->reaction(5)->parameter(1)<< " "  //  forceY
        << T_->reaction(0)->parameter(8)<< " "  //  TetaMT
@@ -616,265 +634,338 @@ void BaseSolver::print(std::ostream &os)
        << cellData_[0][17] << std::endl;       //  StrainAniso
     //os << T_->reaction(0)->parameter(0);
   }
-  else if( printFlag_==57 ) {  // stress test     
-    os << T_->reaction(0)->parameter(2)<< " "                     //  poisson(1)   
-       << T_->reaction(2)->parameter(1)<< " "                     //  force-Y(2)
-       << T_->reaction(0)->parameter(1)<< " "                     //  young  (3)      
-       << T_->reaction(0)->parameter(8)<< " "                     //  aniso vector direction(4)
-       << cellData_[0][7] << " "                                  //  stress 1   (5) 
-       << cellData_[0][11] <<" "                                  //  stress 2  (6)   
-       << cellData_[0][19]<<" "                                   //  stress aniso(7)     
-       << cellData_[0][18]<<" "                                   //  strain aniso(8)
-       << cellData_[0][22]<<" "                                   //  area ratio(9)          
-       << cellData_[0][23]<<" "                                   //  iso-energy(10)        
-       << cellData_[0][24]<<" "                                   //  aniso-energy(11)          
-       << 400/(vertexData_[2][1]-vertexData_[1][1])<<" "          //  true stress1 (12)       
-       << 100/(vertexData_[1][0]-vertexData_[0][0])<< std::endl;  //  true stress2 (13)
+  
+ else if( printFlag_==57 ) {  // stress test 
+    
+   os << T_->reaction(0)->parameter(2)<< " "                     //  poisson(1)   
+      << T_->reaction(2)->parameter(1)<< " "                     //  force-Y(2)
+      << T_->reaction(0)->parameter(1)<< " "                     //  young  (3)      
+      << T_->reaction(0)->parameter(8)<< " "                     //  aniso vector direction(4)
+      << cellData_[0][7] << " "                                  //  stress 1   (5) 
+      << cellData_[0][11] <<" "                                  //  stress 2  (6)   
+      << cellData_[0][19]<<" "                                   //  stress aniso(7)     
+      << cellData_[0][18]<<" "                                   //  strain aniso(8)
+      << cellData_[0][22]<<" "                                   //  area ratio(9)          
+      << cellData_[0][23]<<" "                                   //  iso-energy(10)        
+      << cellData_[0][24]<<" "                                   //  aniso-energy(11)          
+      << 400/(vertexData_[2][1]-vertexData_[1][1])<<" "          //  true stress1 (12)       
+      << 100/(vertexData_[1][0]-vertexData_[0][0])<< std::endl;  //  true stress2 (13)
   }    
-  else if( printFlag_==58 ) {  // isotropy impact on reducing the stiffness    
-    os << 1-(T_->reaction(0)->parameter(1))<< " "  //    youngF(as anisotropy messure
-       << cellData_[0][18] <<" "                   //    area ratio  
-       << cellData_[0][20] <<" "                   //    total energy      
-       << cellData_[0][24] <<" "                   //    iso energy        
-       << cellData_[0][25] << std::endl;           //    aniso energy
-  }   
-  else if( printFlag_==59 ) {// Print in vtu format and some other data
-    std::string pvdFile = "tmp/tissue.pvd";
-    std::string cellFile = "tmp/VTK_cells.vtu";
-    std::string wallFile = "tmp/VTK_walls.vtu";
-    static size_t numCellVar = T_->cell(0).numVariable();
-    setTissueVariables(numCellVar);
-    if( tCount==0 ) {
-      PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
-    }
-    PVD_file::write(*T_,cellFile,wallFile,tCount);
-    os << cellData_[0][25] << " " 
-       << cellData_[1][25] << " " 
-       << cellData_[2][25] << std::endl;
+
+ else if( printFlag_==58 ) {  // isotropy impact on reducing the stiffness
+    
+   os << 1-(T_->reaction(0)->parameter(1))<< " "  //    youngF(as anisotropy messure
+      << cellData_[0][18] <<" "                   //    area ratio  
+      << cellData_[0][20] <<" "                   //    total energy      
+      << cellData_[0][24] <<" "                   //    iso energy        
+      << cellData_[0][25] << std::endl;           //    aniso energy
+ }   
+
+ else if( printFlag_==59 ) {// Print in vtu format and some other data
+   std::string pvdFile = "tmp/tissue.pvd";
+   std::string cellFile = "tmp/VTK_cells.vtu";
+   std::string wallFile = "tmp/VTK_walls.vtu";
+   static size_t numCellVar = T_->cell(0).numVariable();
+   setTissueVariables(numCellVar);
+   if( tCount==0 ) {
+     PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
+   }
+   PVD_file::write(*T_,cellFile,wallFile,tCount);
+   os << cellData_[0][25] << " " 
+      << cellData_[1][25] << " " 
+      << cellData_[2][25] << std::endl;
+   
+ }
+
+ else if( printFlag_==60 ) {  //paper I fig3  parameter scan for alighnmen between MT stress and P-strain
+   
+   os << T_->reaction(1)->parameter(1)<< " " 
+      << T_->reaction(6)->parameter(1)<< " " 
+      << cellData_[0][18] << " " 
+      << cellData_[0][23] << " " 
+      << cellData_[0][24] << std::endl;
+   //        young-Fiber     forceY    stress-anisotropy    cos(tet(MT,stress))  cos(tet(stress,strain))
+   //os << T_->reaction(0)->parameter(0);
+ }
+  
+
+  
+ else if( printFlag_==61 ) {// Print in vtu format and angle distribution at the end PLoS/fig3
+   std::string pvdFile = "tmp/tissue.pvd";
+   std::string cellFile = "tmp/VTK_cells.vtu";
+   std::string wallFile = "tmp/VTK_walls.vtu";
+   static size_t numCellVar = T_->cell(0).numVariable();
+   setTissueVariables(numCellVar);
+   if( tCount==0 ) {
+     PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
+   }
+   PVD_file::write(*T_,cellFile,wallFile,tCount);
+   if(tCount==numPrint_-1){
+     for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) {
+       if(cellData_[cellind][15]<75 && cellData_[cellind][15]>-75)  // indices relate to the  model files
+         os << cellData_[cellind][12] <<" "        //   teta MT     
+	    << cellData_[cellind][13] <<" "        //   teta strain  
+	    << cellData_[cellind][14] <<" "        //   teta stress
+	    << cellData_[cellind][15] <<" "        //   z coordinate ( see reaction VertexFromTRBSCenterTri..MT L3910 )
+	    << cellData_[cellind][23] <<" "        //   teta MT stress
+	    << cellData_[cellind][24] <<" "        //   teta strain stress  
+	    << cellData_[cellind][11] <<" "        //   max strain
+	    << cellData_[cellind][32] <<" "        //   2nd strain    
+	    << cellData_[cellind][19] <<std::endl; //   area ratio
+    
+     }
+   }
+ }
+
+ 
+else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain  
+    
+  os <<T_->reaction(0)->parameter(8)<< " "   // teta MT       
+     << std::acos(cellData_[0][23]) << " "               // teta stress  
+     << std::acos(cellData_[0][24]) << " "               // teta strain    
+     << std::acos(cellData_[0][22]) << std::endl;        // teta MT
+ 
   }
-  else if( printFlag_==60 ) {  //paper I fig3  parameter scan for alighnmen between MT stress and P-strain    
-    os << T_->reaction(1)->parameter(1)<< " " 
-       << T_->reaction(6)->parameter(1)<< " " 
-       << cellData_[0][18] << " " 
-       << cellData_[0][23] << " " 
-       << cellData_[0][24] << std::endl;
-    //        young-Fiber     forceY    stress-anisotropy    cos(tet(MT,stress))  cos(tet(stress,strain))
-    //os << T_->reaction(0)->parameter(0);
-  }
-  else if( printFlag_==61 ) {// Print in vtu format and angle distribution at the end PLoS/fig3
-    std::string pvdFile = "tmp/tissue.pvd";
-    std::string cellFile = "tmp/VTK_cells.vtu";
-    std::string wallFile = "tmp/VTK_walls.vtu";
-    static size_t numCellVar = T_->cell(0).numVariable();
-    setTissueVariables(numCellVar);
-    if( tCount==0 ) {
-      PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
-    }
-    PVD_file::write(*T_,cellFile,wallFile,tCount);
-    if(tCount==numPrint_-1){
-      for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) {
-	if(cellData_[cellind][15]<75 && cellData_[cellind][15]>-75)  // indices relate to the  model files
-	  os << cellData_[cellind][12] <<" "        //   teta MT     
-	     << cellData_[cellind][13] <<" "        //   teta strain  
-	     << cellData_[cellind][14] <<" "        //   teta stress
-	     << cellData_[cellind][15] <<" "        //   z coordinate ( see reaction VertexFromTRBSCenterTri..MT L3910 )
-	     << cellData_[cellind][23] <<" "        //   teta MT stress
-	     << cellData_[cellind][24] <<" "        //   teta strain stress  
-	     << cellData_[cellind][11] <<" "        //   max strain
-	     << cellData_[cellind][32] <<" "        //   2nd strain    
-	     << cellData_[cellind][19] <<std::endl; //   area ratio	
-      }
-    }
-  }
-  else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain  
-    os <<T_->reaction(0)->parameter(8)<< " "   // teta MT       
-       << std::acos(cellData_[0][23]) << " "               // teta stress  
-       << std::acos(cellData_[0][24]) << " "               // teta strain    
-       << std::acos(cellData_[0][22]) << std::endl;        // teta MT  
-  }
-  else if( printFlag_==63 ) {  // energy landscape for quad for stress feedback
-    os << T_->reaction(0)->parameter(8)<< " " 
-       << T_->reaction(0)->parameter(5)<< " " 
-       << cellData_[0][19] << " " 
-       << cellData_[0][20] << " " 
-       << cellData_[0][17]+cellData_[1][17]+cellData_[2][17]+cellData_[3][17]  << std::endl;
-    //    Teta1     Teta2     isoenergy     anisoenergy    total strain anisotropy
-  }
-  else if( printFlag_==64 ) {  // energy landscape for quad for stress feedback centertriangulated
-    os << T_->reaction(0)->parameter(8)<< " " 
-       << T_->reaction(0)->parameter(10)<< " " 
-       << cellData_[0][19] << " " 
-       << cellData_[0][20] << " " 
-       << cellData_[0][17]+cellData_[1][17]+cellData_[2][17]+cellData_[3][17]  << std::endl;
-    //  Teta1    Teta2   isoenergy  anisoenergy   total strain anisotropy
-  }
-  else if( printFlag_==65 ) {// Print in vtu format and angle distribution at the end other data for Dorota data
-    std::string pvdFile = "tmp/tissue.pvd";
-    std::string cellFile = "tmp/VTK_cells.vtu";
-    std::string wallFile = "tmp/VTK_walls.vtu";
-    static size_t numCellVar = T_->cell(0).numVariable();
-    setTissueVariables(numCellVar);
-    if( tCount==0 ) {
-      PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
-    }
-    PVD_file::write(*T_,cellFile,wallFile,tCount);
-    if(tCount==numPrint_){
-      for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) {
-	if(cellData_[cellind][54]==1)
-	  os << cellData_[cellind][40]<<" "  // 1 celldata index
-	     << cellData_[cellind][41]<<" "  // 2 MT anisotropy(data)
-	     << cellData_[cellind][50]<<" "  // 3 areal growth (data) 
-	     << cellData_[cellind][18]<<" "  // 4 stress aniso 
-	     << cellData_[cellind][19]<<" "  // 5 area ratio
-	     << cellData_[cellind][12]<<" "  // 6 angle between max_stress and MT
-	     << cellData_[cellind][13]<<" "  // 7 angle between max_growth and max_strain
-	     << cellData_[cellind][49]<<" "  // 8 max_growth_rate(data)
-	     << cellData_[cellind][11]<<" "  // 9 max_strain  
-	     << cellData_[cellind][54]<<" "  // 10 info boundary and empty cells 
-	     << cellData_[cellind][14]<<" "  // 11 MT_growth angle
-	     <<std::endl;
-      }
-    }
-  }
-  else if( printFlag_==66 ) {// Print in vtu format and strain data  at the end PLoS/fig2F
-    std::string pvdFile = "tmp/tissue.pvd";
-    std::string cellFile = "tmp/VTK_cells.vtu";
-    std::string wallFile = "tmp/VTK_walls.vtu";
-    static size_t numCellVar = T_->cell(0).numVariable();
-    setTissueVariables(numCellVar);
-    if( tCount==0 ) {
-      PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
-    }
-    PVD_file::write(*T_,cellFile,wallFile,tCount);
-    if(tCount==numPrint_){
-      for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) 
-	os << cellData_[cellind][11] <<" " // principal strain value  
-	   << cellData_[cellind][15] <<" "//  2nd strain value
-	   <<std::endl;
-    }
+
+
+
+ else if( printFlag_==63 ) {  // energy landscape for quad for stress feedback
+    
+   os << T_->reaction(0)->parameter(8)<< " " 
+      << T_->reaction(0)->parameter(5)<< " " 
+      << cellData_[0][19] << " " 
+      << cellData_[0][20] << " " 
+      << cellData_[0][17]+cellData_[1][17]+cellData_[2][17]+cellData_[3][17]  << std::endl;
+   //    Teta1     Teta2     isoenergy     anisoenergy    total strain anisotropy
   }
   
+ else if( printFlag_==64 ) {  // energy landscape for quad for stress feedback centertriangulated
+    
+   os << T_->reaction(0)->parameter(8)<< " " 
+      << T_->reaction(0)->parameter(10)<< " " 
+      << cellData_[0][19] << " " 
+      << cellData_[0][20] << " " 
+      << cellData_[0][17]+cellData_[1][17]+cellData_[2][17]+cellData_[3][17]  << std::endl;
+    //  Teta1    Teta2   isoenergy  anisoenergy   total strain anisotropy
+  }
+
+ else if( printFlag_==65 ) {// Print in vtu format and angle distribution at the end other data for Dorota data
+   std::string pvdFile = "tmp/tissue.pvd";
+   std::string cellFile = "tmp/VTK_cells.vtu";
+   std::string wallFile = "tmp/VTK_walls.vtu";
+   static size_t numCellVar = T_->cell(0).numVariable();
+   setTissueVariables(numCellVar);
+   if( tCount==0 ) {
+     PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
+   }
+   PVD_file::write(*T_,cellFile,wallFile,tCount);
+   if(tCount==numPrint_){
+     for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) {
+       if(cellData_[cellind][54]==1)
+         os << cellData_[cellind][40]<<" "  // 1 celldata index
+	    << cellData_[cellind][41]<<" "  // 2 MT anisotropy(data)
+	    << cellData_[cellind][50]<<" "  // 3 areal growth (data) 
+	    << cellData_[cellind][18]<<" "  // 4 stress aniso 
+	    << cellData_[cellind][19]<<" "  // 5 area ratio
+	    << cellData_[cellind][12]<<" "  // 6 angle between max_stress and MT
+	    << cellData_[cellind][13]<<" "  // 7 angle between max_growth and max_strain
+	    << cellData_[cellind][49]<<" "  // 8 max_growth_rate(data)
+	    << cellData_[cellind][11]<<" "  // 9 max_strain  
+	    << cellData_[cellind][54]<<" "  // 10 info boundary and empty cells 
+	    << cellData_[cellind][14]<<" "  // 11 MT_growth angle
+	    <<std::endl;
+       
+     }
+   }
+ }
+  
+ else if( printFlag_==66 ) {// Print in vtu format and strain data  at the end PLoS/fig2F
+   std::string pvdFile = "tmp/tissue.pvd";
+   std::string cellFile = "tmp/VTK_cells.vtu";
+   std::string wallFile = "tmp/VTK_walls.vtu";
+   static size_t numCellVar = T_->cell(0).numVariable();
+   setTissueVariables(numCellVar);
+   if( tCount==0 ) {
+     PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
+   }
+   PVD_file::write(*T_,cellFile,wallFile,tCount);
+   if(tCount==numPrint_){
+     for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) 
+       os << cellData_[cellind][11] <<" " // principal strain value  
+	  << cellData_[cellind][15] <<" "//  2nd strain value
+	  <<std::endl;
+   }
+ }
+  
   else if (printFlag_ == 96) {
-    size_t dimensions = vertexData_[0].size();    
+    size_t dimensions = vertexData_[0].size();
+    
     for (size_t i = 0; i < T_->numCell(); ++i) {
-      Cell &cell = T_->cell(i);    
+      Cell &cell = T_->cell(i);
+      
       if (cell.isNeighbor(T_->background())) {
 	continue;
-      }      
-      std::vector<double> angles;      
+      }
+      
+      std::vector<double> angles;
+      
       for (size_t j = 0; j < cell.numVertex(); ++j) {
 	Vertex *v1 = cell.vertex((j - 1 + cell.numVertex()) % cell.numVertex());
 	Vertex *v2 = cell.vertex(j % cell.numVertex());
-	Vertex *v3 = cell.vertex((j + 1) % cell.numVertex());	
+	Vertex *v3 = cell.vertex((j + 1) % cell.numVertex());
+	
 	std::vector<double> u(dimensions);
-	std::vector<double> v(dimensions);	
+	std::vector<double> v(dimensions);
+	
 	for (size_t d = 0; d < dimensions; ++d) {
 	  u[d] = vertexData_[v1->index()][d] - vertexData_[v2->index()][d];
 	  v[d] = vertexData_[v3->index()][d] - vertexData_[v2->index()][d];
-	}       
+	}
+	
 	double udotv = 0.0;
 	double absu = 0.0;
-	double absv = 0.0;	
+	double absv = 0.0;
+	
 	for (size_t d = 0; d < dimensions; ++d) {
 	  udotv += u[d] * v[d];
 	  absu += std::pow(u[d], 2.0);
 	  absv += std::pow(v[d], 2.0);
-	}	
+	}
+	
 	absu = std::sqrt(absu);
-	absv = std::sqrt(absv);	
-	double c = udotv / (absu * absv);	
+	absv = std::sqrt(absv);
+	
+	double c = udotv / (absu * absv);
+	
 	while (std::abs(c) > 1.0)
 	  {
 	    c *= 0.99;
-	  }	
+	  }
+	
 	angles.push_back(std::acos(c));
-      }      
-      std::vector<double>::iterator iterator;      
+      }
+      
+      std::vector<double>::iterator iterator;
+      
       iterator = std::min_element(angles.begin(), angles.end());
-      double min = *iterator;      
+      double min = *iterator;
+      
       iterator = std::max_element(angles.begin(), angles.end());
-      double max = *iterator;      
+      double max = *iterator;
+      
       std::cout << max / min << "\n";
     }
   }
   else if (printFlag_ == 97) {
     for (size_t i = 0; i < T_->numCell(); ++i) {
-      Cell &cell = T_->cell(i);      
+      Cell &cell = T_->cell(i);
+      
       if (cell.isNeighbor(T_->background())) {
 	continue;
-      }      
-      double length = 0.0;      
+      }
+      
+      double length = 0.0;
+      
       for (size_t j = 0; j < cell.numWall(); ++j) {
-	Wall *wall = cell.wall(j);	
+	Wall *wall = cell.wall(j);
+	
 	length += wall->lengthFromVertexPosition(vertexData_);
-      }      
-      double area = cell.calculateVolume(vertexData_, 0);      
+      }
+      
+      double area = cell.calculateVolume(vertexData_, 0);
+      
       std::cout << std::pow(length, 2.0) / area << "\n";
     }
-  }  
+  }
+  
   else if (printFlag_ == 98) {
-    std::list<int> neighbors;    
+    std::list<int> neighbors;
+    
     for (size_t i = 0; i < T_->numCell(); ++i) {
-      Cell &cell = T_->cell(i);      
+      Cell &cell = T_->cell(i);
+      
       if (cell.isNeighbor(T_->background())) {
 	continue;
-      } 
-      else {
-	std::set<Cell *> candidates;	
+      } else {
+	std::set<Cell *> candidates;
+	
 	for (size_t j = 0; j < cell.numWall(); ++j)
 	  {
-	    Wall *wall = cell.wall(j);	    
+	    Wall *wall = cell.wall(j);
+	    
 	    if (wall->cell1() != &cell) {
 	      candidates.insert(wall->cell1());
-	    }	    
-	    if (wall->cell2() != &cell) {
-	      candidates.insert(wall->cell2());	      
 	    }
-	  }	
+	    
+	    if (wall->cell2() != &cell) {
+	      candidates.insert(wall->cell2());
+	      
+	    }
+	  }
+	
 	if (!candidates.empty()) {
 	  neighbors.push_back(candidates.size());
 	}
       }
-    }    
+    }
+    
     if (neighbors.empty()) {
       std::cout << "> 0\n";
       return;
-    }     
-    std::vector<int> histogram(*(std::max_element(neighbors.begin(), neighbors.end())) + 1, 0);    
+    } 
+    
+    std::vector<int> histogram(*(std::max_element(neighbors.begin(), neighbors.end())) + 1, 0);
+    
     for (std::list<int>::const_iterator i = neighbors.begin(), e = neighbors.end(); i != e; ++i) {
       ++histogram[*i];
-    }    
+    }
+    
     double sum = 0.0;
     
     for (std::vector<int>::const_iterator i = histogram.begin(), e = histogram.end(); i != e; ++i) {
       sum += *i;
-    }    
+    }
+    
     std::cout << "> " <<  histogram.size() << "\n";
     for (size_t i = 0; i < histogram.size(); ++i) {
       std::cout << i << " " << (double) histogram[i] / sum << "\n";
     }
-  }  
+  }
+  
   else if (printFlag_ == 99) {
-    size_t dimensions = vertexData_[0].size();    
+    size_t dimensions = vertexData_[0].size();
+    
     for (size_t i = 0; i < T_->numVertex(); ++i) {
-      Vertex *vertex = T_->vertexP(i);      
-      std::vector<double> vertexPosition(dimensions);      
-      std::cout << t_ << " ";      
+      Vertex *vertex = T_->vertexP(i);
+      
+      std::vector<double> vertexPosition(dimensions);
+      
+      std::cout << t_ << " ";
+      
       for (size_t j = 0; j < dimensions; ++j) {
 	std::cout << (vertexPosition[j] = vertexData_[vertex->index()][j]) << " ";
-      }      
-      // 		  std::cout << "\n";      
-      // 		  std::cout << t_ << " ";      
-      std::vector<double> stressDirection = vertex->stressDirection();      
-      double A = 0.0;      
+      }
+      
+      // 		  std::cout << "\n";
+      
+      // 		  std::cout << t_ << " ";
+      
+      std::vector<double> stressDirection = vertex->stressDirection();
+      
+      double A = 0.0;
+      
       for (size_t j = 0; j < stressDirection.size(); ++j) {
 	A += (stressDirection[j] * stressDirection[j]);
-      }      
-      A = std::sqrt(A);      
+      }
+      
+      A = std::sqrt(A);
+      
       for (size_t j = 0; j < stressDirection.size(); ++j) {
 	std::cout << (stressDirection[j] / A) << " ";
-      }      
-      std::cout << "\n";      
+      }
+      
+      std::cout << "\n";
+      
     }
     std::cout << "\n";
   }
@@ -947,7 +1038,11 @@ void BaseSolver::print(std::ostream &os)
       }
       // }
   }
-  else if( printFlag_==103 ) {// Print cell and membrane values (e.g. for PIN) at same row
+  
+  // cellData[cellIndex][lengthInternalIndex + wallindex]
+  // wallData[w2][wallLengthIndex]
+
+ else if( printFlag_==103 ) {// Print cell and membrane values (e.g. for PIN) at same row
     size_t auxinIndexCell=4;
     size_t pinIndexCell=5;
     size_t pinIndexWall=3;
@@ -956,8 +1051,8 @@ void BaseSolver::print(std::ostream &os)
       os << cellI << " " << cellData_[cellI][auxinIndexCell] << " " 
 	 << cellData_[cellI][pinIndexCell] << " ";
       // print wall variables
-      if (T_->cell(cellI).numWall() != 2) {
-	std::cerr << "BaseSolver::print(), printFlag=103: Assuming TWO neighbors per cell!" << std::endl;
+      if (T_->cell(cellI).numWall() != 4) {
+	std::cerr << "BaseSolver::print(), printFlag=103: Assuming FOUR neighbors per cell!" << std::endl;
 	exit(EXIT_FAILURE);
       }
       size_t neighCount=0;
@@ -980,15 +1075,47 @@ void BaseSolver::print(std::ostream &os)
       }
     }
   }
-  
-  // cellData[cellIndex][lengthInternalIndex + wallindex]
-  // wallData[w2][wallLengthIndex]
+ 
 
 
+ else if( printFlag_==104 ) {// Print cell and membrane values (e.g. for PIN) at same row
+    size_t auxinIndexCell=4;
+    size_t pinIndexCell=5;
+    size_t pinIndexWall=3;
+    for (size_t cellI=0; cellI<cellData_.size(); ++cellI) {
+      // print cell variables
+      os << cellI << " " << cellData_[cellI][auxinIndexCell] << " " 
+	 << cellData_[cellI][pinIndexCell] << " ";
+      // print wall variables
+      if (T_->cell(cellI).numWall() != 4) {
+	std::cerr << "BaseSolver::print(), printFlag=103: Assuming FOUR neighbors per cell!" << std::endl;
+	exit(EXIT_FAILURE);
+      }
+      size_t neighCount=0;
+      for (size_t wallK=0; wallK<T_->cell(cellI).numWall(); ++wallK) {
+	size_t wallI = T_->cell(cellI).wall(wallK)->index();
+	if (T_->wall(wallI).cell1()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
+	  os << wallData_[wallI][pinIndexWall] << " ";
+	  neighCount++;
+	}
+	else if (T_->wall(wallI).cell2()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
+	  os << wallData_[wallI][pinIndexWall+1] << " ";
+	  neighCount++;
+	}
+      }
+      os << std::endl;
+      if (neighCount != 1) {
+	std::cerr << "BaseSolver::print(), printFlag=103: Did not find two neighbors for cell " << cellI 
+		  << "!" << std::endl;
+	exit(EXIT_FAILURE);
+      }
+    }
+  }
   else
     std::cerr << "BaseSolver::print() Wrong printFlag value\n";
   tCount++;
 }
+
 
 void BaseSolver::printInit(std::ostream &os) const
 {
