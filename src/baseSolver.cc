@@ -1056,15 +1056,30 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
 	exit(EXIT_FAILURE);
       }
       size_t neighCount=0;
-      for (size_t wallK=0; wallK<T_->cell(cellI).numWall(); ++wallK) {
-	size_t wallI = T_->cell(cellI).wall(wallK)->index();
-	if (T_->wall(wallI).cell1()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
-	  os << wallData_[wallI][pinIndexWall] << " ";
-	  neighCount++;
+      if (cellI<cellData_.size()-1) { 
+	for (size_t wallK=0; wallK<T_->cell(cellI).numWall(); ++wallK) {
+	  size_t wallI = T_->cell(cellI).wall(wallK)->index();
+	  if (T_->wall(wallI).cell1()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
+	    os << wallData_[wallI][pinIndexWall] << " ";
+	    neighCount++;
+	  }
+	  else if (T_->wall(wallI).cell2()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
+	    os << wallData_[wallI][pinIndexWall+1] << " ";
+	    neighCount++;
+	  }
 	}
-	else if (T_->wall(wallI).cell2()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
-	  os << wallData_[wallI][pinIndexWall+1] << " ";
-	  neighCount++;
+      }
+      else {
+	for (size_t wallK=T_->cell(cellI).numWall()-1; wallK<=0; --wallK) {
+	  size_t wallI = T_->cell(cellI).wall(wallK)->index();
+	  if (T_->wall(wallI).cell1()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
+	    os << wallData_[wallI][pinIndexWall] << " ";
+	    neighCount++;
+	  }
+	  else if (T_->wall(wallI).cell2()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
+	    os << wallData_[wallI][pinIndexWall+1] << " ";
+	    neighCount++;
+	  }
 	}
       }
       os << std::endl;
