@@ -319,11 +319,11 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new SimpleROPModel2(paraValue,indValue); 
   else if(idValue=="SimpleROPModel3")
     return new SimpleROPModel3(paraValue,indValue); 
-   else if(idValue=="SimpleROPModel4")
+  else if(idValue=="SimpleROPModel4")
     return new SimpleROPModel4(paraValue,indValue);  
-   else if(idValue=="SimpleROPModel5")
-    return new SimpleROPModel5(paraValue,indValue);  
-
+  //else if(idValue=="SimpleROPModel5")
+    //return new SimpleROPModel5(paraValue,indValue);  
+  
   //directionReaction.h, directionUpdate.cc
   else if (idValue == "ContinousMTDirection")
     return new ContinousMTDirection(paraValue, indValue);
