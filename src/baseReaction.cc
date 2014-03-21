@@ -274,6 +274,9 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   //transport.h,transport.cc
   else if(idValue=="MembraneDiffusionSimple")
     return new MembraneDiffusionSimple(paraValue,indValue); 
+  else if(idValue=="MembraneDiffusionSimple2")
+    return new MembraneDiffusionSimple2(paraValue,indValue); 
+
   //network.h,network.cc
   else if(idValue=="AuxinModelSimple1")
     return new AuxinModelSimple1(paraValue,indValue); 
@@ -321,8 +324,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new SimpleROPModel3(paraValue,indValue); 
   else if(idValue=="SimpleROPModel4")
     return new SimpleROPModel4(paraValue,indValue);  
-  //else if(idValue=="SimpleROPModel5")
-    //return new SimpleROPModel5(paraValue,indValue);  
+  else if(idValue=="SimpleROPModel5")
+    return new SimpleROPModel5(paraValue,indValue);  
   
   //directionReaction.h, directionUpdate.cc
   else if (idValue == "ContinousMTDirection")

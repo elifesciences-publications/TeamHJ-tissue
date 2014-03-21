@@ -564,14 +564,52 @@ void BaseSolver::print(std::ostream &os)
 
 
 
+
+
+
+
+
+  //
+  // Ad hoc and temporary print flags
+  //
   
+    else if( printFlag_==48 ) {
+
+ size_t Nc = cellData_.size();
+ size_t NcM = {Nc -1};
+    //os << Nc << " " << numPrintVar << std::endl;
+
+  
+  
+ for( size_t i=1 ; i<Nc-1 ; ++i ) 
+    os << cellData_[i][4] <<" ";
+ 
+ for( size_t i=Nc-1 ; i<Nc ; ++i ) 
+    os << cellData_[i][4] <<std::endl;
+ }  
+
+ //
+  // Ad hoc and temporary print flags
+  //
+  
+    else if( printFlag_==49 ) {
+
+ size_t Nc = cellData_.size();
+ size_t NcM = {Nc -1};
+    //os << Nc << " " << numPrintVar << std::endl;
+
+ for( size_t i=0 ; i<Nc ; ++i ) {
+      os << cellData_[i][4] << std::endl;}
+  
+    }
+    
   //
   // Ad hoc and temporary print flags
   //
   
     else if( printFlag_==50 ) {
     
-    os << cellData_[0][8] << " " << cellData_[0][3] <<" " << cellData_[0][12] << std::endl;
+    os << cellData_[0][4] << " " << cellData_[0][5] <<" " << cellData_[0][12] << std::endl;
     
   }
   
@@ -1042,6 +1080,8 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
   // cellData[cellIndex][lengthInternalIndex + wallindex]
   // wallData[w2][wallLengthIndex]
 
+
+
  else if( printFlag_==103 ) {// Print cell and membrane values (e.g. for PIN) at same row
     size_t auxinIndexCell=4;
     size_t pinIndexCell=5;
@@ -1093,44 +1133,11 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
  
 
 
- else if( printFlag_==104 ) {// Print cell and membrane values (e.g. for PIN) at same row
-    size_t auxinIndexCell=4;
-    size_t pinIndexCell=5;
-    size_t pinIndexWall=3;
-    for (size_t cellI=0; cellI<cellData_.size(); ++cellI) {
-      // print cell variables
-      os << cellI << " " << cellData_[cellI][auxinIndexCell] << " " 
-	 << cellData_[cellI][pinIndexCell] << " ";
-      // print wall variables
-      if (T_->cell(cellI).numWall() != 4) {
-	std::cerr << "BaseSolver::print(), printFlag=103: Assuming FOUR neighbors per cell!" << std::endl;
-	exit(EXIT_FAILURE);
-      }
-      size_t neighCount=0;
-      for (size_t wallK=0; wallK<T_->cell(cellI).numWall(); ++wallK) {
-	size_t wallI = T_->cell(cellI).wall(wallK)->index();
-	if (T_->wall(wallI).cell1()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
-	  os << wallData_[wallI][pinIndexWall] << " ";
-	  neighCount++;
-	}
-	else if (T_->wall(wallI).cell2()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
-	  os << wallData_[wallI][pinIndexWall+1] << " ";
-	  neighCount++;
-	}
-      }
-      os << std::endl;
-      if (neighCount != 1) {
-	std::cerr << "BaseSolver::print(), printFlag=103: Did not find two neighbors for cell " << cellI 
-		  << "!" << std::endl;
-	exit(EXIT_FAILURE);
-      }
-    }
-  }
+
   else
     std::cerr << "BaseSolver::print() Wrong printFlag value\n";
   tCount++;
 }
-
 
 void BaseSolver::printInit(std::ostream &os) const
 {

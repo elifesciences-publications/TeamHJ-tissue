@@ -3055,3 +3055,131 @@ cellData[i][pI]+parameter(12)*wallData[j][pwI+1];
 }
 
 
+
+SimpleROPModel5::
+SimpleROPModel5(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=16 ) {
+    std::cerr << "SimpleROPModel4::"
+	      << "SimpleROPModel4() "
+	      << "16 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 2 ) {
+    std::cerr << "SimpleROPModel4::"
+	      << "SimpleROPModel4() "
+	      << "Two cell variable indices (first row) and two wall variable"
+	      << " indices are used (auxin,PIN)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("SimpleROPModel5");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "c_IAA";
+  tmp[1] = "d_IAA";
+  tmp[2] = "p_IAAH(in)";
+  tmp[3] = "p_IAAH(out)";
+  tmp[4] = "p_IAA-";
+  tmp[5] = "D_IAA";
+  tmp[6] = "c_PIN";
+  tmp[7] = "d_PIN";
+  tmp[8] = "endo_PIN";
+  tmp[9] = "exo_PIN";
+  tmp[10] = "K_hill";
+  tmp[11] = "n_hill";
+	 tmp[12] = "endo_back";
+  tmp[13] = "K_hill";
+  tmp[14] = "n_hill";
+	 tmp[15] = "endo_back";
+  setParameterId( tmp );
+}
+
+void SimpleROPModel5::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);//auxin
+  size_t pI = variableIndex(0,1);//pin
+  size_t awI = variableIndex(1,0);//auxin (wall)
+  size_t pwI = variableIndex(1,1);//pin (membrane/wall)
+
+
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  awI<wallData[0].size() &&
+	  pwI<wallData[0].size() );
+
+ for (size_t i=4; i<5; ++i) {
+	  
+    //Production and degradation
+    cellDerivs[i][aI] += parameter(0) - parameter(1)*cellData[i][aI];
+    cellDerivs[i][pI] += parameter(6)*cellData[i][aI]/(parameter(4)+cellData[i][aI]) - parameter(7)*cellData[i][pI];
+
+    
+    //Auxin transport and protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+	double fac = parameter(2)*cellData[i][aI] +
+	  parameter(3)*cellData[i][aI]*wallData[j][pwI]; //p_2 A_i + p_4 A_i P_ij
+	
+	cellDerivs[i][aI] -= fac;
+	cellDerivs[iNeighbor][aI] += fac;
+	
+	//PIN cycling
+	fac = parameter(8)*wallData[j][pwI]*
+	   std::pow(wallData[j][pwI+1],parameter(11))  /
+	  	( std::pow(parameter(10),parameter(11)) + std::pow(wallData[j][pwI+1],parameter(11)) ) -  parameter(9)*cellData[i][pI]+parameter(12)*wallData[j][pwI]-parameter(13)*cellData[i][pI]*std::pow(wallData[j][pwI],parameter(14) ) /
+	  ( std::pow(parameter(15),parameter(14)) + std::pow(wallData[j][pwI],parameter(14)) );;
+	wallDerivs[j][pwI] -= fac;
+	cellDerivs[i][pI] += fac;
+
+
+      }
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell1()->index();
+	double fac = parameter(2)*cellData[i][aI] +
+	  parameter(3)*cellData[i][aI]*wallData[j][pwI+1];
+	
+	cellDerivs[i][aI] -= fac;
+	cellDerivs[iNeighbor][aI] += fac;
+
+
+	//PIN cycling
+
+	fac = parameter(8)*std::pow(wallData[j][pwI],parameter(11))  /
+	  ( std::pow(parameter(10),parameter(11)) + std::pow(wallData[j][pwI],parameter(11)) )*  wallData[j][pwI+1] -parameter(9)*cellData[i][pI]+parameter(12)*wallData[j][pwI+1]-
+parameter(13)*cellData[i][pI]*std::pow(wallData[j][pwI+1],parameter(14) ) /
+	  ( std::pow(parameter(15),parameter(14)) + std::pow(wallData[j][pwI+1],parameter(14)) );
+
+	wallDerivs[j][pwI+1] -= fac;
+	cellDerivs[i][pI] += fac;
+      }
+    }
+  }
+}
+
+
+
+
