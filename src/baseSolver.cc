@@ -1070,8 +1070,9 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
 	}
       }
       else {
-	for (size_t wallK=T_->cell(cellI).numWall()-1; wallK<=0; --wallK) {
+	for (size_t wallK=T_->cell(cellI).numWall()-1; wallK>=0; --wallK) {
 	  size_t wallI = T_->cell(cellI).wall(wallK)->index();
+	  std::cerr << wallK << " " << wallI << std::endl;
 	  if (T_->wall(wallI).cell1()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
 	    os << wallData_[wallI][pinIndexWall] << " ";
 	    neighCount++;
