@@ -222,7 +222,6 @@ VertexFromTRBScenterTriangulation(std::vector<double> &paraValue,
     std::cerr << "VertexFromTRBScenterTriangulation::"
 	      << "VertexFromTRBScenterTriangulation() "
 	      << "Wall length index is given in first level." 
-              << std::endl
 	      << "Start of additional Cell variable indices (center(x,y,z) "
 	      << "L_1,...,L_n, n=num vertex) is given in second level (typically at end)." 
               << "Optionally two additional levels can be given where the strain and stress "
@@ -3105,6 +3104,8 @@ derivs(Tissue &T,
       // E(axa) and (axa)E
       double trE=( Delta[1]*cotan[0]+ Delta[2]*cotan[1]+Delta[0]*cotan[2])/(4*restingArea);
       
+     
+
       double directAniso[2][2]={{AnisoRestLocal[0]*AnisoRestLocal[0],AnisoRestLocal[0]*AnisoRestLocal[1]},
                                 {AnisoRestLocal[1]*AnisoRestLocal[0],AnisoRestLocal[1]*AnisoRestLocal[1]}};
       
@@ -3155,13 +3156,20 @@ derivs(Tissue &T,
       StrainAlmansi[0][1]=0.5*LeftCauchy[0][1]/temp;  
       StrainAlmansi[1][1]=0.5*(1-(LeftCauchy[0][0]/temp));
       
+
+
+
+
       double atEa=AnisoRestLocal[0]*AnisoRestLocal[0]*Egreen[0][0]
         +AnisoRestLocal[0]*AnisoRestLocal[1]*(Egreen[0][1]+Egreen[1][0])
         +AnisoRestLocal[1]*AnisoRestLocal[1]*Egreen[1][1];
 
       double I4=atEa;
-      
-     
+
+
+    
+
+  
       double Eaa[2][2];
       Eaa[0][0]= Egreen[0][0]*directAniso[0][0]+Egreen[0][1]*directAniso[1][0];        
       Eaa[1][0]= Egreen[1][0]*directAniso[0][0]+Egreen[1][1]*directAniso[1][0];        
@@ -3371,9 +3379,59 @@ derivs(Tissue &T,
             StressTensor[r][s] += tempR[r][w]*rotation[s][w]; 
         }
       
-      
-     
+ 
 
+
+
+
+
+ // restingLength[0] 
+ //      length[0] 
+ //      Angle[0]
+
+
+
+
+
+
+
+      // if (w2==0 ) std::cerr<< "wall 0  resting  "
+      //                      << wallData[w2][wallLengthIndex] 
+      //                      << " current  "
+      //                      <<T.wall(w2).lengthFromVertexPosition(vertexData)<< std::endl
+      //                      << "wall 1  resting  "
+      //                      << restingLength[0] 
+      //                      << " current  "
+      //                      << length[0] << std::endl
+      //                      << "wall 2  resting  "
+      //                      << restingLength[2] 
+      //                      << " current  "
+      //                      << length[2] << std::endl
+      //                      << " angles "<<Angle[0]<<" "<<Angle[1]<<" "<<Angle[2]<< std::endl
+      //                      << "strain 1 and 2 and 3"<< std::endl
+      //                      <<StrainTensor[0][0] << "  "<<StrainTensor[1][1]<<"  "<<StrainTensor[1][0]<< std::endl;
+      
+      // if (w2==1 ) std::cerr<< "wall 1  resting  "
+      //                      <<wallData[w2][wallLengthIndex]
+      //                      <<" current  "
+      //                      << T.wall(w2).lengthFromVertexPosition(vertexData) 
+      //                      << "strain 1 and 2 "<<StrainTensor[0][0]
+      //                      <<"  "<<StrainTensor[1][1]<<"  "<<StrainTensor[1][0]<< std::endl;
+      // if (w2==2 ) std::cerr<< "wall 2  resting  "
+      //                      <<wallData[w2][wallLengthIndex]
+      //                      <<" current  "
+      //                      << T.wall(w2).lengthFromVertexPosition(vertexData) 
+      //                      << "strain 1 and 2 "<<StrainTensor[0][0]
+      //                      <<"  "<<StrainTensor[1][1]<<"  "<<StrainTensor[1][0]<< std::endl;
+      
+      // if (w2==3 ) std::cerr<< "wall 3  resting  "
+      //                      <<wallData[w2][wallLengthIndex]
+      //                      <<" current  "
+      //                      << T.wall(w2).lengthFromVertexPosition(vertexData) 
+      //                          << "strain 1 and 2 "<<StrainTensor[0][0]
+      //                      <<"  "<<StrainTensor[1][1]<<"  "<<StrainTensor[1][0]<< std::endl;
+           
+     
       // accumulating strain and stress tensors and normal to cell plane vector to be averaged later
       for (int r=0 ; r<3 ; r++) 
         for (int s=0 ; s<3 ; s++)    
@@ -3407,7 +3465,9 @@ derivs(Tissue &T,
         EnergyIso +=( (lambdaT/2)*I1*I1 + mioT*I2 )*restingArea; //<<<<<<<<<<<<<<<<<<<<<
       
         EnergyAniso +=( (deltaLam/2)*I4*I1 + deltaMio*I5 )*restingArea; //<<<<<<<<<<<<<<<<<<<<<<<<<<<
-       
+        
+        
+        
         //Forces of vertices   
         double Force[3][3];                                           
     
@@ -3776,9 +3836,9 @@ derivs(Tissue &T,
   
     cellData[cellIndex][areaRatioIndex  ]= areaRatio;
     cellData[cellIndex][isoEnergyIndex  ]= EnergyIso;    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
     cellData[cellIndex][anisoEnergyIndex]= EnergyAniso;
- 
-
+    
   }
 
   
@@ -3790,8 +3850,11 @@ derivs(Tissue &T,
   for( size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex ) {
     
     const size_t numWalls = T.cell(cellIndex).numWall();
-    totalEnergyIso   +=cellData[cellIndex][isoEnergyIndex];
-    totalEnergyAniso +=cellData[cellIndex][anisoEnergyIndex];
+    if(cellData[cellIndex][39+2]>-120) {
+      totalEnergyIso   +=cellData[cellIndex][isoEnergyIndex];
+      totalEnergyAniso +=cellData[cellIndex][anisoEnergyIndex];
+    }
+
     
     Cell *  cell1=&(T.cell(cellIndex));
     	
@@ -4074,12 +4137,10 @@ derivs(Tissue &T,
   }
 
     
-  cellData[0][variableIndex(0,5)]=totalEnergyIso ;
-  cellData[0][variableIndex(0,6)]=totalEnergyAniso ;   
+  cellData[0][14]=totalEnergyIso ;
+  cellData[1][14]=totalEnergyAniso ;   
     
-    
-    
-
+  
     
 }     
 
@@ -4251,13 +4312,13 @@ derivs(Tissue &T,
       position[2] = vertexData[v3];
       
       // Resting lengths are from com-vertex(k), vertex(k)-vertex(k+1) (wall(k)), com-vertex(k+1)
-      std::vector<double> restingLength(numWalls);
+      std::vector<double> restingLength(3);
       restingLength[0] = cellData[cellIndex][lengthInternalIndex + k];
       restingLength[1] = wallData[w2][wallLengthIndex];
       restingLength[2] = cellData[cellIndex][lengthInternalIndex + kPlusOneMod];
       
       // Lengths are from com-vertex(k), vertex(k)-vertex(k+1) (wall(k)), com-vertex(k+1)
-      std::vector<double> length(numWalls);
+      std::vector<double> length(3);
       length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
 			     (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
 			     (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
@@ -5256,9 +5317,9 @@ initiate(Tissue &T,
 FiberModel::FiberModel(std::vector<double> &paraValue,
 				     std::vector< std::vector<size_t> > &indValue)
 {
-  if (paraValue.size() != 8) {
+  if (paraValue.size() != 8 && paraValue.size() != 9) {
     std::cerr << "FiberModel::FiberModel() " 
-	      << "Uses eight parameters: k_rate, equilibrium threshold , linear-hill flag, K_hill, n_hill, young_matrix, young_fiber and initialization flag " << std::endl;
+	      << "Uses eight or nine parameters: k_rate, equilibrium threshold , linear-hill flag, K_hill, n_hill, young_matrix, young_fiber, initialization flag and Poisson ratio. " << std::endl;
     exit(EXIT_FAILURE);
   }
   
@@ -5283,6 +5344,8 @@ FiberModel::FiberModel(std::vector<double> &paraValue,
   tmp[5] = "Y_matrix";
   tmp[6] = "Y_fiber";
   tmp[7] = "init_flag";
+  if (parameter(7)==3)
+    tmp[8] = "Poisson";
 
   setParameterId(tmp);
 }
@@ -5312,16 +5375,23 @@ void FiberModel::initiate(Tissue &T,
   if (parameter(7)==2){
     for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) { // initiating with 0 anisotropy and isotropic material
       double anisotropy=cellData[cellIndex][AnisoIndex];
-      if ( parameter(2)==0 )
+      if ( parameter(2)==0 ) // linear
 	cellData[cellIndex][YoungLIndex]=youngMatrix+0.5*(1+anisotropy)* youngFiber;
       
-      if ( parameter(2)==1 )
+      if ( parameter(2)==1 ) // Hill
+	cellData[cellIndex][YoungLIndex] =  youngMatrix+ 
+	  0.5*(1+(std::pow(anisotropy,Nh) /(std::pow((1-anisotropy),Nh)*std::pow(Kh,Nh)
+					    +std::pow(anisotropy,Nh))))* youngFiber;
+
+      if ( parameter(2)==2 )  // minimum energy
 	cellData[cellIndex][YoungLIndex] =  youngMatrix+ 
 	  0.5*(1+(std::pow(anisotropy,Nh) /(std::pow((1-anisotropy),Nh)*std::pow(Kh,Nh)
 					    +std::pow(anisotropy,Nh))))* youngFiber; 
       //std::cerr<< cellData[cellIndex][variableIndex(1,0)] << std::endl;
     }
   }
+
+ 
   
 }
 
@@ -5348,6 +5418,7 @@ void FiberModel::update(Tissue &T,
   double Nh=parameter(4);
   double youngMatrix=parameter(5);
   double youngFiber=parameter(6);
+  double poisson=parameter(7);
 
   if (parameter(0)==0.0)
     return;
@@ -5368,7 +5439,7 @@ void FiberModel::update(Tissue &T,
 	 0.5*(1+(std::pow(anisotropy,Nh)
 		 /(std::pow((1-anisotropy),Nh)*std::pow(Kh,Nh)+std::pow(anisotropy,Nh))))* youngFiber
 	 && cellData[cellIndex][YoungLIndex] < youngMatrix+youngFiber // not to exceed maximum when using absolute stress anisotropy 
-	 ){ // Hill Fiber model
+	 ){ // Hill-like Fiber model
 
       // cellData[cellIndex][] += parameter(0)*h*(cellData[cellIndex][]-cellData[cellIndex][]);
       // cellData[cellIndex][YoungLIndex] = youngMatrix+
