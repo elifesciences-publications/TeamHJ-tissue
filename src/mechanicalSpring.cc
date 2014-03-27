@@ -2414,11 +2414,13 @@ derivs(Tissue &T,
 	    coeff = 0.0;
 	  
 	  if( distance>connections[cellIndex][vertexCellIndex1][vertexCellIndex2])
-	    coeff *=fad;
+	    coeff *=fad; // adhision factor
 	  
-	  coeff*=(wallData[ T.vertex(vertexIndex1).wall(0)->index()][0]
-		  +wallData[ T.vertex(vertexIndex1).wall(1)->index()][0])/0.2;
-	  //Update both vertices for each dimension
+	  // this is ad-hoc ( a weight to consider concentration of vertices on membrane 
+          //coeff*=(wallData[ T.vertex(vertexIndex1).wall(0)->index()][0]
+	  //	  +wallData[ T.vertex(vertexIndex1).wall(1)->index()][0])/0.2;
+	  
+          //Update both vertices for each dimension
 	  for(size_t d=0 ; d<dimension ; d++ ) {
 	    double div = coeff*(vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d]);
 	    if ( connections[cellIndex][vertexCellIndex1][vertexCellIndex2]>0){
