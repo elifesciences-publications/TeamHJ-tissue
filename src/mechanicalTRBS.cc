@@ -2503,45 +2503,9 @@ derivs(Tissue &T,
 
     cellData[0][variableIndex(0,5)]=totalEnergyIso ;
     cellData[0][variableIndex(0,6)]=totalEnergyAniso ;
-  // size_t numVertices = T.numVertex();
-  // for(size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex){ // stimating volume for equilibrium 
-  //   TotalVolume +=std::sqrt(vertexData[vertexIndex][0]*vertexData[vertexIndex][0] +
-  //                           vertexData[vertexIndex][1]*vertexData[vertexIndex][1] +
-  //                           vertexData[vertexIndex][2]*vertexData[vertexIndex][2] );
-  // }
-  // deltaVolume=TotalVolume-cellData[0][25];
-  // cellData[0][25]=TotalVolume;
-  // cellData[0][24]=deltaVolume;
-}
-       //1
-      // int kk;
-      // double PrPs;
-      // StrainTensor[0][0]=0;
-      // StrainTensor[0][1]=0;
-      // StrainTensor[1][0]=0;
-      // StrainTensor[1][1]=0;
 
-      // for ( int r=0 ; r<3 ; ++r )   // PrPs is in resting shape and shape vectors are in the current shape instead 
-      //   { for ( int s=0 ; s<3 ; ++s )
-      //       {     
-      //         if ((r==0 && s==1)||(r==1 && s==0)) kk=0;
-      //         if ((r==0 && s==2)||(r==2 && s==0)) kk=2;
-      //         if ((r==1 && s==2)||(r==2 && s==1)) kk=1; 
-      //         if ( s!=r ) PrPs=Rcirc2Resting-(restingLength[kk]*restingLength[kk])*0.5;
-      //         if ( s==r ) PrPs=Rcirc2Resting;
-              
-      //         StrainTensor[0][0]=StrainTensor[0][0]+PrPs*ShapeVectorCurrent[r][0]*ShapeVectorCurrent[s][0];  
-      //         StrainTensor[0][1]=StrainTensor[0][1]+PrPs*ShapeVectorCurrent[r][0]*ShapeVectorCurrent[s][1];
-      //         StrainTensor[1][0]=StrainTensor[1][0]+PrPs*ShapeVectorCurrent[r][1]*ShapeVectorCurrent[s][0];
-      //         StrainTensor[1][1]=StrainTensor[1][1]+PrPs*ShapeVectorCurrent[r][1]*ShapeVectorCurrent[s][1];4
-      //       }
-      //   }
-      
-      // std::cerr <<"strain tensor " << std::endl;
-      // std::cerr <<" Sxx  "<< StrainTensor[0][0] <<" Sxy  "<< StrainTensor[0][1]  << std::endl
-      //           <<" Syx  "<< StrainTensor[1][0] <<" Syy  "<< StrainTensor[1][1] << std::endl;
-    
-     
+}
+ 
     
 
 VertexFromTRBScenterTriangulationMT::
@@ -3737,8 +3701,6 @@ derivs(Tissue &T,
          PerpStrain[2]=eigenVectorStrain[2][Istrain];
        }
 
- 
-
        
     // storing a measure for strain anisotropy in cell vector
     if (std::abs(maximalStrainValue) <  0.000001) cellData[cellIndex][strainAnIndex]=0;
@@ -3813,20 +3775,11 @@ derivs(Tissue &T,
     
     //<<<<<<<<<<<<<<<<<<<<<<<< angles between  vectors and circumferential direction <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
    
-    
-    
-    cellData[cellIndex][15]= cellData[cellIndex][comIndex+2]; // z coordinate of central vertex of the cell // 15 --> Z coordinate
-    
-       
-       
-       //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    //cellData[cellIndex][15]= cellData[cellIndex][comIndex+2]; // z coordinate of central vertex of the cell // 15 --> Z coordinate
+        
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   
 
-
-  
-  
-    
-    
     // cellData[cellIndex][20]= strainZ;
     // cellData[cellIndex][21]= TetaStress;
     // cellData[cellIndex][22]= TetaStrain; 
@@ -3845,15 +3798,13 @@ derivs(Tissue &T,
   double totalEnergyIso=0;
   double totalEnergyAniso=0;
   
-  
-
   for( size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex ) {
     
     const size_t numWalls = T.cell(cellIndex).numWall();
     if(cellData[cellIndex][39+2]>-120) {
       totalEnergyIso   +=cellData[cellIndex][isoEnergyIndex];
       totalEnergyAniso +=cellData[cellIndex][anisoEnergyIndex];
-    }
+     }
 
     
     Cell *  cell1=&(T.cell(cellIndex));
@@ -3916,9 +3867,6 @@ derivs(Tissue &T,
     StressTensor[1][0]=StressTensor[0][1];
     StressTensor[2][1]=StressTensor[1][2];
     
-    
-    
-  
     
     // stress component along MT direction 
     cellData[cellIndex][MTstressIndex ] =
