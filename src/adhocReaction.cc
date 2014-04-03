@@ -186,6 +186,336 @@ derivs(Tissue &T,
     }
 }
 
+
+
+VertexNoUpdateBoundaryPtemplate::  // BB
+VertexNoUpdateBoundaryPtemplate(std::vector<double> &paraValue, 
+                                std::vector< std::vector<size_t> > 
+                                &indValue ) {
+  
+  //Do some checks on the parameters and variable indices
+  //
+  if (paraValue.size()) {
+    std::cerr << "VertexNoUpdateBoundaryPtemplate::"
+	      << "VertexNoUpdateBoundaryPtemplate() "
+	      << "Uses no parameters."
+	      << std::endl;
+    exit(0);
+  }
+  if (indValue.size()!=1 ) {
+    std::cerr << "VertexNoUpdateBoundaryPtemplate::"
+	      << "VertexNoUpdateBoundaryPtemplate() "
+              << "Start of additional Cell variable indices (center(x,y,z) at first level "
+              << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexNoUpdateBoundaryPtemplate");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  setParameterId( tmp );
+}
+
+
+
+void VertexNoUpdateBoundaryPtemplate::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t comIndex = variableIndex(0,0);  
+  size_t numVertices = T.numVertex();
+  size_t numWalls = T.numWall();
+  size_t dimension = vertexData[0].size();
+  
+  for (size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex)//check all the vertices
+    if (T.vertex(vertexIndex).isBoundary(T.background())){          //if it is at the boundary
+      size_t numVertexWalls=T.vertex(vertexIndex).numWall();        //take the number of walls connected to it
+      for(size_t wallIndexVertex=0; wallIndexVertex<numVertexWalls; 
+          wallIndexVertex++){                                       //for each of those walls
+        size_t wallIndex=T.vertex(vertexIndex).wall(wallIndexVertex)->index(); // take global index
+        if (T.wall(wallIndex).cell1()==T.background() 
+            || T.wall(wallIndex).cell2()==T.background()){          // if the wall is boundary
+          size_t cellIndex;
+
+
+          if(T.wall(wallIndex).cell1()==T.background())             //find the cell which is not background
+            cellIndex=T.wall(wallIndex).cell2()->index();
+          else
+            cellIndex=T.wall(wallIndex).cell1()->index();
+          
+          // std::cerr<<"com index is   "<<comIndex<<
+          //   "cell index is "<<cellIndex<<"  here...............";
+          // std::cerr<<cellData[cellIndex][comIndex]<<"  "
+          //          <<cellData[cellIndex][comIndex+1]<<"  "
+          //          <<cellData[cellIndex][comIndex+2]<<std::endl;
+          double COM[3]={cellData[cellIndex][comIndex],
+                         cellData[cellIndex][comIndex+1],
+                         cellData[cellIndex][comIndex+2]};          // take the position of COM
+
+          
+          double CV[3]={vertexData[vertexIndex][0]-COM[0],          
+                        vertexData[vertexIndex][1]-COM[1],
+                        vertexData[vertexIndex][2]-COM[2]};         // vector vertex-COM
+          size_t v1 = T.wall(wallIndex).vertex1()->index();
+ 	  size_t v2 = T.wall(wallIndex).vertex2()->index();
+          double wallVector[3]={vertexData[v1][0]-vertexData[v2][0],
+                                vertexData[v1][1]-vertexData[v2][1],
+                                vertexData[v1][2]-vertexData[v2][2] };// wall vector
+          double temp=std::sqrt(wallVector[0]*wallVector[0]
+                                +wallVector[1]*wallVector[1]
+                                +wallVector[2]*wallVector[2]);
+          
+          if(temp<0.00000000001)
+            std::cerr<<"VertexNoUpdateBoundaryPtemplate::derivs(), strange wall length at the boundary";
+          else
+            for(size_t i=0;i<3;i++)                                 // normalize wall vector
+              wallVector[i]/=temp;   
+          temp=CV[0]*wallVector[0]+CV[1]*wallVector[1]+CV[2]*wallVector[2];
+          double edgeNormal[3]={CV[0]-temp*wallVector[0],
+                                CV[1]-temp*wallVector[1],
+                                CV[2]-temp*wallVector[2]};          // edge normal vector
+          temp=std::sqrt(edgeNormal[0]*edgeNormal[0]+
+                         edgeNormal[1]*edgeNormal[1]+
+                         edgeNormal[2]*edgeNormal[2]);
+          
+          if(temp<0.00000000001)
+            std::cerr<<"VertexNoUpdateBoundaryPtemplate::derivs(), strange edge Normal at the boundary";
+          else
+            for(size_t i=0;i<3;i++)                             // normalize edge normal vector
+              edgeNormal[i]/=temp;   
+          
+          temp=vertexDerivs[vertexIndex][0]*edgeNormal[0]+      // projection of vertex derivs on edge normal
+            vertexDerivs[vertexIndex][1]*edgeNormal[1]+
+            vertexDerivs[vertexIndex][2]*edgeNormal[2];
+          for (size_t d=0; d<dimension; ++d)
+            vertexDerivs[vertexIndex][d] -=temp*edgeNormal[d] ;
+          
+        }
+      }
+      // take the list of wall-indices of the walls connected to vertexIndex
+      // for(j in the list)
+      //     if ( cell1 in background OR cell2 in background)
+      //           take the coordinates of the cell-centerCOM which is not background
+      //               calculate the vector Vertex-COM
+      //               calculate wallvector
+      //               calculate A=(vertex-COM)-((wallvector).(Vertex-COM))wallvector/norm(wallvector)
+      //               normalize A and make sure it is outward
+      //               calculate B=(VderivVector.A)A
+      //               VderivVector-=B
+      
+    }
+  
+  
+  
+}
+
+
+
+//--------------------------------------------
+
+
+VertexNoUpdateBoundaryPtemplateStatic::  // BB
+VertexNoUpdateBoundaryPtemplateStatic(std::vector<double> &paraValue, 
+                                std::vector< std::vector<size_t> > 
+                                &indValue ) {
+  
+  //Do some checks on the parameters and variable indices
+  //
+  if (paraValue.size()) {
+    std::cerr << "VertexNoUpdateBoundaryPtemplateStatic::"
+	      << "VertexNoUpdateBoundaryPtemplateStatic() "
+	      << "Uses no parameters."
+	      << std::endl;
+    exit(0);
+  }
+  if (indValue.size()!=1 ) {
+    std::cerr << "VertexNoUpdateBoundaryPtemplateStatic::"
+	      << "VertexNoUpdateBoundaryPtemplateStatic() "
+              << "Start of Cell COM indices at first level "
+              << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexNoUpdateBoundaryPtemplateStatic");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  setParameterId( tmp );
+}
+
+
+void VertexNoUpdateBoundaryPtemplateStatic::
+initiate(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs)
+{
+  size_t comIndex = variableIndex(0,0);  
+  size_t numVertices = T.numVertex();
+  size_t dimension = vertexData[0].size();
+  
+  numBoundaryVertices=0;
+  for (size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex)//check all the vertices
+
+    if (T.vertex(vertexIndex).isBoundary(T.background())){          //if it is at the boundary
+      boundaryVertices.push_back(vertexIndex);                      // place its index in a vector
+      numBoundaryVertices ++;                                          // number of boundary vertices
+      size_t numVertexWalls=T.vertex(vertexIndex).numWall();        //take the number of walls connected to it       //std::cerr<<"boundary vertex "<< vertexIndex  <<" has "<< numVertexWalls << " walls"<< std::endl;
+      std::vector<double> cellNormal(3);
+      boundaryNormal.push_back(cellNormal);                         // alocate space for the normal vector
+      size_t numVertexWallBoundary=0;     // counter for number of boundary walls of the vertex
+      for(size_t wallIndexVertex=0; wallIndexVertex<numVertexWalls; 
+          wallIndexVertex++){                                       //for each of those walls
+        size_t wallIndex=T.vertex(vertexIndex).wall(wallIndexVertex)->index(); // take global index
+        
+        // std::cerr<<" wall "<< wallIndex  <<" is shared by  "
+        //          << T.wall(wallIndex).cell1()->index() << " and "
+        //          << T.wall(wallIndex).cell2()->index() << std::endl;
+        
+        if (T.wall(wallIndex).cell1()==T.background() 
+            || T.wall(wallIndex).cell2()==T.background()){          // if the wall is boundary
+          numVertexWallBoundary++;
+          size_t cellIndex;
+          if(T.wall(wallIndex).cell1()==T.background())             //find its cell (which is not background)
+            cellIndex=T.wall(wallIndex).cell2()->index();
+          else
+            cellIndex=T.wall(wallIndex).cell1()->index();
+          // std::cerr<<" boundary wall "<< wallIndex  <<" is in the cell "<< cellIndex
+          //          << std::endl;
+
+          double COM[3]={cellData[cellIndex][comIndex],
+                         cellData[cellIndex][comIndex+1],
+                         cellData[cellIndex][comIndex+2]};          // take the position of COM
+
+          double CV[3]={vertexData[vertexIndex][0]-COM[0],          
+                        vertexData[vertexIndex][1]-COM[1],
+                        vertexData[vertexIndex][2]-COM[2]};         // vector vertex-COM
+
+          size_t v1 = T.wall(wallIndex).vertex1()->index();
+ 	  size_t v2 = T.wall(wallIndex).vertex2()->index();
+          double wallVector[3]={vertexData[v1][0]-vertexData[v2][0],
+                                vertexData[v1][1]-vertexData[v2][1],
+                                vertexData[v1][2]-vertexData[v2][2] };// wall vector
+          // extract cell normal from  (Vertec-COM)x(wallVector)
+          cellNormal[0]=CV[1]*wallVector[2]-CV[2]*wallVector[1]; 
+          cellNormal[1]=CV[2]*wallVector[0]-CV[0]*wallVector[2];
+          cellNormal[2]=CV[0]*wallVector[1]-CV[1]*wallVector[0];
+
+          double temp=std::sqrt(cellNormal[0]*cellNormal[0]
+                                +cellNormal[1]*cellNormal[1]
+                                +cellNormal[2]*cellNormal[2]);
+          
+          if(temp<0.00000000001)
+            std::cerr<<"VertexNoUpdateBoundaryPtemplateStatic::initiate(), "
+                     <<"strange cell normal at the boundary"<<std::endl;
+          else
+            for(size_t d=0;d<dimension;d++)                                 // normalize cell normal
+              cellNormal[d]/=temp;   
+
+          if ( numVertexWallBoundary>1){
+            temp=boundaryNormal[numBoundaryVertices-1][0]*cellNormal[0]+
+              boundaryNormal[numBoundaryVertices-1][1]*cellNormal[1]+
+              boundaryNormal[numBoundaryVertices-1][2]*cellNormal[2];
+            if(temp>0)
+              for(size_t d=0;d<dimension;d++)  
+                boundaryNormal[numBoundaryVertices-1][d]+=cellNormal[d];
+            else
+              for(size_t d=0;d<dimension;d++)  
+                boundaryNormal[numBoundaryVertices-1][d]-=cellNormal[d];
+          }
+          else
+            // add the cell normal to the boundaryNormal
+            for(size_t d=0;d<dimension;d++)  
+              boundaryNormal[numBoundaryVertices-1][d]+=cellNormal[d];
+          
+          
+        }
+        //std::cerr<< numVertexWallBoundary<<std::endl;
+        // if(numVertexWallBoundary==0) std::cerr<<"here.................................."<<numBoundaryVertices<<std::endl;;  
+        
+      }
+
+      if(numVertexWallBoundary!=0){
+        double temp=std::sqrt(boundaryNormal[numBoundaryVertices-1][0]
+                              *boundaryNormal[numBoundaryVertices-1][0]+
+                              boundaryNormal[numBoundaryVertices-1][1]
+                              *boundaryNormal[numBoundaryVertices-1][1]+
+                              boundaryNormal[numBoundaryVertices-1][2]
+                              *boundaryNormal[numBoundaryVertices-1][2]);
+        for (size_t d=0; d<dimension; ++d)  // normalize the boundaryNormal
+          if (temp!=0) boundaryNormal[numBoundaryVertices-1][d]/=temp;
+      }        
+      else
+        {for (size_t d=0; d<dimension; ++d)  // normalize the boundaryNormal
+            boundaryNormal[numBoundaryVertices-1][d]=0;
+          std::cerr<< "strange boundary normal"<<std::endl;
+        }
+      
+    }
+  
+  // std:: cerr<<"number of boundary events  "<<numBoundaryVertices<<std::endl;
+  // for (size_t vertex=0; vertex<numBoundaryVertices; vertex++){
+  //   std:: cerr<<boundaryVertices[vertex]<<"  "
+  //             <<boundaryNormal[vertex][0]<<"  "
+  //             <<boundaryNormal[vertex][1]<<"  "
+  //             <<boundaryNormal[vertex][2]<<"  "
+  //             <<std::endl;
+  //}
+  
+}
+
+
+void VertexNoUpdateBoundaryPtemplateStatic::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  // std::cerr<< numBoundaryVertices <<"  " 
+   //          << boundaryVertices.size() <<"  "
+   //          << boundaryNormal.size()<<std::endl;
+  
+  size_t dimension = vertexData[0].size();
+  
+  // std:: cerr<<"derives.................................... "
+  for (size_t vertex=0; vertex<numBoundaryVertices-1; vertex++){//for the boundary vertices
+    size_t N=boundaryVertices[vertex];
+    double norLength=std::abs(boundaryNormal[vertex][0])+
+      std::abs(boundaryNormal[vertex][1])+
+      std::abs(boundaryNormal[vertex][2]);
+    if(norLength>0.1){
+      double temp=vertexDerivs[N][0]*boundaryNormal[vertex][0]
+        +vertexDerivs[N][1]*boundaryNormal[vertex][1]
+        +vertexDerivs[N][2]*boundaryNormal[vertex][2];    
+      // projecting vertex derivs on boundary normal
+      
+      for (size_t d=0; d<dimension; ++d)
+        vertexDerivs[N][d]=temp*boundaryNormal[vertex][d];
+    }
+    else std::cerr<<"strange normal length....................." <<std::endl;
+  }
+  
+}
+
 VertexTranslateToMax::
 VertexTranslateToMax(std::vector<double> &paraValue, 
 		     std::vector< std::vector<size_t> > 
