@@ -358,6 +358,10 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexNoUpdateFromIndex(paraValue,indValue); 
   else if(idValue=="VertexNoUpdateBoundary")
     return new VertexNoUpdateBoundary(paraValue,indValue); 
+  else if(idValue=="VertexNoUpdateBoundaryPtemplate")
+    return new VertexNoUpdateBoundaryPtemplate(paraValue,indValue); 
+  else if(idValue=="VertexNoUpdateBoundaryPtemplateStatic")
+    return new VertexNoUpdateBoundaryPtemplateStatic(paraValue,indValue); 
   else if(idValue=="VertexTranslateToMax")
     return new VertexTranslateToMax(paraValue,indValue); 
   else if(idValue=="CenterCOM")
