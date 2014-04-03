@@ -111,6 +111,84 @@ class VertexNoUpdateBoundary : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+
+
+ 
+///  
+/// @brief Sets positional derivatives to zero for vertices at boundary so that boundary 
+/// vertices would be restricted from moving parallel to the template edges. The boundary 
+/// condition gets updated in each step.(not completely debugged)
+///
+/// @details In the model file, the reaction is specified as:
+/// @verbatim
+/// for holding the boundary vertices in all directions:
+/// VertexNoUpdateBoundaryPtemplate 0 1 1
+/// comIndex-cellVector
+/// 
+/// @endverbatim
+///
+class VertexNoUpdateBoundaryPtemplate : public BaseReaction { // BB
+  
+ public:
+  
+  VertexNoUpdateBoundaryPtemplate(std::vector<double> &paraValue, 
+                                  std::vector< std::vector<size_t> > 
+                                  &indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
+
+
+ 
+///  
+/// @brief Sets positional derivatives to zero for vertices at boundary so that boundary 
+/// vertices would be restricted from moving parallel to the initial template edges 
+/// the boundary is static. 
+///
+/// @details In the model file, the reaction is specified as:
+/// @verbatim
+/// for holding the boundary vertices in all directions:
+/// VertexNoUpdateBoundaryPtemplateStatic 0 1 1
+/// comIndex-cellVector
+/// 
+/// @endverbatim
+///
+class VertexNoUpdateBoundaryPtemplateStatic : public BaseReaction { // BB
+  
+public:
+  
+  VertexNoUpdateBoundaryPtemplateStatic(std::vector<double> &paraValue, 
+                                        std::vector< std::vector<size_t> > 
+                                        &indValue );
+  void initiate(Tissue &T,
+                DataMatrix &cellData,
+                DataMatrix &wallData,
+                DataMatrix &vertexData,
+                DataMatrix &cellDerivs,
+                DataMatrix &wallDerivs,
+                DataMatrix &vertexDerivs);
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+private:
+  std::vector<size_t> boundaryVertices;
+  std::vector< std::vector<double> > boundaryNormal;
+  size_t numBoundaryVertices;
+};
+
 ///
 /// @brief Moves the complete tissue such that the maximal value in specified direction is constant
 ///
