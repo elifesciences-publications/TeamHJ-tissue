@@ -1444,7 +1444,7 @@ CellVolumeExperimental(std::vector<double> &paraValue,
     exit(EXIT_FAILURE);
   }
   
-  setId("VertexFromWallSpringExperimental");
+  setId("CellVolumeExperimental");
   setParameter(paraValue);
   setVariableIndex(indValue);
   

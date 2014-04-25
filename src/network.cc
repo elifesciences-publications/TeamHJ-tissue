@@ -25,13 +25,16 @@ AuxinModelSimple1(std::vector<double> &paraValue,
 	      << "dX_i/dt = p8*A_i - p9*X_i\n\n"
 	      << "dM_i/dt = p10*Theta_L1 - p11*M_i\n\n"
 	      << "P_in = P_i*X_n/(p_3+Sum_{k,neigh}X_k)\n";
-    exit(0);
+    exit(EXIT_FAILURE);
   }
-  if( indValue.size() != 1 || indValue[0].size() != 4 ) {
+  if( (indValue.size() != 1 && indValue.size() !=2) || indValue[0].size() != 4 ||
+      (indValue.size()==2 &&indValue[1].size() != 1) ) {
     std::cerr << "AuxinModelSimple1::"
 	      << "AuxinModelSimple1() "
-	      << "Four variable indices are used (auxin,pin,X,M).\n";
-    exit(0);
+	      << "Four variable indices are used (auxin,pin,X,M) in first level."
+	      << std::endl << "Optionally a wall index is given for saving (pair of) PIN"
+	      << " at membranes." << std::endl;
+    exit(EXIT_FAILURE);
   }
   //Set the variable values
   //
@@ -78,6 +81,10 @@ derivs(Tissue &T,
 	  xI<cellData[0].size() &&
 	  mI<cellData[0].size() );
   
+  if (numVariableIndexLevel()==2) {
+    assert(variableIndex(1,0)<wallData[0].size());
+  }
+
   for( size_t i=0 ; i<numCells ; ++i ) {
     
     //Production and degradation
@@ -116,15 +123,25 @@ derivs(Tissue &T,
       //if( !T.cell(i).isNeighbor(T.background()) ) { 
       if( T.cell(i).wall(n)->cell1() != T.background() &&
 	  T.cell(i).wall(n)->cell2() != T.background() ) { 
-	size_t neighIndex; 
+	size_t neighIndex;
+	size_t pinIndexAdd=0; 
 	if( T.cell(i).wall(n)->cell1()->index()==i )
 	  neighIndex = T.cell(i).wall(n)->cell2()->index();				
-	else
+	else {
 	  neighIndex = T.cell(i).wall(n)->cell1()->index();				
+	  pinIndexAdd=1;
+	}
 	double polRate=0.0;
 	
-	if( sum != 0.0 )
+	if( sum != 0.0 ) {
 	  polRate = cellData[i][pI] * cellData[neighIndex][xI] / sum;
+	}
+	else {
+	  polRate = 1.;
+	}
+	if (numVariableIndexLevel()==2) {//store PIN value for membrane (in wall pair data)
+	  wallData[T.cell(i).wall(n)->index()][variableIndex(1,0)+pinIndexAdd] = polRate;
+	}
 	//pin[i][n+1] = polRate;
 	cellDerivs[i][aI] -= (parameter(4)*polRate+parameter(5))*cellData[i][aI];
 	cellDerivs[neighIndex][aI] += (parameter(4)*polRate+parameter(5))*cellData[i][aI];
@@ -533,7 +550,6 @@ derivs(Tissue &T,
 	}
 }
 
-//!Constructor
 AuxinModelSimple2::
 AuxinModelSimple2(std::vector<double> &paraValue, 
 									std::vector< std::vector<size_t> > 
@@ -543,15 +559,15 @@ AuxinModelSimple2(std::vector<double> &paraValue,
   //
   if( paraValue.size()!=32 ) {
     std::cerr << "AuxinModelSimple2::"
-							<< "AuxinModelSimple2() "
-							<< "32 parameters used (see network.h)\n";
+	      << "AuxinModelSimple2() "
+	      << "32 parameters used (see network.h)\n";
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size() != 7 ) {
     std::cerr << "AuxinModelSimple2::"
-							<< "AuxinModelSimple2() "
-							<< "Seven variable indices are used "
-							<< "(auxin,pin,aux1,pid,X,L1,M).\n";
+	      << "AuxinModelSimple2() "
+	      << "Seven variable indices are used "
+	      << "(auxin,pin,aux1,pid,X,L1,M).\n";
     exit(0);
   }
   //Set the variable values
@@ -620,12 +636,12 @@ derivs(Tissue &T,
   size_t mI;
   mI = variableIndex(0,6);
   assert( auxinI<cellData[0].size() &&
-					pinI<cellData[0].size() &&
-					auxI<cellData[0].size() &&
-					pidI<cellData[0].size() &&
-					xI<cellData[0].size() &&
-					l1I<cellData[0].size() &&
-					mI<cellData[0].size() );
+	  pinI<cellData[0].size() &&
+	  auxI<cellData[0].size() &&
+	  pidI<cellData[0].size() &&
+	  xI<cellData[0].size() &&
+	  l1I<cellData[0].size() &&
+	  mI<cellData[0].size() );
   
   for( size_t i=0 ; i<numCells ; ++i ) {
     
@@ -637,19 +653,19 @@ derivs(Tissue &T,
     cellDerivs[i][pinI] += parameter(3)* 
       ( (1-parameter(4) ) + parameter(4)*cellData[i][l1I] ) * 
       ( (1-parameter(5)) + parameter(5)*cellData[i][auxinI] / 
-				(parameter(6)+cellData[i][auxinI]) ) - 
+	(parameter(6)+cellData[i][auxinI]) ) - 
       parameter(7)*cellData[i][pinI];
     
     cellDerivs[i][auxI] += parameter(8)* 
       ( (1-parameter(9) ) + parameter(9)*cellData[i][l1I] ) * 
       ( (1-parameter(10)) + parameter(10)*cellData[i][auxinI] / 
-				(parameter(11)+cellData[i][auxinI]) ) - 
+	(parameter(11)+cellData[i][auxinI]) ) - 
       parameter(12)*cellData[i][auxI];
     
     static double KpowN = std::pow(parameter(15),parameter(16)); 
     cellDerivs[i][pidI] += parameter(13)*( (1.0-parameter(14)) + 
-																					 parameter(14)*KpowN/
-																					 (KpowN+std::pow(cellData[i][auxinI],parameter(16))))- 
+					   parameter(14)*KpowN/
+					   (KpowN+std::pow(cellData[i][auxinI],parameter(16))))- 
       parameter(17)*cellData[i][pidI];
     
     cellDerivs[i][xI] += parameter(18)*((1.0-parameter(19))+parameter(19)*cellData[i][l1I])*
@@ -667,25 +683,25 @@ derivs(Tissue &T,
     //PID factor
     double tmpPow = std::pow(cellData[i][pidI],parameter(30));
     double Ci = tmpPow/(tmpPow+std::pow(parameter(29),parameter(30)));
-
+    
     //Polarization coefficient normalization constant
     double sum=0.0;
     std::vector<double> Pij(numWalls);
     for( size_t n=0 ; n<numWalls ; ++n ) {
       if( T.cell(i).wall(n)->cell1() != T.background() &&
-					T.cell(i).wall(n)->cell2() != T.background() ) { 
-				size_t neighI;
-				if( T.cell(i).wall(n)->cell1()->index()==i )
-					neighI = T.cell(i).wall(n)->cell2()->index();
-				else
-					neighI = T.cell(i).wall(n)->cell1()->index();
-				double powX = std::pow(cellData[ neighI ][ xI ],parameter(28));
-				double Cij = powX/(std::pow(parameter(27),parameter(28))+powX);
-				sum += Pij[n] = (1.0-parameter(25)) + 
-					parameter(25)*(Ci*Cij+(1.0-Ci)*(1.0-Cij));
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	size_t neighI;
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  neighI = T.cell(i).wall(n)->cell2()->index();
+	else
+	  neighI = T.cell(i).wall(n)->cell1()->index();
+	double powX = std::pow(cellData[ neighI ][ xI ],parameter(28));
+	double Cij = powX/(std::pow(parameter(27),parameter(28))+powX);
+	sum += Pij[n] = (1.0-parameter(25)) + 
+	  parameter(25)*(Ci*Cij+(1.0-Ci)*(1.0-Cij));
       }
       else 
-				sum += Pij[n] = (1.0-parameter(25));
+	sum += Pij[n] = (1.0-parameter(25));
     }
     //sum /= numWalls;//For adjusting for different num neigh
     sum += parameter(26);
@@ -693,47 +709,46 @@ derivs(Tissue &T,
     for( size_t n=0 ; n<numWalls ; ++n ) {
       //if( !T.cell(i).isNeighbor(T.background()) ) { 
       if( T.cell(i).wall(n)->cell1() != T.background() &&
-					T.cell(i).wall(n)->cell2() != T.background() ) { 
-				size_t neighI; 
-				if( T.cell(i).wall(n)->cell1()->index()==i )
-					neighI = T.cell(i).wall(n)->cell2()->index();				
-				else
-					neighI = T.cell(i).wall(n)->cell1()->index();				
-				double pol=0.0;
-				if( sum != 0.0 )
-					pol = cellData[i][pinI] * Pij[n] / sum;
-				double transportRate = parameter(23)*cellData[neighI][auxI]*
-					pol*cellData[i][auxinI] /
-					( (parameter(24)+cellData[i][auxinI])*
-						(cellData[i][auxI]+cellData[neighI][auxI]) );
-				cellDerivs[i][auxinI] -= transportRate + 
-					parameter(31)*cellData[i][auxinI];
-				cellDerivs[neighI][auxinI] += transportRate +
-					parameter(31)*cellData[i][auxinI];
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	size_t neighI; 
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  neighI = T.cell(i).wall(n)->cell2()->index();				
+	else
+	  neighI = T.cell(i).wall(n)->cell1()->index();				
+	double pol=0.0;
+	if( sum != 0.0 )
+	  pol = cellData[i][pinI] * Pij[n] / sum;
+	double transportRate = parameter(23)*cellData[neighI][auxI]*
+	  pol*cellData[i][auxinI] /
+	  ( (parameter(24)+cellData[i][auxinI])*
+	    (cellData[i][auxI]+cellData[neighI][auxI]) );
+	cellDerivs[i][auxinI] -= transportRate + 
+	  parameter(31)*cellData[i][auxinI];
+	cellDerivs[neighI][auxinI] += transportRate +
+	  parameter(31)*cellData[i][auxinI];
       }
     }
   }
 }
 
-//!Constructor
 AuxinModelSimple3::
 AuxinModelSimple3(std::vector<double> &paraValue, 
-									std::vector< std::vector<size_t> > 
-									&indValue ) 
+		  std::vector< std::vector<size_t> > 
+		  &indValue ) 
 { 
   //Do some checks on the parameters and variable indeces
   //
   if( paraValue.size()!=32 ) {
     std::cerr << "AuxinModelSimple3::"
-							<< "AuxinModelSimple3() "
-							<< "32 parameters used (see network.h)\n";
+	      << "AuxinModelSimple3() "
+	      << "32 parameters used (see network.h)\n";
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size() != 7 ) {
     std::cerr << "AuxinModelSimple3::"
-							<< "AuxinModelSimple3() "
-							<< "Seven variable indices are used "
-							<< "(auxin,pin,aux1,pid,X,L1,M).\n";
+	      << "AuxinModelSimple3() "
+	      << "Seven variable indices are used "
+	      << "(auxin,pin,aux1,pid,X,L1,M).\n";
     exit(0);
   }
   //Set the variable values
@@ -803,12 +818,12 @@ derivs(Tissue &T,
   mI = variableIndex(0,6);
 
   assert( auxinI<cellData[0].size() &&
-					pinI<cellData[0].size() &&
-					auxI<cellData[0].size() &&
-					pidI<cellData[0].size() &&
-					xI<cellData[0].size() &&
-					l1I<cellData[0].size() &&
-					mI<cellData[0].size() );
+	  pinI<cellData[0].size() &&
+	  auxI<cellData[0].size() &&
+	  pidI<cellData[0].size() &&
+	  xI<cellData[0].size() &&
+	  l1I<cellData[0].size() &&
+	  mI<cellData[0].size() );
   
   for( size_t i=0 ; i<numCells ; ++i ) {
     
@@ -820,19 +835,19 @@ derivs(Tissue &T,
     cellDerivs[i][pinI] += parameter(3)* 
       ( (1-parameter(4) ) + parameter(4)*cellData[i][l1I] ) * 
       ( (1-parameter(5)) + parameter(5)*cellData[i][auxinI] / 
-				(parameter(6)+cellData[i][auxinI]) ) - 
+	(parameter(6)+cellData[i][auxinI]) ) - 
       parameter(7)*cellData[i][pinI];
     
     cellDerivs[i][auxI] += parameter(8)* 
       ( (1-parameter(9) ) + parameter(9)*cellData[i][l1I] ) * 
       ( (1-parameter(10)) + parameter(10)*cellData[i][auxinI] / 
-				(parameter(11)+cellData[i][auxinI]) ) - 
+	(parameter(11)+cellData[i][auxinI]) ) - 
       parameter(12)*cellData[i][auxI];
     
     static double KpowN = std::pow(parameter(15),parameter(16)); 
     cellDerivs[i][pidI] += parameter(13)*( (1.0-parameter(14)) + 
-																					 parameter(14)*KpowN/
-																					 (KpowN+std::pow(cellData[i][auxinI],parameter(16))))- 
+					   parameter(14)*KpowN/
+					   (KpowN+std::pow(cellData[i][auxinI],parameter(16))))- 
       parameter(17)*cellData[i][pidI];
     
     cellDerivs[i][xI] += parameter(18)*((1.0-parameter(19))+parameter(19)*cellData[i][l1I])*
@@ -850,28 +865,28 @@ derivs(Tissue &T,
     //PID factor
     double tmpPow = std::pow(cellData[i][pidI],parameter(30));
     double Ci = tmpPow/(tmpPow+std::pow(parameter(29),parameter(30)));
-		
+    
     //Polarization coefficient normalization constant
     double sum=0.0;
     std::vector<double> Pij(numWalls);
     for( size_t n=0 ; n<numWalls ; ++n ) {
       if( T.cell(i).wall(n)->cell1() != T.background() &&
-					T.cell(i).wall(n)->cell2() != T.background() ) { 
-				size_t neighI;
-				if( T.cell(i).wall(n)->cell1()->index()==i )
-					neighI = T.cell(i).wall(n)->cell2()->index();
-				else
-					neighI = T.cell(i).wall(n)->cell1()->index();
-				//double powX = std::pow(cellData[ neighI ][ xI ],parameter(28));
-				//double Cij = powX/(std::pow(parameter(27),parameter(28))+powX);
-				double Cij = cellData[ neighI ][ xI ];
-				sum += Pij[n] = (1.0-parameter(25)) + 
-					parameter(25)*(Ci*Cij+(1.0-Ci)*(1.0-Cij));
-				//sum += Pij[n] = (1.0-parameter(25)) + 
-				//parameter(25)*cellData[ neighI ][xI];
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	size_t neighI;
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  neighI = T.cell(i).wall(n)->cell2()->index();
+	else
+	  neighI = T.cell(i).wall(n)->cell1()->index();
+	//double powX = std::pow(cellData[ neighI ][ xI ],parameter(28));
+	//double Cij = powX/(std::pow(parameter(27),parameter(28))+powX);
+	double Cij = cellData[ neighI ][ xI ];
+	sum += Pij[n] = (1.0-parameter(25)) + 
+	  parameter(25)*(Ci*Cij+(1.0-Ci)*(1.0-Cij));
+	//sum += Pij[n] = (1.0-parameter(25)) + 
+	//parameter(25)*cellData[ neighI ][xI];
       }
       else 
-				sum += Pij[n] = (1.0-parameter(25));
+	sum += Pij[n] = (1.0-parameter(25));
     }
     //sum /= numWalls;//For adjusting for different num neigh
     sum += parameter(26);
@@ -879,27 +894,27 @@ derivs(Tissue &T,
     for( size_t n=0 ; n<numWalls ; ++n ) {
       //if( !T.cell(i).isNeighbor(T.background()) ) { 
       if( T.cell(i).wall(n)->cell1() != T.background() &&
-					T.cell(i).wall(n)->cell2() != T.background() ) { 
-				size_t neighI; 
-				if( T.cell(i).wall(n)->cell1()->index()==i )
-					neighI = T.cell(i).wall(n)->cell2()->index();				
-				else
-					neighI = T.cell(i).wall(n)->cell1()->index();				
-				double pol=0.0;
-				if( sum != 0.0 )
-					pol = cellData[i][pinI] * Pij[n] / sum;
-// 				double transportRate = parameter(23)*cellData[neighI][auxI]*
-// 					pol*cellData[i][auxinI] /
-// 					( (parameter(24)+cellData[i][auxinI])*
-// 						(cellData[i][auxI]+cellData[neighI][auxI]) );
-				double transportRate = parameter(23)*pol*cellData[i][auxinI]*
-					cellData[neighI][auxI] / 
-					(cellData[i][auxI]+cellData[neighI][auxI]);
-
-				cellDerivs[i][auxinI] -= transportRate + 
-					parameter(31)*cellData[i][auxinI];
-				cellDerivs[neighI][auxinI] += transportRate +
-					parameter(31)*cellData[i][auxinI];
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	size_t neighI; 
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  neighI = T.cell(i).wall(n)->cell2()->index();				
+	else
+	  neighI = T.cell(i).wall(n)->cell1()->index();				
+	double pol=0.0;
+	if( sum != 0.0 )
+	  pol = cellData[i][pinI] * Pij[n] / sum;
+	// 				double transportRate = parameter(23)*cellData[neighI][auxI]*
+	// 					pol*cellData[i][auxinI] /
+	// 					( (parameter(24)+cellData[i][auxinI])*
+	// 						(cellData[i][auxI]+cellData[neighI][auxI]) );
+	double transportRate = parameter(23)*pol*cellData[i][auxinI]*
+	  cellData[neighI][auxI] / 
+	  (cellData[i][auxI]+cellData[neighI][auxI]);
+	
+	cellDerivs[i][auxinI] -= transportRate + 
+	  parameter(31)*cellData[i][auxinI];
+	cellDerivs[neighI][auxinI] += transportRate +
+	  parameter(31)*cellData[i][auxinI];
       }
     }
   }
@@ -1318,63 +1333,63 @@ derivs(Tissue &T,
        DataMatrix &vertexDerivs ) 
 {  
   size_t numCells = T.numCell();
-	size_t aI = variableIndex(0,0);//auxin
-	size_t pI = variableIndex(0,1);//pin
-	size_t AI = variableIndex(0,2);//aux
-	size_t xI = variableIndex(0,3);//X
-	size_t mI = variableIndex(0,4);//M
+  size_t aI = variableIndex(0,0);//auxin
+  size_t pI = variableIndex(0,1);//pin
+  size_t AI = variableIndex(0,2);//aux
+  size_t xI = variableIndex(0,3);//X
+  size_t mI = variableIndex(0,4);//M
   assert( aI<cellData[0].size() &&
-					pI<cellData[0].size() &&
-					AI<cellData[0].size() &&
-					xI<cellData[0].size() &&
-					mI<cellData[0].size() );
+	  pI<cellData[0].size() &&
+	  AI<cellData[0].size() &&
+	  xI<cellData[0].size() &&
+	  mI<cellData[0].size() );
   size_t dimension = vertexData[0].size();
-	double powK = std::pow(parameter(11),parameter(12));
-	double powK2 = std::pow(parameter(13),parameter(14));
-
+  double powK = std::pow(parameter(11),parameter(12));
+  double powK2 = std::pow(parameter(13),parameter(14));
+  
   for( size_t i=0 ; i<numCells ; ++i ) {
-		
-		//Production and degradation
+    
+    //Production and degradation
     cellDerivs[i][aI] += parameter(0)*cellData[i][mI] + parameter(1) - 
-			parameter(2)*cellData[i][aI];
-		
+      parameter(2)*cellData[i][aI];
+    
     cellDerivs[i][pI] += parameter(3) - parameter(4)*cellData[i][pI];
-		
+    
     cellDerivs[i][AI] += parameter(5) - parameter(6)*cellData[i][pI];
-		
+    
     cellDerivs[i][xI] += parameter(7) + parameter(8)*cellData[i][aI]*
-			cellData[i][aI]/(2.0+cellData[i][aI]*cellData[i][aI]) 
-			- parameter(9)*cellData[i][xI];
-		
-		std::vector<double> cellCenter = T.cell(i).positionFromVertex(vertexData);
-		double R=0.0;
-		for (size_t d=0; d<dimension; ++d)
-			R += cellCenter[d]*cellCenter[d];
-		R = std::sqrt(R);
-		double powR = std::pow(R,parameter(12));
-		double powR2 = std::pow(R,parameter(14));
-		cellDerivs[i][mI] += parameter(10)*(powR*powK2) / ((powK+powR)*(powK2+powR2)) 
-			- parameter(15)*cellData[i][mI];
-	}
+      cellData[i][aI]/(2.0+cellData[i][aI]*cellData[i][aI]) 
+      - parameter(9)*cellData[i][xI];
+    
+    std::vector<double> cellCenter = T.cell(i).positionFromVertex(vertexData);
+    double R=0.0;
+    for (size_t d=0; d<dimension; ++d)
+      R += cellCenter[d]*cellCenter[d];
+    R = std::sqrt(R);
+    double powR = std::pow(R,parameter(12));
+    double powR2 = std::pow(R,parameter(14));
+    cellDerivs[i][mI] += parameter(10)*(powR*powK2) / ((powK+powR)*(powK2+powR2)) 
+      - parameter(15)*cellData[i][mI];
+  }
 }
 
 AuxinModel7::
 AuxinModel7(std::vector<double> &paraValue, 
-						std::vector< std::vector<size_t> > 
-						&indValue ) {
+	    std::vector< std::vector<size_t> > 
+	    &indValue ) {
   
   //Do some checks on the parameters and variable indeces
   //
   if( paraValue.size()!=22 ) {
     std::cerr << "AuxinModel7::"
-							<< "AuxinModel7() "
-							<< "22 parameters used (see network.h)\n";
+	      << "AuxinModel7() "
+	      << "22 parameters used (see network.h)\n";
     exit(0);
   }
   if( indValue.size() != 1 || indValue[0].size() != 5 ) {
     std::cerr << "AuxinModel7::"
-							<< "AuxinModel7() "
-							<< "Five variable indices are used (auxin,pin,aux,X,M).\n";
+	      << "AuxinModel7() "
+	      << "Five variable indices are used (auxin,pin,aux,X,M).\n";
     exit(0);
   }
   //Set the variable values
@@ -1583,18 +1598,18 @@ AuxinWallModel(std::vector<double> &paraValue,
   
   //Do some checks on the parameters and variable indeces
   //
-  if( paraValue.size()!=12 ) {
+  if( paraValue.size()!=14 ) {
     std::cerr << "AuxinWallModel::"
 	      << "AuxinWallModel() "
-	      << "11 parameters used (see documentation or network.h)\n";
-    exit(0);
+	      << "14 parameters used (see documentation or network.h)\n";
+    exit(EXIT_FAILURE);
   }
-  if( indValue.size() != 2 || indValue[0].size() != 3 || indValue[1].size() != 2 ) {
+  if( indValue.size() != 2 || indValue[0].size() != 4 || indValue[1].size() != 2 ) {
     std::cerr << "AuxinWallModel::"
 	      << "AuxinWallModel() "
-	      << "Three cell variable indices (auxin, PIN, AUX; first row) and two wall variable"
+	      << "Four cell variable indices (auxin, PIN, AUX, X(feedback); first row) and two wall variable"
 	      << " indices (paired) are used (auxin, PIN)." << std::endl;
-    exit(0);
+    exit(EXIT_FAILURE);
   }
   //Set the variable values
   //
@@ -1618,6 +1633,8 @@ AuxinWallModel(std::vector<double> &paraValue,
   tmp[9] = "endo_PIN";
   tmp[10] = "exo_PIN_const";
   tmp[11] = "exo_PIN_auxin";
+  tmp[12] = "c_X";
+  tmp[13] = "d_X";
   setParameterId( tmp );
 }
 
@@ -1634,12 +1651,14 @@ derivs(Tissue &T,
   size_t aI = variableIndex(0,0);//auxin
   size_t pI = variableIndex(0,1);//PIN
   size_t auxI = variableIndex(0,2);//AUX
+  size_t xI = variableIndex(0,3);//X
   size_t awI = variableIndex(1,0);//auxin (wall)
   size_t pwI = variableIndex(1,1);//PIN (membrane/wall)
 
   assert( aI<cellData[0].size() &&
 	  pI<cellData[0].size() &&
 	  auxI<cellData[0].size() &&
+	  xI<cellData[0].size() &&
 	  awI<wallData[0].size() &&
 	  pwI<wallData[0].size() );
 
@@ -1648,6 +1667,7 @@ derivs(Tissue &T,
     //Production and degradation
     cellDerivs[i][aI] += parameter(0) - parameter(1)*cellData[i][aI];
     cellDerivs[i][pI] += parameter(7) - parameter(8)*cellData[i][pI];
+    cellDerivs[i][xI] += parameter(11)*cellData[i][aI] - parameter(12)*cellData[i][xI];
     
     //Auxin transport and protein cycling
     size_t numWalls = T.cell(i).numWall();
@@ -1666,7 +1686,8 @@ derivs(Tissue &T,
 	wallDerivs[j][awI+1] += fac;
 	
 	//PIN cycling
-	fac = parameter(9)*wallData[j][pwI] - (parameter(10)+parameter(11)*cellData[cellNeigh][aI])*cellData[i][pI];
+	fac = parameter(9)*wallData[j][pwI] - 
+	  (parameter(10)+parameter(11)*cellData[cellNeigh][xI])*cellData[i][pI];
 	wallDerivs[j][pwI] -= fac;
 	cellDerivs[i][pI] += fac;
       }
@@ -1683,7 +1704,8 @@ derivs(Tissue &T,
 	wallDerivs[j][awI] += parameter(6)*wallData[j][awI+1];
 
 	//PIN cycling
-	fac = parameter(9)*wallData[j][pwI+1] - (parameter(10)+parameter(11)*cellData[cellNeigh][aI])*cellData[i][pI];
+	fac = parameter(9)*wallData[j][pwI+1] - 
+	  (parameter(10)+parameter(11)*cellData[cellNeigh][xI])*cellData[i][pI];
 	wallDerivs[j][pwI+1] -= fac;
 	cellDerivs[i][pI] += fac;
       }

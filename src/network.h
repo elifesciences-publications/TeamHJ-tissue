@@ -57,6 +57,13 @@ class AuxinModelStress : public BaseReaction {
 /// p_0 ... p_11
 /// A_index P_index X_index M_index
 /// @endverbatim
+/// or alternatively
+/// @verbatim
+/// AuxinModelSimple1 12 2 4 1
+/// p_0 ... p_11
+/// A_index P_index X_index M_index
+/// P_wall (save index pair)
+/// @endverbatim
 ///
 class AuxinModelSimple1 : public BaseReaction {
   
@@ -327,17 +334,20 @@ class AuxinTransportCellCellNoGeometry : public BaseReaction {
 ///  
 /// @f[ \frac{dA_{ij}}{dt} = (from above) + p_6 (A_{ji}-A_{ij}) @f]
 ///
-/// @f[ \frac{dP_i}{dt} = p_7 - p_8 P_i + \sum_j (p_9 P_{ij} - (p_{10} + p_{11} A_{j}) P_i @f] 
+/// @f[ \frac{dP_i}{dt} = p_7 - p_8 P_i + \sum_j (p_9 P_{ij} - (p_{10} + p_{11} X_{j}) P_i @f] 
 ///  
 /// @f[ \frac{dP_{ij}}{dt} = (from above) @f]
 ///
+/// @f[ \frac{dX_i}{dt} = p_{12} A_{i} - p_{13} X_{i} 
+///
 /// The (here static) symmetric AUX contribution is applied via AUX in the cells.
+/// Polarization feedback comes from the molecule X that is activated by auxin.
 ///   
 /// In the model file the reaction is given by:
 /// @verbatim
-/// AuxinWallModel 12 2 3 2
+/// AuxinWallModel 14 2 4 2
 /// p_0 ... p_11
-/// ci_auxin ci_PIN ci_AUX
+/// ci_auxin ci_PIN ci_AUX ci_X
 /// wi_auxin wi_PIN
 /// @endverbatim
 ///
