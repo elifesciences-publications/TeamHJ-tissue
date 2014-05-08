@@ -116,4 +116,64 @@ class DegradationTwo : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+///
+/// @brief Implements a degradation proportional to its own concentration and
+/// a Hill function of another alternatively a Hill function of its own concentration.
+///
+/// The update to the variable is
+///
+/// @f[ \frac{dc}{dt} -= k_{d} c \frac{C_{1}^{n}}{(C_{1}^{n}+K^{n})} @f]
+///
+/// or
+///
+/// @f[ \frac{dc}{dt} -= k_{d} \frac{c^{n}}{(c^{n}+K^{n})} @f]
+///
+/// where @f$ k_d @f$ is the degradation rate, and @f$ C_1 @f$ is the
+/// user supplied variable. @f$c@f$ is the concentration of the degraded variable.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// degradationHill 3 2 1 1
+/// k_d K n
+/// index1
+/// index2
+/// @endverbatim
+///
+/// where index1 is the degraded molecule and index2 is the other (e.g miRNA) molecule in the Hill.
+///
+class DegradationHill : public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  DegradationHill(std::vector<double> &paraValue, 
+		  std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+};
+
 #endif
