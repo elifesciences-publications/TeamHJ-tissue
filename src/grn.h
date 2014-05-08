@@ -264,4 +264,72 @@ class HillGeneralThree : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+///
+/// @brief The class Grn use a neural network inspired mathematics for gene
+/// regulation
+///
+/// This class uses a neural network inspired update with a sigmoidal function
+/// for gene regulation as defined in Mjolsness et al (1991). The update is
+/// done according to:
+///
+/// @f[ \frac{dy_{ij}}{dt} = \frac{1}{p_1}g\left( p_0 + \sum_k p_k y_{ik} \right) @f]
+///
+/// where g() is a sigmoidal function, the @f$p_k@f$ are the parameters given
+/// from position 2 and forward, and the k indices for @f$y_{ik}@f$ are given
+/// at the first level of variableIndex. Hence the number of parameters must
+/// be two more than the number of indices given at the first level.
+///
+/// @see Grn::sigmoid(double x) for implementation of sigmoid function.
+///
+class Grn : public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which checks and sets the parameters and
+  /// variable indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  Grn(std::vector<double> &paraValue, 
+      std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+
+  ///
+  /// @brief Sigmoidal function used in the derivs function
+  ///
+  /// Sigmoidal function defined by
+  ///
+  /// @f[ g(x) = \frac{1}{2}\left( 1 + \frac{x}{\sqrt{1+x^2}}\right)@f]
+  ///
+  inline double sigmoid( double value );  
+};
+
+inline double Grn::sigmoid(double x) 
+{ 
+  return 0.5*(1 + x/sqrt(1+x*x) );
+}
+
+
+
+
 #endif

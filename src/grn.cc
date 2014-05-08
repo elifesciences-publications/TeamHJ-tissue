@@ -302,3 +302,74 @@ derivs(Tissue &T,
       / ( (K1Pow+tf1Pow)*(K2Pow+tf2Pow)*(K3Pow+tf3Pow) );
   }
 }
+
+Grn::Grn(std::vector<double> &paraValue, 
+	 std::vector< std::vector<size_t> > 
+	 &indValue ) 
+{
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()<2) {
+    std::cerr << "Grn::Grn() At least two parameters (h,tau) must be given.\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() !=1 ) {
+    std::cerr << "Grn::Grn() "
+	      << "Two levels of variable index can be used." 
+	      << " The first is the cell variable to be updated, and the second"
+	      << " is the list of input variables." << std::endl;
+    exit(0);
+  }
+  if( ( paraValue.size() != indValue[1].size()+2 ) ) {
+    std::cerr << "Grn::Grn() "
+	      << "Wrong number of parameters/variable indeces given (see documentation)."
+	      << std::endl;
+    std::cerr << paraValue.size() << " " << indValue.size();
+    std::cerr << " " << indValue[1].size() << std::endl;
+    exit(0);
+  }
+  
+  // Set the variable values
+  //
+  setId("Grn");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "h";
+  tmp[1] = "tau";
+  for(size_t i=2; i<numParameter(); i++ )
+    tmp[i] = "T_i";
+  setParameterId( tmp );
+}
+
+void Grn::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs )
+{
+  for (size_t cellI=0; cellI<T.numCell(); ++cellI) { 
+    // Threshold
+    double u = parameter(0);//h
+    
+    // Internal contribution
+    size_t add=2;
+    for(size_t b=0; b<numVariableIndex(1); b++ )
+      u += parameter(b + add)*cellData[cellI][variableIndex(1,b)];
+    
+  // Apply sigmoid and tau parameter
+    if(parameter(1)>0.)
+      cellDerivs[cellI][variableIndex(0,0)] += sigmoid(u)/parameter(1);
+    else {
+      std::cerr << "Grn::derivs Division by tau=0." << std::endl;
+      exit(-1);
+    }
+  }
+}

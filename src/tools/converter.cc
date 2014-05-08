@@ -141,8 +141,8 @@ int main(int argc,char *argv[]) {
     //     std::cerr << "ply read\n ";
     std::cerr << "ncell = " << T.numCell() << "; nedge = " << T.numWall() << "; nvertex = " << T.numVertex() << "\n";
     //Sort all cellWalls and cellVertices to comply with area calculations and plotting
-    T.sortCellWallAndCellVertex();
-    T.checkConnectivity(verboseFlag);
+    //T.sortCellWallAndCellVertex();
+    //T.checkConnectivity(verboseFlag);
     //T.readInitPly(initFile.c_str(),verboseFlag); ...yet to be defined...
   }
   else {
