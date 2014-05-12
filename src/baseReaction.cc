@@ -256,6 +256,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new CreationZero(paraValue,indValue); 
   else if(idValue=="CreationOne")
     return new CreationOne(paraValue,indValue); 
+  else if(idValue=="CreationSpatialSphere")
+    return new CreationSpatialSphere(paraValue,indValue); 
   
   //degradation.h,degradation.cc
   else if(idValue=="DegradationOne")

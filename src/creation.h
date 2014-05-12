@@ -62,6 +62,8 @@ class CreationZero : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+
+
 ///
 /// @brief In each cell a molecule is produced/created with a rate dependent on another molecule.
 ///
@@ -146,6 +148,61 @@ class CreationTwo : public BaseReaction {
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
 };
+
+///
+/// @brief In each cell a molecule is produced/created with rate dependent on the distance of the cell from the center
+///
+/// The variable update is for each cell given by ( SIGN= -1)
+///
+/// @f[ \frac{dc}{dt} = V \frac{r^n + R^n}{R^n} @f]
+///
+/// or (SIGN = +1),
+///
+/// @f[ \frac{dc}{dt} = V \frac{r^n + R^n}{c^n} @f]
+///
+/// where @f$ V, R, n, SIGN@f$ are constant parameters, @f$ c @f$ is the variable to be updated and @f$ r @f$ the distance of the cellto the center of the template.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// creationSpatialSphere 4 1 1
+/// V R n SIGN
+/// c_index
+/// @endverbatim
+///
+class CreationSpatialSphere : public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  CreationSpatialSphere(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
 
 #endif
 
