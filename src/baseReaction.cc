@@ -282,6 +282,9 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new MembraneDiffusionSimple(paraValue,indValue); 
   else if(idValue=="MembraneDiffusionSimple2")
     return new MembraneDiffusionSimple2(paraValue,indValue); 
+  else if(idValue=="DiffusionSimple")
+    return new DiffusionSimple(paraValue,indValue);
+
 
   //network.h,network.cc
   else if(idValue=="AuxinModelSimple1")
