@@ -262,6 +262,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new DegradationOne(paraValue,indValue); 
   else if(idValue=="DegradationTwo")
     return new DegradationTwo(paraValue,indValue); 
+  else if(idValue=="DegradationHill")
+    return new DegradationHill(paraValue,indValue); 
   //grn.h,grn.cc
   else if(idValue=="Hill")
     return new Hill(paraValue,indValue); 
