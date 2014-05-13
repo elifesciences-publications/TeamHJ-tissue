@@ -333,8 +333,7 @@ inline double& BaseReaction::parameterRef(size_t i) {
   return parameter_[i];
 }
 
-inline std::string BaseReaction::parameterId(size_t i) const {
-  return parameterId_[i];
+inline std::string BaseReaction::parameterId(size_t i) const {  return parameterId_[i];
 }
 
 inline size_t BaseReaction::variableIndex(size_t i,size_t j) const {
