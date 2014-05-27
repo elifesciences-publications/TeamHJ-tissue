@@ -373,3 +373,197 @@ derivs(Tissue &T,
     }
   }
 }
+
+
+Gsrn2::Gsrn2(std::vector<double> &paraValue, 
+	     std::vector< std::vector<size_t> > 
+	     &indValue ) 
+{  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size() !=4 ) {
+    std::cerr << "Grns2::Grns2() "
+              << "four parameters (p0,... p3) must be given.  reaction 4 3 1 1 1\n";
+    exit(0);
+  }
+  if( indValue.size()!=3 ) {
+    std::cerr << "Grns2::Grns2() "
+              << " three levels of variable indeces must be used.\n";
+    exit(0);
+  }
+  
+  //Set the variable values
+  //
+  setId("gsrn2");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "h";
+  tmp[1] = "tau";
+  tmp[2] = "p2";// interacellular
+  tmp[3] = "p3";// intercellular
+
+  
+  setParameterId( tmp );
+}
+
+void Gsrn2::						       
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs )		
+  
+{
+  for (size_t cellI=0; cellI<T.numCell(); ++cellI) { 
+
+  
+    Cell* cell1 = &(T.cell(cellI));
+    size_t numWalls = cell1->numWall();
+    
+    //Threshold
+    double u = parameter(0);//h
+    
+    //size_t addIndex=2;//avoiding h and tau
+    
+    // Internal contribution
+    u += parameter(2)*cellData[cellI][variableIndex(1,0)];
+    
+    // Neighbor contributions (direct)
+    for (size_t k=0; k<numWalls; ++k){
+      Cell* cell2 = cell1->cellNeighbor(k);
+      if(cell2!=T.background()){
+        
+        u -= parameter(3)
+          *cellData[
+                    cell2->index()                
+                    ][variableIndex(2,0)];
+      }
+    } 
+    
+    // Apply sigmoid and tau parameter
+    cellDerivs[cellI][variableIndex(0,0)] += sigmoid(u)/parameter(1);
+    
+    
+  }
+ 
+}
+
+
+// Gsrn2::Gsrn2(std::vector<double> &paraValue, 
+// 	     std::vector< std::vector<size_t> > 
+// 	     &indValue ) 
+// {  
+//   //Do some checks on the parameters and variable indeces
+//   //
+//   if( paraValue.size()<2 ) {
+//     std::cerr << "Grns2::Grns2() "
+//               << "At least two parameters (h,tau) must be given.\n";
+//     exit(0);
+//   }
+//   if( indValue.size()>3 ) {
+//     std::cerr << "Grns2::Grns2() "
+//               << "At most three levels of variable indeces can be used.\n";
+//     exit(0);
+//   }
+//   if( 
+//      ( indValue.size()==3 && 
+//        paraValue.size() != indValue[0].size()+indValue[1].size()+
+//        0.5*indValue[2].size()+2 ) ||
+//      ( indValue.size()==2 && 
+//        paraValue.size() != indValue[0].size()+indValue[1].size()+2 ) ||
+//      ( indValue.size()==1 && paraValue.size() != indValue[0].size()+2 ) ||
+//      ( indValue.size()==0 && paraValue.size() != 2 ) 
+//       ) {
+//     std::cerr << "Grns2::Grns2() "
+//               << "Wrong number of parameters/variable indeces given.\n";
+//     std::cerr << paraValue.size() << " " << indValue.size() << " ";
+//     for( size_t i=0 ; i<indValue.size() ; i++ )
+//       std::cerr << indValue[i].size() << " ";
+//     std::cerr << "\n";
+//     exit(0);
+//   }
+//   if( indValue.size()==3 && indValue[2].size()%2 ) {
+//     std::cerr << "Grns2::Grns2() "
+//               << "Ligand/Receptor indeces must come in pairs.\n";
+//     exit(0);
+//   }
+  
+//   //Set the variable values
+//   //
+//   setId("gsrn2");
+//   setParameter(paraValue);  
+//   setVariableIndex(indValue);
+  
+//   //Set the parameter identities
+//   //
+//   std::vector<std::string> tmp( numParameter() );
+//   tmp[0] = "h";
+//   tmp[1] = "tau";
+//   size_t add=2;
+//   for( size_t i=0 ; i<numVariableIndex(0) ; i++ )
+//     tmp[i+add] = "T";
+//   if( indValue.size()>1 ) {
+//     add += numVariableIndex(0);
+//     for( size_t i=0 ; i<numVariableIndex(1) ; i++ )
+//       tmp[i+add] = "T_hat";
+//   }
+//   if( indValue.size()>1 ) {
+//     add += numVariableIndex(1);
+//     for( size_t i=add ; i<tmp.size() ; i++ )
+//       tmp[i] = "T_T";
+//   }
+//   setParameterId( tmp );
+// }
+
+// void Gsrn2::						       
+// derivs(Tissue &T,
+//        DataMatrix &cellData,
+//        DataMatrix &wallData,
+//        DataMatrix &vertexData,
+//        DataMatrix &cellDerivs,
+//        DataMatrix &wallDerivs,
+//        DataMatrix &vertexDerivs )		
+  
+// {
+//   //Threshold
+//   double u = parameter(0);//h
+  
+//   size_t addIndex=2;//avoiding h and tau
+//   // Internal contribution
+//   if( numVariableIndexLevel() )
+//     for( size_t b=0 ; b<numVariableIndex(0) ; b++ )
+//       u += parameter(addIndex+b)*y[compartment.index()][variableIndex(0,b)];
+  
+//   // Neighbor contributions (direct)
+//   if( numVariableIndexLevel()>1 ) {
+//     addIndex += numVariableIndex(0);//after local T parameters
+//     for( size_t n=0 ; n<compartment.numNeighbor() ; n++ )
+//       for( size_t b=0 ; b<numVariableIndex(1) ; b++ )
+//         u += parameter(addIndex+b)
+//           *y[compartment.neighbor(n)][variableIndex(1,b)];
+//   }
+//   // Neighbor contributions ligand receptor version
+//   if( numVariableIndexLevel()>2 ) {
+//     addIndex += numVariableIndex(1);//after first neighbor T parameters
+//     for( size_t n=0 ; n<compartment.numNeighbor() ; n++ ) {
+//       size_t parIndexCount=0;
+//       for( size_t b=0 ; b<numVariableIndex(2) ; b+=2 )
+//         u += parameter(addIndex+parIndexCount++)
+//           *y[compartment.index()][variableIndex(2,b)]
+//           *y[compartment.neighbor(n)][variableIndex(2,b+1)];
+//     }
+//   }
+//   // Apply sigmoid and tau parameter
+//   if( parameter(1)>0. )
+//     dydt[compartment.index()][species] += sigmoid(u)/parameter(1);
+//   else {
+//     std::cerr << "Gsrn2::derivs Division by tau=0.\n";
+//     exit(-1);
+//   }
+// }
