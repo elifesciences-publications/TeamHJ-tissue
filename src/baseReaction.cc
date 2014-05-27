@@ -277,6 +277,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new HillGeneralThree(paraValue,indValue); 
   else if(idValue=="Grn")
     return new Grn(paraValue,indValue); 
+  else if(idValue=="Gsrn2")
+    return new Gsrn2(paraValue,indValue); 
   //transport.h,transport.cc
   else if(idValue=="MembraneDiffusionSimple")
     return new MembraneDiffusionSimple(paraValue,indValue); 
