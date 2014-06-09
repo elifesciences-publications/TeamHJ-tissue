@@ -148,5 +148,6 @@ PLY_ostream& PLY_ostream::operator<<(const Tissue& t)
             m_os << std::endl;
         }
     }
+    return *this;
 }
 //----------------------------------------------------------------------------

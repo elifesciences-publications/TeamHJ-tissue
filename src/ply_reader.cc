@@ -8,8 +8,9 @@
 #include "cell.h"
 #include "wall.h"
 #include <set>
+#include "ply/ply_parser.h"
 
-#define NDEBUG_OUTPUT
+// #define NDEBUG_OUTPUT
 using namespace std::tr1::placeholders;
 //----------------------------------------------------------------------------
 PLY_reader::PLY_reader() : m_ply_file ( NULL ), m_tissue ( NULL ), m_position ( 3 ), m_index ( INVALID_SIZE )
@@ -392,11 +393,11 @@ void PLY_reader::set_cell_wall_connectivity ( Tissue &t )
         }
         w->setCell ( cells[0], cells[1] );
     }
-    for ( size_t i = 0; i < t.numCell(); ++i )
-    {
-        Cell *c = t.cellP ( i );
+//     for ( size_t i = 0; i < t.numCell(); ++i )
+//     {
+//         Cell *c = t.cellP ( i );
 //       c->sortWallAndVertex(t);
-    }
+//     }
 }
 //----------------------------------------------------------------------------
 void PLY_reader::infer_walls_from_cells ( Tissue &t )
