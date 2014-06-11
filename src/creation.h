@@ -152,15 +152,15 @@ class CreationTwo : public BaseReaction {
 ///
 /// @brief In each cell a molecule is produced/created with rate dependent on the distance of the cell from the center
 ///
-/// The variable update is for each cell given by ( SIGN= -1)
+/// The variable update is for each cell given by ( SIGN= -1, production inside the sphere)
 ///
 /// @f[ \frac{dc}{dt} = V \frac{r^n + R^n}{R^n} @f]
 ///
-/// or (SIGN = +1),
+/// or (SIGN = +1, production outside the sphere),
 ///
-/// @f[ \frac{dc}{dt} = V \frac{r^n + R^n}{c^n} @f]
+/// @f[ \frac{dc}{dt} = V \frac{r^n + R^n}{R^n} @f]
 ///
-/// where @f$ V, R, n, SIGN@f$ are constant parameters, @f$ c @f$ is the variable to be updated and @f$ r @f$ the distance of the cellto the center of the template.
+/// where @f$ V, R, n, SIGN@f$ are constant parameters, @f$ c @f$ is the variable to be updated and @f$ r @f$ the distance of the cell to the center of the template.
 ///
 /// In a model file the reaction is defined as
 ///
