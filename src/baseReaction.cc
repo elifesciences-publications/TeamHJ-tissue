@@ -286,9 +286,13 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if(idValue=="MembraneDiffusionSimple")
     return new MembraneDiffusionSimple(paraValue,indValue); 
   else if(idValue=="MembraneDiffusionSimple2")
-    return new MembraneDiffusionSimple2(paraValue,indValue); 
+    return new MembraneDiffusionSimple2(paraValue,indValue);  
   else if(idValue=="ActiveTransportCellEfflux")
     return new ActiveTransportCellEfflux(paraValue,indValue);
+  else if(idValue=="ActiveTransportCellEffluxMM")
+    return new ActiveTransportCellEffluxMM(paraValue,indValue);
+  else if(idValue=="ActiveTransportWall")
+    return new ActiveTransportWall(paraValue,indValue);
 
 
   //network.h,network.cc
