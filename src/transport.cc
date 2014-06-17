@@ -135,43 +135,12 @@ derivs(Tissue &T,
        DataMatrix &vertexDerivs ) 
 {  
   
-  size_t numCells = T.numCell();
+  //size_t numCells = T.numCell();
   size_t pwI = variableIndex(0,0);//diffusing molecule (membrane/wall)
   
   assert(pwI<wallData[0].size());
 
-  for (size_t i=5; i<6; ++i) {
-    size_t numWalls = T.cell(i).numWall();
-    for (size_t k=0; k<numWalls; ++k) {
-      size_t j = T.cell(i).wall(k)->index();
-      
-      size_t pwIadd=1;//Two variables per wall, setting which to use
-      if( T.cell(i).wall(k)->cell1()->index() == i ) {
-	pwIadd=0;
-      }
-      double fac = parameter(0)*wallData[j][pwI+pwIadd];
-      wallDerivs[j][pwI+pwIadd] -= 2.*fac;
-
-      size_t kNext = (k+1)%numWalls;     
-      size_t jNext = T.cell(i).wall(kNext)->index();   
-      if( T.cell(i).wall(kNext)->cell1()->index() == i) {
-	wallDerivs[jNext][pwI] +=fac;
-      }
-      else {
-	wallDerivs[jNext][pwI+1] +=fac;
-      }	
-      size_t kBefore = k > 0 ? k-1 : numWalls-1; 
-      size_t jBefore = T.cell(i).wall(kBefore)->index(); 	
-      if( T.cell(i).wall(kBefore)->cell1()->index() == i) {
-	wallDerivs[jBefore][pwI] +=fac;
-      }
-      else {
-	wallDerivs[jBefore][pwI + 1] +=fac;
-      }	
-    }
-  }
-
-for (size_t i=9; i<10; ++i) {
+  for (size_t i=4; i<5; ++i) {
     size_t numWalls = T.cell(i).numWall();
     for (size_t k=0; k<numWalls; ++k) {
       size_t j = T.cell(i).wall(k)->index();
@@ -203,7 +172,72 @@ for (size_t i=9; i<10; ++i) {
   }
 }
 
+DiffusionSimple::
+DiffusionSimple(std::vector<double> &paraValue, 
+		  std::vector< std::vector<size_t> > 
+		  &indValue ) {
 
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size() !=1 ) {
+    std::cerr << "DiffusionModelSimple::"
+	      << "DiffusionModelSimple() "
+	      << "One parameter (diffusion constant) used: p_0" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 1) {
+    std::cerr << "DiffusionSimple::"
+	      << "DiffusionSimple() "
+	      << "One level of one variable indices used" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  //Set the variable values
+  //
+  setId("DiffusionSimple");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "p_0";
+
+  setParameterId( tmp );
+}
+
+void DiffusionSimple::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);
+  assert( aI<cellData[0].size());
+  
+  for( size_t i=0 ; i<numCells ; ++i ) {
+    
+    size_t numWalls=T.cell(i).numWall();
+    
+    for( size_t n=0 ; n<numWalls ; ++n ) {
+      if( T.cell(i).wall(n)->cell1() != T.background() &&
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	size_t neighIndex;
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  neighIndex = T.cell(i).wall(n)->cell2()->index();				
+	else {
+	  neighIndex = T.cell(i).wall(n)->cell1()->index();				
+	}
+	cellDerivs[i][aI] -= parameter(0)*(cellData[i][aI] - cellData[neighIndex][aI]);
+	cellDerivs[neighIndex][aI] += parameter(0)*(cellData[i][aI] - cellData[neighIndex][aI]);
+      }
+    }
+  }
+}
 
 
  ActiveTransportCellEfflux::
