@@ -329,16 +329,16 @@ class AuxinTransportCellCellNoGeometry : public BaseReaction {
 /// compartments. It uses two compartments for each wall and a single for the cells.
 /// Auxin and PIN molecules are updated according to:
 ///  
-/// @f[ \frac{A_i}{dt} = p_0 - p_1 A_i + \sum_{j} ( (p_2+p_3 [AUX]_i) A_{ij} ) 
+/// @f[ \frac{dA_i}{dt} = p_0 - p_1 A_i + \sum_{j} ( (p_2+p_3 [AUX]_i) A_{ij} ) 
 /// - \sum_{j} (p_4+ p_5 P_{ij}) A_i @f]
 ///  
 /// @f[ \frac{dA_{ij}}{dt} = (from above) + p_6 (A_{ji}-A_{ij}) @f]
 ///
-/// @f[ \frac{dP_i}{dt} = p_7 - p_8 P_i + \sum_j (p_9 P_{ij} - (p_{10} + p_{11} X_{j}) P_i @f] 
+/// @f[ \frac{dP_i}{dt} = p_7 - p_8 P_i + \sum_j (p_9 P_{ij} - (p_{10} + p_{11} X_{j}) P_i) @f] 
 ///  
 /// @f[ \frac{dP_{ij}}{dt} = (from above) @f]
 ///
-/// @f[ \frac{dX_i}{dt} = p_{12} A_{i} - p_{13} X_{i} 
+/// @f[ \frac{dX_i}{dt} = p_{12} A_{i} - p_{13} X_{i} @f]
 ///
 /// The (here static) symmetric AUX contribution is applied via AUX in the cells.
 /// Polarization feedback comes from the molecule X that is activated by auxin.
