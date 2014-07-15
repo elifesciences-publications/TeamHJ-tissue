@@ -693,6 +693,57 @@ class MoveVertexRadially : public BaseReaction {
 };
 
 ///
+/// @brief Growth via vertex movement in the x-direction
+///
+/// The tissue grows from vertex movement outwards in the x-direction. The update can be
+///
+/// @f[ \frac{dx}{dt} = p_{0} @f] (if @f$ p_{1}=0 @f$) or 
+/// @f[ \frac{dx}{dt} = p_{0} x @f] (if @f$ p_{1}=1 @f$) 
+///
+/// @f$ p_{0} @f$ is the rate (@f$ k_{growth} @f$), 
+/// @f$ p_{1} @f$ {0,1} is a flag determining which function to be used.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// MoveVerteX 2 0
+/// p_0 p_1
+/// @endverbatim
+///
+class MoveVerteX : public BaseReaction {
+  
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///  
+  MoveVerteX(std::vector<double> &paraValue, 
+		     std::vector< std::vector<size_t> > 
+		     &indValue );
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
+///
 /// @brief Growth via vertex movement radially outwards
 ///
 /// The tissue grows from vertex movement radially outwards,  and also 

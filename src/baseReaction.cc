@@ -84,6 +84,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new WallGrowth::Force(paraValue, indValue);
   else if(idValue == "MoveVertexRadially")
     return new MoveVertexRadially(paraValue, indValue);
+  else if(idValue == "MoveVerteX")
+    return new MoveVerteX(paraValue, indValue);
   else if(idValue == "MoveVertexRadiallycenterTriangulation")
     return new MoveVertexRadiallycenterTriangulation(paraValue, indValue);
   else if(idValue == "MoveVertexSphereCylinder")
@@ -312,6 +314,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new AuxinModelSimple2(paraValue,indValue); 
   else if(idValue=="AuxinModelSimple3")
     return new AuxinModelSimple3(paraValue,indValue); 
+  else if(idValue=="AuxinModelSimple4")
+    return new AuxinModelSimple4(paraValue,indValue); 
   else if(idValue=="AuxinModel4")
     return new AuxinModel4(paraValue,indValue); 
   else if(idValue=="AuxinModel5")
