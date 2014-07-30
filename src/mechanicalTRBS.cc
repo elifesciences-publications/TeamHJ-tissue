@@ -2626,6 +2626,8 @@ derivs(Tissue &T,
        DataMatrix &cellDerivs,
        DataMatrix &wallDerivs,
        DataMatrix &vertexDerivs ) {
+ 
+
   
   //Do the update for each cell
   size_t dimension = 3;
@@ -2636,7 +2638,7 @@ derivs(Tissue &T,
   size_t comIndex = variableIndex(1,0);
   size_t lengthInternalIndex = comIndex+dimension;
   
- 
+  
   double TotalVolume=0;
   double deltaVolume=0;
   for(size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex){ // stimating volume for equilibrium 
@@ -2696,19 +2698,51 @@ derivs(Tissue &T,
       youngL =youngFiber; 
       youngT =youngMatrix-youngL;  // here youngMatrix is total stiffness
     }
-    if( parameter(4)<0){  // for heterogeneous stiffness
-      double hFactor=0;
-      double Hthreshold=0.01;
-      if (std::abs(cellData[cellIndex][youngLIndex])>Hthreshold){
-	hFactor=Hthreshold;
-      }
-      else{
-	hFactor=std::abs(cellData[cellIndex][youngLIndex]);
-      }
-      hFactor *=std::abs(parameter(4)); // factor for heterogeneity      
+    if( parameter(4)==3){  // for varrying material anisotropy with constant overall stiffness for energy landscape
+      double totalElast=140;
+      double slope=1;
+      //youngL =youngMatrix+youngFiber; 
+      // youngT =youngMatrix+std::sqrt(
+      //                               ((youngFiber-totalElast)*4*totalElast)
+      //                               /
+      //                               ((2-3.1415)*3.1415)
+      //                               );  // here youngMatrix is total stiffness
+      //youngT =youngMatrix+totalElast*std::sqrt(
+      //                                         -(std::log((youngFiber/totalElast)-0.55))
+      //                                         /6
+      //                                         );
+      //youngT =youngMatrix+2*(totalElast-youngFiber)/(3.1415-2);
+
+      youngL=youngMatrix+youngFiber; 
+      youngT =youngMatrix+(youngFiber-slope*totalElast)/(1-2*slope); 
+    }
+
+    // if( parameter(4)<0){  // for heterogeneous stiffness(adhoc)
+    //   double hFactor=0;
+    //   double Hthreshold=0.01;
+    //   if (std::abs(cellData[cellIndex][youngLIndex])>Hthreshold){
+    //     hFactor=Hthreshold;
+    //   }
+    //   else{
+    //     hFactor=std::abs(cellData[cellIndex][youngLIndex]); // take the heterogeneous info from this index
+    //   }
+    //   hFactor *=std::abs(parameter(4)); // factor for heterogeneity      
       
-      youngL = youngMatrix+youngFiber-hFactor*(youngMatrix+youngFiber); 
-      youngT = youngMatrix-hFactor*(youngMatrix); 
+    //   youngL = youngMatrix+youngFiber-hFactor*(youngMatrix+youngFiber); 
+    //   youngT = youngMatrix-hFactor*(youngMatrix); 
+    // }
+
+
+    if( parameter(4)<0){  // for spatial elasticity (very adhoc)
+      double x0=90;
+      double y0=120;
+
+      double xx=cellData[cellIndex][comIndex]-x0;
+      double yy=cellData[cellIndex][comIndex+1]-y0;
+
+      youngL = youngMatrix+youngFiber*(1-std::exp(parameter(4)*(xx*xx+yy*yy)));
+      youngT = youngMatrix; 
+      cellData[cellIndex][13]=youngL;
     }
    
 
@@ -3672,9 +3706,9 @@ derivs(Tissue &T,
       
       if(std::abs(normalGlob[0]*eigenVectorStrain[0][Istrain]+   //<<<<<<<<<<<<<<<<<<
                   normalGlob[1]*eigenVectorStrain[1][Istrain]+
-                  normalGlob[2]*eigenVectorStrain[2][Istrain]) > .7) {
+                  normalGlob[2]*eigenVectorStrain[2][Istrain]) > .1) {
 
-	//std::cerr << "max strain in normal " <<cellIndex <<std::endl;
+	std::cerr << "max strain vector is out of cell plane in the cell " <<cellIndex <<std::endl;
         Istrain=Istrain2; 
         Istrain2=Istrain3;
         maximalStrainValue=maximalStrainValue2;
@@ -3688,7 +3722,7 @@ derivs(Tissue &T,
       growthStrain=maximalStrainValue;
       }
 
-      // normal to the cell plane in global direction is averaged Zcurrent[], vector product gives the perpendicular strain direction
+      // normal to the cell plane in global coordinate is averaged Zcurrent[], vector product gives the perpendicular strain direction
       double PerpStrain[3];
       PerpStrain[0]=normalGlob[1]*eigenVectorStrain[2][Istrain]-normalGlob[2]*eigenVectorStrain[1][Istrain];
       PerpStrain[1]=normalGlob[2]*eigenVectorStrain[0][Istrain]-normalGlob[0]*eigenVectorStrain[2][Istrain];
@@ -3740,7 +3774,7 @@ derivs(Tissue &T,
         }
     }
     
-    
+    cellData[cellIndex][20]=0;
     
     if (numVariableIndexLevel()==4 && ( numVariableIndex(2)==2 || numVariableIndex(2)==3) ) {//storing perpendicular to maximal strain
       if (dimension==2)
@@ -3772,7 +3806,7 @@ derivs(Tissue &T,
       cellData[cellIndex][MTindex+2]=cellData[cellIndex][MTindex+2]/temp;
     }
 
-    
+ 
     //<<<<<<<<<<<<<<<<<<<<<<<< angles between  vectors and circumferential direction <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
    
     //cellData[cellIndex][15]= cellData[cellIndex][comIndex+2]; // z coordinate of central vertex of the cell // 15 --> Z coordinate
@@ -3787,7 +3821,8 @@ derivs(Tissue &T,
     // cellData[cellIndex][19]= TETA;
     // cellData[cellIndex][20]=EnergyIso+EnergyAniso;    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   
-    cellData[cellIndex][areaRatioIndex  ]= areaRatio;
+    //cellData[cellIndex][areaRatioIndex  ]= areaRatio;
+    cellData[cellIndex][areaRatioIndex  ]= youngL/youngT;
     cellData[cellIndex][isoEnergyIndex  ]= EnergyIso;    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     
     cellData[cellIndex][anisoEnergyIndex]= EnergyAniso;
@@ -3801,10 +3836,10 @@ derivs(Tissue &T,
   for( size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex ) {
     
     const size_t numWalls = T.cell(cellIndex).numWall();
-    if(cellData[cellIndex][39+2]>-120) {
-      totalEnergyIso   +=cellData[cellIndex][isoEnergyIndex];
-      totalEnergyAniso +=cellData[cellIndex][anisoEnergyIndex];
-     }
+    //if(cellData[cellIndex][39+2]>-120) {
+    totalEnergyIso   +=cellData[cellIndex][isoEnergyIndex];
+    totalEnergyAniso +=cellData[cellIndex][anisoEnergyIndex];
+    // }
 
     
     Cell *  cell1=&(T.cell(cellIndex));
@@ -3880,7 +3915,6 @@ derivs(Tissue &T,
       cellData[cellIndex][MTindex+2] *cellData[cellIndex][MTindex+1] *StressTensor[2][1]  +
       cellData[cellIndex][MTindex+2] *cellData[cellIndex][MTindex+2] *StressTensor[2][2]       ;
     
-  
   
     
     // eigenvalue/eigenvectors of  stress tensor in global coordinate system. (Jacobi method)
@@ -4027,8 +4061,7 @@ derivs(Tissue &T,
       maximalStressValue2=maximalStressValue3; 
     }
     
-
-   
+    
 
 
     // storing a measure for stress anisotropy in cell vector
@@ -4084,11 +4117,15 @@ derivs(Tissue &T,
     
   }
 
-    
-  cellData[0][14]=totalEnergyIso ;
-  cellData[1][14]=totalEnergyAniso ;   
-    
+
+ 
+     
   
+  //cellData[0][14]=totalEnergyIso ;
+  //cellData[1][14]=totalEnergyAniso ;   
+    
+  //std::cerr<<"here.................................."<<std::endl;
+  //std::cerr<<"here.................................."<<std::endl; 
     
 }     
 
