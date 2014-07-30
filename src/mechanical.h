@@ -602,7 +602,7 @@ public:
 /// @verbatim
 /// VertexFromCellPlaneLinearCenterTriangulation 3 1 1
 /// P 
-/// Area_flag
+/// Area_flag (0: no area, 1: area, 2: area and pressure only in z direction)
 /// deltaT
 ///
 /// InternalVarStartIndex
