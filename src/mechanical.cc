@@ -2133,17 +2133,18 @@ VertexFromCellPlaneLinearCenterTriangulation::
 VertexFromCellPlaneLinearCenterTriangulation(std::vector<double> &paraValue,
 		    std::vector< std::vector<size_t> > &indValue)
 {
-  if (paraValue.size() != 3) {
+  if (paraValue.size() != 3 ) {
     std::cerr << "VertexFromCellPlaneLinearCenterTriangulation::VertexFromCellPlaneLinearCenterTriangulation() " 
-	      << "Uses two parameters: k_force and areaFlag and time span" << std::endl;
+	      << "Uses three parameters: k_force and areaFlag and time span" << std::endl;
     exit(EXIT_FAILURE);
   }
-  if (paraValue[1]!=0.0 && paraValue[1]!=1.0) {
+  if (paraValue[1]!=0.0 && paraValue[1]!=1.0 && paraValue[1]!=2.0) {
     std::cerr << "VertexFromCellPlaneLinearCenterTriangulation::VertexFromCellPlaneLinearCenterTriangulation() " 
-	      << "areaFlag must be zero (no area included) or one (area included)." << std::endl;
+	      << "areaFlag must be zero (no area included) or one (area included) "
+              << "or two(area included pressure in z direction only)." << std::endl;
     exit(EXIT_FAILURE);
   }
-  if (paraValue[1]<=0.0 ) {
+  if (paraValue[2]<0.0 ) {
     std::cerr << "VertexFromCellPlaneLinearCenterTriangulation::VertexFromCellPlaneLinearCenterTriangulation() " 
 	      << "time span must be positive." << std::endl;
     exit(EXIT_FAILURE);
@@ -2163,7 +2164,7 @@ VertexFromCellPlaneLinearCenterTriangulation(std::vector<double> &paraValue,
   tmp[0] = "k_force";
   tmp[1] = "areaFlag";
   tmp[2] = "deltaT";
-
+ 
   timeFactor_=0.0;
   setParameterId(tmp);
 }
@@ -2268,28 +2269,42 @@ derivs(Tissue &T,
       normal[1]=normal[1]/tempA;
       normal[2]=normal[2]/tempA;
 
+      
       // normal[0]=cellData[cellIndex][32];  
       // normal[1]=cellData[cellIndex][33];  
       // normal[2]=cellData[cellIndex][34];  
 
        // Get the cell size
        double A=1.0/3;
-       if (parameter(1)==1.0)
+       if (parameter(1)==1.0 || parameter(1)==2.0 )
 	 A = Area/3;
        double coeff =timeFactor_*parameter(0) * A;
        //update the vertex derivatives
-                        
-       cellDerivs[cellIndex][comIndex  ] +=   coeff * normal[0];  
-       cellDerivs[cellIndex][comIndex+1] +=  coeff * normal[1];  
-       cellDerivs[cellIndex][comIndex+2] +=  coeff * normal[2];  
+       if (parameter(1)==0.0 || parameter(1)==1.0 ){                 
+         cellDerivs[cellIndex][comIndex  ] +=   coeff * normal[0];  
+         cellDerivs[cellIndex][comIndex+1] +=  coeff * normal[1];  
+         cellDerivs[cellIndex][comIndex+2] +=  coeff * normal[2];  
+         
+         vertexDerivs[v2][0] +=  coeff * normal[0];  
+         vertexDerivs[v2][1] +=  coeff * normal[1];  
+         vertexDerivs[v2][2] +=  coeff * normal[2];  
+         
+         vertexDerivs[v3][0] +=  coeff * normal[0];  
+         vertexDerivs[v3][1] +=  coeff * normal[1];  
+         vertexDerivs[v3][2] +=  coeff * normal[2];   
+       }
        
-       vertexDerivs[v2][0] +=  coeff * normal[0];  
-       vertexDerivs[v2][1] +=  coeff * normal[1];  
-       vertexDerivs[v2][2] +=  coeff * normal[2];  
-       
-       vertexDerivs[v3][0] +=  coeff * normal[0];  
-       vertexDerivs[v3][1] +=  coeff * normal[1];  
-       vertexDerivs[v3][2] +=  coeff * normal[2];         
+       if (parameter(1)==2.0 ){                 
+         
+         cellDerivs[cellIndex][comIndex+2] +=  coeff * normal[2];  
+         
+         vertexDerivs[v2][2] +=  coeff * normal[2];  
+         
+         vertexDerivs[v3][2] +=  coeff * normal[2];   
+       }
+
+
+      
 			
      }// for over walls
   }// for over cells  
