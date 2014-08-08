@@ -772,6 +772,25 @@ class Tissue {
 		   std::vector<size_t> &volumeChangeList,
 		   double threshold=0.0);
 
+
+
+  ///
+  /// @brief Updates topology and variables at a cell division
+  ///
+  void branchCell( Cell *brCell, size_t w1, 
+                   std::vector<double> &v1Pos,
+                   std::vector<double> &v2Pos,
+                   std::vector<double> &v3Pos,
+                   std::vector<double> &v4Pos,
+                   DataMatrix &cellData,
+                   DataMatrix &wallData,
+                   DataMatrix &vertexData,
+                   DataMatrix &cellDeriv,
+                   DataMatrix &wallDeriv,
+                   DataMatrix &vertexDeriv,
+                   double threshold=0);
+
+
   ///
   /// @brief Updates topology and variables at a cell division assuming trangulation with center
   ///
