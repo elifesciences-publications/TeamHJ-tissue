@@ -1137,6 +1137,55 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
   }
 
 
+ else if( printFlag_==105 ) {// Print cell and membrane values (e.g. for PIN) at same row
+    size_t auxinIndexCell=4;
+    size_t pinIndexCell=5;
+    size_t pinIndexWall=3;
+    for (size_t cellI=0; cellI<cellData_.size(); ++cellI) {
+      // print cell variables
+      os << cellI << " " << cellData_[cellI][auxinIndexCell] << " " 
+	 << cellData_[cellI][pinIndexCell] << " ";
+      // print wall variables
+      if (T_->cell(cellI).numWall() != 4) {
+	std::cerr << "BaseSolver::print(), printFlag=103: Assuming FOUR neighbors per cell!" << std::endl;
+	exit(EXIT_FAILURE);
+      }
+      size_t neighCount=0;
+      if (cellI<cellData_.size()-1) { 
+	for (size_t wallK=0; wallK<T_->cell(cellI).numWall(); ++wallK) {
+	  size_t wallI = T_->cell(cellI).wall(wallK)->index();
+	  if (T_->wall(wallI).cell1()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
+	    os << wallData_[wallI][pinIndexWall] << " ";
+	    neighCount++;
+	  }
+	  else if (T_->wall(wallI).cell2()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
+	    os << wallData_[wallI][pinIndexWall+1] << " ";
+	    neighCount++;
+	  }
+	}
+      }
+      else {
+	for (size_t wallK=T_->cell(cellI).numWall()-1; wallK < T_->cell(cellI).numWall(); --wallK) {
+	  size_t wallI = T_->cell(cellI).wall(wallK)->index();
+	  if (T_->wall(wallI).cell1()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
+	    os << wallData_[wallI][pinIndexWall] << " ";
+	    neighCount++;
+	  }
+	  else if (T_->wall(wallI).cell2()->index()==cellI && T_->wall(wallI).cell2() != T_->background()) {
+	    os << wallData_[wallI][pinIndexWall+1] << " ";
+	    neighCount++;
+	  }
+	}
+      }
+      os << std::endl;
+      if (neighCount != 1) {
+	std::cerr << "BaseSolver::print(), printFlag=103: Did not find two neighbors for cell " << cellI 
+		  << "!" << std::endl;
+	exit(EXIT_FAILURE);
+      }
+    }
+  }
+ 
 
   else
     std::cerr << "BaseSolver::print() Wrong printFlag value\n";

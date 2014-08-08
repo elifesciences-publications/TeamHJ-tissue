@@ -24,6 +24,7 @@
 #include "network.h"
 #include "transport.h"
 #include "sisterVertex.h"
+#include "membraneCycling.h"
 
 //#include"massAction.h"
 
@@ -418,6 +419,22 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   // cellTime.h
   else if (idValue=="CellTimeDerivative")
     return new CellTimeDerivative(paraValue, indValue);
+
+ // MembraneCycling.h
+  else if (idValue=="MembraneCycling::Constant")
+    return new MembraneCycling::Constant(paraValue, indValue);
+  else if (idValue=="MembraneCycling::CrossMembraneNonLinear")
+    return new MembraneCycling::CrossMembraneNonLinear(paraValue, indValue);
+  else if (idValue=="MembraneCycling::LocalWallFeedbackNonLinear")
+    return new MembraneCycling::LocalWallFeedbackNonLinear(paraValue, indValue);
+  else if (idValue=="MembraneCycling::LocalWallFeedbackLinear")
+    return new MembraneCycling::LocalWallFeedbackLinear(paraValue, indValue);
+  else if (idValue=="MembraneCycling::CellUpTheGradientNonLinear")
+    return new MembraneCycling::CellUpTheGradientNonLinear(paraValue, indValue);
+ 
+   else if (idValue=="MembraneCycling::CellFluxExocytosis")
+    return new MembraneCycling::CellFluxExocytosis(paraValue, indValue);
+
 	
   // Default, if nothing found
   else {
