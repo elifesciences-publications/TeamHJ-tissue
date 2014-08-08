@@ -276,7 +276,7 @@ LocalWallFeedbackNonLinear(std::vector<double> &paraValue,
 	      << "4 parameters used (see MembraneCycling.h)\n";
     exit(0);
   }
-  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 1 ) {
+  if( indValue.size() != 2 || indValue[0].size() != 1 || indValue[1].size() != 2 ) {
     std::cerr << "LocalWallFeedbackNonLinear::"
 	      << "LocalWallFeedbackNonLinear() "
 	      << "One cell variable indices (first row) and One wall variable"
@@ -312,10 +312,12 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t pI = variableIndex(0,0);//pin
   size_t pwI = variableIndex(1,0);//pin (membrane/wall)
+  size_t xwI = variableIndex(1,1);//x (membrane/wall)
 
 
   assert(  pI<cellData[0].size() &&
-	   pwI<wallData[0].size() );
+	   pwI<wallData[0].size()  &&
+	   xwI<wallData[0].size() );
 
  for (size_t i=0; i<numCells; ++i) {
 	         
@@ -326,16 +328,16 @@ derivs(Tissue &T,
      
       if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
 	//PIN cycling
-	double fac = parameter(0)*cellData[i][pI]*(std::pow(wallData[j][pwI],parameter(2)))/(std::pow(wallData[j][pwI],parameter(2))+std::pow(parameter(2),parameter(3)))
-                    - parameter(1)*wallData[i][pwI]*(std::pow(wallData[j][pwI],parameter(2)))/(std::pow(wallData[j][pwI],parameter(2))+std::pow(parameter(2),parameter(3))) ;
+	double fac = parameter(0)*cellData[i][pI]*(std::pow(wallData[j][xwI],parameter(2)))/(std::pow(wallData[j][xwI],parameter(2))+std::pow(parameter(2),parameter(3)))
+                    - parameter(1)*wallData[i][pwI]*(std::pow(wallData[j][xwI],parameter(2)))/(std::pow(wallData[j][xwI],parameter(2))+std::pow(parameter(2),parameter(3))) ;
 	wallDerivs[j][pwI] += fac;
 	cellDerivs[i][pI] -= fac;
       }
 
       else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
        	//PIN cycling
-	double fac = parameter(0)*(std::pow(wallData[j][pwI+1],parameter(3)))/(std::pow(wallData[j][pwI+1],parameter(3))+std::pow(parameter(2),parameter(3)))*cellData[i][pI]
-	  -parameter(1)*(std::pow(wallData[j][pwI+1],parameter(3)))/(std::pow(wallData[j][pwI+1],parameter(3))+std::pow(parameter(2),parameter(3)))*wallData[j][pwI+1];
+	double fac = parameter(0)*(std::pow(wallData[j][xwI+1],parameter(3)))/(std::pow(wallData[j][xwI+1],parameter(3))+std::pow(parameter(2),parameter(3)))*cellData[i][pI]
+	  -parameter(1)*(std::pow(wallData[j][xwI+1],parameter(3)))/(std::pow(wallData[j][xwI+1],parameter(3))+std::pow(parameter(2),parameter(3)))*wallData[j][pwI+1];
 	wallDerivs[j][pwI+1] += fac;
 	cellDerivs[i][pI] -= fac;
       }
@@ -360,7 +362,7 @@ LocalWallFeedbackLinear(std::vector<double> &paraValue,
 	      << "2 parameters used (see MembraneCycling.h)\n";
     exit(0);
   }
-  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 1 ) {
+  if( indValue.size() != 2 || indValue[0].size() != 1 || indValue[1].size() != 2 ) {
     std::cerr << "LocalWallFeedbackLinear::"
 	      << "LocalWallFeedbackLinear() "
 	      << "One cell variable indices (first row) and One wall variable"
@@ -394,10 +396,11 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t pI = variableIndex(0,0);//pin
   size_t pwI = variableIndex(1,0);//pin (membrane/wall)
-
+  size_t xwI = variableIndex(1,1);//x (membrane/wall)
 
   assert(  pI<cellData[0].size() &&
-	   pwI<wallData[0].size() );
+	   pwI<wallData[0].size() &&
+	   xwI<wallData[0].size() );
 
  for (size_t i=0; i<numCells; ++i) {
 	         
@@ -408,16 +411,16 @@ derivs(Tissue &T,
      
       if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
 	//PIN cycling
-	double fac = parameter(0)*cellData[i][pI]*wallData[j][pwI]
-                    - parameter(1)*wallData[i][pwI]*wallData[j][pwI] ;
+	double fac = parameter(0)*cellData[i][pI]*wallData[j][xwI]
+                    - parameter(1)*wallData[i][pwI]*wallData[j][xwI] ;
 	wallDerivs[j][pwI] += fac;
 	cellDerivs[i][pI] -= fac;
       }
 
       else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
        	//PIN cycling
-	double fac = parameter(0)*wallData[j][pwI+1]*cellData[i][pI]
-	  -parameter(1)*wallData[j][pwI+1]*wallData[j][pwI+1];
+	double fac = parameter(0)*wallData[j][xwI+1]*cellData[i][pI]
+	  -parameter(1)*wallData[j][xwI+1]*wallData[j][pwI+1];
 	wallDerivs[j][pwI+1] += fac;
 	cellDerivs[i][pI] -= fac;
       }
@@ -434,10 +437,10 @@ CellUpTheGradientNonLinear(std::vector<double> &paraValue,
   
   //Do some checks on the parameters and variable indeces
   //
-  if( paraValue.size()!=3 ) {
+  if( paraValue.size()!=4 ) {
     std::cerr << "CellUpTheGradientNonLinear::"
 	      << "CellUpTheGradientNonLinear() "
-	      << "3 parameters used (see MembraneCycling.h)\n";
+	      << "4 parameters used (see MembraneCycling.h)\n";
     exit(0);
   }
   if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 1 ) {
@@ -497,7 +500,7 @@ derivs(Tissue &T,
 	size_t cellNeigh = T.cell(i).wall(k)->cell2()->index();
 	//PIN cycling
 	double fac = parameter(0)*cellData[i][pI]*(std::pow(cellData[cellNeigh][aI],parameter(3)))/(std::pow(cellData[cellNeigh][aI],parameter(2))+std::pow(parameter(2),parameter(3)))
-                    -parameter(1)*wallData[j][pI]*(std::pow(cellData[cellNeigh][aI],parameter(3)))/(std::pow(cellData[cellNeigh][aI],parameter(2))+std::pow(parameter(2),parameter(3))) ;
+                    -parameter(1)*wallData[j][pwI]*(std::pow(cellData[cellNeigh][aI],parameter(3)))/(std::pow(cellData[cellNeigh][aI],parameter(2))+std::pow(parameter(2),parameter(3))) ;
 	wallDerivs[j][pwI] += fac;
 	cellDerivs[i][pI] -= fac;
       }
@@ -507,7 +510,7 @@ derivs(Tissue &T,
 
 	//PIN cycling
 	double fac = parameter(0)*(std::pow(cellData[cellNeigh][aI],parameter(3)))/(std::pow(cellData[cellNeigh][aI],parameter(3))+std::pow(parameter(2),parameter(3)))*cellData[i][pI]
-                    -parameter(1)*(std::pow(cellData[cellNeigh][aI],parameter(3)))/(std::pow(cellData[cellNeigh][aI],parameter(3))+std::pow(parameter(2),parameter(3)))*wallData[j][pI+1];
+                    -parameter(1)*(std::pow(cellData[cellNeigh][aI],parameter(3)))/(std::pow(cellData[cellNeigh][aI],parameter(3))+std::pow(parameter(2),parameter(3)))*wallData[j][pwI+1];
 	wallDerivs[j][pwI+1] += fac;
 	cellDerivs[i][pI] -= fac;
       }
@@ -518,6 +521,93 @@ derivs(Tissue &T,
 
 
 
+
+CellUpTheGradientLinear::
+CellUpTheGradientLinear(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=2 ) {
+    std::cerr << "CellUpTheGradientLinear::"
+	      << "CellUpTheGradientLinear() "
+	      << "4 parameters used (see MembraneCycling.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 1 ) {
+    std::cerr << "CellUpTheGradientLinear::"
+	      << "CellUpTheGradientLinear() "
+	      << "One cell variable indices (first row) and One wall variable"
+	      << " indices are used (PIN)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("CellUpTheGradientLinear");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "k_on";
+  tmp[1] = "k_off";
+ 
+    setParameterId( tmp );
+}
+
+void CellUpTheGradientLinear::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+ size_t aI = variableIndex(0,0);//auxin
+  size_t pI = variableIndex(0,1);//pin
+  size_t pwI = variableIndex(1,0);//pin (membrane/wall)
+
+
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  pwI<wallData[0].size() );
+
+ for (size_t i=0; i<numCells; ++i) {
+	  
+       
+    //protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    
+
+     for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
+	size_t cellNeigh = T.cell(i).wall(k)->cell2()->index();
+	//PIN cycling
+	double fac = parameter(0)*cellData[i][pI]*cellData[cellNeigh][aI]
+                    -parameter(1)*wallData[j][pwI]*cellData[cellNeigh][aI] ;
+	wallDerivs[j][pwI] += fac;
+	cellDerivs[i][pI] -= fac;
+      }
+
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
+	size_t cellNeigh = T.cell(i).wall(k)->cell1()->index();
+
+	//PIN cycling
+	double fac = parameter(0)*cellData[cellNeigh][aI]*cellData[i][pI]
+                    -parameter(1)*cellData[cellNeigh][aI]*wallData[j][pwI+1];
+	wallDerivs[j][pwI+1] += fac;
+	cellDerivs[i][pI] -= fac;
+      }
+    }
+  }
+ }
 
 
 

@@ -24,9 +24,9 @@ namespace MembraneCycling {
 
 
 ///
-/// @brief A function discribing the constant exocytosis and endocytosis of PIN (or another protein) from the cytosol to the cell membrane at a constant rate. p0 gives exocytosis, p1 endocytosis.
+/// @brief A function describing the constant exocytosis and endocytosis of PIN (or another protein) from the cytosol to the cell membrane at a constant rate. 
 ///
-/// It uses two compartments for each wall and a single for the cells.
+/// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis, p1 endocytosis.
 /// PIN  molecules are updated according to:
 ///  
 ///
@@ -68,10 +68,10 @@ class Constant : public BaseReaction {
 
 
 ///
-/// @brief A function discribing the endocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
-/// Dependent on the amount of PIN on the adjacent membrane of a neighbouring cell.
+/// @brief A function describing the endocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
+/// Dependent on the amount of PIN on the adjacent membrane of a neighbouring cell, as a non-linear function.
 ///
-/// It uses two compartments for each wall and a single for the cells.
+/// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis, p1 endocytosis.
 /// PIN  molecules are updated according to:
 ///  
 ///
@@ -109,10 +109,10 @@ class CrossMembraneNonLinear : public BaseReaction {
 
 
 ///
-/// @brief A function discribing the endocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
-/// Dependent on the amount of PIN on the adjacent membrane of a neighbouring cell.
+/// @brief A function describing the endocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
+/// Dependent on the amount of PIN on the adjacent membrane of a neighbouring cell, as a linear function.
 ///
-/// It uses two compartments for each wall and a single for the cells.
+/// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis, p1 endocytosis.
 /// PIN  molecules are updated according to:
 ///  
 ///
@@ -151,25 +151,25 @@ class CrossMembraneLinear : public BaseReaction {
 
 
 ///
-/// @brief A function discribing the exocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
-/// Dependent on the amount of PIN on the adjacent membrane of a neighbouring cell.
+/// @brief A function describing the exocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
+/// Dependent on the amount of PIN/auxin in the wall compartment.
 ///
-/// It uses two compartments for each wall and a single for the cells.
+/// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis, p1 endocytosis.
 /// PIN  molecules are updated according to:
 ///  
 ///
-/// @f[ \frac{dP_i}{dt} = p_0 P_ij \frac{Pji^{p_2}}{Pji^{p_2}+{p_1}^{p_2}} @f] 
+/// @f[ \frac{dP_i}{dt} = p_0 P_ij \frac{Xij^{p_2}}{Xij^{p_2}+{p_1}^{p_2}} @f] 
 ///  
-/// @f[ \frac{dP_{ij}}{dt} = -p_0 P_ij \frac{Pji^{p_2}}{Pji^{p_2}+{p_1}^{p_2}} @f]
+/// @f[ \frac{dP_{ij}}{dt} = -p_0 P_ij \frac{Xij^{p_2}}{Xij^{p_2}+{p_1}^{p_2}} @f]
 ///
 ///
 ///  
 /// In the model file the reaction is given by:
 /// @verbatim
-/// CrossMembraneEndocytosis 3 2 1 1
+/// MembraneCycling::LocalWallFeedbackNonLinear 4 2 1 2
 /// p_0 ..p_2
 /// ci_PIN 
-///  wi_PIN 
+/// wi_PIN  Wi_X 
 /// @endverbatim
 ///
 class LocalWallFeedbackNonLinear : public BaseReaction {
@@ -190,28 +190,26 @@ class LocalWallFeedbackNonLinear : public BaseReaction {
 };
 
 
-
-
 ///
-/// @brief A function discribing the exocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
-/// Dependent on the amount of PIN on the adjacent membrane of a neighbouring cell.
+/// @brief A function describing the exocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
+/// Dependent on the amount of PIN/auxin in the wall compartment.
 ///
-/// It uses two compartments for each wall and a single for the cells.
+/// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis, p1 endocytosis.
 /// PIN  molecules are updated according to:
 ///  
 ///
-/// @f[ \frac{dP_i}{dt} = p_0 P_ij \frac{Pji^{p_2}}{Pji^{p_2}+{p_1}^{p_2}} @f] 
+/// @f[ \frac{dP_i}{dt} = p_0 P_ij Xij @f] 
 ///  
-/// @f[ \frac{dP_{ij}}{dt} = -p_0 P_ij \frac{Pji^{p_2}}{Pji^{p_2}+{p_1}^{p_2}} @f]
+/// @f[ \frac{dP_{ij}}{dt} = -p_0 P_ij Xij @f]
 ///
 ///
 ///  
 /// In the model file the reaction is given by:
 /// @verbatim
-/// CrossMembraneEndocytosis 3 2 1 1
-/// p_0 ..p_2
+/// MembraneCycling::LocalWallFeedbackLinear 2 2 1 2
+/// p_0 p_1
 /// ci_PIN 
-///  wi_PIN 
+///  wi_PIN wi_X 
 /// @endverbatim
 ///
 class LocalWallFeedbackLinear : public BaseReaction {
@@ -233,31 +231,9 @@ class LocalWallFeedbackLinear : public BaseReaction {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ///
-/// @brief A function discribing the exocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
-/// Dependent on the amount of auxin in the neighbouring cell.
+/// @brief A function describing the exocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
+/// Dependent on the amount of auxin in neighbouring cell.
 ///
 /// It uses two compartments for each wall and a single for the cells.
 /// PIN  molecules are updated according to:
@@ -271,51 +247,10 @@ class LocalWallFeedbackLinear : public BaseReaction {
 ///  
 /// In the model file the reaction is given by:
 /// @verbatim
-/// CrossMembraneExocytosis 3 2 1 1
+/// membranCycling::CellUpTheGradientNonLinear 4 2 2 1
 /// p_0 ..p_2
-/// ci_PIN 
-///  wi_PIN 
-/// @endverbatim
-///
-class CellUpTheGradientExocytosis : public BaseReaction {
-  
- public:
-  
- CellUpTheGradientExocytosis(std::vector<double> &paraValue, 
-		std::vector< std::vector<size_t> > 
-		&indValue );
-  
-  void derivs(Tissue &T,
-	      DataMatrix &cellData,
-	      DataMatrix &wallData,
-	      DataMatrix &vertexData,
-	      DataMatrix &cellDerivs,
-	      DataMatrix &wallDerivs,
-	      DataMatrix &vertexDerivs );
-};
-
-
-
-///
-/// @brief A function discribing the exocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
-/// Dependent on the amount of PIN on the adjacent membrane of a neighbouring cell.
-///
-/// It uses two compartments for each wall and a single for the cells.
-/// PIN  molecules are updated according to:
-///  
-///
-/// @f[ \frac{dP_i}{dt} = p_0 P_ij \frac{Pji^{p_2}}{Pji^{p_2}+{p_1}^{p_2}} @f] 
-///  
-/// @f[ \frac{dP_{ij}}{dt} = -p_0 P_ij \frac{Pji^{p_2}}{Pji^{p_2}+{p_1}^{p_2}} @f]
-///
-///
-///  
-/// In the model file the reaction is given by:
-/// @verbatim
-/// CrossMembraneEndocytosis 3 2 1 1
-/// p_0 ..p_2
-/// ci_PIN 
-///  wi_PIN 
+/// ci_Auxin ci_PIN 
+/// wi_PIN 
 /// @endverbatim
 ///
 class CellUpTheGradientNonLinear : public BaseReaction {
@@ -336,6 +271,46 @@ class CellUpTheGradientNonLinear : public BaseReaction {
 };
 
 
+
+
+///
+/// @brief A function describing the exocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
+/// Dependent on the amount of auxin in neighbouring cell.
+///
+/// It uses two compartments for each wall and a single for the cells.
+/// PIN  molecules are updated according to:
+///  
+///
+/// @f[ \frac{dP_i}{dt} = p_0 P_ij Aji @f] 
+///  
+/// @f[ \frac{dP_{ij}}{dt} = -p_0 P_ij Aji @f]
+///
+///
+///  
+/// In the model file the reaction is given by:
+/// @verbatim
+/// membraneCycling::CellUpTheGradientNonLinear 4 2 2 1
+/// p_0 ..p_2
+/// ci_Auxin ci_PIN 
+/// wi_PIN 
+/// @endverbatim
+///
+class CellUpTheGradientLinear : public BaseReaction {
+  
+ public:
+  
+ CellUpTheGradientLinear(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
 
 
 

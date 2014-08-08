@@ -431,6 +431,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new MembraneCycling::LocalWallFeedbackLinear(paraValue, indValue);
   else if (idValue=="MembraneCycling::CellUpTheGradientNonLinear")
     return new MembraneCycling::CellUpTheGradientNonLinear(paraValue, indValue);
+  else if (idValue=="MembraneCycling::CellUpTheGradientLinear")
+    return new MembraneCycling::CellUpTheGradientLinear(paraValue, indValue);
  
    else if (idValue=="MembraneCycling::CellFluxExocytosis")
     return new MembraneCycling::CellFluxExocytosis(paraValue, indValue);
