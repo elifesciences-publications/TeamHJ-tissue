@@ -2456,340 +2456,340 @@ checkCompartmentChange( DataMatrix &cellData,
 }
 
 void Tissue::removeCell(size_t cellIndex,
-												DataMatrix &cellData,
-												DataMatrix &wallData,
-												DataMatrix &vertexData,
-												DataMatrix &cellDeriv,
-												DataMatrix &wallDeriv,
-												DataMatrix &vertexDeriv ) 
+                        DataMatrix &cellData,
+                        DataMatrix &wallData,
+                        DataMatrix &vertexData,
+                        DataMatrix &cellDeriv,
+                        DataMatrix &wallDeriv,
+                        DataMatrix &vertexDeriv ) 
 {
-	assert(cellIndex<numCell());
-	std::vector<size_t> wallRemove;
-	//Mark walls for removal via index or change wallCell to background
-	//To be removed if connected to removed cell(by default) and background
-	for( size_t k=0 ; k<cell(cellIndex).numWall() ; ++k )
-		if( ( cell(cellIndex).wall(k)->cell1()->index() == cellIndex &&
-					cell(cellIndex).wall(k)->cell2() == background() ) ||
-				( cell(cellIndex).wall(k)->cell2()->index() == cellIndex &&
-					cell(cellIndex).wall(k)->cell1() == background() ) ) {
-			wallRemove.push_back(cell(cellIndex).wall(k)->index());
-			//cell(cellIndex).wall(k)->setCell1( background() );
-			//cell(cellIndex).wall(k)->setCell2( background() );
-		}
-		else if( cell(cellIndex).wall(k)->cell1()->index() == cellIndex ) {
-			cell(cellIndex).wall(k)->setCell1( background() );
-			//std::cerr << "Cell " << cellIndex << " switched to bg for wall "
-			//				<< cell(cellIndex).wall(k)->index() << std::endl;
-		}
-		else if( cell(cellIndex).wall(k)->cell2()->index() == cellIndex ) {
-			cell(cellIndex).wall(k)->setCell2( background() );
-			//std::cerr << "Cell " << cellIndex << " switched to bg for wall "
-			//				<< cell(cellIndex).wall(k)->index() << std::endl;
-		}
-		else {
-			std::cerr << "Tissue::removeCell() wall not connected to cell"
-								<< std::endl;
-			exit(-1);
-		}
-	//Remove cell and potential wall connections from vertices
-	//Caveat: Also remove background...
-	for( size_t k=0 ; k<cell(cellIndex).numVertex() ; ++k ) {
-		//cell(cellIndex).vertex(k)->removeCell( &cell(cellIndex) );
-		//if( cell(cellIndex).vertex(k)->removeCell( &cell(cellIndex) ) )
-		//std::cerr << "Cell " << cellIndex << " removed from vertex "
-		//				<< cell(cellIndex).vertex(k)->index() << std::endl;
-		//cell(cellIndex).vertex(k)->removeCell( background() );
-		//if( cell(cellIndex).vertex(k)->removeCell( background() ) )
-		//std::cerr << "Background(cell) removed from vertex "
-		//				<< cell(cellIndex).vertex(k)->index() << std::endl;
-		
-		//for( size_t w=0 ; w<wallRemove.size() ; ++w )
-		//cell(cellIndex).vertex(k)->removeWall( &wall(wallRemove[w]) );
-		
-//if( cell(cellIndex).vertex(k)->removeWall( &wall(wallRemove[w]) ) )
-		//	std::cerr << "Wall " << wallRemove[w] << " removed from vertex "
-		//						<< cell(cellIndex).vertex(k)->index() << std::endl;		
-	}
-	
-	static size_t numCR=0,numWR=0,numVR=0; 
-	//Remove vertices without connection to cells or walls
-	for( size_t k=0 ; k<cell(cellIndex).numVertex() ; ++k ) {
-		//Remove cell from vertex
-		cell(cellIndex).vertex(k)->removeCell( &cell(cellIndex) );
-		//Remove walls from vertex
-		for( size_t w=0 ; w<wallRemove.size() ; ++w )
-			cell(cellIndex).vertex(k)->removeWall( &wall(wallRemove[w]) );
-		
-		if( cell(cellIndex).vertex(k)->numCell() == 0 &&
-				cell(cellIndex).vertex(k)->numWall() == 0 ) {
-			//remove vertex
-			size_t vI=cell(cellIndex).vertex(k)->index();
-			if( vI>=vertexData.size() ) {
-				std::cerr << "Tissue::removeCell() wrong in index " << std::endl
-									<< numCell() << " " << numWall() << " " << numVertex()
-									<< std::endl
-									<< cellIndex << " " << cell(cellIndex).index() << " "
-									<< cell(cellIndex).numVertex() << " "
-									<< cell(cellIndex).numWall() << std::endl;
-				for( size_t kk=0 ; kk<cell(cellIndex).numVertex() ; ++kk )
-					std::cerr << cell(cellIndex).vertex(kk)->index() << " ";
-				std::cerr << std::endl;				
-			} 
-			assert( vI<vertexData.size() );
-			vertexData[vI] = vertexData[vertexData.size()-1];
-			vertexDeriv[vI] = vertexDeriv[vertexDeriv.size()-1];
-			vertexData.pop_back();
-			vertexDeriv.pop_back();
-			removeVertex(vI);
-			std::cerr << "Vertex " << vI << " removed" << std::endl;
-			numVR++;
-		}
-		else if( cell(cellIndex).vertex(k)->numCell() == 0 ||
-						 cell(cellIndex).vertex(k)->numWall() == 0 ) {
-			std::cerr << "Tissue::removeCell() strange vertex." << std::endl;
-			std::cerr << "It has " << cell(cellIndex).vertex(k)->numCell() 
-								<< " cells and " << cell(cellIndex).vertex(k)->numWall()
-								<< " walls." << std::endl;
-			std::cerr << "Cells: ";
-			for( size_t kk=0 ; kk<cell(cellIndex).vertex(k)->numCell() ; ++kk )
-				std::cerr << cell(cellIndex).vertex(k)->cell(kk)->index() << " ";
-			std::cerr << "\nWalls: ";
-			for( size_t kk=0 ; kk<cell(cellIndex).vertex(k)->numWall() ; ++kk )
-				std::cerr << cell(cellIndex).vertex(k)->wall(kk)->index() << " ";			
-			exit(-1);
-		}
-	}
-	//Remove walls connected to cellIndex and background
-	for( size_t k=0 ; k<cell(cellIndex).numWall() ; ++k ) {
-	  if( ( cell(cellIndex).wall(k)->cell1() == background() &&
-		cell(cellIndex).wall(k)->cell2() == &cell(cellIndex) ) ||
-	      ( cell(cellIndex).wall(k)->cell2() == background() &&
-		cell(cellIndex).wall(k)->cell1() == &cell(cellIndex) ) ) {
-			size_t wI=cell(cellIndex).wall(k)->index();
-			//std::cerr << wI << " " << numWall() << " " << wallData.size() << std::endl;
-			assert( wI<wallData.size() );
-			wallData[wI] = wallData[wallData.size()-1];
-			wallDeriv[wI] = wallDeriv[wallDeriv.size()-1];
-			wallData.pop_back();
-			wallDeriv.pop_back();
-			removeWall(wI);
-			//std::cerr << "Wall " << wI << " removed." << std::endl;
-			numWR++;
-			//wall(wI).setIndex(wI);
-			//std::cerr << wI << " " << numWall() << " " << wallData.size() << std::endl;
-		}
-	}
-// 	//Old malfunctional version
-// 	for( size_t k=0 ; k<wallRemove.size() ; ++k ) {
-// 		size_t wI=wallRemove[k];
-// 		std::cerr << wI << " " << numWall() << " " << wallData.size() << std::endl;
-// 		assert( wI<wallData.size() );
-// 		wallData[wI] = wallData[wallData.size()-1];
-// 		wallDeriv[wI] = wallDeriv[wallDeriv.size()-1];
-// 		wallData.pop_back();
-// 		wallDeriv.pop_back();
-// 		removeWall(wI);
-// 		std::cerr << "Wall " << wI << " removed." << std::endl;
-// 		numWR++;
-// 		wall(wI).setIndex(wI);
-// 	}
-	//Remove cell
-	//std::cerr << cellIndex << " " << numCell() << " " << cellData.size()
-	//				<< std::endl;
-	assert( cellIndex<cellData.size() );
-	cellData[cellIndex] = cellData[cellData.size()-1];
-	cellDeriv[cellIndex] = cellDeriv[cellDeriv.size()-1];
-	cellData.pop_back();
-	cellDeriv.pop_back();
-	removeCell(cellIndex);
-	//std::cerr << "Cell " << cellIndex << " removed." << std::endl;
-	//cell(cellIndex).setIndex(cellIndex);
-	numCR++;
-	//std::cerr << cellIndex << " " << numCell() << " " << cellData.size()
-	//				<< std::endl;
-
-	assert( cellData.size() == numCell() );
-	assert( wallData.size() == numWall() );
-	assert( vertexData.size() == numVertex() );	
-	//checkConnectivity(1);
-	std::cerr << numCR << " cells, " << numWR << " walls, and "
-						<< numVR << " vertices removed in total" << std::endl;
+  assert(cellIndex<numCell());
+  std::vector<size_t> wallRemove;
+  //Mark walls for removal via index or change wallCell to background
+  //To be removed if connected to removed cell(by default) and background
+  for( size_t k=0 ; k<cell(cellIndex).numWall() ; ++k )
+    if( ( cell(cellIndex).wall(k)->cell1()->index() == cellIndex &&
+          cell(cellIndex).wall(k)->cell2() == background() ) ||
+        ( cell(cellIndex).wall(k)->cell2()->index() == cellIndex &&
+          cell(cellIndex).wall(k)->cell1() == background() ) ) {
+      wallRemove.push_back(cell(cellIndex).wall(k)->index());
+      //cell(cellIndex).wall(k)->setCell1( background() );
+      //cell(cellIndex).wall(k)->setCell2( background() );
+    }
+    else if( cell(cellIndex).wall(k)->cell1()->index() == cellIndex ) {
+      cell(cellIndex).wall(k)->setCell1( background() );
+      //std::cerr << "Cell " << cellIndex << " switched to bg for wall "
+      //				<< cell(cellIndex).wall(k)->index() << std::endl;
+    }
+    else if( cell(cellIndex).wall(k)->cell2()->index() == cellIndex ) {
+      cell(cellIndex).wall(k)->setCell2( background() );
+      //std::cerr << "Cell " << cellIndex << " switched to bg for wall "
+      //				<< cell(cellIndex).wall(k)->index() << std::endl;
+    }
+    else {
+      std::cerr << "Tissue::removeCell() wall not connected to cell"
+                << std::endl;
+      exit(-1);
+    }
+  //Remove cell and potential wall connections from vertices
+  //Caveat: Also remove background...
+  for( size_t k=0 ; k<cell(cellIndex).numVertex() ; ++k ) {
+    //cell(cellIndex).vertex(k)->removeCell( &cell(cellIndex) );
+    //if( cell(cellIndex).vertex(k)->removeCell( &cell(cellIndex) ) )
+    //std::cerr << "Cell " << cellIndex << " removed from vertex "
+    //				<< cell(cellIndex).vertex(k)->index() << std::endl;
+    //cell(cellIndex).vertex(k)->removeCell( background() );
+    //if( cell(cellIndex).vertex(k)->removeCell( background() ) )
+    //std::cerr << "Background(cell) removed from vertex "
+    //				<< cell(cellIndex).vertex(k)->index() << std::endl;
+    
+    //for( size_t w=0 ; w<wallRemove.size() ; ++w )
+    //cell(cellIndex).vertex(k)->removeWall( &wall(wallRemove[w]) );
+    
+    //if( cell(cellIndex).vertex(k)->removeWall( &wall(wallRemove[w]) ) )
+    //	std::cerr << "Wall " << wallRemove[w] << " removed from vertex "
+    //						<< cell(cellIndex).vertex(k)->index() << std::endl;		
+  }
+  
+  static size_t numCR=0,numWR=0,numVR=0; 
+  //Remove vertices without connection to cells or walls
+  for( size_t k=0 ; k<cell(cellIndex).numVertex() ; ++k ) {
+    //Remove cell from vertex
+    cell(cellIndex).vertex(k)->removeCell( &cell(cellIndex) );
+    //Remove walls from vertex
+    for( size_t w=0 ; w<wallRemove.size() ; ++w )
+      cell(cellIndex).vertex(k)->removeWall( &wall(wallRemove[w]) );
+    
+    if( cell(cellIndex).vertex(k)->numCell() == 0 &&
+        cell(cellIndex).vertex(k)->numWall() == 0 ) {
+      //remove vertex
+      size_t vI=cell(cellIndex).vertex(k)->index();
+      if( vI>=vertexData.size() ) {
+        std::cerr << "Tissue::removeCell() wrong in index " << std::endl
+                  << numCell() << " " << numWall() << " " << numVertex()
+                  << std::endl
+                  << cellIndex << " " << cell(cellIndex).index() << " "
+                  << cell(cellIndex).numVertex() << " "
+                  << cell(cellIndex).numWall() << std::endl;
+        for( size_t kk=0 ; kk<cell(cellIndex).numVertex() ; ++kk )
+          std::cerr << cell(cellIndex).vertex(kk)->index() << " ";
+        std::cerr << std::endl;				
+      } 
+      assert( vI<vertexData.size() );
+      vertexData[vI] = vertexData[vertexData.size()-1];
+      vertexDeriv[vI] = vertexDeriv[vertexDeriv.size()-1];
+      vertexData.pop_back();
+      vertexDeriv.pop_back();
+      removeVertex(vI);
+      std::cerr << "Vertex " << vI << " removed" << std::endl;
+      numVR++;
+    }
+    else if( cell(cellIndex).vertex(k)->numCell() == 0 ||
+             cell(cellIndex).vertex(k)->numWall() == 0 ) {
+      std::cerr << "Tissue::removeCell() strange vertex." << std::endl;
+      std::cerr << "It has " << cell(cellIndex).vertex(k)->numCell() 
+                << " cells and " << cell(cellIndex).vertex(k)->numWall()
+                << " walls." << std::endl;
+      std::cerr << "Cells: ";
+      for( size_t kk=0 ; kk<cell(cellIndex).vertex(k)->numCell() ; ++kk )
+        std::cerr << cell(cellIndex).vertex(k)->cell(kk)->index() << " ";
+      std::cerr << "\nWalls: ";
+      for( size_t kk=0 ; kk<cell(cellIndex).vertex(k)->numWall() ; ++kk )
+        std::cerr << cell(cellIndex).vertex(k)->wall(kk)->index() << " ";			
+      exit(-1);
+    }
+  }
+  //Remove walls connected to cellIndex and background
+  for( size_t k=0 ; k<cell(cellIndex).numWall() ; ++k ) {
+    if( ( cell(cellIndex).wall(k)->cell1() == background() &&
+          cell(cellIndex).wall(k)->cell2() == &cell(cellIndex) ) ||
+        ( cell(cellIndex).wall(k)->cell2() == background() &&
+          cell(cellIndex).wall(k)->cell1() == &cell(cellIndex) ) ) {
+      size_t wI=cell(cellIndex).wall(k)->index();
+      //std::cerr << wI << " " << numWall() << " " << wallData.size() << std::endl;
+      assert( wI<wallData.size() );
+      wallData[wI] = wallData[wallData.size()-1];
+      wallDeriv[wI] = wallDeriv[wallDeriv.size()-1];
+      wallData.pop_back();
+      wallDeriv.pop_back();
+      removeWall(wI);
+      //std::cerr << "Wall " << wI << " removed." << std::endl;
+      numWR++;
+      //wall(wI).setIndex(wI);
+      //std::cerr << wI << " " << numWall() << " " << wallData.size() << std::endl;
+    }
+  }
+  // 	//Old malfunctional version
+  // 	for( size_t k=0 ; k<wallRemove.size() ; ++k ) {
+  // 		size_t wI=wallRemove[k];
+  // 		std::cerr << wI << " " << numWall() << " " << wallData.size() << std::endl;
+  // 		assert( wI<wallData.size() );
+  // 		wallData[wI] = wallData[wallData.size()-1];
+  // 		wallDeriv[wI] = wallDeriv[wallDeriv.size()-1];
+  // 		wallData.pop_back();
+  // 		wallDeriv.pop_back();
+  // 		removeWall(wI);
+  // 		std::cerr << "Wall " << wI << " removed." << std::endl;
+  // 		numWR++;
+  // 		wall(wI).setIndex(wI);
+  // 	}
+  //Remove cell
+  //std::cerr << cellIndex << " " << numCell() << " " << cellData.size()
+  //				<< std::endl;
+  assert( cellIndex<cellData.size() );
+  cellData[cellIndex] = cellData[cellData.size()-1];
+  cellDeriv[cellIndex] = cellDeriv[cellDeriv.size()-1];
+  cellData.pop_back();
+  cellDeriv.pop_back();
+  removeCell(cellIndex);
+  //std::cerr << "Cell " << cellIndex << " removed." << std::endl;
+  //cell(cellIndex).setIndex(cellIndex);
+  numCR++;
+  //std::cerr << cellIndex << " " << numCell() << " " << cellData.size()
+  //				<< std::endl;
+  
+  assert( cellData.size() == numCell() );
+  assert( wallData.size() == numWall() );
+  assert( vertexData.size() == numVertex() );	
+  //checkConnectivity(1);
+  std::cerr << numCR << " cells, " << numWR << " walls, and "
+            << numVR << " vertices removed in total" << std::endl;
 }
 
 void Tissue::
 removeCells(std::vector<size_t> &cellIndex,
-						DataMatrix &cellData,
-						DataMatrix &wallData,
-						DataMatrix &vertexData,
-						DataMatrix &cellDeriv,
-						DataMatrix &wallDeriv,
-						DataMatrix &vertexDeriv ) 
+            DataMatrix &cellData,
+            DataMatrix &wallData,
+            DataMatrix &vertexData,
+            DataMatrix &cellDeriv,
+            DataMatrix &wallDeriv,
+            DataMatrix &vertexDeriv ) 
 {
-	// Sort the indices to make sure highest indices are removed first 
-	// (since removed index is occupied with the last one)
-	sort(cellIndex.begin(),cellIndex.end());
-	
-	size_t numRemove = cellIndex.size();
-	for (size_t ii=0; ii<numRemove; ++ii) {
-		size_t i = numRemove-(ii+1);
-		removeCell(cellIndex[i],cellData,wallData,vertexData,cellDeriv,wallDeriv,
-							 vertexDeriv);
-	}
+  // Sort the indices to make sure highest indices are removed first 
+  // (since removed index is occupied with the last one)
+  sort(cellIndex.begin(),cellIndex.end());
+  
+  size_t numRemove = cellIndex.size();
+  for (size_t ii=0; ii<numRemove; ++ii) {
+    size_t i = numRemove-(ii+1);
+    removeCell(cellIndex[i],cellData,wallData,vertexData,cellDeriv,wallDeriv,
+               vertexDeriv);
+  }
 }
 
 void Tissue::
 removeEpidermalCells(DataMatrix &cellData,
-										 DataMatrix &wallData,
-										 DataMatrix &vertexData,
-										 DataMatrix &cellDeriv,
-										 DataMatrix &wallDeriv,
-										 DataMatrix &vertexDeriv,
-	double radialThreshold,
-	const bool checkBackground) 
+                     DataMatrix &wallData,
+                     DataMatrix &vertexData,
+                     DataMatrix &cellDeriv,
+                     DataMatrix &wallDeriv,
+                     DataMatrix &vertexDeriv,
+                     double radialThreshold,
+                     const bool checkBackground) 
 {
-	size_t dimension=vertexData[0].size();
-	std::vector<size_t> cellR;
-	//Mark cells for removal (sorted with highest index first
-	for( size_t i=0 ; i<numCell() ; ++i ) {
-		size_t cellI=numCell()-1-i;
-		if (!checkBackground || cell(cellI).isNeighbor(background())) {
-			if( radialThreshold>0.0 ) {//check that cell is outside
-				std::vector<double> cellPos;
-				cellPos = cell(cellI).positionFromVertex(vertexData);
-				double r=0.0;
-				for( size_t d=0 ; d<dimension ; ++d )
-					r += cellPos[d]*cellPos[d];
-				if( r>0.0 )
-					r = std::sqrt(r);
-				if( r>0.0 && r>radialThreshold )					
-					cellR.push_back( cellI );
-			}
-			else
-				cellR.push_back( cellI );
-		}
-	}
-
-	if (cellR.size() > 0) {
-		std::cerr << "Removing " << cellR.size() << " epidermal cells:\n" ;
-		
-		for (size_t i = 0; i < cellR.size(); ++i) {
-			std::cerr << cellR[i] << " ";
-		}
-		
-		std::cerr << "\n";
-	}
-	
-	// Remove cells
-	for (size_t i = 0; i < cellR.size(); ++i) {
-		removeCell(cellR[i], cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);
-		//checkConnectivity(1);
-	}
+  size_t dimension=vertexData[0].size();
+  std::vector<size_t> cellR;
+  //Mark cells for removal (sorted with highest index first
+  for( size_t i=0 ; i<numCell() ; ++i ) {
+    size_t cellI=numCell()-1-i;
+    if (!checkBackground || cell(cellI).isNeighbor(background())) {
+      if( radialThreshold>0.0 ) {//check that cell is outside
+        std::vector<double> cellPos;
+        cellPos = cell(cellI).positionFromVertex(vertexData);
+        double r=0.0;
+        for( size_t d=0 ; d<dimension ; ++d )
+          r += cellPos[d]*cellPos[d];
+        if( r>0.0 )
+          r = std::sqrt(r);
+        if( r>0.0 && r>radialThreshold )					
+          cellR.push_back( cellI );
+      }
+      else
+        cellR.push_back( cellI );
+    }
+  }
+  
+  if (cellR.size() > 0) {
+    std::cerr << "Removing " << cellR.size() << " epidermal cells:\n" ;
+    
+    for (size_t i = 0; i < cellR.size(); ++i) {
+      std::cerr << cellR[i] << " ";
+    }
+    
+    std::cerr << "\n";
+  }
+  
+  // Remove cells
+  for (size_t i = 0; i < cellR.size(); ++i) {
+    removeCell(cellR[i], cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);
+    //checkConnectivity(1);
+  }
 }
 
 void Tissue::removeEpidermalCellsMk2(DataMatrix &cellData,
-	DataMatrix &wallData,
-	DataMatrix &vertexData,
-	DataMatrix &cellDeriv,
-	DataMatrix &wallDeriv,
-	DataMatrix &vertexDeriv,
-	double radialThreshold) 
+                                     DataMatrix &wallData,
+                                     DataMatrix &vertexData,
+                                     DataMatrix &cellDeriv,
+                                     DataMatrix &wallDeriv,
+                                     DataMatrix &vertexDeriv,
+                                     double radialThreshold) 
 {
-	size_t dimensions = vertexData[0].size();
-	std::vector<size_t> cellR;
-
-	//Mark cells for removal (sorted with highest index first)
-	for (size_t i = 0; i < numCell(); ++i) {
-		size_t cellI = numCell() - 1 - i;
-
-		if (cell(cellI).isNeighbor(background())) {
- 			if (radialThreshold > 0.0) { //check that cell is outside
-				Cell &c = cell(cellI);
-
-				bool marked = true;
-
-				for (size_t j = 0; j < c.numVertex(); ++j) {
-					Vertex *vertex = c.vertex(j);
-
-					double r = 0.0;
-					
-					for (size_t d = 0; d < dimensions; ++d) {
-						r += vertexData[vertex->index()][d] * vertexData[vertex->index()][d];
-					}
-					
-					if (r < radialThreshold * radialThreshold) {
-						marked = false;
-						break;
-					}
-				}
-
-				if (marked == true) {
-					cellR.push_back(cellI);
-				}
-			}
-			else {
-				cellR.push_back(cellI);
-			}
-		}
-	}
-
-	if (cellR.size() > 0) {
-		std::cerr << "Removing " << cellR.size() << " epidermal cells:\n" ;
-		
-		for (size_t i = 0; i < cellR.size(); ++i) {
-			std::cerr << cellR[i] << " ";
-		}
-		
-		std::cerr << "\n";
-	}
-	
-	// Remove cells
-	for (size_t i = 0; i < cellR.size(); ++i) {
-		removeCell(cellR[i], cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);
-		//checkConnectivity(1);
-	}
+  size_t dimensions = vertexData[0].size();
+  std::vector<size_t> cellR;
+  
+  //Mark cells for removal (sorted with highest index first)
+  for (size_t i = 0; i < numCell(); ++i) {
+    size_t cellI = numCell() - 1 - i;
+    
+    if (cell(cellI).isNeighbor(background())) {
+      if (radialThreshold > 0.0) { //check that cell is outside
+        Cell &c = cell(cellI);
+        
+        bool marked = true;
+        
+        for (size_t j = 0; j < c.numVertex(); ++j) {
+          Vertex *vertex = c.vertex(j);
+          
+          double r = 0.0;
+          
+          for (size_t d = 0; d < dimensions; ++d) {
+            r += vertexData[vertex->index()][d] * vertexData[vertex->index()][d];
+          }
+          
+          if (r < radialThreshold * radialThreshold) {
+            marked = false;
+            break;
+          }
+        }
+        
+        if (marked == true) {
+          cellR.push_back(cellI);
+        }
+      }
+      else {
+        cellR.push_back(cellI);
+      }
+    }
+  }
+  
+  if (cellR.size() > 0) {
+    std::cerr << "Removing " << cellR.size() << " epidermal cells:\n" ;
+    
+    for (size_t i = 0; i < cellR.size(); ++i) {
+      std::cerr << cellR[i] << " ";
+    }
+    
+    std::cerr << "\n";
+  }
+  
+  // Remove cells
+  for (size_t i = 0; i < cellR.size(); ++i) {
+    removeCell(cellR[i], cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);
+    //checkConnectivity(1);
+  }
 }
 
 void Tissue::
 removeEpidermalCellsAtDistance(DataMatrix &cellData,
-															 DataMatrix &wallData,
-															 DataMatrix &vertexData,
-															 DataMatrix &cellDeriv,
-															 DataMatrix &wallDeriv,
-															 DataMatrix &vertexDeriv,
-															 double distanceThreshold,double max,
-															 size_t direction ) 
+                               DataMatrix &wallData,
+                               DataMatrix &vertexData,
+                               DataMatrix &cellDeriv,
+                               DataMatrix &wallDeriv,
+                               DataMatrix &vertexDeriv,
+                               double distanceThreshold,double max,
+                               size_t direction ) 
 {
-	size_t dimension;
-	dimension = vertexData[0].size();
-	assert( direction<dimension );
-	std::vector<size_t> cellR;
-	//Mark cells for removal (sorted with highest index first
-	for( size_t i=0 ; i<numCell() ; ++i ) {
-		size_t cellI=numCell()-1-i;
-		if( cell(cellI).isNeighbor( background() ) ) {
-			std::vector<double> cellPos;
-			cellPos = cell(cellI).positionFromVertex(vertexData);
-			double dist = std::fabs( cellPos[direction]-max );
-			if( dist>distanceThreshold )					
-				cellR.push_back( cellI );
-		}
-	}
-
-	if (cellR.size() > 0) {
-		std::cerr << "Removing " << cellR.size() << " epidermal cells:\n" ;
-		
-		for (size_t i = 0; i < cellR.size(); ++i) {
-			std::cerr << cellR[i] << " ";
-		}
-		
-		std::cerr << "\n";
-	}
-	
-	// Remove cells
-	for (size_t i = 0; i < cellR.size(); ++i) {
-		removeCell(cellR[i], cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);
-		//checkConnectivity(1);
-	}
+  size_t dimension;
+  dimension = vertexData[0].size();
+  assert( direction<dimension );
+  std::vector<size_t> cellR;
+  //Mark cells for removal (sorted with highest index first
+  for( size_t i=0 ; i<numCell() ; ++i ) {
+    size_t cellI=numCell()-1-i;
+    if( cell(cellI).isNeighbor( background() ) ) {
+      std::vector<double> cellPos;
+      cellPos = cell(cellI).positionFromVertex(vertexData);
+      double dist = std::fabs( cellPos[direction]-max );
+      if( dist>distanceThreshold )					
+        cellR.push_back( cellI );
+    }
+  }
+  
+  if (cellR.size() > 0) {
+    std::cerr << "Removing " << cellR.size() << " epidermal cells:\n" ;
+    
+    for (size_t i = 0; i < cellR.size(); ++i) {
+      std::cerr << cellR[i] << " ";
+    }
+    
+    std::cerr << "\n";
+  }
+  
+  // Remove cells
+  for (size_t i = 0; i < cellR.size(); ++i) {
+    removeCell(cellR[i], cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv);
+    //checkConnectivity(1);
+  }
 }
 
 void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I, 
@@ -3372,6 +3372,419 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
   }		
   //checkConnectivity(1);
 }
+
+
+void Tissue::branchCell( Cell *brCell, size_t wI, 
+			 std::vector<double> &v1Pos,
+                         std::vector<double> &v2Pos,
+                         std::vector<double> &v3Pos,
+                         std::vector<double> &v4Pos,
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDeriv,
+			 DataMatrix &wallDeriv,
+			 DataMatrix &vertexDeriv,
+                         double threshold)
+  
+{	
+  size_t Nc=numCell(),Nw=numWall(),Nv=numVertex();
+  size_t i = brCell->index();
+  size_t dimension = vertexData[0].size();
+  
+  //Create the new data structure and set indices in the tissue vectors
+  //
+  //Add the new cell  
+ 
+  addCell( cell(i) );
+  cell(Nc).setIndex(Nc);
+  cellData.resize(Nc+1,cellData[1]);
+  cellDeriv.resize(Nc+1,cellDeriv[0]);
+
+ 
+  
+  //Add the four new vertices
+  Vertex tmpVertex;
+  tmpVertex.setPosition(v1Pos);
+  tmpVertex.setIndex(Nv);
+  addVertex(tmpVertex);
+  vertexData.resize(Nv+1,v1Pos);
+  
+  tmpVertex.setPosition(v2Pos);
+  tmpVertex.setIndex(Nv+1);
+  addVertex(tmpVertex);
+  vertexData.resize(Nv+2,v2Pos);  
+
+  tmpVertex.setPosition(v3Pos);
+  tmpVertex.setIndex(Nv+2);
+  addVertex(tmpVertex);
+  vertexData.resize(Nv+3,v3Pos);  
+  
+  tmpVertex.setPosition(v4Pos);
+  tmpVertex.setIndex(Nv+3);
+  addVertex(tmpVertex);
+  vertexData.resize(Nv+4,v4Pos);  
+  
+  //Resize derivative matrix for vertices    
+  vertexDeriv.resize(Nv+4,vertexDeriv[0]);  
+  
+  //Add the five new walls
+  
+  //New wall connecting v1 to v2
+  addWall(*(cell(i).wall(wI)));
+  wall(Nw).setIndex(Nw);
+  wallData.resize(Nw+1,wallData[0]);
+  double tmpLength = 0.0;
+  for( size_t d=0 ; d<dimension ; ++d )
+    tmpLength += (v1Pos[d]-v2Pos[d])*(v1Pos[d]-v2Pos[d]);
+  wallData[Nw][0] = std::sqrt( tmpLength );
+  
+  //New wall connecting v2 to v3
+  addWall(*(cell(i).wall(wI)));
+  wall(Nw+1).setIndex(Nw+1);
+  wallData.resize(Nw+2,wallData[0]);
+  tmpLength = 0.0;
+  for( size_t d=0 ; d<dimension ; ++d )
+    tmpLength += (v2Pos[d]-v3Pos[d])*(v2Pos[d]-v3Pos[d]);
+  wallData[Nw+1][0] = std::sqrt( tmpLength );
+  
+  //New wall connecting v3 to v4
+  addWall(*(cell(i).wall(wI)));
+  wall(Nw+2).setIndex(Nw+2);
+  wallData.resize(Nw+3,wallData[0]);
+  tmpLength = 0.0;
+  for( size_t d=0 ; d<dimension ; ++d )
+    tmpLength += (v3Pos[d]-v4Pos[d])*(v3Pos[d]-v4Pos[d]);
+  wallData[Nw+2][0] = std::sqrt( tmpLength );
+  
+  //New wall connecting v4 to v1
+  addWall(*(cell(i).wall(wI)));
+  wall(Nw+3).setIndex(Nw+3);
+  wallData.resize(Nw+4,wallData[0]);
+  tmpLength = 0.0;
+  for( size_t d=0 ; d<dimension ; ++d )
+    tmpLength += (v4Pos[d]-v1Pos[d])*(v4Pos[d]-v1Pos[d]);
+  wallData[Nw+3][0] = std::sqrt( tmpLength );
+  
+  
+ //Wall continuing the  selected wall
+  addWall( *(cell(i).wall(wI)) );
+  wall(Nw+4).setIndex(Nw+4);
+  //Set new lengths as fractions of the old determined from the new 
+  //vertex position
+  double oldL = wallData[cell(i).wall(wI)->index()][0];
+  size_t v1w = cell(i).wall(wI)->vertex1()->index();
+  size_t v2w = cell(i).wall(wI)->vertex2()->index();
+  
+  tmpLength=0;
+  for( size_t d=0 ; d<dimension ; ++d ) {
+    tmpLength += (vertexData[v2w][d]-vertexData[v1w][d])*
+      (vertexData[v2w][d]-vertexData[v1w][d]);
+  }
+  tmpLength = std::sqrt( tmpLength ); // current length for the choosen wall for branching
+  
+  double tmpLengthFrac1=0.0;
+  double tmpLengthFrac2=0.0; 
+  bool v1posWithv1w;
+  // which is closer to which: v1Pos and v2Pos and v1w and v2w
+  for( size_t d=0 ; d<dimension ; ++d ) {
+    tmpLengthFrac1 += (v1Pos[d]-vertexData[v1w][d])*
+      (v1Pos[d]-vertexData[v1w][d]);
+    tmpLengthFrac2 += (v2Pos[d]-vertexData[v1w][d])*
+      (v2Pos[d]-vertexData[v1w][d]);
+  } 
+  if (tmpLengthFrac1<tmpLengthFrac2){  
+    v1posWithv1w=1;
+    tmpLengthFrac1=std::sqrt(tmpLengthFrac1);
+    tmpLengthFrac2=0;
+    for( size_t d=0 ; d<dimension ; ++d ) {
+      tmpLengthFrac2 += (v2Pos[d]-vertexData[v2w][d])*
+        (v2Pos[d]-vertexData[v2w][d]);
+    }  
+    tmpLengthFrac2=std::sqrt(tmpLengthFrac1);
+  }
+  else {
+    v1posWithv1w=0;  
+    tmpLengthFrac2=std::sqrt(tmpLengthFrac2);
+    tmpLengthFrac1=0;
+    for( size_t d=0 ; d<dimension ; ++d ) {
+      tmpLengthFrac1 += (v1Pos[d]-vertexData[v2w][d])*
+        (v1Pos[d]-vertexData[v2w][d]);
+    }  
+    tmpLengthFrac1=std::sqrt(tmpLengthFrac1);
+  }
+         
+  double lengthFrac1 = tmpLengthFrac1/tmpLength;
+  double lengthFrac2 = tmpLengthFrac2/tmpLength;
+
+  size_t wIG=cell(i).wall(wI)-> index();
+  wallData.resize(Nw+5,wallData[wIG]); // adding five new walls
+  wallData[wIG][0] = lengthFrac1*oldL; //wall on the same side as v1Pos keeps the old index
+  wallData[Nw+4][0] = lengthFrac2*oldL;
+  wallData[Nw][0] = oldL*(1-lengthFrac1-lengthFrac2);
+
+
+  //Resize derivative matrix for walls
+  wallDeriv.resize(Nw+5,wallDeriv[0]);
+
+
+
+  // Create connection matrix
+  // setting up the connectivity
+
+  //extracting the wall and vertex indices for the old cell (cell i)
+  std::vector<size_t> oldVIndex,newVIndex,oldWIndex,newWIndex;
+  
+  for(size_t wIndex=0; wIndex<cell(i).numWall(); wIndex++){
+    oldWIndex.push_back( cell(i).wall(wIndex)->index() );
+  }
+  
+  for(size_t vIndex=0; vIndex<cell(i).numVertex(); vIndex++){
+    oldVIndex.push_back( cell(i).vertex(vIndex)->index() );
+  }
+
+  
+  cell(i).addWall( &(wall(0)));
+  cell(i).addWall( &(wall(0)));
+  cell(i).addVertex( &(vertex(0)));
+  cell(i).addVertex( &(vertex(0)));
+
+
+  vertex(Nv).addCell( &(cell(Nc)));
+  vertex(Nv).addCell( &(cell(i)));
+  vertex(Nv).addWall( &(wall(Nw)));
+  vertex(Nv).addWall( &(wall(Nw+3)));
+  vertex(Nv).addWall( &(wall(wIG)));
+
+
+  vertex(Nv+1).addCell( &(cell(Nc)));
+  vertex(Nv+1).addCell( &(cell(i)));
+  vertex(Nv+1).addWall( &(wall(Nw)));
+  vertex(Nv+1).addWall( &(wall(Nw+1)));
+  vertex(Nv+1).addWall( &(wall(Nw+4)));
+
+  vertex(Nv+2).addCell( &(cell(Nc)));
+  vertex(Nv+2).addWall( &(wall(Nw+1)));
+  vertex(Nv+2).addWall( &(wall(Nw+2)));
+  
+  vertex(Nv+3).addCell( &(cell(Nc)));
+  vertex(Nv+3).addWall( &(wall(Nw+2)));
+  vertex(Nv+3).addWall( &(wall(Nw+3)));
+    
+
+  
+  size_t wIPlus1, wIPlus2;
+  wIPlus1= wI+1;
+  wIPlus2= wI+2;
+    
+  if (wIPlus1>cell(i).numWall()-1){
+    wIPlus1-= cell(i).numWall();
+    wIPlus2-= cell(i).numWall();
+  }
+  if (wIPlus2 > cell(i).numWall()-1){
+    wIPlus2-= cell(i).numWall();
+  }
+ 
+  if ( ((cell(i).wall(wI) -> vertex1() -> index())==v1w && v1posWithv1w==1)||
+       ((cell(i).wall(wI) -> vertex2() -> index())==v2w && v1posWithv1w==0) ){
+
+    cell(i).setVertex(wIPlus1, &(vertex(Nv+1)));
+    cell(i).setVertex(wIPlus2, &(vertex(Nv)));
+
+    cell(i).setWall(wIPlus2, &(wall(wIG)));
+    cell(i).setWall(wIPlus1, &(wall(Nw)));
+    cell(i).setWall(wI, &(wall(Nw+4)));
+
+
+
+    cell(Nc).setWall(0, &(wall(Nw)));
+    cell(Nc).setWall(1, &(wall(Nw+3)));
+    cell(Nc).setWall(2, &(wall(Nw+2)));
+    cell(Nc).setWall(3, &(wall(Nw+1)));
+
+    cell(Nc).setVertex(0, &(vertex(Nv)));
+    cell(Nc).setVertex(1, &(vertex(Nv+1)));
+    cell(Nc).setVertex(2, &(vertex(Nv+2)));
+    cell(Nc).setVertex(3, &(vertex(Nv+3)));
+  
+    
+    
+  }
+  else{
+
+
+    cell(i).setVertex(wIPlus1, &(vertex(Nv)));
+    cell(i).setVertex(wIPlus2, &(vertex(Nv+1)));
+ 
+
+    cell(i).setWall(wI, &(wall(wIG)));
+    cell(i).setWall(wIPlus1, &(wall(Nw)));
+    cell(i).setWall(wIPlus2, &(wall(Nw+4)));
+
+
+   
+    cell(Nc).setWall(0, &(wall(Nw)));
+    cell(Nc).setWall(1, &(wall(Nw+1)));
+    cell(Nc).setWall(2, &(wall(Nw+2)));
+    cell(Nc).setWall(3, &(wall(Nw+3)));
+
+
+    cell(Nc).setVertex(0, &(vertex(Nv+1)));
+    cell(Nc).setVertex(1, &(vertex(Nv)));
+    cell(Nc).setVertex(2, &(vertex(Nv+3)));
+    cell(Nc).setVertex(3, &(vertex(Nv+2)));
+
+  }
+ 
+  
+  for(size_t wIndex=wIPlus2+1; wIndex<cell(i).numWall(); wIndex++){ 
+    cell(i).setVertex(wIndex, &(vertex(oldVIndex[wIndex-2])));
+    cell(i).setWall(wIndex, &(wall(oldWIndex[wIndex-2])));
+  }
+
+
+
+  // setting vertices for walls 
+
+
+
+
+  if (v1posWithv1w){
+    
+    wall(wIG).setVertex1( &(vertex(v1w)) );
+    wall(wIG).setVertex2( &(vertex(Nv)) );
+
+    wall(Nw).setVertex1( &(vertex(Nv)) );
+    wall(Nw).setVertex2( &(vertex(Nv+1)) );
+
+    wall(Nw+4).setVertex1( &(vertex(Nv+1)) );
+    wall(Nw+4).setVertex2( &(vertex(v2w)) );
+
+    wall(Nw+1).setVertex1( &(vertex(Nv+1)) );
+    wall(Nw+1).setVertex2( &(vertex(Nv+2)) );
+
+    wall(Nw+2).setVertex1( &(vertex(Nv+2)) );
+    wall(Nw+2).setVertex2( &(vertex(Nv+3)) );
+
+    wall(Nw+3).setVertex1( &(vertex(Nv+3)) );
+    wall(Nw+3).setVertex2( &(vertex(Nv)) );
+  }
+  else{
+
+    wall(wIG).setVertex1( &(vertex(Nv)) );
+    wall(wIG).setVertex2( &(vertex(v2w)) );
+
+    wall(Nw).setVertex1( &(vertex(Nv+1)) );
+    wall(Nw).setVertex2( &(vertex(Nv)) );
+
+    wall(Nw+4).setVertex1( &(vertex(v1w)) );   
+    wall(Nw+4).setVertex2( &(vertex(Nv+1)) );
+
+    wall(Nw+1).setVertex1( &(vertex(Nv+2)) );
+    wall(Nw+1).setVertex2( &(vertex(Nv+1)) );
+    
+    wall(Nw+2).setVertex1( &(vertex(Nv+3)) );
+    wall(Nw+2).setVertex2( &(vertex(Nv+2)) );
+    
+    wall(Nw+3).setVertex1( &(vertex(Nv)) );
+    wall(Nw+3).setVertex2( &(vertex(Nv+3)) );
+   
+  }
+  
+    wall(Nw+1).setCell( &(cell(Nc)), background() );
+    wall(Nw+2).setCell( &(cell(Nc)), background() );
+    wall(Nw+3).setCell( &(cell(Nc)), background() );
+
+  if (  (wall(wIG).cell1() -> index())==i ){
+
+    wall(Nw+4).setCell( &(cell(i)), background() );
+    wall(Nw).setCell( &(cell(i)), &(cell(Nc)) );  
+    wall(wIG).setCell( &(cell(i)), background() );
+    
+    wall(Nw).setCellSort1( wall(wIG).cellSort1() );
+    wall(Nw+4).setCellSort1( wall(wIG).cellSort1() );
+    wall(Nw).setCellSort2( -(wall(wIG).cellSort1()) );
+
+
+    wall(Nw+1).setCellSort1( -(wall(wIG).cellSort1()) );
+    wall(Nw+2).setCellSort1( -(wall(wIG).cellSort1()) );
+    wall(Nw+3).setCellSort1( -(wall(wIG).cellSort1()) );
+
+
+  }
+  else{
+   
+    wall(Nw+4).setCell(  background(), &(cell(i)) );
+    wall(Nw).setCell( &(cell(Nc)), &(cell(i)) );  
+    wall(wIG).setCell( background(), &(cell(i)) );
+
+
+    wall(Nw).setCellSort2( wall(wIG).cellSort2() );
+    wall(Nw+4).setCellSort2( wall(wIG).cellSort2() );
+    wall(Nw).setCellSort1( -(wall(wIG).cellSort2()) );
+
+
+    wall(Nw+1).setCellSort1( -(wall(wIG).cellSort2()) );
+    wall(Nw+2).setCellSort1( -(wall(wIG).cellSort2()) );
+    wall(Nw+3).setCellSort1( -(wall(wIG).cellSort2()) );
+
+
+  }
+
+
+
+
+//   std::cerr<<"wall 0      "<<wall(0).cell1() ->index()<<"    "<<wall(0).cell2() ->index()<<std::endl;
+//   std::cerr<<"wall 1      "<<wall(1).cell1() ->index()<<"    "<<wall(1).cell2() ->index()<<std::endl;
+//   std::cerr<<"wall 2      "<<wall(2).cell1() ->index()<<"    "<<wall(2).cell2() ->index()<<std::endl;
+//   std::cerr<<"wall 3      "<<wall(3).cell1() ->index()<<"    "<<wall(3).cell2() ->index()<<std::endl;
+//   std::cerr<<"wall 4      "<<wall(4).cell1() ->index()<<"    "<<wall(4).cell2() ->index()<<std::endl;
+//   std::cerr<<"wall 5      "<<wall(5).cell1() ->index()<<"    "<<wall(5).cell2() ->index()<<std::endl;
+//   std::cerr<<"wall 6      "<<wall(6).cell1() ->index()<<"    "<<wall(6).cell2() ->index()<<std::endl;
+    
+//   std::cerr<<"wall 11     "<<wall(11).cell1() ->index()<<"   "<<wall(11).cell2() ->index()<<std::endl;
+//   std::cerr<<"wall 7      "<<wall(7).cell1() ->index()<<"    "<<wall(7).cell2() ->index()<<std::endl;
+//   std::cerr<<"wall 8      "<<wall(8).cell1() ->index()<<"    "<<wall(8).cell2() ->index()<<std::endl;
+//   std::cerr<<"wall 9      "<<wall(9).cell1() ->index()<<"    "<<wall(9).cell2() ->index()<<std::endl;
+//   std::cerr<<"wall 10     "<<wall(10).cell1() ->index()<<"   "<<wall(10).cell2() ->index()<<std::endl;
+  
+
+
+//   std::cerr<<"wall 0  vertices    "<<wall(0).vertex1() ->index()<<"    "<<wall(0).vertex2() ->index()<<std::endl;
+//   std::cerr<<"wall 1  vertices    "<<wall(1).vertex1() ->index()<<"    "<<wall(1).vertex2() ->index()<<std::endl;
+//   std::cerr<<"wall 2  vertices    "<<wall(2).vertex1() ->index()<<"    "<<wall(2).vertex2() ->index()<<std::endl;
+//   std::cerr<<"wall 3  vertices    "<<wall(3).vertex1() ->index()<<"    "<<wall(3).vertex2() ->index()<<std::endl;
+//   std::cerr<<"wall 4  vertices    "<<wall(4).vertex1() ->index()<<"    "<<wall(4).vertex2() ->index()<<std::endl;
+//   std::cerr<<"wall 5  vertices    "<<wall(5).vertex1() ->index()<<"    "<<wall(5).vertex2() ->index()<<std::endl;
+//   std::cerr<<"wall 6  vertices    "<<wall(6).vertex1() ->index()<<"    "<<wall(6).vertex2() ->index()<<std::endl;
+//   std::cerr<<"wall 7  vertices    "<<wall(7).vertex1() ->index()<<"    "<<wall(7).vertex2() ->index()<<std::endl;
+//   std::cerr<<"wall 8  vertices    "<<wall(8).vertex1() ->index()<<"    "<<wall(8).vertex2() ->index()<<std::endl;
+//   std::cerr<<"wall 9  vertices    "<<wall(9).vertex1() ->index()<<"    "<<wall(9).vertex2() ->index()<<std::endl;
+//   std::cerr<<"wall 10 vertices    "<<wall(10).vertex1() ->index()<<"   "<<wall(10).vertex2() ->index()<<std::endl;
+//   std::cerr<<"wall 11 vertices    "<<wall(11).vertex1() ->index()<<"   "<<wall(11).vertex2() ->index()<<std::endl;
+
+//   std::cerr<<"wall 0  vertices sort   "<<wall(0).cellSort1()<<std::endl;
+//   std::cerr<<"wall 1  vertices sort   "<<wall(1).cellSort1()<<std::endl;
+//   std::cerr<<"wall 2  vertices sort   "<<wall(2).cellSort1()<<std::endl;
+//   std::cerr<<"wall 3  vertices sort   "<<wall(3).cellSort1()<<std::endl;
+//   std::cerr<<"wall 4  vertices sort   "<<wall(4).cellSort1()<<std::endl;
+//   std::cerr<<"wall 5  vertices sort   "<<wall(5).cellSort1()<<std::endl;
+//   std::cerr<<"wall 6  vertices sort   "<<wall(6).cellSort1()<<std::endl;
+//   std::cerr<<"wall 7  vertices sort   "<<wall(7).cellSort1()<<std::endl;
+//   std::cerr<<"wall 8  vertices sort   "<<wall(8).cellSort1()<<std::endl;
+//   std::cerr<<"wall 9  vertices sort   "<<wall(9).cellSort1()<<std::endl;
+//   std::cerr<<"wall 10 vertices sort   "<<wall(10).cellSort1()<<std::endl;
+//   std::cerr<<"wall 11 vertices sort   "<<wall(11).cellSort1()<<std::endl;
+ 
+// std::cerr<<"size of cell 2  variables...................."<<cellData[2].size();
+
+
+	
+  //checkConnectivity(1);
+}
+
+
+
 
 void Tissue::
 divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerIndex,
