@@ -79,6 +79,90 @@ class VertexNoUpdateFromIndex : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+
+
+///
+/// @brief Sets positional derivatives to zero for vertices with listed indices
+///
+/// @details Freezes all of the vertices but the leading ones(at the tip). 
+/// In the model file, the reaction is specified as:
+/// @verbatim
+/// VertexNoUpdateFromList 0 0
+/// @endverbatim
+/// where the list if indices are the vertices not to be updated.
+///
+/// @note This function sets the derivatives to zero, which means it has to be provided after
+/// reactions that update the vertex derivatives.
+/// 
+class VertexNoUpdateFromList : public BaseReaction {
+  
+ public:
+  
+  VertexNoUpdateFromList(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > 
+			     &indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+
+  std::vector<size_t> updateVertices;
+};
+
+
+///
+/// @brief randomizes the growth direction of tip cells(for two dim only)
+///
+/// @details Freezes all of the vertices but the leading ones(at the tip). 
+/// In the model file, the reaction is specified as:
+/// @verbatim
+/// VertexRandTip 1 1 2
+/// max_randomization_angle
+/// tip signal index
+/// mt vector starting index(2d)
+/// @endverbatim
+/// where the list if indices are the vertices not to be updated.
+///
+/// @note This function sets the derivatives to zero, which means it has to be provided after
+/// reactions that update the vertex derivatives.
+/// 
+class VertexRandTip : public BaseReaction {
+  
+ public:
+  
+  VertexRandTip(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > 
+			     &indValue );
+  
+  void derivs(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData,
+              DataMatrix &cellDerivs,
+              DataMatrix &wallDerivs,
+              DataMatrix &vertexDerivs );
+
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+
+};
+
+
+
+
 ///
 /// @brief Sets positional derivatives to zero for vertices at boundary so that boundary 
 /// vertices would be restricted from moving in x and/or y ... direction(s) 

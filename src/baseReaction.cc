@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "baseReaction.h"
-
 #include "adhocReaction.h"
 #include "bending.h"
 #include "cellTime.h"
@@ -387,7 +386,11 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if(idValue=="VertexNoUpdateFromPosition")
     return new VertexNoUpdateFromPosition(paraValue,indValue); 
   else if(idValue=="VertexNoUpdateFromIndex")
-    return new VertexNoUpdateFromIndex(paraValue,indValue); 
+    return new VertexNoUpdateFromIndex(paraValue,indValue);
+  else if(idValue=="VertexNoUpdateFromList")
+    return new VertexNoUpdateFromList(paraValue,indValue);
+  else if(idValue=="VertexRandTip")
+    return new VertexRandTip(paraValue,indValue); 
   else if(idValue=="VertexNoUpdateBoundary")
     return new VertexNoUpdateBoundary(paraValue,indValue); 
   else if(idValue=="VertexNoUpdateBoundaryPtemplate")

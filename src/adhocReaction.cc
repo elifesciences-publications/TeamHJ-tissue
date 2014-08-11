@@ -124,6 +124,207 @@ derivs(Tissue &T,
   }
 }
 
+
+VertexNoUpdateFromList::
+VertexNoUpdateFromList(std::vector<double> &paraValue, 
+			   std::vector< std::vector<size_t> > 
+			   &indValue ) {
+  
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=0 ) {
+    std::cerr << "VertexNoUpdateFromList::"
+	      << "VertexNoUpdateFromList() "
+	      << "Uses no parameters."
+	      << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 0 ) {
+    std::cerr << "VertexNoUpdateFromList::"
+	      << "VertexNoUpdateFromList() "
+	      << "Uses no variable index." << std::endl;
+    exit(0);
+  }
+  // Set the variable values
+  //
+  setId("VertexNoUpdateFromList");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  //
+}
+
+void VertexNoUpdateFromList::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  //Check the cancelation for vertices with given indices
+  size_t dimension = vertexData[0].size();
+  size_t numVertices = T.numVertex();
+  
+  for (size_t i=0; i<numVertices; ++i)
+    if(std::find(updateVertices.begin(), updateVertices.end(), i) == updateVertices.end())    
+      for (size_t d=0; d<dimension; ++d)
+        vertexDerivs[i][d] = 0.0;   
+}
+
+void VertexNoUpdateFromList:: 
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h){
+  updateVertices.clear();
+  size_t numVertices = T.numVertex();
+  for (size_t i=0; i<numVertices; ++i){
+    size_t numWalls=T.vertex(i).numWall();
+    if(numWalls==2)
+      if((T.vertex(i).wall(0)->cell1()==T.background() ||
+          T.vertex(i).wall(0)->cell2()==T.background()) &&
+         (T.vertex(i).wall(1)->cell1()==T.background() ||
+          T.vertex(i).wall(1)->cell2()==T.background()))
+        updateVertices.push_back(i);
+  }
+    // for(size_t i=0; i<updateVertices.size(); ++i)
+    //   std::cerr<< updateVertices[i]<<"  ";
+    // std::cerr<<std::endl;  
+}
+
+
+
+
+VertexRandTip::
+VertexRandTip(std::vector<double> &paraValue, 
+              std::vector< std::vector<size_t> > 
+              &indValue ) {
+  
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=1 ) {
+    std::cerr << "VertexRandTip::"
+	      << "VertexRandTip() "
+	      << "Uses one parameter for max_randomization angle."
+	      << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 2 ) {
+    std::cerr << "VertexRandTip::"
+	      << "VertexRandTip() "
+	      << "Uses two variable indices at the first level for " 
+              << "tip_signal_index and mt_vector_starting_index." << std::endl;
+    exit(0);
+  }
+  // Set the variable values
+  //
+  setId("VertexRandTip");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  //
+}
+
+void VertexRandTip::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+
+}
+
+void VertexRandTip:: 
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h){
+  size_t rotIndex=variableIndex(0,0);
+  size_t mtIndex=variableIndex(0,1);
+  size_t numCells = T.numCell();
+
+
+
+  for (size_t cellInd=0; cellInd<numCells; ++cellInd){
+    size_t numWalls=T.cell(cellInd).numWall();
+    size_t baseWall, wallsBackground=0;
+    for(size_t wallInd=0; wallInd<numWalls; ++wallInd){
+      if(T.cell(cellInd).wall(wallInd)->cell1()==T.background() ||
+         T.cell(cellInd).wall(wallInd)->cell2()==T.background())
+        wallsBackground++;
+      if(T.cell(cellInd).wall(wallInd)->cell1()!=T.background() &&
+         T.cell(cellInd).wall(wallInd)->cell2()!=T.background())
+        baseWall=wallInd;
+    }
+    if(cellData[cellInd][rotIndex]!=1 && wallsBackground==3){   
+      cellData[cellInd][rotIndex]=1;
+      // finding the wall M and its middle point
+      std::vector<double> midWall(2);
+      size_t v1=T.cell(cellInd).wall(baseWall)->vertex1()->index(),
+        v2=T.cell(cellInd).wall(baseWall)->vertex2()->index();
+      midWall[0]=0.5*(vertexData[v1][0]+vertexData[v2][0]);
+      midWall[1]=0.5*(vertexData[v1][1]+vertexData[v2][1]);
+     
+      // random rotation angle  
+      std::srand (time(NULL));
+      double teta=(parameter(0)*3.1415/180)*(1-2*((double) rand() / (RAND_MAX)));
+
+      std::vector<std::vector<double> > rot(2);
+      rot[0].resize(2);
+      rot[1].resize(2);
+      rot[0][0]=std::cos(teta);
+      rot[0][1]=-std::sin(teta);
+      rot[1][0]=std::sin(teta);
+      rot[1][1]=std::cos(teta);
+      // vertices of the cell
+
+      // do the rotation for mt_vector
+      std::vector<double> vtmp(2); 
+      vtmp[0]=cellData[cellInd][mtIndex];
+      vtmp[1]=cellData[cellInd][mtIndex+1];
+      
+      cellData[cellInd][mtIndex]  =rot[0][0]*vtmp[0]+rot[0][1]*vtmp[1];
+      cellData[cellInd][mtIndex+1]=rot[1][0]*vtmp[0]+rot[1][1]*vtmp[1];
+      
+      for (size_t verInd=0; verInd< numWalls; verInd++){
+        size_t vi=T.cell(cellInd).vertex(verInd)->index();
+        
+        
+        vtmp[0]=vertexData[vi][0];
+        vtmp[1]=vertexData[vi][1];
+        // moving the origin to the middle of wall M
+        vtmp[0]=vtmp[0]-midWall[0];
+        vtmp[1]=vtmp[1]-midWall[1];
+        
+        // do the rotation for vertices
+        vertexData[vi][0]=rot[0][0]*vtmp[0]+rot[0][1]*vtmp[1];
+        vertexData[vi][1]=rot[1][0]*vtmp[0]+rot[1][1]*vtmp[1];
+       
+        
+      // moving the origin back
+        vertexData[vi][0]= vertexData[vi][0]+midWall[0];
+        vertexData[vi][1]= vertexData[vi][1]+midWall[1];
+      }
+    }
+   
+  }
+
+
+
+    
+}
+
+
+////////////////////////////////
 VertexNoUpdateBoundary::
 VertexNoUpdateBoundary(std::vector<double> &paraValue, 
 		       std::vector< std::vector<size_t> > 

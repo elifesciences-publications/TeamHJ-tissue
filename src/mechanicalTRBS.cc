@@ -2663,13 +2663,14 @@ derivs(Tissue &T,
 
 
 
-
+  std::cerr<<"from here"<<std::endl;
+  
   for (size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex) {
     size_t numWalls = T.cell(cellIndex).numWall();
- 
-  
+    
 
     if(  T.cell(cellIndex).numVertex()!= numWalls ) {
+     
       std::cerr << "VertexFromTRBScenterTriangulationMT::derivs() same number of vertices and walls."
 		<< " Not for cells with " << T.cell(cellIndex).numWall() << " walls and "
 		<< T.cell(cellIndex).numVertex() << " vertices!"	
@@ -3714,7 +3715,95 @@ derivs(Tissue &T,
         maximalStrainValue=maximalStrainValue2;
         maximalStrainValue2=maximalStrainValue3; 
       }
+     
       
+
+
+
+
+      /////// ad-hoc begin
+      for (size_t wallindex=0; wallindex<numWalls; ++wallindex) { 
+        size_t kPlusOneMod = (wallindex+1)%numWalls;
+        //size_t v1 = com;
+        size_t v2 = T.cell(cellIndex).vertex(wallindex)->index();
+        size_t v3 = T.cell(cellIndex).vertex(kPlusOneMod)->index();
+        //size_t w1 = internal wallindex
+        size_t w2 = T.cell(cellIndex).wall(wallindex)->index();
+        //size_t w3 = internal wallindex+1
+        
+        // Position matrix holds in rows positions for com, vertex(wallindex), vertex(wallindex+1)
+        DataMatrix position(3,vertexData[v2]);
+        for (size_t d=0; d<dimension; ++d)
+          position[0][d] = cellData[cellIndex][comIndex+d]; // com position
+        //position[1] = vertexData[v2]; // given by initiation
+        position[2] = vertexData[v3];
+        //position[0][2] z for vertex 1 of the current element
+        
+        
+        
+        std::vector<double> restingLength(numWalls);
+        restingLength[0] = cellData[cellIndex][lengthInternalIndex + wallindex];
+        restingLength[1] = wallData[w2][wallLengthIndex];
+        restingLength[2] = cellData[cellIndex][lengthInternalIndex + kPlusOneMod];
+        
+      
+        std::vector<double> length(numWalls);
+        length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
+                               (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
+                               (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
+        
+        length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
+        
+        length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
+                               (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
+                               (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
+        std:: vector<std::vector<double> > edges(3);
+        for (size_t s=0; s<3 ; s++)
+          edges[s].resize(3);
+        for (size_t d=0; d<dimension; ++d){
+          edges[0][d]=position[1][d]-position[0][d];
+          edges[1][d]=position[2][d]-position[1][d];
+          edges[2][d]=position[0][d]-position[2][d];
+        }
+        //go 3 dimensional
+        std::vector<double> restingFromStrain(3);
+        for (size_t d=0; d<dimension; ++d)
+          restingFromStrain[d]=std::sqrt(
+                                         (edges[d][0]*eigenVectorStrain[0][Istrain]+
+                                          edges[d][1]*eigenVectorStrain[1][Istrain]+
+                                          edges[d][2]*eigenVectorStrain[2][Istrain])*
+                                         (edges[d][0]*eigenVectorStrain[0][Istrain]+
+                                          edges[d][1]*eigenVectorStrain[1][Istrain]+
+                                          edges[d][2]*eigenVectorStrain[2][Istrain])*
+                                         (1-maximalStrainValue)*(1-maximalStrainValue)+
+                                         
+                                         (edges[d][0]*eigenVectorStrain[0][Istrain2]+
+                                          edges[d][1]*eigenVectorStrain[1][Istrain2]+
+                                          edges[d][2]*eigenVectorStrain[2][Istrain2])*
+                                         (edges[d][0]*eigenVectorStrain[0][Istrain2]+
+                                          edges[d][1]*eigenVectorStrain[1][Istrain2]+
+                                          edges[d][2]*eigenVectorStrain[2][Istrain2])*
+                                         (1-maximalStrainValue2)*(1-maximalStrainValue2)+
+                                         
+                                         (edges[d][0]*eigenVectorStrain[0][Istrain3]+
+                                          edges[d][1]*eigenVectorStrain[1][Istrain3]+
+                                          edges[d][2]*eigenVectorStrain[2][Istrain3])*
+                                         (edges[d][0]*eigenVectorStrain[0][Istrain3]+
+                                          edges[d][1]*eigenVectorStrain[1][Istrain3]+
+                                          edges[d][2]*eigenVectorStrain[2][Istrain3])*
+                                         (1-maximalStrainValue3)*(1-maximalStrainValue3)
+                                         );
+        for (size_t d=0; d<dimension; ++d)
+          std::cerr<<restingLength[d]<<"  "<<restingFromStrain[d]<<"  "<<length[d]<<std::endl;
+      }
+      /////// ad-hoc end
+      
+
+
+
+
+
+ 
       double growthStrain=maximalStrainValue2;
       if ( cellData[cellIndex][MTindex  ]*eigenVectorStrain[0][Istrain] +
 	   cellData[cellIndex][MTindex+1]*eigenVectorStrain[1][Istrain] +
@@ -3828,7 +3917,7 @@ derivs(Tissue &T,
     cellData[cellIndex][anisoEnergyIndex]= EnergyAniso;
     
   }
-
+  std::cerr<<"up to here"<<std::endl; 
   
   double totalEnergyIso=0;
   double totalEnergyAniso=0;
