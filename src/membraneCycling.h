@@ -1,4 +1,3 @@
-
 // Filename     : MembraneCycling.h
 // Description  : Classes describing cycling to/from mebrane
 // Author(s)    : Laura Brown (laura.brown@slcu.cam.ac.uk))
@@ -195,7 +194,7 @@ class LocalWallFeedbackNonLinear : public BaseReaction {
 /// Dependent on the amount of PIN/auxin in the wall compartment.
 ///
 /// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis, p1 endocytosis.
-/// PIN  molecules are updated according to:
+/// PIN molecules are updated according to:
 ///  
 ///
 /// @f[ \frac{dP_i}{dt} = p_0 P_ij Xij @f] 
@@ -356,7 +355,47 @@ class CellFluxExocytosis : public BaseReaction {
 };
 
 
+///
+/// @brief A function describing the exocytosis of PIN (or another protein) from the cytosol to the membrane at a rate
+/// dependent on the concentration of another molecule in the cytosol.
+///
+/// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis, p1 endocytosis.
+/// PIN molecules are updated according to:
+///  
+///
+/// @f[ \frac{dP_i}{dt} = p_0 P_ij - p_1 P_i X_i@f] 
+///  
+/// @f[ \frac{dP_{ij}}{dt} = -p_0 P_ij + p_1 P_i X_i @f]
+///
+///
+///  
+/// In the model file the reaction is given by:
+/// @verbatim
+/// MembraneCycling::LocalWallFeedbackLinear 2 2 2 1
+/// p_0 p_1
+/// ci_PIN ci_X
+///  wi_PIN
+/// @endverbatim
+///
+class LocalCellWallFeedbackLinear : public BaseReaction {
+  
+ public:
+  
+ LocalCellWallFeedbackLinear(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
 }
+
 
 
 #endif

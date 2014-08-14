@@ -3594,3 +3594,136 @@ derivs(Tissue &T,
     }
   }
 }
+
+AuxinModelSimple5::
+AuxinModelSimple5(std::vector<double> &paraValue, 
+		  std::vector< std::vector<size_t> > 
+		  &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=10 ) {
+    std::cerr << "AuxinModelSimple5::"
+	      << "AuxinModelSimple5() "
+	      << "Ten parameters used.\n\n";
+    std::cerr << "dA_i/dt = p1 - p2*A_i +p5*Sum_{neigh} (A_n-A_i) +\n" 
+	      << "p4*Sum_{neigh} (P_ni*A_n-P_in*A_i)\n\n" 
+	      << "dP_i/dt = p6 - p7*P_i\n\n"
+	      << "dX_i/dt = p8*A_i - p9*X_i\n\n"
+	      << "P_in = P_i*(X_n + p0) /(p_3+Sum_{k,neigh}( X_k + p_0))\n";
+    exit(EXIT_FAILURE);
+  }
+  if( (indValue.size() != 1 && indValue.size() !=2) || indValue[0].size() != 3 ||
+      (indValue.size()==2 &&indValue[1].size() != 1) ) {
+    std::cerr << "AuxinModelSimple1::"
+	      << "AuxinModelSimple1() "
+	      << "Three variable indices are used (auxin,pin,X) in first level."
+	      << std::endl << "Optionally a wall index is given for saving (pair of) PIN"
+	      << " at membranes." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  //Set the variable values
+  //
+  setId("AuxinModelSimple5");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "c_pinexo";
+  tmp[1] = "p_auxin";
+  tmp[2] = "d_auxin";
+  tmp[3] = "p_pol";
+  tmp[4] = "T_auxin";
+  tmp[5] = "D_auxin";
+  tmp[6] = "p_pin";
+  tmp[7] = "d_pin";
+  tmp[8] = "p_X";
+  tmp[9] = "d_X";
+  
+  setParameterId( tmp );
+}
+
+void AuxinModelSimple5::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);
+  size_t pI = variableIndex(0,1);
+  size_t xI = variableIndex(0,2);
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  xI<cellData[0].size() &&);
+  
+  if (numVariableIndexLevel()==2) {
+    assert(variableIndex(1,0)<wallData[0].size());
+  }
+
+  for( size_t i=0 ; i<numCells ; ++i ) {
+    
+    //Production and degradation
+    cellDerivs[i][aI] += parameter(1) - parameter(2)*cellData[i][aI];
+    
+    cellDerivs[i][pI] += parameter(6) - parameter(7)*cellData[i][pI];
+    
+    cellDerivs[i][xI] += parameter(8)*cellData[i][aI] 
+      - parameter(9)*cellData[i][xI];
+    
+    //Transport
+    size_t numWalls=T.cell(i).numWall();
+    //Polarization coefficient normalization constant
+    double sum=0.0;
+    size_t numActualWalls=0;
+    //pin[i].resize( numWalls+1 );
+    for( size_t n=0 ; n<numWalls ; ++n ) {
+      if( T.cell(i).wall(n)->cell1() != T.background() &&
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	numActualWalls++;
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  sum += cellData[ T.cell(i).wall(n)->cell2()->index() ][ xI ] + parameter(0); // added constant exo
+	else
+	  sum += cellData[ T.cell(i).wall(n)->cell1()->index() ][ xI ]+ parameter(0);   // added constant exo
+      }
+    }
+    //sum /= numActualWalls;//For adjusting for different num neigh
+    sum += parameter(3);
+    
+    for( size_t n=0 ; n<numWalls ; ++n ) {
+      //if( !T.cell(i).isNeighbor(T.background()) ) { 
+      if( T.cell(i).wall(n)->cell1() != T.background() &&
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	size_t neighIndex;
+	size_t pinIndexAdd=0; 
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  neighIndex = T.cell(i).wall(n)->cell2()->index();				
+	else {
+	  neighIndex = T.cell(i).wall(n)->cell1()->index();				
+	  pinIndexAdd=1;
+	}
+	double polRate=0.0;
+	
+	if( sum != 0.0 ) {
+	  polRate = cellData[i][pI] * (cellData[neighIndex][xI] + + parameter(0)) / sum;  // added constant exo
+	}
+	else {
+	  polRate = 1.;
+	}
+	if (numVariableIndexLevel()==2) {//store PIN value for membrane (in wall pair data)
+	  wallData[T.cell(i).wall(n)->index()][variableIndex(1,0)+pinIndexAdd] = polRate;
+	}
+	//pin[i][n+1] = polRate;
+	cellDerivs[i][aI] -= (parameter(4)*polRate+parameter(5))*cellData[i][aI];
+	cellDerivs[neighIndex][aI] += (parameter(4)*polRate+parameter(5))*cellData[i][aI];
+      }
+    }
+  }
+}
+

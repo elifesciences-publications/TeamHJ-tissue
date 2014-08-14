@@ -318,6 +318,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new AuxinModelSimple3(paraValue,indValue); 
   else if(idValue=="AuxinModelSimple4")
     return new AuxinModelSimple4(paraValue,indValue); 
+  else if(idValue=="AuxinModelSimple5")
+    return new AuxinModelSimple5(paraValue,indValue); 
   else if(idValue=="AuxinModel4")
     return new AuxinModel4(paraValue,indValue); 
   else if(idValue=="AuxinModel5")
@@ -436,9 +438,10 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new MembraneCycling::CellUpTheGradientNonLinear(paraValue, indValue);
   else if (idValue=="MembraneCycling::CellUpTheGradientLinear")
     return new MembraneCycling::CellUpTheGradientLinear(paraValue, indValue);
- 
    else if (idValue=="MembraneCycling::CellFluxExocytosis")
     return new MembraneCycling::CellFluxExocytosis(paraValue, indValue);
+  else if (idValue=="MembraneCycling::LocalCellWallFeedbackLinear")
+    return new MembraneCycling::LocalCellWallFeedbackLinear(paraValue, indValue);
 
 	
   // Default, if nothing found

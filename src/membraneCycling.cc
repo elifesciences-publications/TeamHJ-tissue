@@ -428,6 +428,85 @@ derivs(Tissue &T,
   }
  }
 
+LocalCellWallFeedbackLinear::
+LocalCellWallFeedbackLinear(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=2 ) {
+    std::cerr << "LocalCellWallFeedbackLinear::"
+	      << "LocalCellWallFeedbackLinear() "
+	      << "2 parameters used (see MembraneCycling.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 1 ) {
+    std::cerr << "LocalCellWallFeedbackLinear::"
+	      << "LocalCellWallFeedbackLinear() "
+	      << "Two cell variable indices (first row) and one wall variable"
+	      << " indices are used (PIN)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("LocalWallFeedbackLinear");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "k_on";
+  tmp[1] = "k_off";
+     setParameterId( tmp );
+}
+
+void LocalCellWallFeedbackLinear::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t pI = variableIndex(0,0);//pin
+  size_t pwI = variableIndex(1,0);//pin (membrane/wall)
+  size_t xwI = variableIndex(0,1);//x (cytosol)
+
+  assert(  pI<cellData[0].size() &&
+	   pwI<wallData[0].size() &&
+	   xwI<wallData[0].size() );
+
+ for (size_t i=0; i<numCells; ++i) {
+	         
+    //protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+     
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
+	//PIN cycling
+	double fac = parameter(0)*wallData[j][pwI]
+                    - parameter(1)*cellData[i][pwI]*cellData[i][xwI] ;
+	cellDerivs[i][pI] += fac;
+	wallDerivs[j][pwI] -= fac;
+      }
+
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
+       	//PIN cycling
+	double fac = parameter(0)*wallData[j][pwI+1]
+                    - parameter(1)*cellData[i][pwI]*cellData[i][xwI] ;
+	cellDerivs[i][pI] += fac;
+	wallDerivs[j][pwI+1] -= fac;
+      }
+    }
+  }
+ }
+
 
 
 CellUpTheGradientNonLinear::

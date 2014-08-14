@@ -1100,6 +1100,53 @@ class AuxinModelSimple4 : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+///
+/// @brief A linear polarization cell-based auxin transport model
+///
+/// @details A complete pattern generating auxin model based on only cellular
+/// compartments. The four molecules A(uxin), P(IN), X(auxin induced
+/// molecule) are updated according to:
+///  
+/// @f[ \frac{dA_i}{dt} = p_1 - p_2 A_i + p_4 \sum_{n}^{neigh} (P_{ni} A_n - P_{in} A_i) + p_5 \sum_{n}^{neigh} (A_n-A_i) @f] 
+///  
+/// @f[ \frac{dP_i}{dt} = p_6 - p_7 P_i @f] 
+///  
+/// @f[ \frac{dX_i}{dt} = p_8 A_i - p_9 X_i @f]
+///  
+/// @f[ P_{in} = \frac{P_i f( X_n )}{(p_3 + \sum_{k}^{neigh} f( X_k))} @f]
+///  
+/// In a model file the reaction is defined as:
+/// @verbatim
+/// AuxinModelSimple1 10 1 3
+/// p_0 ... p_9
+/// A_index P_index X_index
+/// @endverbatim
+/// or alternatively
+/// @verbatim
+/// AuxinModelSimple1 10 2 3 1
+/// p_0 ... p_9
+/// A_index P_index X_index
+/// P_wall (save index pair)
+/// @endverbatim
+///
+class AuxinModelSimple5 : public BaseReaction {
+  
+ public:
+  
+  AuxinModelSimple5(std::vector<double> &paraValue, 
+		    std::vector< std::vector<size_t> > 
+		    &indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
 #endif
 
 
