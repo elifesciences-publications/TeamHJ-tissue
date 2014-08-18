@@ -1573,7 +1573,7 @@ MoveVerteX(std::vector<double> &paraValue,
   if( paraValue.size()!=2 || ( paraValue[1]!=0 && paraValue[1]!=1) ) {
     std::cerr << "MoveVertexX::"
 	      << "MoveVertexX() "
-	      << "Uses two parameters k_growth and r_pow (0,1)\n";
+	      << "Uses two parameters k_growth and growth_mode (0,1)\n";
     exit(0);
   }  
   if( indValue.size() != 0 ) {
@@ -1607,18 +1607,19 @@ derivs(Tissue &T,
        DataMatrix &vertexDerivs ) {
   
   size_t numVertices = T.numVertex();
-  size_t dimension=vertexData[0].size();
+  size_t s_i = 1; // spatial index
+  size_t dimension=vertexData[s_i].size();
   double fac=parameter(0);
   size_t growth_mode = parameter(1);
 
   
   for( size_t i=0 ; i<numVertices ; ++i ) {
-    double x= std::sqrt(vertexData[i][0]*vertexData[i][0]);
+    double x= std::sqrt(vertexData[i][s_i]*vertexData[i][s_i]);
     if( growth_mode == 1 ) {
-      fac *= vertexData[i][0];
+      fac *= vertexData[i][s_i];
     }
 
-    vertexDerivs[i][0] += fac;
+    vertexDerivs[i][s_i] += fac;
   }
 }
 

@@ -249,3 +249,84 @@ derivs(Tissue &T,
 
   }
 }
+
+CreationSpatialRing::
+CreationSpatialRing(std::vector<double> &paraValue, 
+	     std::vector< std::vector<size_t> > 
+	     &indValue ) 
+{  
+
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=5 ) {
+    std::cerr << "CreationSpatialRing::CreationSpatialRing() "
+	      << "Uses five parameters V_max R(K_Hill) r_ring n_Hill and R_sign\n";
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+    std::cerr << "CreationSpatialRing::"
+	      << "CreationSpatialRing() "
+	      << "Index for variable to be updated given." << std::endl;
+    exit(0);
+  }
+  // Sign should be -/+1
+  if( paraValue[4] != -1 && paraValue[4] != 1 ) {
+    std::cerr << "CreationSpatialRing::CreationSpatialRing() "
+	      << "R_sign should be +/-1 to set production inside/outside R"
+	      << std::endl;
+    exit(0);
+  }
+	
+  // Set the variable values
+  setId("creationSpatialRing");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "V_max";
+  tmp[1] = "R (K_Hill)";
+  tmp[2] = "r_ring";
+  tmp[3] = "n_Hill";
+  tmp[4] = "R_sign";  
+  setParameterId( tmp );
+}
+
+void CreationSpatialRing::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  //Do the update for each cell
+  size_t numCells = T.numCell();
+
+  size_t cIndex = variableIndex(0,0);
+  double powK_ = std::pow(parameter(1),parameter(3));
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {
+
+    //Calculate cell center from vertices positions
+    std::vector<double> cellCenter;
+    cellCenter = T.cell(cellI).positionFromVertex(vertexData);
+    assert( cellCenter.size() == vertexData[0].size() );
+    double r=0.0;
+    for( size_t d=0 ; d<cellCenter.size() ; ++d )
+      r += cellCenter[d]*cellCenter[d];
+    r = std::sqrt(r);
+
+    r = std::sqrt( (r - parameter(2)) * (r - parameter(2))  ); // we want the distance to the ring
+
+    double powR = std::pow(r,parameter(3));
+	
+    if (parameter(4)>0.0)
+      cellDerivs[cellI][cIndex] += parameter(0)*powR/(powK_+powR);
+    else
+      cellDerivs[cellI][cIndex] += parameter(0)*powK_/(powK_+powR);
+
+
+  }
+}

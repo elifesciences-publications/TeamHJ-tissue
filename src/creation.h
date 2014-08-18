@@ -203,6 +203,65 @@ class CreationSpatialSphere : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+///
+/// @brief In each cell a molecule is produced/created with rate dependent on the distance of the cell from a ring
+///
+/// The variable update is for each cell given by ( SIGN= -1, production inside the ring)
+///
+/// @f[ \frac{dc}{dt} = V \frac{K^n}{K^n + d^n} @f]
+///
+/// or (SIGN = +1, production away from the ring),
+///
+/// @f[ \frac{dc}{dt} = V \frac{d^n}{K^n + d^n} @f]
+///
+/// where @f$ V, K, n, SIGN@f$ are constant parameters, @f$ c @f$ is the variable to be updated and @f$ d @f$ the distance of the cell to ring:
+///
+/// @f[ d = |r_{cell} - r_{ring}| @f]
+///
+/// In the above definition, @f$ r_{cell} @f$ is the distance of the cell to the center of the template, and @f$ r_{ring} @f$ is a constant parameter
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// creationSpatialRing 5 1 1
+/// V R r_ring n SIGN
+/// c_index
+/// @endverbatim
+///
+class CreationSpatialRing : public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  CreationSpatialRing(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
 
 #endif
 
