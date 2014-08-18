@@ -554,6 +554,8 @@ namespace WallGrowth {
 
           double strainValue1=tr/2+std::sqrt(((tr*tr)/4)-det);
           double strainValue2=tr/2-std::sqrt(((tr*tr)/4)-det);
+
+          std::cerr<<"strain values"<<strainValue1<<"  "<<strainValue2<<std::endl;
           double strainRestLocal1[2]={0,0};
           double strainRestLocal2[2]={0,0};
           if (Egreen[1][0]!=0){
@@ -577,14 +579,16 @@ namespace WallGrowth {
  
           double tempAn=std::sqrt(strainRestLocal1[0]*strainRestLocal1[0]+
                                   strainRestLocal1[1]*strainRestLocal1[1]);
-          strainRestLocal1[0]/=tempAn;
-          strainRestLocal1[1]/=tempAn;
-          
+          if (tempAn !=0 ){
+            strainRestLocal1[0]/=tempAn;
+            strainRestLocal1[1]/=tempAn;
+          }
           tempAn=std::sqrt(strainRestLocal2[0]*strainRestLocal2[0]+
                            strainRestLocal2[1]*strainRestLocal2[1]);
-          strainRestLocal2[0]/=tempAn;
-          strainRestLocal2[1]/=tempAn;
-          
+          if (tempAn !=0 ){
+            strainRestLocal2[0]/=tempAn;
+            strainRestLocal2[1]/=tempAn;
+          }
           
           if (strainValue2>strainValue1){
             double temp=strainValue1;
@@ -627,7 +631,7 @@ namespace WallGrowth {
     
       }
 
-          //std::cerr<<"  "<< cosTet[0]<<"  "<<cosTet[1]<<"  "<<cosTet[2]<<"  "<<
+          //std::cerr<<"  "<< cosTet[0]<<"  "<<cosTet[1]<<"  "<<cosTet[2]<<std::endl;
           
           // double strainValue1=cellData[cellIndex][strainValIndex1];
           // double strainValue2=cellData[cellIndex][strainValIndex2];
@@ -640,15 +644,15 @@ namespace WallGrowth {
             restingComp[j][0]=restingLength[j]*cosTet[j];
             restingComp[j][1]=restingLength[j]*sinTet[j];
           }
-          
+          std::cerr<<" 1 "<<std::endl;
           if (strainValue1>strainThreshold && strainValue2<strainThreshold){
+            std::cerr<<" 2 "<<std::endl;            
             for (size_t j=0; j< 3; ++j)
-    
               restingComp[j][0]+=restingComp[j][0]*parameter(0)*(strainValue1-strainThreshold);
-            
-            
           }
+          
           if (strainValue1>strainThreshold && strainValue2>strainThreshold){
+             std::cerr<<" 3 "<<std::endl;
             for (size_t j=0; j< 3; ++j){
               restingComp[j][0]+=restingComp[j][0]*parameter(0)*(strainValue1-strainThreshold);
               restingComp[j][1]+=restingComp[j][1]*parameter(0)*(strainValue2-strainThreshold);
@@ -666,32 +670,34 @@ namespace WallGrowth {
           double internalTempPlusOne=std::sqrt(restingComp[2][0]*restingComp[2][0]+
                                                restingComp[2][1]*restingComp[2][1]);
 
-
-
+          std::cerr<<" edges "<<internalTemp<<"  "<<externalTemp<<"  "<<internalTempPlusOne<<std::endl;
+          
           // WITH AREA AVERAGING
 
           size_t wallGlobalInd= T.cell(cellIndex).wall(wallIndex) ->index();
+          std::cerr<<" normalization area factor before "<<mainWalls[wallGlobalInd][0]<<std::endl;
           if (mainWalls[wallGlobalInd][0]==0){
             mainWalls[wallGlobalInd][0]=restingArea;
             mainWalls[wallGlobalInd][1]=restingArea*externalTemp;
+            std::cerr<<" normalization area factor middle "<<mainWalls[wallGlobalInd][0]<<std::endl;
           }
           else if (mainWalls[wallGlobalInd][0]!=0){
             mainWalls[wallGlobalInd][0]+=restingArea;
             mainWalls[wallGlobalInd][1]=
-              (mainWalls[wallGlobalInd][1]+restingArea*externalTemp)/mainWalls[wallGlobalInd][0];
+              (mainWalls[wallGlobalInd][1]+restingArea*externalTemp);
           }
+          std::cerr<<" normalization area factor after "<<mainWalls[wallGlobalInd][0]<<std::endl;
+          std::cerr<<" main wall "<<mainWalls[wallGlobalInd][1]<<std::endl;
           //wallIndexPlusOneMod
             
           if (internalWalls[cellIndex][wallIndex][0]==0){
-            
             internalWalls[cellIndex][wallIndex][0]=restingArea;
             internalWalls[cellIndex][wallIndex][1]=restingArea*internalTemp;
           }
           else if (internalWalls[cellIndex][wallIndex][0]!=0){
             internalWalls[cellIndex][wallIndex][0]+=restingArea;
             internalWalls[cellIndex][wallIndex][1]=
-              (internalWalls[cellIndex][wallIndex][1]+restingArea*internalTemp)
-              /internalWalls[cellIndex][wallIndex][0];
+              (internalWalls[cellIndex][wallIndex][1]+restingArea*internalTemp);
           }         
           
           if (internalWalls[cellIndex][wallIndexPlusOneMod][0]==0){
@@ -701,8 +707,8 @@ namespace WallGrowth {
           else if (internalWalls[cellIndex][wallIndexPlusOneMod][0]!=0){
             internalWalls[cellIndex][wallIndexPlusOneMod][0]+=restingArea;
             internalWalls[cellIndex][wallIndexPlusOneMod][1]=
-              (internalWalls[cellIndex][wallIndexPlusOneMod][1]+restingArea*internalTempPlusOne)
-              /internalWalls[cellIndex][wallIndexPlusOneMod][0];
+              (internalWalls[cellIndex][wallIndexPlusOneMod][1]+restingArea*internalTempPlusOne);
+              
           }         
           
 
@@ -712,11 +718,14 @@ namespace WallGrowth {
                 
       } // cells
      
-      for (size_t cellIndex=0; cellIndex< T.numCell(); ++cellIndex)
-        for (size_t wallIndex=0; wallIndex< T.cell(cellIndex).numWall(); ++wallIndex){
-          cellData[cellIndex][lengthInternalIndex + wallIndex]= internalWalls[cellIndex][wallIndex][1]; 
-          wallData[T.cell(cellIndex).wall(wallIndex)->index()][wallLengthIndex]=
-            mainWalls[T.cell(cellIndex).wall(wallIndex)->index()][1];
+      for (size_t cellIndex=0; cellIndex< T.numCell(); cellIndex++)
+        for (size_t wallIndex=0; wallIndex< T.cell(cellIndex).numWall(); wallIndex++){
+          cellData[cellIndex][lengthInternalIndex + wallIndex]= 
+            internalWalls[cellIndex][wallIndex][1]
+            /internalWalls[cellIndex][wallIndex][0]; 
+          size_t wallGlobalInd=T.cell(cellIndex).wall(wallIndex)->index();
+          wallData[wallGlobalInd][wallLengthIndex]=
+            mainWalls[wallGlobalInd][1]/mainWalls[wallGlobalInd][0];
         }
       
     }

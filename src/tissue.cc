@@ -4158,6 +4158,1068 @@ divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerI
 //   // internalWallRight[eRight]=(1-ratio)*internalWallOld[(e+eRight-2)mod(nv)]; 
 }
 
+
+
+
+
+////////////////////////// begin dividecellCentertiangulation
+
+void Tissue::
+divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I, 
+                               size_t centerIndex,size_t wallLengthIndex, 
+                               std::vector<double> &v1Pos,
+                               std::vector<double> &v2Pos,
+                               DataMatrix &cellData,
+                               DataMatrix &wallData,
+                               DataMatrix &vertexData,
+                               DataMatrix &cellDeriv,
+                               DataMatrix &wallDeriv,
+                               DataMatrix &vertexDeriv,
+                               std::vector<size_t> &volumeChangeList,
+                               double threshold) 
+
+{	
+  size_t Nc=numCell(),Nw=numWall(),Nv=numVertex();
+  size_t cellIndex = divCell->index();
+  size_t dimension = vertexData[0].size();
+  size_t numCellWalls=cell(cellIndex).numWall();
+  size_t lengthInternalIndex=centerIndex+dimension;
+  // calculating the averaged strain tensor of the cell
+  ////////////begin strain
+  double StrainCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};  
+  double TotalCellArea=0;
+  for (size_t wallindex=0; wallindex<numCellWalls; ++wallindex) { 
+    size_t kPlusOneMod = (wallindex+1)%numCellWalls;
+    //size_t v1 = com;
+    size_t v2 = cell(cellIndex).vertex(wallindex)->index();
+    size_t v3 = cell(cellIndex).vertex(kPlusOneMod)->index();
+    //size_t w1 = internal wallindex
+    size_t w2 = cell(cellIndex).wall(wallindex)->index();
+    //size_t w3 = internal wallindex+1
+    
+    // Position matrix holds in rows positions for com, vertex(wallindex), vertex(wallindex+1)
+    DataMatrix position(3,vertexData[v2]);
+    for (size_t d=0; d<dimension; ++d)
+      position[0][d] = cellData[cellIndex][centerIndex+d]; // com position
+    //position[1] = vertexData[v2]; // given by initiation
+    position[2] = vertexData[v3];
+    //position[0][2] z for vertex 1 of the current element
+    
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    
+    // Resting lengths are from com-vertex(wallindex), 
+    // vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
+    std::vector<double> restingLength(3);
+    restingLength[0] = cellData[cellIndex][lengthInternalIndex + wallindex];
+    restingLength[1] = wallData[w2][wallLengthIndex];
+    restingLength[2] = cellData[cellIndex][lengthInternalIndex + kPlusOneMod];
+    // Lengths are from com-vertex(wallindex), 
+    // vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
+    std::vector<double> length(3);
+    length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
+                           (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
+                           (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
+    
+    length[1] = std::sqrt( (position[2][0]-position[1][0])*(position[2][0]-position[1][0]) +
+                           (position[2][1]-position[1][1])*(position[2][1]-position[1][1]) +
+                           (position[2][2]-position[1][2])*(position[2][2]-position[1][2]) );
+    
+    length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
+                           (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
+                           (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
+    
+    
+    // restingArea of the element (using Heron's formula)                                      
+    double restingArea=std::sqrt( ( restingLength[0]+restingLength[1]+restingLength[2])*
+                                  (-restingLength[0]+restingLength[1]+restingLength[2])*
+                                  ( restingLength[0]-restingLength[1]+restingLength[2])*
+                                  ( restingLength[0]+restingLength[1]-restingLength[2])  )*0.25;
+    TotalCellArea +=restingArea;
+    
+    //Current shape local coordinate of the element  (counterclockwise ordering of nodes/edges)
+    double CurrentAngle1=std::acos(  (length[0]*length[0]+length[1]*length[1]-length[2]*length[2])/
+                                     (length[0]*length[1]*2)    );
+    
+    double Qa=std::cos(CurrentAngle1)*length[0];
+    double Qc=std::sin(CurrentAngle1)*length[0];
+    double Qb=length[1];
+    
+    double positionLocal[3][2]={ {Qa , Qc}, 
+                                 {0  , 0 },  
+                                 {Qb , 0 }  };
+    
+    // Local coordinates of the resting shape ( counterclockwise )
+    double RestingAngle1=std::acos(  (restingLength[0]*restingLength[0]
+                                      +restingLength[1]*restingLength[1]
+                                      -restingLength[2]*restingLength[2])/
+                                     (restingLength[0]*restingLength[1]*2)    );
+    
+    double Pa=std::cos(RestingAngle1)*restingLength[0];
+    double Pc=std::sin(RestingAngle1)*restingLength[0];
+    double Pb=restingLength[1];
+    
+    // shape vector matrix in resting shape in local coordinate system  
+    //= inverse of coordinate matrix ( only first two elements i.e. ShapeVectorResting[3][2] )      
+    double ShapeVectorResting[3][3]={ {  0   ,       1/Pc      , 0 }, 
+                                      {-1/Pb , (Pa-Pb)/(Pb*Pc) , 1 },       
+                                      { 1/Pb ,     -Pa/(Pb*Pc) , 0 }  };
+    
+    // Rotation Matrix for changing coordinate systems for both Local to Global( Strain Tensor) 
+    // and Global to Local( Aniso Vector in the current shape)
+    double rotation[3][3];  
+    
+    double tempA=std::sqrt((position[2][0]-position[1][0])*(position[2][0]-position[1][0])+
+                           (position[2][1]-position[1][1])*(position[2][1]-position[1][1])+
+                           (position[2][2]-position[1][2])*(position[2][2]-position[1][2])  );
+    
+    double tempB=std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+                         (position[0][1]-position[1][1])*(position[0][1]-position[1][1])+
+                           (position[0][2]-position[1][2])*(position[0][2]-position[1][2])  );
+    
+    
+    double Xcurrent[3];      
+    Xcurrent[0]= (position[2][0]-position[1][0])/tempA;
+    Xcurrent[1]= (position[2][1]-position[1][1])/tempA;
+    Xcurrent[2]= (position[2][2]-position[1][2])/tempA;
+    
+    double Bcurrent[3];      
+    Bcurrent[0]= (position[0][0]-position[1][0])/tempB;
+    Bcurrent[1]= (position[0][1]-position[1][1])/tempB;
+    Bcurrent[2]= (position[0][2]-position[1][2])/tempB;
+    
+    double Zcurrent[3];      
+    Zcurrent[0]= Xcurrent[1]*Bcurrent[2]-Xcurrent[2]*Bcurrent[1];
+    Zcurrent[1]= Xcurrent[2]*Bcurrent[0]-Xcurrent[0]*Bcurrent[2];
+    Zcurrent[2]= Xcurrent[0]*Bcurrent[1]-Xcurrent[1]*Bcurrent[0];
+    
+    tempA=std:: sqrt(Zcurrent[0]*Zcurrent[0]+Zcurrent[1]*Zcurrent[1]+Zcurrent[2]*Zcurrent[2]);
+    Zcurrent[0]=Zcurrent[0]/tempA;
+    Zcurrent[1]=Zcurrent[1]/tempA;
+    Zcurrent[2]=Zcurrent[2]/tempA;
+    
+    double Ycurrent[3];      
+    Ycurrent[0]= Zcurrent[1]*Xcurrent[2]-Zcurrent[2]*Xcurrent[1];
+    Ycurrent[1]= Zcurrent[2]*Xcurrent[0]-Zcurrent[0]*Xcurrent[2];
+    Ycurrent[2]= Zcurrent[0]*Xcurrent[1]-Zcurrent[1]*Xcurrent[0];
+    
+    
+    rotation[0][0]=Xcurrent[0];
+    rotation[1][0]=Xcurrent[1];
+    rotation[2][0]=Xcurrent[2];
+    
+    rotation[0][1]=Ycurrent[0];
+    rotation[1][1]=Ycurrent[1];
+    rotation[2][1]=Ycurrent[2];
+    
+    rotation[0][2]=Zcurrent[0];
+    rotation[1][2]=Zcurrent[1];
+    rotation[2][2]=Zcurrent[2];  
+    
+    
+    // STRAIN:
+    
+    double DeformGrad[2][2]={{0,0},{0,0}}; // F=Sigma i Qi x Di ----------------------
+    for ( int i=0 ; i<3 ; ++i ) {
+      DeformGrad[0][0]=DeformGrad[0][0]+positionLocal[i][0]*ShapeVectorResting[i][0];
+      DeformGrad[1][0]=DeformGrad[1][0]+positionLocal[i][1]*ShapeVectorResting[i][0];
+      DeformGrad[0][1]=DeformGrad[0][1]+positionLocal[i][0]*ShapeVectorResting[i][1];
+      DeformGrad[1][1]=DeformGrad[1][1]+positionLocal[i][1]*ShapeVectorResting[i][1];
+    } 
+    
+    
+    double LeftCauchy[2][2]; // B=FFt
+    LeftCauchy[0][0]=DeformGrad[0][0]*DeformGrad[0][0]+DeformGrad[0][1]*DeformGrad[0][1];
+    LeftCauchy[1][0]=DeformGrad[1][0]*DeformGrad[0][0]+DeformGrad[1][1]*DeformGrad[0][1];
+    LeftCauchy[0][1]=DeformGrad[0][0]*DeformGrad[1][0]+DeformGrad[0][1]*DeformGrad[1][1];
+    LeftCauchy[1][1]=DeformGrad[1][0]*DeformGrad[1][0]+DeformGrad[1][1]*DeformGrad[1][1];
+    
+    double StrainAlmansi[2][2]; // e=0.5(1-B^-1)  True strain tensor
+    double temp=LeftCauchy[0][0]*LeftCauchy[1][1]-LeftCauchy[1][0]*LeftCauchy[0][1]; // det(B)
+    StrainAlmansi[0][0]=0.5*(1-(LeftCauchy[1][1]/temp));
+    StrainAlmansi[1][0]=0.5*LeftCauchy[1][0]/temp;
+    StrainAlmansi[0][1]=0.5*LeftCauchy[0][1]/temp;  
+    StrainAlmansi[1][1]=0.5*(1-(LeftCauchy[0][0]/temp));
+  
+    
+    double StrainTensor[3][3]; // there are other alternatives than StrainAlmansi for strain tensor
+    StrainTensor[0][0]=StrainAlmansi[0][0];
+    StrainTensor[1][0]=StrainAlmansi[1][0];
+    StrainTensor[0][1]=StrainAlmansi[0][1];
+    StrainTensor[1][1]=StrainAlmansi[1][1];
+    
+    
+    StrainTensor[0][2]=0;  // adding 3rd dimension which is zero, the tensor is still in element plane
+    StrainTensor[1][2]=0;
+    StrainTensor[2][2]=0;
+    StrainTensor[2][0]=0;
+    StrainTensor[2][1]=0;
+    
+    
+    // rotating strain tensor to the global coordinate system
+    double tempR[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        for(int w=0 ; w<3 ; w++) 
+          tempR[r][s] += rotation[r][w]*StrainTensor[w][s];
+    
+    for (int r=0 ; r<3 ; r++) 
+    for (int s=0 ; s<3 ; s++) {
+      StrainTensor[r][s]=0;
+      for(int w=0 ; w<3 ; w++) 
+        StrainTensor[r][s] += tempR[r][w]*rotation[s][w]; 
+    }
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++)    
+        StrainCellGlobal[r][s] += restingArea*StrainTensor[r][s];
+  }
+  
+  for (int r=0 ; r<3 ; r++) 
+    for (int s=0 ; s<3 ; s++)    
+      StrainCellGlobal[r][s]= StrainCellGlobal[r][s]/TotalCellArea; 
+  
+
+
+  
+  
+  double strainEpcilon =0.000001;
+  
+  double eigenVectorStrain[3][3]={{1,0,0},{0,1,0},{0,0,1}};
+  double pivot=1;
+  double pi=3.1415;
+  int I,J;
+  double RotAngle,Si,Co;
+  
+  
+  
+  pivot=std::abs(StrainCellGlobal[1][0]);
+  I=1;
+  J=0;
+  if (std::abs(StrainCellGlobal[2][0])>pivot) {
+    pivot=std::abs(StrainCellGlobal[2][0]);
+    I=2;
+    J=0;
+  }
+  if (std::abs(StrainCellGlobal[2][1])>pivot) {
+    pivot=std::abs(StrainCellGlobal[2][1]);
+    I=2;
+    J=1;
+  }
+  
+  
+  while (pivot> strainEpcilon) {
+    
+    if (std::abs(StrainCellGlobal[I][I]-StrainCellGlobal[J][J])< strainEpcilon ) {
+      RotAngle=pi/4;
+    }            
+    else {
+      RotAngle=0.5*std::atan((2*StrainCellGlobal[I][J])/(StrainCellGlobal[J][J]-StrainCellGlobal[I][I]));
+    }
+    Si=std::sin(RotAngle);
+    Co=std::cos(RotAngle);
+    double tempRot[3][3]={{1,0,0},{0,1,0},{0,0,1}};
+    tempRot[I][I]=Co;
+    tempRot[J][J]=Co;
+    tempRot[I][J]=Si;
+    tempRot[J][I]=-Si;
+    double tempStrain[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        for(int w=0 ; w<3 ; w++) 
+          tempStrain[r][s]=tempStrain[r][s]+StrainCellGlobal[r][w]*tempRot[w][s];
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        StrainCellGlobal[r][s]=0;
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        for(int w=0 ; w<3 ; w++) 
+          StrainCellGlobal[r][s]=StrainCellGlobal[r][s]+tempRot[w][r]*tempStrain[w][s];
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        tempStrain[r][s]=eigenVectorStrain[r][s];
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        eigenVectorStrain[r][s]=0;
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        for(int w=0 ; w<3 ; w++) 
+          eigenVectorStrain[r][s]=eigenVectorStrain[r][s]+tempStrain[r][w]*tempRot[w][s];
+    
+    
+    pivot=std::abs(StrainCellGlobal[1][0]);
+    I=1;
+    J=0;
+    if (std::abs(StrainCellGlobal[2][0])>pivot) {
+      pivot=std::abs(StrainCellGlobal[2][0]);
+      I=2;
+      J=0;
+    }
+    if (std::abs(StrainCellGlobal[2][1])>pivot) {
+      pivot=std::abs(StrainCellGlobal[2][1]);
+      I=2;
+      J=1;
+    }
+  }
+  
+  // normalizing eigenvectors (remove if not necessary)  
+  double temp=std::sqrt(eigenVectorStrain[0][0]*eigenVectorStrain[0][0] +
+                 eigenVectorStrain[1][0]*eigenVectorStrain[1][0] +
+                 eigenVectorStrain[2][0]*eigenVectorStrain[2][0] );
+  if(temp>0){
+    eigenVectorStrain[0][0]/=temp;
+    eigenVectorStrain[1][0]/=temp;
+    eigenVectorStrain[2][0]/=temp;
+  }
+  temp=std::sqrt(eigenVectorStrain[0][1]*eigenVectorStrain[0][1] +
+                 eigenVectorStrain[1][1]*eigenVectorStrain[1][1] +
+                 eigenVectorStrain[2][1]*eigenVectorStrain[2][1] );
+  if(temp>0){
+    eigenVectorStrain[0][1]/=temp;
+    eigenVectorStrain[1][1]/=temp;
+    eigenVectorStrain[2][1]/=temp;
+  }
+  temp=std::sqrt(eigenVectorStrain[0][2]*eigenVectorStrain[0][2] +
+                 eigenVectorStrain[1][2]*eigenVectorStrain[1][2] +
+                 eigenVectorStrain[2][2]*eigenVectorStrain[2][2] );
+  if(temp>0){
+    eigenVectorStrain[0][2]/=temp;
+    eigenVectorStrain[1][2]/=temp;
+    eigenVectorStrain[2][2]/=temp;
+  }
+  
+  // maximal strain direction
+  double maximalStrainValue=StrainCellGlobal[0][0];
+  int Istrain=0;
+  if (StrainCellGlobal[1][1]>maximalStrainValue) 
+    {
+      maximalStrainValue=StrainCellGlobal[1][1];
+      Istrain=1;
+    }
+  if (StrainCellGlobal[2][2]>maximalStrainValue) 
+    {
+      maximalStrainValue=StrainCellGlobal[2][2];
+      Istrain=2;
+    }
+  
+  
+  // 2nd maximalstrain direction/value
+  double maximalStrainValue2,maximalStrainValue3;
+  int Istrain2,Istrain3;
+  if (Istrain==0) {
+    Istrain2=1;
+    Istrain3=2;
+  }
+  if (Istrain==1) {
+    Istrain2=0;
+    Istrain3=2;
+  }
+  if (Istrain==2) {
+    Istrain2=0;
+    Istrain3=1;
+  }
+  if(StrainCellGlobal[Istrain3][Istrain3] > StrainCellGlobal[Istrain2][Istrain2] ) {
+    temp=Istrain2;
+    Istrain2=Istrain3;
+    Istrain3=temp;
+  }
+  maximalStrainValue2=StrainCellGlobal[Istrain2][Istrain2];
+  maximalStrainValue3=StrainCellGlobal[Istrain3][Istrain3];
+
+  // if(std::abs(normalGlob[0]*eigenVectorStrain[0][Istrain]+   //<<<<<<<<<<<<<<<<<<
+  //             normalGlob[1]*eigenVectorStrain[1][Istrain]+
+  //             normalGlob[2]*eigenVectorStrain[2][Istrain]) > .1) {
+    
+  //   std::cerr << "max strain vector is out of cell plane in the cell " <<cellIndex <<std::endl;
+  //   Istrain=Istrain2; 
+  //   Istrain2=Istrain3;
+  //   maximalStrainValue=maximalStrainValue2;
+  //   maximalStrainValue2=maximalStrainValue3; 
+  //}
+  
+  
+
+  //////////// end strain
+
+
+
+  //Move new vertices if closer than threshold to old vertex
+  if( threshold>=0.0 ) {
+    Wall *w1 = divCell->wall(wI), *w2 = divCell->wall(w3I);
+    double w1L=0.0,w2L=0.0,t1=0.0,t2=0.0;
+    for( size_t dim=0; dim<dimension; ++dim ) {
+      w1L += (vertexData[w1->vertex1()->index()][dim]-
+	      vertexData[w1->vertex2()->index()][dim]) *
+	(vertexData[w1->vertex1()->index()][dim] -
+	 vertexData[w1->vertex2()->index()][dim]);
+      w2L += (vertexData[w2->vertex1()->index()][dim]-
+	      vertexData[w2->vertex2()->index()][dim]) *
+	(vertexData[w2->vertex1()->index()][dim] -
+	 vertexData[w2->vertex2()->index()][dim]);
+      t1 += (v1Pos[dim]-vertexData[w1->vertex2()->index()][dim])*
+	(v1Pos[dim]-vertexData[w1->vertex2()->index()][dim]);
+      t2 += (v2Pos[dim]-vertexData[w2->vertex2()->index()][dim])*
+	(v2Pos[dim]-vertexData[w2->vertex2()->index()][dim]);
+    }
+    w1L = std::sqrt(w1L);
+    w2L = std::sqrt(w2L);
+    t1 = std::sqrt(t1)/w1L;
+    t2 = std::sqrt(t2)/w2L;
+    assert( t1>=0.0 && t1<=1.0 );
+    assert( t2>=0.0 && t2<=1.0 );
+    if( t1<threshold ) {
+      std::cerr << "Tissue::divideCell() Moving vertex 1 from "
+		<< t1 << " to " << threshold << std::endl;
+      t1=threshold;
+      for( size_t dim=0; dim<dimension; ++dim ) {
+	v1Pos[dim] = vertexData[w1->vertex2()->index()][dim] +
+	  t1*(vertexData[w1->vertex1()->index()][dim]-
+	      vertexData[w1->vertex2()->index()][dim]);
+      }
+    }
+    else if( t1>(1.0-threshold) ) {
+      std::cerr << "Tissue::divideCell() Moving vertex 1 from "
+		<< t1 << " to " << 1.0-threshold << std::endl;
+      t1 = threshold;
+      for( size_t dim=0; dim<dimension; ++dim ) {
+	v1Pos[dim] = vertexData[w1->vertex1()->index()][dim] +
+	  t1*(vertexData[w1->vertex2()->index()][dim]-
+	      vertexData[w1->vertex1()->index()][dim]);
+      }
+    }
+    if( t2<threshold ) {
+      std::cerr << "Tissue::divideCell() Moving vertex 2 from "
+		<< t2 << " to " << threshold << std::endl;
+      t2=threshold;
+      for( size_t dim=0; dim<dimension; ++dim ) {
+	v2Pos[dim] = vertexData[w2->vertex2()->index()][dim] +
+	  t2*(vertexData[w2->vertex1()->index()][dim]-
+	      vertexData[w2->vertex2()->index()][dim]);
+      }
+    }
+    else if( t2>(1.0-threshold) ) {
+      std::cerr << "Tissue::divideCell() Moving vertex 2 from "
+		<< t2 << " to " << 1.0-threshold << std::endl;
+      t2 = threshold;
+      for( size_t dim=0; dim<dimension; ++dim ) {
+	v2Pos[dim] = vertexData[w2->vertex1()->index()][dim] +
+	  t2*(vertexData[w2->vertex2()->index()][dim]-
+	      vertexData[w2->vertex1()->index()][dim]);
+      }
+    }		
+  }
+  
+  //Create the new data structure and set indices in the tissue vectors
+  //
+  //Add the new cell
+  addCell( cell(cellIndex) );
+  cell(Nc).setIndex(Nc);
+  cellData.resize(Nc+1,cellData[cellIndex]);
+  cellDeriv.resize(Nc+1,cellDeriv[0]);
+  
+  //Add the two new vertices
+  Vertex tmpVertex;
+  tmpVertex.setPosition(v1Pos);
+  tmpVertex.setIndex(Nv);
+  addVertex(tmpVertex);
+  vertexData.resize(Nv+1,v1Pos);  
+  tmpVertex.setPosition(v2Pos);
+  tmpVertex.setIndex(Nv+1);
+  addVertex(tmpVertex);
+  vertexData.resize(Nv+2,v2Pos);  
+  vertexDeriv.resize(Nv+2,vertexDeriv[0]);  
+  
+  //Add the three new walls
+  Wall tmpWall;
+  //New wall dividing old cell into two
+  tmpWall.setIndex(Nw);
+  addWall(tmpWall);
+  wallData.resize(Nw+1,wallData[0]);
+  double tmpLength = 0.0;
+  for( size_t d=0 ; d<dimension ; ++d )
+    tmpLength += (v1Pos[d]-v2Pos[d])*(v1Pos[d]-v2Pos[d]);
+  wallData[Nw][0] = std::sqrt( tmpLength );
+  
+  //Wall continuing the first selected wall
+  addWall( *(cell(cellIndex).wall(wI)) );
+  wall(Nw+1).setIndex(Nw+1);
+  //Set new lengths as fractions of the old determined from the new 
+  //vertex position
+  double oldL = wallData[cell(cellIndex).wall(wI)->index()][0];
+  size_t v1w = cell(cellIndex).wall(wI)->vertex1()->index();
+  size_t v2w = cell(cellIndex).wall(wI)->vertex2()->index();
+  tmpLength=0.0; 
+  double tmpLengthFrac=0.0; 
+  for( size_t d=0 ; d<dimension ; ++d ) {
+    tmpLengthFrac += (v1Pos[d]-vertexData[v1w][d])*
+      (v1Pos[d]-vertexData[v1w][d]);
+    tmpLength += (vertexData[v2w][d]-vertexData[v1w][d])*
+      (vertexData[v2w][d]-vertexData[v1w][d]);
+  }
+  tmpLength = std::sqrt( tmpLength );
+  tmpLengthFrac = std::sqrt( tmpLengthFrac );
+  double lengthFrac = tmpLengthFrac/tmpLength;
+  wallData.resize(Nw+2,wallData[cell(cellIndex).wall(wI)->index()]);
+  wallData[cell(cellIndex).wall(wI)->index()][0] = lengthFrac*oldL;
+  wallData[Nw+1][0] = oldL-wallData[cell(cellIndex).wall(wI)->index()][0];
+  
+  //Wall continuing the second selected wall
+  addWall(*(cell(cellIndex).wall(w3I)));
+  wall(Nw+2).setIndex(Nw+2);
+  //Set new lengths as fractions of the old determined from the new
+  //vertex position
+  oldL = wallData[cell(cellIndex).wall(w3I)->index()][0];
+  v1w = cell(cellIndex).wall(w3I)->vertex1()->index();
+  v2w = cell(cellIndex).wall(w3I)->vertex2()->index();
+  tmpLength=0.0; 
+  tmpLengthFrac=0.0; 
+  for( size_t d=0 ; d<dimension ; ++d ) {
+    tmpLengthFrac += (v2Pos[d]-vertexData[v1w][d])*
+      (v2Pos[d]-vertexData[v1w][d]);
+    tmpLength += (vertexData[v2w][d]-vertexData[v1w][d])*
+      (vertexData[v2w][d]-vertexData[v1w][d]);
+  }
+  tmpLength = std::sqrt( tmpLength );
+  tmpLengthFrac = std::sqrt( tmpLengthFrac );
+  lengthFrac = tmpLengthFrac/tmpLength;
+  wallData.resize(Nw+3,wallData[cell(cellIndex).wall(w3I)->index()]);
+  wallData[cell(cellIndex).wall(w3I)->index()][0] = lengthFrac*oldL;
+  wallData[Nw+2][0] = oldL-wallData[cell(cellIndex).wall(w3I)->index()][0];
+  
+  //Resize derivative matrix as well
+  wallDeriv.resize(Nw+3,wallDeriv[0]);
+  
+  // Create connection matrix by first selecting vertices and walls for
+  // the new and old cells
+  //
+  std::vector<size_t> oldVIndex,newVIndex,oldWIndex,newWIndex,
+    usedWIndex( cell(cellIndex).numWall() );
+  
+  //Extract walls and vertices for 'old' cell
+  size_t tmpWIndex = cell(cellIndex).wall(wI)->index(); 
+  size_t tmpVIndex = cell(cellIndex).wall(wI)->vertex1()->index();
+  size_t nextW = wI;
+  //size_t count=0;
+  //std::cerr << "wI=" << wI << "(" << cell(cellIndex).wall(wI)->index() 
+  //				<< ") w3I=" << w3I << "(" << cell(cellIndex).wall(w3I)->index() 
+  //				<< ")" << std::endl;
+  do {
+    //std::cerr << count << " " << nextW << "  " << tmpWIndex << " " 
+    //				<< tmpVIndex << std::endl;
+    //add to new vectors
+    oldWIndex.push_back( tmpWIndex );
+    oldVIndex.push_back( tmpVIndex );
+    //mark as used
+    usedWIndex[nextW] = 1;
+    //usedVIndex[xxx] = 1;
+    //find next wall
+    nextW = cell(cellIndex).numWall();
+    size_t flag=0;
+    for( size_t w=0 ; w<cell(cellIndex).numWall() ; ++w ) {
+      if( !usedWIndex[w] && (cell(cellIndex).wall(w)->vertex1()->index()==tmpVIndex ||
+			     cell(cellIndex).wall(w)->vertex2()->index()==tmpVIndex ) ) {
+	nextW = w;
+	flag++;
+      }
+    }
+    if( flag != 1 ) {
+      std::cerr << "Tissue::divideCell() " << flag  
+		<< " walls marked for next wall..." << std::endl;
+      std::cerr << tmpVIndex << std::endl;
+      for( size_t w=0 ; w<cell(cellIndex).numWall() ; ++w ) {
+	std::cerr << w << " " << usedWIndex[w] << " " 
+		  << cell(cellIndex).wall(w)->vertex1()->index() << " "
+		  << cell(cellIndex).wall(w)->vertex2()->index() << std::endl;
+      }
+    }
+    assert( flag==1 );
+    tmpWIndex = cell(cellIndex).wall(nextW)->index();
+    if( cell(cellIndex).wall(nextW)->vertex1()->index()==tmpVIndex )
+      tmpVIndex = cell(cellIndex).wall(nextW)->vertex2()->index();
+    else if( cell(cellIndex).wall(nextW)->vertex2()->index()==tmpVIndex )
+      tmpVIndex = cell(cellIndex).wall(nextW)->vertex1()->index();
+    else {
+      std::cerr << "Tissue::DivideCell() " 
+		<< "Wrong vertex indices for chosen wall " 
+		<< cell(cellIndex).wall(nextW)->vertex1()->index() << " "
+		<< cell(cellIndex).wall(nextW)->vertex2()->index() << std::endl;
+      exit(-1);
+    }
+    //std::cerr << count++ << " " << nextW << "  " << tmpWIndex << " " 
+    //				<< tmpVIndex << std::endl;
+  } while( nextW != w3I ); 
+  if( cell(cellIndex).wall(nextW)->vertex1()->index()==oldVIndex[oldVIndex.size()-1] )
+    oldWIndex.push_back(cell(cellIndex).wall(w3I)->index());
+  else if( cell(cellIndex).wall(nextW)->vertex2()->index()==oldVIndex[oldVIndex.size()-1] )
+    oldWIndex.push_back(Nw+2);
+  else {
+    std::cerr << "Wrong last index for old cell (not in w3I)" << std::endl;
+    exit(-1);
+  }
+  //Extract walls and vertices for 'new' cell
+  tmpWIndex = Nw+1;//new copy of wI; 
+  tmpVIndex = wall(Nw+1).vertex2()->index();
+  //std::cerr << "Old cell done..." << std::endl;
+  usedWIndex[wI]=0;
+  usedWIndex[w3I]=0;
+  nextW=wI;
+  do {
+    //std::cerr << count << " " << nextW << "  " << tmpWIndex << " " 
+    //				<< tmpVIndex << std::endl;
+    //add to new vectors
+    newWIndex.push_back( tmpWIndex );
+    newVIndex.push_back( tmpVIndex );
+    //mark as used
+    usedWIndex[nextW] = 1;
+    //usedVIndex[xxx] = 1;
+    //find next wall
+    nextW = cell(cellIndex).numWall();
+    size_t flag=0;
+    for( size_t w=0 ; w<cell(cellIndex).numWall() ; ++w ) {
+      if( !usedWIndex[w] && ( cell(cellIndex).wall(w)->vertex1()->index()==tmpVIndex ||
+			      cell(cellIndex).wall(w)->vertex2()->index()==tmpVIndex ) ) {
+	nextW = w;
+	flag++;
+      }
+    }
+    if( flag != 1 )
+      std::cerr << flag << " walls marked for next wall..." << std::endl;
+    assert( flag==1 );
+    tmpWIndex = cell(cellIndex).wall(nextW)->index();
+    if( cell(cellIndex).wall(nextW)->vertex1()->index()==tmpVIndex )
+      tmpVIndex = cell(cellIndex).wall(nextW)->vertex2()->index();
+    else if( cell(cellIndex).wall(nextW)->vertex2()->index()==tmpVIndex )
+      tmpVIndex = cell(cellIndex).wall(nextW)->vertex1()->index();
+    else {
+      std::cerr << "Tissue::DivideCell() " 
+		<< "Wrong vertex indices for chosen wall " 
+		<< cell(cellIndex).wall(nextW)->vertex1() << " "
+		<< cell(cellIndex).wall(nextW)->vertex2() << std::endl;
+      exit(-1);
+    }
+    //std::cerr << count++ << " " << nextW << "  " << tmpWIndex << " " 
+    //				<< tmpVIndex << std::endl;
+  } while( nextW != w3I ); 
+  if( cell(cellIndex).wall(nextW)->vertex1()->index()==newVIndex[newVIndex.size()-1] )
+    newWIndex.push_back(cell(cellIndex).wall(w3I)->index());
+  else if( cell(cellIndex).wall(nextW)->vertex2()->index()==newVIndex[newVIndex.size()-1] )
+    newWIndex.push_back(Nw+2);
+  else {
+    std::cerr << "Wrong last index for new cell (not in w3I)" << std::endl;
+    exit(-1);
+  }
+  
+  //std::cerr << "New cell done..." << std::endl;
+  
+  //Add new vertices
+  oldVIndex.push_back(Nv);
+  oldVIndex.push_back(Nv+1);
+  newVIndex.push_back(Nv);
+  newVIndex.push_back(Nv+1);
+  
+  //Add new walls
+  oldWIndex.push_back(Nw);
+  newWIndex.push_back(Nw);
+  //newWIndex.push_back(Nw+1);
+  //newWIndex.push_back(Nw+2);
+  
+  //std::cerr << "Cell " << cellIndex << " has " << cell(cellIndex).numWall() << " walls and " 
+  //				<< cell(cellIndex).numVertex() << " vertices" << std::endl;
+  // 	for( size_t w=0 ; w<cell(cellIndex).numWall() ; ++w )
+  // 		std::cerr << cell(cellIndex).wall(w)->index() << " ";
+  // 	std::cerr << std::endl;
+  // 	for( size_t v=0 ; v<cell(cellIndex).numVertex() ; ++v )
+  // 		std::cerr << cell(cellIndex).vertex(v)->index() << " ";
+  // 	std::cerr << std::endl;
+  
+  // 	for( size_t k=0 ; k<oldWIndex.size() ; ++k )
+  // 		std::cerr << oldWIndex[k] << " ";
+  // 	std::cerr << "  ";
+  // 	for( size_t k=0 ; k<newWIndex.size() ; ++k )
+  // 		std::cerr << newWIndex[k] << " ";
+  // 	std::cerr << std::endl;
+  
+  // 	for( size_t k=0 ; k<oldVIndex.size() ; ++k )
+  // 		std::cerr << oldVIndex[k] << " ";
+  // 	std::cerr << "  ";
+  // 	for( size_t k=0 ; k<newVIndex.size() ; ++k )
+  // 		std::cerr << newVIndex[k] << " ";
+  // 	std::cerr << std::endl;
+  //exit(0);
+  
+  //Set vertices and cells for the walls
+  wall(Nw).setVertex( &(vertex(Nv)),&(vertex(Nv+1)) );
+  wall(Nw).setCell( &(cell(cellIndex)),&(cell(Nc)) );
+  assert( wall(Nw).cell1()->index()==cellIndex );
+  assert( wall(Nw).cell2()->index()==Nc );
+  
+  wall(cell(cellIndex).wall(wI)->index()).setVertex2( &(vertex(Nv)) );
+  int vInCellFlag=0;
+  for( size_t k=0 ; k<oldVIndex.size() ; ++k )
+    if( oldVIndex[k]==cell(cellIndex).wall(wI)->vertex1()->index() ) 
+      vInCellFlag++;
+  assert( vInCellFlag==1 );
+  
+  wall(Nw+1).setVertex1( &(vertex(Nv)) );
+  vInCellFlag=0;
+  for( size_t k=0 ; k<newVIndex.size() ; ++k )
+    if( newVIndex[k]==wall(Nw+1).vertex2()->index() ) 
+      vInCellFlag++;
+  assert( vInCellFlag==1 );
+  
+  if( wall(Nw+1).cell1()->index() == cellIndex ) {
+    wall(Nw+1).setCell1( &(cell(Nc)) );
+    if( wall(Nw+1).cell2()->index() < Nc ) {
+      wall(Nw+1).cell2()->addWall( &(wall(Nw+1)) );
+      wall(Nw+1).cell2()->addVertex( &(vertex(Nv)) );
+    }
+  }
+  else if( wall(Nw+1).cell2()->index() == cellIndex ) {
+    wall(Nw+1).setCell2( &(cell(Nc)) );
+    if( wall(Nw+1).cell1()->index() < Nc ) {
+      wall(Nw+1).cell1()->addWall( &(wall(Nw+1)) );
+      wall(Nw+1).cell1()->addVertex( &(vertex(Nv)) );
+    }
+  }
+  else {
+    std::cerr << "Tissue::divideCell() "
+	      << "First wall not connected to dividing cell" << std::endl;
+    std::cerr << cellIndex << " " << cell(cellIndex).index() << "\t" 
+	      << wall( cell(cellIndex).wall(wI)->index() ).cell1()->index() << " "
+	      << wall(Nw+1).cell1()->index() << "\t"
+	      << wall(cell(cellIndex).wall(wI)->index()).cell2()->index() << " "
+	      << wall(Nw+1).cell2()->index() << "\n";		
+    exit(-1);
+  }
+  
+  vInCellFlag=0;
+  size_t wInOldCellFlag=0;
+  for( size_t k=0 ; k<oldWIndex.size() ; ++k )
+    if( cell(cellIndex).wall(w3I)->index()==oldWIndex[k] )
+      wInOldCellFlag=1;
+  if( wInOldCellFlag ) {
+    for( size_t k=0 ; k<oldVIndex.size() ; ++k )
+      if( oldVIndex[k]==wall(cell(cellIndex).wall(w3I)->index()).vertex1()->index() ) 
+	vInCellFlag++;
+    if( vInCellFlag == 1 ) {
+      wall(cell(cellIndex).wall(w3I)->index()).setVertex2( &(vertex(Nv+1)) );
+      wall(Nw+2).setVertex1( &(vertex(Nv+1)) );
+    }
+    else {
+      wall(cell(cellIndex).wall(w3I)->index()).setVertex1( &(vertex(Nv+1)) );
+      wall(Nw+2).setVertex2( &(vertex(Nv+1)) );
+    }
+  }
+  else {		
+    for( size_t k=0 ; k<oldVIndex.size() ; ++k )
+      if( oldVIndex[k]==wall(Nw+2).vertex1()->index() ) 
+	vInCellFlag++;
+    if( vInCellFlag == 1 ) {
+      wall(Nw+2).setVertex2( &(vertex(Nv+1)) );
+      wall(cell(cellIndex).wall(w3I)->index()).setVertex1( &(vertex(Nv+1)) );
+    }
+    else {
+      wall(Nw+2).setVertex1( &(vertex(Nv+1)) );
+      wall(cell(cellIndex).wall(w3I)->index()).setVertex2( &(vertex(Nv+1)) );
+    }
+  }
+  
+  //Change cell connection for new wall (w3I or Nw+2)
+  size_t newWallIndex = cell(cellIndex).wall(w3I)->index();
+  size_t w3IInNewCellFlag = 0;
+  for( size_t w=0 ; w<newWIndex.size() ; ++w )
+    if( newWIndex[w]==newWallIndex )
+      w3IInNewCellFlag++;
+  if( !w3IInNewCellFlag++ )
+    newWallIndex=Nw+2;
+  
+  if( wall(newWallIndex).cell1()->index() == cellIndex ) {
+    wall(newWallIndex).setCell1( &(cell(Nc)) );
+    if( wall(newWallIndex).cell2()->index() < Nc ) {
+      wall(newWallIndex).cell2()->addWall( &(wall(Nw+2)) );
+      wall(newWallIndex).cell2()->addVertex( &(vertex(Nv+1)) );
+    }
+  }    
+  else if( wall(newWallIndex).cell2()->index() == cellIndex ) {
+    wall(newWallIndex).setCell2( &(cell(Nc)) );
+    if( wall(newWallIndex).cell1()->index() < Nc ) {
+      wall(newWallIndex).cell1()->addWall( &(wall(Nw+2)) );
+      wall(newWallIndex).cell1()->addVertex( &(vertex(Nv+1)) );
+    }    
+  }
+  else {
+    std::cerr << "Tissue::divideCell() "
+	      << "Second wall not connected to dividing cell" << std::endl;
+    for( size_t k=0 ; k<cell(cellIndex).numWall() ; ++k ) {
+      size_t v1w3Itmp = cell(cellIndex).wall(k)->vertex1()->index();
+      size_t v2w3Itmp = cell(cellIndex).wall(k)->vertex2()->index();
+      std::cerr << vertexData[v1w3Itmp][0] << " " 
+		<< vertexData[v1w3Itmp][1] << " 4\n"
+		<< vertexData[v2w3Itmp][0] << " "
+		<< vertexData[v2w3Itmp][1] << " 4\n\n\n";
+    }
+    exit(-1);
+  }
+  
+  //Set cells and walls for the vertices
+  //
+  for( size_t v=0 ; v<newVIndex.size() ; ++v ) {
+    std::vector<Cell*> tmpCell;
+    std::vector<Wall*> tmpWall;
+    if( newVIndex[v]==Nv ) {
+      //First new vertex
+      tmpCell.push_back( &(cell(cellIndex)) );
+      tmpCell.push_back( &(cell(Nc)) );
+      //plus one more
+      if( cell(cellIndex).wall(wI)->cell1()->index()==cellIndex &&
+	  cell(cellIndex).wall(wI)->cell2() != background() )
+	tmpCell.push_back( cell(cellIndex).wall(wI)->cell2() );
+      else if( cell(cellIndex).wall(wI)->cell2()->index()==cellIndex &&
+	       cell(cellIndex).wall(wI)->cell1() != background() )
+	tmpCell.push_back( cell(cellIndex).wall(wI)->cell1() );
+      else if( cell(cellIndex).wall(wI)->cell1()->index() != cellIndex &&
+	       cell(cellIndex).wall(wI)->cell2()->index() != cellIndex ){
+	std::cerr << "Tissue::divideCell() "
+		  << "Wall wI not connected to dividing cell" 
+		  << std::endl;
+	exit(-1);
+      }
+      tmpWall.push_back( cell(cellIndex).wall(wI) );
+      tmpWall.push_back( &(wall(Nw)) );
+      tmpWall.push_back( &(wall(Nw+1)) );
+    }
+    else if( newVIndex[v]==Nv+1 ) {
+      //Second new vertex
+      tmpCell.push_back( &(cell(cellIndex)) );
+      tmpCell.push_back( &(cell(Nc)) );
+      //plus one more
+      if( cell(cellIndex).wall(w3I)->cell1()->index()==cellIndex ||
+	  cell(cellIndex).wall(w3I)->cell1()->index()==Nc ) {
+	if( cell(cellIndex).wall(w3I)->cell2() != background() )
+	  tmpCell.push_back( cell(cellIndex).wall(w3I)->cell2() );
+      }
+      else if( cell(cellIndex).wall(w3I)->cell2()->index()==cellIndex ||
+	       cell(cellIndex).wall(w3I)->cell2()->index()==Nc ) {
+	if( cell(cellIndex).wall(w3I)->cell1() != background() )
+	  tmpCell.push_back( cell(cellIndex).wall(w3I)->cell1() );
+      }
+      else {
+	std::cerr << "Tissue::divideCell() "
+		  << "Wall w3I not connected to dividing cell" 
+		  << std::endl;
+	exit(-1);
+      }
+      tmpWall.push_back( cell(cellIndex).wall(w3I) );
+      tmpWall.push_back( &(wall(Nw)) );
+      tmpWall.push_back( &(wall(Nw+2)) );
+    }
+    else {
+      //For other vertices
+      for( size_t c=0 ; c<vertex(newVIndex[v]).numCell() ; ++c )
+	if( vertex(newVIndex[v]).cell(c)->index() == cellIndex )
+	  vertex(newVIndex[v]).setCell(c,&(cell(Nc)));
+      for( size_t w=0 ; w<vertex(newVIndex[v]).numWall() ; ++w ) {
+	if( vertex(newVIndex[v]).wall(w)->index() == 
+	    cell(cellIndex).wall(wI)->index() )
+	  vertex(newVIndex[v]).setWall(w,&(wall(Nw+1)));
+      	else if( vertex(newVIndex[v]).wall(w)->index() == 
+		 cell(cellIndex).wall(w3I)->index() ) {
+	  size_t w3IInNewFlag=0;
+	  for( size_t ww=0 ; ww<newWIndex.size() ; ++ww )
+	    if( newWIndex[ww] == cell(cellIndex).wall(w3I)->index() )
+	      w3IInNewFlag++;
+	  if( !w3IInNewFlag )
+	    vertex(newVIndex[v]).setWall(w,&(wall(Nw+2)));
+	}
+      }
+    }
+    if( newVIndex[v]>=Nv ) {
+      vertex(newVIndex[v]).setCell(tmpCell);
+      vertex(newVIndex[v]).setWall(tmpWall);
+    }
+  }
+  
+  //Finally check if vertices in old cell connected to w3I should be changed
+  //to Nw+2
+  for( size_t v=0 ; v<oldVIndex.size() ; ++v ) {
+    if( oldVIndex[v] < Nv ) {
+      for( size_t w=0 ; w<vertex(oldVIndex[v]).numWall() ; ++w ) {
+      	if( vertex(oldVIndex[v]).wall(w)->index() == 
+	    cell(cellIndex).wall(w3I)->index() ) {
+	  size_t w3IInOldFlag=0;
+	  for( size_t ww=0 ; ww<oldWIndex.size() ; ++ww )
+	    if( oldWIndex[ww] == cell(cellIndex).wall(w3I)->index() )
+	      w3IInOldFlag++;
+	  if( !w3IInOldFlag )
+	    vertex(oldVIndex[v]).setWall(w,&(wall(Nw+2)));
+	}
+      }
+    }
+  }
+  
+  //Set walls and vertices for the cells
+  //This should be done after the vertex and wall insertion not to
+  //mess up wI and w3I
+  std::vector<Wall*> tmpW(oldWIndex.size());
+  std::vector<Vertex*> tmpV(oldVIndex.size());
+  for( size_t w=0 ; w<oldWIndex.size() ; ++w )
+    tmpW[w] = &(wall(oldWIndex[w]));
+  for( size_t v=0 ; v<oldVIndex.size() ; ++v )
+    tmpV[v] = &(vertex(oldVIndex[v]));
+  cell(cellIndex).setWall(tmpW);
+  cell(cellIndex).setVertex(tmpV);
+  
+  tmpW.resize( newWIndex.size() );
+  tmpV.resize( newVIndex.size() );
+  for( size_t w=0 ; w<newWIndex.size() ; ++w ) {
+    tmpW[w] = &(wall(newWIndex[w]));
+    if( tmpW[w]->index() != Nw && tmpW[w]->cell1()->index()==cellIndex )
+      tmpW[w]->setCell1( &(cell(Nc)) );
+    else if( tmpW[w]->index() != Nw && tmpW[w]->cell2()->index()==cellIndex )
+      tmpW[w]->setCell2( &(cell(Nc)) );
+  }
+  for( size_t v=0 ; v<newVIndex.size() ; ++v )
+    tmpV[v] = &(vertex(newVIndex[v]));
+  cell(Nc).setWall(tmpW);
+  cell(Nc).setVertex(tmpV);
+  assert( wall(Nw).cell1()->index()==i );
+  assert( wall(Nw).cell2()->index()==Nc );
+  
+  //Update directional wall vector if applicable
+  updateDirectionDivision(cellIndex,cellData,wallData,vertexData,
+			  cellDeriv,wallDeriv,vertexDeriv);
+  
+  // Update the volume dependent variables for each cell variable index 
+  // given in volumeChangeList
+  if (volumeChangeList.size()) {
+    cell(cellIndex).sortWallAndVertex(*this);
+    cell(Nc).sortWallAndVertex(*this);
+    double Vi = cell(cellIndex).calculateVolume(vertexData);
+    double Vn = cell(Nc).calculateVolume(vertexData);
+    double fi = Vi/(Vi+Vn);
+    double fn = Vn/(Vi+Vn);
+    
+    for (size_t k=0; k<volumeChangeList.size(); ++k) {
+      cellData[cellIndex][volumeChangeList[k]] *= fi;
+      cellData[Nc][volumeChangeList[k]] *= fn;
+    }
+  }		
+  //checkConnectivity(1);
+  
+  //setting cell centers and internal walls in cellData for cells i and Nc
+  cellData[cellIndex].resize(centerIndex+dimension+cell(cellIndex).numWall());
+  cellData[Nc].resize(centerIndex+dimension+cell(Nc).numWall());
+  
+  // cell centers
+  for (size_t d=0; d< dimension; ++d){
+    cellData[cellIndex][centerIndex+d]=0;
+    cellData[Nc][centerIndex+d]=0;
+  }
+  
+  for (size_t k=0; k<cell(cellIndex).numWall(); ++k)
+    for (size_t d=0; d< dimension; ++d)
+      cellData[cellIndex][centerIndex+d]+=vertexData[cell(cellIndex).vertex(k)->index()][d];
+  
+  for (size_t k=0; k<cell(Nc).numWall(); ++k)
+    for (size_t d=0; d< dimension; ++d)
+      cellData[Nc][centerIndex+d]+=vertexData[cell(Nc).vertex(k)->index()][d];
+  
+  for (size_t d=0; d< dimension; ++d){
+    cellData[cellIndex][centerIndex+d]/=cell(cellIndex).numWall();
+    cellData[Nc][centerIndex+d]/=cell(Nc).numWall();
+  }
+  
+  std::vector<std::vector<double> > 
+    internalVectorI(cell(cellIndex).numWall(), std::vector<double>(3)), 
+    internalVectorNc(cell(Nc).numWall(), std::vector<double>(3)) ;
+  
+  for (size_t k=0; k<cell(cellIndex).numWall(); ++k) 
+    for (size_t d=0; d< dimension; ++d)
+      internalVectorI[k][d]=
+        vertexData[cell(cellIndex).vertex(k)->index()][d]
+        -cellData[cellIndex][centerIndex+d];
+  for (size_t k=0; k<cell(Nc).numWall(); ++k) 
+    for (size_t d=0; d< dimension; ++d)
+      internalVectorNc[k][d]=
+        vertexData[cell(Nc).vertex(k)->index()][d]
+        -cellData[Nc][centerIndex+d];
+
+  for (size_t k=0; k<cell(cellIndex).numWall(); ++k) 
+    cellData[cellIndex][centerIndex+dimension+k]=std::sqrt( 
+                                                    ( internalVectorI[k][0]*eigenVectorStrain[0][0]
+                                                      +internalVectorI[k][1]*eigenVectorStrain[1][0]
+                                                      +internalVectorI[k][2]*eigenVectorStrain[2][0])
+                                                    *( internalVectorI[k][0]*eigenVectorStrain[0][0]
+                                                       +internalVectorI[k][1]*eigenVectorStrain[1][0]
+                                                       +internalVectorI[k][2]*eigenVectorStrain[2][0])
+                                                    *(1-maximalStrainValue)*(1-maximalStrainValue)
+                                                    
+                                                    +( internalVectorI[k][0]*eigenVectorStrain[0][1]
+                                                       +internalVectorI[k][1]*eigenVectorStrain[1][1]
+                                                       +internalVectorI[k][2]*eigenVectorStrain[2][1])
+                                                    *( internalVectorI[k][0]*eigenVectorStrain[0][1]
+                                                       +internalVectorI[k][1]*eigenVectorStrain[1][1]
+                                                       +internalVectorI[k][2]*eigenVectorStrain[2][1])
+                                                    *(1-maximalStrainValue2)*(1-maximalStrainValue2)
+                                                    
+                                                    +( internalVectorI[k][0]*eigenVectorStrain[0][2]
+                                                       +internalVectorI[k][1]*eigenVectorStrain[1][2]
+                                                       +internalVectorI[k][2]*eigenVectorStrain[2][2])
+                                                    *( internalVectorI[k][0]*eigenVectorStrain[0][2]
+                                                       +internalVectorI[k][1]*eigenVectorStrain[1][2]
+                                                       +internalVectorI[k][2]*eigenVectorStrain[2][2])
+                                                    *(1-maximalStrainValue3)*(1-maximalStrainValue3)
+                                                     );
+  
+  for (size_t k=0; k<cell(Nc).numWall(); ++k) 
+    cellData[Nc][centerIndex+dimension+k]=std::sqrt( 
+                                                    ( internalVectorNc[k][0]*eigenVectorStrain[0][0]
+                                                      +internalVectorNc[k][1]*eigenVectorStrain[1][0]
+                                                      +internalVectorNc[k][2]*eigenVectorStrain[2][0])
+                                                    *( internalVectorNc[k][0]*eigenVectorStrain[0][0]
+                                                       +internalVectorNc[k][1]*eigenVectorStrain[1][0]
+                                                       +internalVectorNc[k][2]*eigenVectorStrain[2][0])
+                                                    *(1-maximalStrainValue)*(1-maximalStrainValue)
+                                                    
+                                                    +( internalVectorNc[k][0]*eigenVectorStrain[0][1]
+                                                       +internalVectorNc[k][1]*eigenVectorStrain[1][1]
+                                                       +internalVectorNc[k][2]*eigenVectorStrain[2][1])
+                                                    *( internalVectorNc[k][0]*eigenVectorStrain[0][1]
+                                                       +internalVectorNc[k][1]*eigenVectorStrain[1][1]
+                                                       +internalVectorNc[k][2]*eigenVectorStrain[2][1])
+                                                    *(1-maximalStrainValue2)*(1-maximalStrainValue2)
+                                                    
+                                                    +( internalVectorNc[k][0]*eigenVectorStrain[0][2]
+                                                       +internalVectorNc[k][1]*eigenVectorStrain[1][2]
+                                                       +internalVectorNc[k][2]*eigenVectorStrain[2][2])
+                                                    *( internalVectorNc[k][0]*eigenVectorStrain[0][2]
+                                                       +internalVectorNc[k][1]*eigenVectorStrain[1][2]
+                                                       +internalVectorNc[k][2]*eigenVectorStrain[2][2])
+                                                    *(1-maximalStrainValue3)*(1-maximalStrainValue3)
+                                                     );
+  
+  
+  // maximalStrainValue2=StrainCellGlobal[Istrain2][Istrain2];
+  //  maximalStrainValue3=StrainCellGlobal[Istrain3][Istrain3];
+  //    eigenVectorStrain[0][0]/=temp;
+  //    eigenVectorStrain[1][0]  
+  
+}
+
+////////////////////////// end dividecellCentertiangulation
+
+
+
+
+
+
 void Tissue::removeTwoVertex( size_t index ) 
 {
 	if (vertex(index).numWall() != 2) {

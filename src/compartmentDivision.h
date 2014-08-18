@@ -55,6 +55,52 @@ class DivisionVolumeViaLongestWall : public BaseCompartmentChange {
 	      DataMatrix &vertexDerivs );  
 };
 
+
+
+
+///
+/// @brief Divides a cell when volume above a threshold, with new wall perpendicular to the longest wall segment.
+///
+/// Divides a cell when volume above a threshold. New wall is created
+/// prependicular to the longest cell wall. In a model file it is defined as
+/// @verbatim
+/// DivisionVolumeViaLongestWallCenterTriangulation 3 2 [1] 2
+/// V_th L^{wall}_{frac} L^{wall}_{threshold}
+/// I1
+/// com index, restinglengthIndex
+/// @endverbatim
+///
+/// where @f$V_{th}@f$ is the cell volume threshold, @f$L^{wall}_{frac}@f$ is the resting length 
+/// of the new wall (1.0 sets it to the distance between the vertices, and @f$L^{wall}_{threshold}@f$ 
+/// is the smallest (relative) length of the new subwalls (i.e. if closer than this to an existing vertex
+/// it will be moved to this distance from the old vertex).
+///
+/// The list of indices given are for those variables that need to be updated due to the division,
+/// e.g. concentrations do not, the volume itself (if stored) needs to as well as molecular numbers.
+/// 
+class DivisionVolumeViaLongestWallCenterTriangulation : public BaseCompartmentChange {
+  
+ public:
+  
+  DivisionVolumeViaLongestWallCenterTriangulation(std::vector<double> &paraValue, 
+                                                  std::vector< std::vector<size_t> > 
+                                                  &indValue );
+  int flag(Tissue *T,size_t i,
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs );
+  void update(Tissue* T,size_t i,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );  
+};
+
 ///
 /// @brief Divides a cell when volume above a threshold, with new wall perpendicular to the longest wall segment.
 ///

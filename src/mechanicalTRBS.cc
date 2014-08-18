@@ -2663,7 +2663,7 @@ derivs(Tissue &T,
 
 
 
-  std::cerr<<"from here"<<std::endl;
+  //std::cerr<<"from here"<<std::endl;
   
   for (size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex) {
     size_t numWalls = T.cell(cellIndex).numWall();
@@ -2840,13 +2840,13 @@ derivs(Tissue &T,
 
 
       // Resting lengths are from com-vertex(wallindex), vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
-      std::vector<double> restingLength(numWalls);
+      std::vector<double> restingLength(3);
       restingLength[0] = cellData[cellIndex][lengthInternalIndex + wallindex];
       restingLength[1] = wallData[w2][wallLengthIndex];
       restingLength[2] = cellData[cellIndex][lengthInternalIndex + kPlusOneMod];
       
       // Lengths are from com-vertex(wallindex), vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
-      std::vector<double> length(numWalls);
+      std::vector<double> length(3);
       length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
 			     (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
 			     (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
@@ -3079,16 +3079,23 @@ derivs(Tissue &T,
       // double deltaMioIsoFiber=mioT-mioTmatrix;  
  
 
-      //Angles between anisotropy vector and shape vectors for calculating the terms like a.Di , teta(k) = acos((dot(Anisorest,Dk))/(norm(Anisorest)*norm(Dk))),
+      //Angles between anisotropy vector and shape vectors for calculating the terms like a.Di , 
+      //teta(k) = acos((dot(Anisorest,Dk))/(norm(Anisorest)*norm(Dk))),
       std::vector<double> teta(3);
-      teta[0] = std::acos(  (ShapeVectorResting[0][0]*AnisoRestLocal[0]+ShapeVectorResting[0][1]*AnisoRestLocal[1])/
-                            std::sqrt(ShapeVectorResting[0][0]*ShapeVectorResting[0][0]+ShapeVectorResting[0][1]*ShapeVectorResting[0][1]+0.0000001) );
+      teta[0] = std::acos(  (ShapeVectorResting[0][0]*AnisoRestLocal[0]
+                             +ShapeVectorResting[0][1]*AnisoRestLocal[1])/
+                            std::sqrt(ShapeVectorResting[0][0]*ShapeVectorResting[0][0]
+                                      +ShapeVectorResting[0][1]*ShapeVectorResting[0][1]+0.0000001) );
       
-      teta[1] = std::acos(  (ShapeVectorResting[1][0]*AnisoRestLocal[0]+ShapeVectorResting[1][1]*AnisoRestLocal[1])/
-                            std::sqrt(ShapeVectorResting[1][0]*ShapeVectorResting[1][0]+ShapeVectorResting[1][1]*ShapeVectorResting[1][1]+0.0000001) );
+      teta[1] = std::acos(  (ShapeVectorResting[1][0]*AnisoRestLocal[0]
+                             +ShapeVectorResting[1][1]*AnisoRestLocal[1])/
+                            std::sqrt(ShapeVectorResting[1][0]*ShapeVectorResting[1][0]
+                                      +ShapeVectorResting[1][1]*ShapeVectorResting[1][1]+0.0000001) );
       
-      teta[2] = std::acos(  (ShapeVectorResting[2][0]*AnisoRestLocal[0]+ShapeVectorResting[2][1]*AnisoRestLocal[1])/
-                            std::sqrt(ShapeVectorResting[2][0]*ShapeVectorResting[2][0]+ShapeVectorResting[2][1]*ShapeVectorResting[2][1]+0.0000001) );
+      teta[2] = std::acos(  (ShapeVectorResting[2][0]*AnisoRestLocal[0]
+                             +ShapeVectorResting[2][1]*AnisoRestLocal[1])/
+                            std::sqrt(ShapeVectorResting[2][0]*ShapeVectorResting[2][0]
+                                      +ShapeVectorResting[2][1]*ShapeVectorResting[2][1]+0.0000001) );
 
      
     
@@ -3721,82 +3728,82 @@ derivs(Tissue &T,
 
 
 
-      /////// ad-hoc begin
-      for (size_t wallindex=0; wallindex<numWalls; ++wallindex) { 
-        size_t kPlusOneMod = (wallindex+1)%numWalls;
-        //size_t v1 = com;
-        size_t v2 = T.cell(cellIndex).vertex(wallindex)->index();
-        size_t v3 = T.cell(cellIndex).vertex(kPlusOneMod)->index();
-        //size_t w1 = internal wallindex
-        size_t w2 = T.cell(cellIndex).wall(wallindex)->index();
-        //size_t w3 = internal wallindex+1
+      // /////// ad-hoc begin
+      // for (size_t wallindex=0; wallindex<numWalls; ++wallindex) { 
+      //   size_t kPlusOneMod = (wallindex+1)%numWalls;
+      //   //size_t v1 = com;
+      //   size_t v2 = T.cell(cellIndex).vertex(wallindex)->index();
+      //   size_t v3 = T.cell(cellIndex).vertex(kPlusOneMod)->index();
+      //   //size_t w1 = internal wallindex
+      //   size_t w2 = T.cell(cellIndex).wall(wallindex)->index();
+      //   //size_t w3 = internal wallindex+1
         
-        // Position matrix holds in rows positions for com, vertex(wallindex), vertex(wallindex+1)
-        DataMatrix position(3,vertexData[v2]);
-        for (size_t d=0; d<dimension; ++d)
-          position[0][d] = cellData[cellIndex][comIndex+d]; // com position
-        //position[1] = vertexData[v2]; // given by initiation
-        position[2] = vertexData[v3];
-        //position[0][2] z for vertex 1 of the current element
+      //   // Position matrix holds in rows positions for com, vertex(wallindex), vertex(wallindex+1)
+      //   DataMatrix position(3,vertexData[v2]);
+      //   for (size_t d=0; d<dimension; ++d)
+      //     position[0][d] = cellData[cellIndex][comIndex+d]; // com position
+      //   //position[1] = vertexData[v2]; // given by initiation
+      //   position[2] = vertexData[v3];
+      //   //position[0][2] z for vertex 1 of the current element
         
         
         
-        std::vector<double> restingLength(numWalls);
-        restingLength[0] = cellData[cellIndex][lengthInternalIndex + wallindex];
-        restingLength[1] = wallData[w2][wallLengthIndex];
-        restingLength[2] = cellData[cellIndex][lengthInternalIndex + kPlusOneMod];
+      //   std::vector<double> restingLength(numWalls);
+      //   restingLength[0] = cellData[cellIndex][lengthInternalIndex + wallindex];
+      //   restingLength[1] = wallData[w2][wallLengthIndex];
+      //   restingLength[2] = cellData[cellIndex][lengthInternalIndex + kPlusOneMod];
         
       
-        std::vector<double> length(numWalls);
-        length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
-                               (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
-                               (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
+      //   std::vector<double> length(numWalls);
+      //   length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
+      //                          (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
+      //                          (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
         
-        length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
+      //   length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
         
-        length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
-                               (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
-                               (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
-        std:: vector<std::vector<double> > edges(3);
-        for (size_t s=0; s<3 ; s++)
-          edges[s].resize(3);
-        for (size_t d=0; d<dimension; ++d){
-          edges[0][d]=position[1][d]-position[0][d];
-          edges[1][d]=position[2][d]-position[1][d];
-          edges[2][d]=position[0][d]-position[2][d];
-        }
-        //go 3 dimensional
-        std::vector<double> restingFromStrain(3);
-        for (size_t d=0; d<dimension; ++d)
-          restingFromStrain[d]=std::sqrt(
-                                         (edges[d][0]*eigenVectorStrain[0][Istrain]+
-                                          edges[d][1]*eigenVectorStrain[1][Istrain]+
-                                          edges[d][2]*eigenVectorStrain[2][Istrain])*
-                                         (edges[d][0]*eigenVectorStrain[0][Istrain]+
-                                          edges[d][1]*eigenVectorStrain[1][Istrain]+
-                                          edges[d][2]*eigenVectorStrain[2][Istrain])*
-                                         (1-maximalStrainValue)*(1-maximalStrainValue)+
+      //   length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
+      //                          (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
+      //                          (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
+      //   std:: vector<std::vector<double> > edges(3);
+      //   for (size_t s=0; s<3 ; s++)
+      //     edges[s].resize(3);
+      //   for (size_t d=0; d<dimension; ++d){
+      //     edges[0][d]=position[1][d]-position[0][d];
+      //     edges[1][d]=position[2][d]-position[1][d];
+      //     edges[2][d]=position[0][d]-position[2][d];
+      //   }
+      //   //go 3 dimensional
+      //   std::vector<double> restingFromStrain(3);
+      //   for (size_t d=0; d<dimension; ++d)
+      //     restingFromStrain[d]=std::sqrt(
+      //                                    (edges[d][0]*eigenVectorStrain[0][Istrain]+
+      //                                     edges[d][1]*eigenVectorStrain[1][Istrain]+
+      //                                     edges[d][2]*eigenVectorStrain[2][Istrain])*
+      //                                    (edges[d][0]*eigenVectorStrain[0][Istrain]+
+      //                                     edges[d][1]*eigenVectorStrain[1][Istrain]+
+      //                                     edges[d][2]*eigenVectorStrain[2][Istrain])*
+      //                                    (1-maximalStrainValue)*(1-maximalStrainValue)+
                                          
-                                         (edges[d][0]*eigenVectorStrain[0][Istrain2]+
-                                          edges[d][1]*eigenVectorStrain[1][Istrain2]+
-                                          edges[d][2]*eigenVectorStrain[2][Istrain2])*
-                                         (edges[d][0]*eigenVectorStrain[0][Istrain2]+
-                                          edges[d][1]*eigenVectorStrain[1][Istrain2]+
-                                          edges[d][2]*eigenVectorStrain[2][Istrain2])*
-                                         (1-maximalStrainValue2)*(1-maximalStrainValue2)+
+      //                                    (edges[d][0]*eigenVectorStrain[0][Istrain2]+
+      //                                     edges[d][1]*eigenVectorStrain[1][Istrain2]+
+      //                                     edges[d][2]*eigenVectorStrain[2][Istrain2])*
+      //                                    (edges[d][0]*eigenVectorStrain[0][Istrain2]+
+      //                                     edges[d][1]*eigenVectorStrain[1][Istrain2]+
+      //                                     edges[d][2]*eigenVectorStrain[2][Istrain2])*
+      //                                    (1-maximalStrainValue2)*(1-maximalStrainValue2)+
                                          
-                                         (edges[d][0]*eigenVectorStrain[0][Istrain3]+
-                                          edges[d][1]*eigenVectorStrain[1][Istrain3]+
-                                          edges[d][2]*eigenVectorStrain[2][Istrain3])*
-                                         (edges[d][0]*eigenVectorStrain[0][Istrain3]+
-                                          edges[d][1]*eigenVectorStrain[1][Istrain3]+
-                                          edges[d][2]*eigenVectorStrain[2][Istrain3])*
-                                         (1-maximalStrainValue3)*(1-maximalStrainValue3)
-                                         );
-        for (size_t d=0; d<dimension; ++d)
-          std::cerr<<restingLength[d]<<"  "<<restingFromStrain[d]<<"  "<<length[d]<<std::endl;
-      }
-      /////// ad-hoc end
+      //                                    (edges[d][0]*eigenVectorStrain[0][Istrain3]+
+      //                                     edges[d][1]*eigenVectorStrain[1][Istrain3]+
+      //                                     edges[d][2]*eigenVectorStrain[2][Istrain3])*
+      //                                    (edges[d][0]*eigenVectorStrain[0][Istrain3]+
+      //                                     edges[d][1]*eigenVectorStrain[1][Istrain3]+
+      //                                     edges[d][2]*eigenVectorStrain[2][Istrain3])*
+      //                                    (1-maximalStrainValue3)*(1-maximalStrainValue3)
+      //                                    );
+      //   for (size_t d=0; d<dimension; ++d)
+      //     std::cerr<<restingLength[d]<<"  "<<restingFromStrain[d]<<"  "<<length[d]<<std::endl;
+      // }
+      // /////// ad-hoc end
       
 
 
@@ -3863,7 +3870,7 @@ derivs(Tissue &T,
         }
     }
     
-    cellData[cellIndex][20]=0;
+    //cellData[cellIndex][20]=0;
     
     if (numVariableIndexLevel()==4 && ( numVariableIndex(2)==2 || numVariableIndex(2)==3) ) {//storing perpendicular to maximal strain
       if (dimension==2)
@@ -3917,7 +3924,7 @@ derivs(Tissue &T,
     cellData[cellIndex][anisoEnergyIndex]= EnergyAniso;
     
   }
-  std::cerr<<"up to here"<<std::endl; 
+  //std::cerr<<"up to here"<<std::endl; 
   
   double totalEnergyIso=0;
   double totalEnergyAniso=0;
