@@ -1,0 +1,100 @@
+#!/usr/bin/perl -w
+#
+# Creates a tissue init file with a line of cells
+#
+
+#
+# Compartment numbers
+#
+$numCell = 400;
+$numWall = 3*$numCell+1;
+$numVertex = 2*$numCell+2;
+
+print STDOUT "$numCell $numWall $numVertex\n";
+
+#
+# Topology, wall connections
+#
+$v1=0;
+$v1Add=0;
+$v2=1;
+$v2Add=0;
+for ($iw=0; $iw<$numWall; ++$iw) {
+    $c1=$c2=-1;
+
+    # c1
+    $c1 = int( ($iw-1)/3 );
+    # c2 not -1
+    if ( !($iw % 3) && $iw && $iw<($numWall-1) ) {
+	$c2 = $iw/3;
+    }
+    print STDOUT "$iw $c1 $c2 $v1 $v2\n";
+
+    # v1
+    if ( $v1 % 2 ) {
+	++$v1;
+    }
+    elsif ( $v1Add!=0 ) {
+	++$v1;
+	$v1Add=0;
+    }
+    else {
+	++$v1Add;
+    }
+    # v2
+    if ( !($v2 % 2) || $v2==1) {
+	++$v2;
+    }
+    elsif ( $v2Add!=0 ) {
+	++$v2;
+	$v2Add=0;
+    }
+    else {
+	++$v2Add;
+    }
+
+
+}
+
+#
+# Vertex positions
+#
+$wallLength=1.0;
+$oX = 0.0;
+$oY = 0.0;
+
+print STDOUT "\n$numVertex 2\n";
+
+for ($iv=0; $iv<$numVertex; ++$iv) {
+
+    $x = $oX + int($iv/2)*$wallLength;
+    $y = $oY;
+    if( $iv % 2 ) {
+	$y = $oY+$wallLength;
+    }
+    print STDOUT "$x $y\n";
+}
+
+#
+# Wall variables
+#
+print STDOUT "\n$numWall 1 3\n";
+$F = 0.0;
+$k = 0.1;
+for ($iw=0; $iw<$numWall; ++$iw) {
+    print STDOUT "$wallLength $F $k $k\n";
+} 
+
+#
+# Cell variables
+#
+print STDOUT "\n$numCell 2\n";
+$auxinMean = 1.0;
+$auxinSpread = 0.02;
+for ($i=0; $i<$numCell; ++$i) {
+    $auxin = $auxinMean + $auxinSpread*(2.0*rand()-1.0);
+    $pin=1.0;
+    print STDOUT "$auxin $pin\n";
+}
+
+ 
