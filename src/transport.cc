@@ -240,6 +240,7 @@ derivs(Tissue &T,
 }
 
 
+
  ActiveTransportCellEfflux::
  ActiveTransportCellEfflux(std::vector<double> &paraValue, 
  	      std::vector< std::vector<size_t> > 
@@ -474,8 +475,13 @@ derivs(Tissue &T,
 	// cell-wall transport
 	double fac = (parameter(2)+parameter(3)*wallData[j][pwI]) * cellData[i][aI] 
 	  - (parameter(0) + parameter(1)*cellData[i][auxI]) * wallData[j][awI];
-	cellDerivs[i][aI] -= fac;
-	// wall-wall diffusion
+	
+         wallDerivs[j][awI] += fac;
+         cellDerivs[i][aI] -= fac;
+	
+
+
+        // wall-wall diffusion
 	fac = parameter(4)*wallData[j][awI];
 	wallDerivs[j][awI] -= fac;
 	wallDerivs[j][awI+1] += fac;
@@ -488,7 +494,9 @@ derivs(Tissue &T,
 		
 	wallDerivs[j][awI+1] += fac;
 	cellDerivs[i][aI] -= fac;
-	// wall-wall diffusion
+	
+
+           // wall-wall diffusion
 	wallDerivs[j][awI+1] -= parameter(4)*wallData[j][awI+1];
 	wallDerivs[j][awI] += parameter(4)*wallData[j][awI+1];
 
@@ -501,3 +509,4 @@ derivs(Tissue &T,
     }
   }
 }
+

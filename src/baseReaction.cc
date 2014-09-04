@@ -25,7 +25,7 @@
 #include "sisterVertex.h"
 #include "membraneCycling.h"
 
-//#include"massAction.h"
+#include"massAction.h"
 
 BaseReaction::~BaseReaction(){}
 
@@ -440,12 +440,24 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new MembraneCycling::CellUpTheGradientNonLinear(paraValue, indValue);
   else if (idValue=="MembraneCycling::CellUpTheGradientLinear")
     return new MembraneCycling::CellUpTheGradientLinear(paraValue, indValue);
-   else if (idValue=="MembraneCycling::CellFluxExocytosis")
+  else if (idValue=="MembraneCycling::PINFeedbackNonLinear")
+    return new MembraneCycling::PINFeedbackNonLinear(paraValue, indValue);
+  else if (idValue=="MembraneCycling::PINFeedbackLinear")
+    return new MembraneCycling::PINFeedbackLinear(paraValue, indValue);
+  else if (idValue=="MembraneCycling::InternalCellNonLinear")
+    return new MembraneCycling::InternalCellNonLinear(paraValue, indValue);
+  else if (idValue=="MembraneCycling::InternalCellLinear")
+    return new MembraneCycling::InternalCellLinear(paraValue, indValue);
+  else if (idValue=="MembraneCycling::CellFluxExocytosis")
     return new MembraneCycling::CellFluxExocytosis(paraValue, indValue);
-  else if (idValue=="MembraneCycling::LocalCellWallFeedbackLinear")
-    return new MembraneCycling::LocalCellWallFeedbackLinear(paraValue, indValue);
 
-	
+	 //massAction.h
+  else if (idValue=="MassAction::OneToTwo")
+    return new MassAction::OneToTwo(paraValue, indValue);
+  else if (idValue=="MassAction::TwoToOne")
+    return new MassAction::TwoToOne(paraValue, indValue);
+
+
   // Default, if nothing found
   else {
     std::cerr << "\nBaseReaction::createReaction() WARNING: Reactiontype " 
