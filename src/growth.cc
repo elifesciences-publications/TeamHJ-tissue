@@ -555,7 +555,7 @@ namespace WallGrowth {
           double strainValue1=tr/2+std::sqrt(((tr*tr)/4)-det);
           double strainValue2=tr/2-std::sqrt(((tr*tr)/4)-det);
 
-          std::cerr<<"strain values"<<strainValue1<<"  "<<strainValue2<<std::endl;
+          //std::cerr<<"strain values"<<strainValue1<<"  "<<strainValue2<<std::endl;
           double strainRestLocal1[2]={0,0};
           double strainRestLocal2[2]={0,0};
           if (Egreen[1][0]!=0){
@@ -644,15 +644,13 @@ namespace WallGrowth {
             restingComp[j][0]=restingLength[j]*cosTet[j];
             restingComp[j][1]=restingLength[j]*sinTet[j];
           }
-          std::cerr<<" 1 "<<std::endl;
           if (strainValue1>strainThreshold && strainValue2<strainThreshold){
-            std::cerr<<" 2 "<<std::endl;            
             for (size_t j=0; j< 3; ++j)
               restingComp[j][0]+=restingComp[j][0]*parameter(0)*(strainValue1-strainThreshold);
           }
           
           if (strainValue1>strainThreshold && strainValue2>strainThreshold){
-             std::cerr<<" 3 "<<std::endl;
+            
             for (size_t j=0; j< 3; ++j){
               restingComp[j][0]+=restingComp[j][0]*parameter(0)*(strainValue1-strainThreshold);
               restingComp[j][1]+=restingComp[j][1]*parameter(0)*(strainValue2-strainThreshold);
@@ -670,24 +668,21 @@ namespace WallGrowth {
           double internalTempPlusOne=std::sqrt(restingComp[2][0]*restingComp[2][0]+
                                                restingComp[2][1]*restingComp[2][1]);
 
-          std::cerr<<" edges "<<internalTemp<<"  "<<externalTemp<<"  "<<internalTempPlusOne<<std::endl;
+          //std::cerr<<" edges "<<internalTemp<<"  "<<externalTemp<<"  "<<internalTempPlusOne<<std::endl;
           
           // WITH AREA AVERAGING
 
           size_t wallGlobalInd= T.cell(cellIndex).wall(wallIndex) ->index();
-          std::cerr<<" normalization area factor before "<<mainWalls[wallGlobalInd][0]<<std::endl;
           if (mainWalls[wallGlobalInd][0]==0){
             mainWalls[wallGlobalInd][0]=restingArea;
             mainWalls[wallGlobalInd][1]=restingArea*externalTemp;
-            std::cerr<<" normalization area factor middle "<<mainWalls[wallGlobalInd][0]<<std::endl;
           }
           else if (mainWalls[wallGlobalInd][0]!=0){
             mainWalls[wallGlobalInd][0]+=restingArea;
             mainWalls[wallGlobalInd][1]=
               (mainWalls[wallGlobalInd][1]+restingArea*externalTemp);
           }
-          std::cerr<<" normalization area factor after "<<mainWalls[wallGlobalInd][0]<<std::endl;
-          std::cerr<<" main wall "<<mainWalls[wallGlobalInd][1]<<std::endl;
+          
           //wallIndexPlusOneMod
             
           if (internalWalls[cellIndex][wallIndex][0]==0){
