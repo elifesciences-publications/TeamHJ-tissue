@@ -2872,7 +2872,7 @@ derivs(Tissue &T,
       
       //Angles of the element ( assuming the order: 0,L0,1,L1,2,L2 )
       std::vector<double> Angle(3);
-       // can be changed by cotan(A)=.25*sqrt(4*b*b*c*c/K-1)
+      // can be changed by cotan(A)=.25*sqrt(4*b*b*c*c/K-1)
       Angle[0]=std::acos(  (restingLength[0]*restingLength[0]+restingLength[2]*restingLength[2]-restingLength[1]*restingLength[1])/
                            (restingLength[0]*restingLength[2]*2)    );
       Angle[1]=std::acos(  (restingLength[0]*restingLength[0]+restingLength[1]*restingLength[1]-restingLength[2]*restingLength[2])/
@@ -2880,13 +2880,20 @@ derivs(Tissue &T,
       Angle[2]=std::acos(  (restingLength[1]*restingLength[1]+restingLength[2]*restingLength[2]-restingLength[0]*restingLength[0])/
                            (restingLength[1]*restingLength[2]*2)    );
       
-     //Tensile Stiffness
-    double tensileStiffness[3];
-    double temp = 1.0/(restingArea*16);                                      
-    std::vector<double> cotan(3);
-    cotan[0] = 1.0/std::tan(Angle[0]);
+      //Tensile Stiffness
+      std::vector<double>  tensileStiffness(3);
+      //double tensileStiffness[3];
+      double temp = 1.0/(restingArea*16);                                      
+      std::vector<double> cotan(3);
+      cotan[0] = 1.0/std::tan(Angle[0]);
     cotan[1] = 1.0/std::tan(Angle[1]);
-    cotan[2] = 1.0/std::tan(Angle[2]);    
+    cotan[2] = 1.0/std::tan(Angle[2]);
+
+    
+    // if(Angle[0]<0.024 ||Angle[1]<0.024 ||Angle[2]<0.024 ){
+    //   std::cerr<<"in mechanicalTRBS cell "<<cellIndex<<" wall  "<<wallindex<<" angles 0,1,2  "<<Angle[0]<<"  "<<Angle[1]<<"  "<<Angle[2]<<std::endl;
+    //   std::cerr<<"in mechanicalTRBS cotan  0,1,2  "<<cotan[0]<<"  "<<cotan[1]<<"  "<<cotan[2]<<std::endl;
+    // } 
     //the force is calculated based on Transverse coefficients
     //Longitudinal coefficients are considered in deltaF
     tensileStiffness[0]=(2*cotan[2]*cotan[2]*(lambdaT+2*mioT)+2*mioT)*temp;
@@ -3085,17 +3092,17 @@ derivs(Tissue &T,
       teta[0] = std::acos(  (ShapeVectorResting[0][0]*AnisoRestLocal[0]
                              +ShapeVectorResting[0][1]*AnisoRestLocal[1])/
                             std::sqrt(ShapeVectorResting[0][0]*ShapeVectorResting[0][0]
-                                      +ShapeVectorResting[0][1]*ShapeVectorResting[0][1]+0.0000001) );
+                                      +ShapeVectorResting[0][1]*ShapeVectorResting[0][1]+0.00000001) );
       
       teta[1] = std::acos(  (ShapeVectorResting[1][0]*AnisoRestLocal[0]
                              +ShapeVectorResting[1][1]*AnisoRestLocal[1])/
                             std::sqrt(ShapeVectorResting[1][0]*ShapeVectorResting[1][0]
-                                      +ShapeVectorResting[1][1]*ShapeVectorResting[1][1]+0.0000001) );
+                                      +ShapeVectorResting[1][1]*ShapeVectorResting[1][1]+0.00000001) );
       
       teta[2] = std::acos(  (ShapeVectorResting[2][0]*AnisoRestLocal[0]
                              +ShapeVectorResting[2][1]*AnisoRestLocal[1])/
                             std::sqrt(ShapeVectorResting[2][0]*ShapeVectorResting[2][0]
-                                      +ShapeVectorResting[2][1]*ShapeVectorResting[2][1]+0.0000001) );
+                                      +ShapeVectorResting[2][1]*ShapeVectorResting[2][1]+0.00000001) );
 
      
     
@@ -3388,54 +3395,6 @@ derivs(Tissue &T,
  
 
 
-
-
-
- // restingLength[0] 
- //      length[0] 
- //      Angle[0]
-
-
-
-
-
-
-
-      // if (w2==0 ) std::cerr<< "wall 0  resting  "
-      //                      << wallData[w2][wallLengthIndex] 
-      //                      << " current  "
-      //                      <<T.wall(w2).lengthFromVertexPosition(vertexData)<< std::endl
-      //                      << "wall 1  resting  "
-      //                      << restingLength[0] 
-      //                      << " current  "
-      //                      << length[0] << std::endl
-      //                      << "wall 2  resting  "
-      //                      << restingLength[2] 
-      //                      << " current  "
-      //                      << length[2] << std::endl
-      //                      << " angles "<<Angle[0]<<" "<<Angle[1]<<" "<<Angle[2]<< std::endl
-      //                      << "strain 1 and 2 and 3"<< std::endl
-      //                      <<StrainTensor[0][0] << "  "<<StrainTensor[1][1]<<"  "<<StrainTensor[1][0]<< std::endl;
-      
-      // if (w2==1 ) std::cerr<< "wall 1  resting  "
-      //                      <<wallData[w2][wallLengthIndex]
-      //                      <<" current  "
-      //                      << T.wall(w2).lengthFromVertexPosition(vertexData) 
-      //                      << "strain 1 and 2 "<<StrainTensor[0][0]
-      //                      <<"  "<<StrainTensor[1][1]<<"  "<<StrainTensor[1][0]<< std::endl;
-      // if (w2==2 ) std::cerr<< "wall 2  resting  "
-      //                      <<wallData[w2][wallLengthIndex]
-      //                      <<" current  "
-      //                      << T.wall(w2).lengthFromVertexPosition(vertexData) 
-      //                      << "strain 1 and 2 "<<StrainTensor[0][0]
-      //                      <<"  "<<StrainTensor[1][1]<<"  "<<StrainTensor[1][0]<< std::endl;
-      
-      // if (w2==3 ) std::cerr<< "wall 3  resting  "
-      //                      <<wallData[w2][wallLengthIndex]
-      //                      <<" current  "
-      //                      << T.wall(w2).lengthFromVertexPosition(vertexData) 
-      //                          << "strain 1 and 2 "<<StrainTensor[0][0]
-      //                      <<"  "<<StrainTensor[1][1]<<"  "<<StrainTensor[1][0]<< std::endl;
            
      
       // accumulating strain and stress tensors and normal to cell plane vector to be averaged later
@@ -3475,8 +3434,9 @@ derivs(Tissue &T,
         
         
         //Forces of vertices   
-        double Force[3][3];                                           
-    
+        double Force[3][3]={{0,0,0},{0,0,0},{0,0,0}};                                          
+        
+
         Force[0][0]= (tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2])*(position[1][0]-position[0][0])
           +(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[2][0]-position[0][0])
           + deltaF[0][0]; 
@@ -3486,6 +3446,7 @@ derivs(Tissue &T,
         Force[0][2]= (tensileStiffness[0]*Delta[0]+angularStiffness[1]*Delta[1]+angularStiffness[0]*Delta[2])*(position[1][2]-position[0][2])
           +(tensileStiffness[2]*Delta[2]+angularStiffness[2]*Delta[1]+angularStiffness[0]*Delta[0])*(position[2][2]-position[0][2])
           + deltaF[0][2]; 
+
         Force[1][0]= (tensileStiffness[0]*Delta[0]+angularStiffness[0]*Delta[2]+angularStiffness[1]*Delta[1])*(position[0][0]-position[1][0])
           +(tensileStiffness[1]*Delta[1]+angularStiffness[2]*Delta[2]+angularStiffness[1]*Delta[0])*(position[2][0]-position[1][0])
           + deltaF[1][0];  
@@ -3504,25 +3465,72 @@ derivs(Tissue &T,
           + deltaF[2][1];  
         Force[2][2]= (tensileStiffness[2]*Delta[2]+angularStiffness[0]*Delta[0]+angularStiffness[2]*Delta[1])*(position[0][2]-position[2][2])
           +(tensileStiffness[1]*Delta[1]+angularStiffness[1]*Delta[0]+angularStiffness[2]*Delta[2])*(position[1][2]-position[2][2])
-          + deltaF[2][2];  
+          + deltaF[2][2];
         
-       
+        
+        bool isSliver=false;
+        if (Angle[0]<0.1 || Angle[0]<0.1 ||   Angle[0]<0.1) {
+          double tmp1=cellDerivs[cellIndex][comIndex  ]+vertexDerivs[v2][0]+vertexDerivs[v3][0],
+            tmp2=cellDerivs[cellIndex][comIndex+1]+vertexDerivs[v2][1]+vertexDerivs[v3][1],
+            tmp3=cellDerivs[cellIndex][comIndex+2]+vertexDerivs[v2][2]+vertexDerivs[v3][2];
+
+          cellDerivs[cellIndex][comIndex  ] +=tmp1;
+          cellDerivs[cellIndex][comIndex+1] +=tmp3;
+          cellDerivs[cellIndex][comIndex+2] +=tmp3;
+          
+          vertexDerivs[v2][0] += tmp1;
+          vertexDerivs[v2][1] += tmp2;
+          vertexDerivs[v2][2] += tmp3;
+          
+          vertexDerivs[v3][0] += tmp1;
+          vertexDerivs[v3][1] += tmp2;
+          vertexDerivs[v3][2] += tmp3;
+
+          isSliver=true;
+        }  
+        
+
+
+
+        // if (cellIndex==88){
+        //   std::cerr<<std::endl;                
+        //   std::cerr<<std::endl;                
+        //   std::cerr<<std::endl;      
+        //   std::cerr<<"  position 0 "<<position[0][0]<<"  "<<position[0][1]<<"  "<<position[0][2]<<std::endl;                
+        //   std::cerr<<"  position 1 "<<position[1][0]<<"  "<<position[1][1]<<"  "<<position[1][2]<<std::endl;                
+        //   std::cerr<<"  position 2 "<<position[2][0]<<"  "<<position[2][1]<<"  "<<position[2][2]<<std::endl;                
+        //   std::cerr<<std::endl;                
+        //   std::cerr<<"  tensileStiffness "<<tensileStiffness[0]<<"  "<<tensileStiffness[1]<<"  "<<tensileStiffness[2]<<std::endl;                
+        //   std::cerr<<"  angularStiffness "<<angularStiffness[0]<<"  "<<angularStiffness[1]<<"  "<<angularStiffness[2]<<std::endl;                
+        //   std::cerr<<"  Delta2           "<<Delta[0]<<"  "<<Delta[1]<<"  "<<Delta[2]<<std::endl;                
+        //   std::cerr<<std::endl;                
+        //   std::cerr<<" force 0 "<<Force[0][0]<<"  "<<Force[0][1]<<"  "<<Force[0][2]<<std::endl;                
+        //   std::cerr<<" force 1 "<<Force[1][0]<<"  "<<Force[1][1]<<"  "<<Force[1][2]<<std::endl;                
+        //   std::cerr<<" force 2 "<<Force[2][0]<<"  "<<Force[2][1]<<"  "<<Force[2][2]<<std::endl;              
+        //   std::cerr<<std::endl;                
+        //   std::cerr<<"  test   "<<(tensileStiffness[2]*0.4+angularStiffness[0]*0.9+angularStiffness[2]*0.1)*(position[0][2]-position[2][2])
+        //     +(tensileStiffness[1]*0.1+angularStiffness[1]*0.9+angularStiffness[2]*0.4)*(position[1][2]-position[2][2])
+        //            <<std::endl;                
+          
+        // }
+        
         // adding TRBSMT forces to the total vertexDerives
-        
-        cellDerivs[cellIndex][comIndex  ] += Force[0][0];
-        cellDerivs[cellIndex][comIndex+1] += Force[0][1];
-        cellDerivs[cellIndex][comIndex+2] += Force[0][2];
-        
-        vertexDerivs[v2][0] += Force[1][0];
-        vertexDerivs[v2][1] += Force[1][1];
-        vertexDerivs[v2][2] += Force[1][2];
-        
-        vertexDerivs[v3][0] += Force[2][0];
-        vertexDerivs[v3][1] += Force[2][1];
-        vertexDerivs[v3][2] += Force[2][2];
+        if (! isSliver) {
+          cellDerivs[cellIndex][comIndex  ] += Force[0][0];
+          cellDerivs[cellIndex][comIndex+1] += Force[0][1];
+          cellDerivs[cellIndex][comIndex+2] += Force[0][2];
+          
+          vertexDerivs[v2][0] += Force[1][0];
+          vertexDerivs[v2][1] += Force[1][1];
+          vertexDerivs[v2][2] += Force[1][2];
+          
+          vertexDerivs[v3][0] += Force[2][0];
+          vertexDerivs[v3][1] += Force[2][1];
+          vertexDerivs[v3][2] += Force[2][2];
+        }
         
     }
-
+    
 
     for (int r=0 ; r<3 ; r++) 
       for (int s=0 ; s<3 ; s++)    
@@ -3712,19 +3720,116 @@ derivs(Tissue &T,
       maximalStrainValue2=StrainCellGlobal[Istrain2][Istrain2];
       maximalStrainValue3=StrainCellGlobal[Istrain3][Istrain3];
       
+      
       if(std::abs(normalGlob[0]*eigenVectorStrain[0][Istrain]+   //<<<<<<<<<<<<<<<<<<
                   normalGlob[1]*eigenVectorStrain[1][Istrain]+
-                  normalGlob[2]*eigenVectorStrain[2][Istrain]) > .1) {
+                  normalGlob[2]*eigenVectorStrain[2][Istrain]) > .2) {
 
 	std::cerr << "max strain vector is out of cell plane in the cell " <<cellIndex <<std::endl;
-        Istrain=Istrain2; 
-        Istrain2=Istrain3;
-        maximalStrainValue=maximalStrainValue2;
-        maximalStrainValue2=maximalStrainValue3; 
-      }
-     
-      
+        // Istrain=Istrain2; 
+        // Istrain2=Istrain3;
+        // maximalStrainValue=maximalStrainValue2;
+        // maximalStrainValue2=maximalStrainValue3;
+        
+        // for (size_t wallindex=0; wallindex<numWalls; ++wallindex){
+          
+        //   size_t kPlusOneMod = (wallindex+1)%numWalls;
 
+        //   //size_t v1 = com;
+        //   size_t v2 = T.cell(cellIndex).vertex(wallindex)->index();
+        //   size_t v3 = T.cell(cellIndex).vertex(kPlusOneMod)->index();
+        //   //size_t w1 = internal wallindex
+        //   size_t w2 = T.cell(cellIndex).wall(wallindex)->index();
+        //   //size_t w3 = internal wallindex+1
+          
+        //   // Position matrix holds in rows positions for com, vertex(wallindex), vertex(wallindex+1)
+        //   DataMatrix position(3,vertexData[v2]);
+        //   for (size_t d=0; d<dimension; ++d)
+        //     position[0][d] = cellData[cellIndex][comIndex+d]; // com position
+        //   //position[1] = vertexData[v2]; // given by initiation
+        //   position[2] = vertexData[v3];
+        //   //position[0][2] z for vertex 1 of the current element
+          
+        //   std::vector<double> restingLength(3);
+        //   restingLength[0] = cellData[cellIndex][lengthInternalIndex + wallindex];
+        //   restingLength[1] = wallData[w2][wallLengthIndex];
+        //   restingLength[2] = cellData[cellIndex][lengthInternalIndex + kPlusOneMod];
+          
+          
+        //   std::vector<double> length(3);
+        //   length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
+        //                          (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
+        //                          (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
+          
+        //   length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
+          
+        //   length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
+        //                          (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
+        //                          (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
+        //   std::cerr<<" resting length 1,2,3 :   "
+        //            <<restingLength[0]<<"  "<<restingLength[1]<<"  "<<restingLength[2]<<std::endl;
+        //   std::cerr<<"         length 1,2,3 :   "
+        //            <<length[0]<<"  "<<length[1]<<"  "<<length[2]<<std::endl;
+        //   cellData[cellIndex][23]=1000;
+        // }
+        // std::cerr<<" strain 0,1,2 :   " 
+       //            <<maximalStrainValue<<"  "<<maximalStrainValue2<<"  "<<maximalStrainValue3<<std::endl;
+      }
+      
+      //if(maximalStrainValue != maximalStrainValue){
+      //if(std::abs(cellData[cellIndex][comIndex+1]) >100 ||std::abs(cellData[cellIndex][comIndex]) >100){
+      // if(cellIndex==88){
+      //   for (size_t wallindex=0; wallindex<numWalls; ++wallindex){
+          
+      //     size_t kPlusOneMod = (wallindex+1)%numWalls;
+          
+      //     //size_t v1 = com;
+      //     size_t v2 = T.cell(cellIndex).vertex(wallindex)->index();
+      //     size_t v3 = T.cell(cellIndex).vertex(kPlusOneMod)->index();
+      //     //size_t w1 = internal wallindex
+      //     size_t w2 = T.cell(cellIndex).wall(wallindex)->index();
+      //     //size_t w3 = internal wallindex+1
+          
+      //     // Position matrix holds in rows positions for com, vertex(wallindex), vertex(wallindex+1)
+      //     DataMatrix position(3,vertexData[v2]);
+      //     for (size_t d=0; d<dimension; ++d)
+      //       position[0][d] = cellData[cellIndex][comIndex+d]; // com position
+      //     //position[1] = vertexData[v2]; // given by initiation
+      //     position[2] = vertexData[v3];
+      //     //position[0][2] z for vertex 1 of the current element
+          
+      //     std::vector<double> restingLength(3);
+      //     restingLength[0] = cellData[cellIndex][lengthInternalIndex + wallindex];
+      //     restingLength[1] = wallData[w2][wallLengthIndex];
+      //     restingLength[2] = cellData[cellIndex][lengthInternalIndex + kPlusOneMod];
+          
+          
+      //     std::vector<double> length(3);
+      //     length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
+      //                            (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
+      //                            (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
+          
+      //     length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
+          
+      //     length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
+      //                            (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
+      //                            (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
+          
+      //     std::cerr<<" resting length 1,2,3 :   "
+      //              <<restingLength[0]<<"  "<<restingLength[1]<<"  "<<restingLength[2]<<std::endl;
+      //     std::cerr<<"         length 1,2,3 :   "
+      //              <<length[0]<<"  "<<length[1]<<"  "<<length[2]<<std::endl;
+      //     cellData[cellIndex][23]=1000;
+      //   }
+      //   std::cerr<<" in the cell :   "<<cellIndex<<std::endl;
+      //   std::cerr<<" strain 0,1,2 :   " 
+      //             <<maximalStrainValue<<"  "<<maximalStrainValue2<<"  "<<maximalStrainValue3<<std::endl;
+      // }
+      
+      
+      if(maximalStrainValue != maximalStrainValue)
+        exit(-1);
+      
 
 
 
