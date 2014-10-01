@@ -2684,7 +2684,15 @@ derivs(Tissue &T,
     double TETA       = parameter(8);  
 
   
-  
+ 
+
+    // if ( std::sqrt(cellData[cellIndex][comIndex  ]*cellData[cellIndex][comIndex  ]
+    //                +cellData[cellIndex][comIndex+1]*cellData[cellIndex][comIndex+1])<30)
+    //   cellData[cellIndex][youngLIndex]=20;
+    // else
+    //   cellData[cellIndex][youngLIndex]=200;
+
+ 
     double youngL=1;
     double youngT=1;
     if( parameter(4)==0 ){ // constant anisotropic material
@@ -3827,10 +3835,12 @@ derivs(Tissue &T,
       // }
       
       
-      if(maximalStrainValue != maximalStrainValue)
+      if(maximalStrainValue != maximalStrainValue){
+        
+        std::cerr<<"mechanicalTRBS maximal strain "<<maximalStrainValue<<std::endl;
+        std::cerr<<"in the cell "<<cellIndex<<std::endl;
         exit(-1);
-      
-
+      }
 
 
       // /////// ad-hoc begin
