@@ -78,6 +78,9 @@ createCompartmentChange(std::vector<double> &paraValue,
 	  return new RemoveIsolatedCells(paraValue, indValue);
   else if (idValue == "RemoveFoldedCells")
 	  return new RemoveFoldedCells(paraValue, indValue);
+  else if (idValue == "RemoveRegionOutsideRadius2D")
+	  return new RemoveRegionOutsideRadius2D(paraValue, indValue);
+
 
   //Default, if nothing found
   else {

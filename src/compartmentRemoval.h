@@ -248,4 +248,28 @@ public:
 		DataMatrix &vertexDerivs);
 };
 
+//!Remove a sphere of cells around a position from origo
+class RemoveRegionOutsideRadius2D : public BaseCompartmentChange {
+ public:
+  
+  RemoveRegionOutsideRadius2D(std::vector<double> &paraValue, 
+											 std::vector< std::vector<size_t> > 
+											 &indValue );
+  
+  int flag(Tissue *T,size_t i,
+					 DataMatrix &cellData,
+					 DataMatrix &wallData,
+					 DataMatrix &vertexData,
+					 DataMatrix &cellDerivs,
+					 DataMatrix &wallDerivs,
+					 DataMatrix &vertexDerivs );
+  void update(Tissue* T,size_t i,
+							DataMatrix &cellData,
+							DataMatrix &wallData,
+							DataMatrix &vertexData,
+							DataMatrix &cellDerivs,
+							DataMatrix &wallDerivs,
+							DataMatrix &vertexDerivs );  
+};
+
 #endif

@@ -799,3 +799,85 @@ void RemoveFoldedCells::update(Tissue *T, size_t i, DataMatrix &cellData,
 }
 
 
+RemoveRegionOutsideRadius2D::
+RemoveRegionOutsideRadius2D(std::vector<double> &paraValue, 
+										 std::vector< std::vector<size_t> > 
+										 &indValue ) 
+{
+	//Do some checks on the parameters and variable indeces
+  //////////////////////////////////////////////////////////////////////
+  if( paraValue.size()!=3 ) {
+    std::cerr << "RemoveRegionOutsideRadius::"
+							<< "RemoveRegionOutsideRadius() "
+							<< "Three parameters used x_center, y_center, r_region\n";
+    exit(0);
+  }
+  if( indValue.size() != 0 ) {
+    std::cerr << "RemovalOutsideRadius::"
+							<< "RemovalOutsideRadius() "
+							<< "No variable index is used.\n";
+    exit(0);
+  }
+  //Set the variable values
+  //////////////////////////////////////////////////////////////////////
+  setId("RemovalOutsideRadius");
+	setNumChange(-1);
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //////////////////////////////////////////////////////////////////////
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "x_center";
+  tmp[1] = "y_center";
+  tmp[2] = "r";
+  setParameterId( tmp );
+}
+
+//! Flags a cell for removal if its position is outside threshold radius
+/*! 
+ */
+int RemoveRegionOutsideRadius2D::
+flag(Tissue *T,size_t i,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs ) {
+	
+	//Calculate cell center from vertices positions
+	std::vector<double> cellCenter;
+	cellCenter = T->cell(i).positionFromVertex(vertexData);
+	assert( cellCenter.size() == vertexData[0].size() );
+	double R=0.0;
+	for( size_t d=0 ; d<2 ; ++d )
+	  R += (cellCenter[d] - parameter(d))*(cellCenter[d] - parameter(d));
+	R = std::sqrt(R);
+  if( R < parameter(2) ) {
+    std::cerr << "Cell " << i  << " marked for removal" << std::endl;
+    return 1;
+  } 
+  return 0;
+}
+
+//! Update by removing cell and adjust its neighboring walls and vertices
+/*! 
+ */
+void RemoveRegionOutsideRadius2D::
+update(Tissue *T,size_t i,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDeriv,
+       DataMatrix &wallDeriv,
+       DataMatrix &vertexDeriv ) {
+  
+	//Remove cell and adjust its neighboring walls and vertices
+	T->removeCell(i,cellData,wallData,vertexData,cellDeriv,wallDeriv,
+								vertexDeriv);
+	
+	//Check that the removal did not mess up the data structure
+	//T->checkConnectivity(1);	
+}

@@ -1602,7 +1602,7 @@ derivs(Tissue &T,
        DataMatrix &vertexDerivs ) {
   
   size_t numVertices = T.numVertex();
-  size_t s_i = 1; // spatial index
+  size_t s_i = 0; // spatial index
   size_t dimension=vertexData[s_i].size();
   double fac=parameter(0);
   size_t growth_mode = parameter(1);
