@@ -294,7 +294,7 @@ template <typename ScalarType>
 const typename ply_parser::scalar_property_definition_callback_type<ScalarType>::type& at ( const ply_parser::scalar_property_definition_callbacks_type& scalar_property_definition_callbacks )
 {
     return scalar_property_definition_callbacks.get<ScalarType>();
-} 
+}
 
 template <typename SizeType, typename ScalarType>
 typename ply_parser::list_property_definition_callback_type<SizeType, ScalarType>::type& at ( ply_parser::list_property_definition_callbacks_type& list_property_definition_callbacks )
@@ -459,7 +459,7 @@ inline bool ply::ply_parser::parse_scalar_property ( format_type format, std::is
             }
             return false;
         }
-        if ( ( ( format == binary_big_endian_format ) && ( host_byte_order == little_endian_byte_order ) ) || ( ( format == binary_little_endian_format ) && ( host_byte_order == little_endian_byte_order ) ) )
+if ( ( ( format == binary_big_endian_format ) && ( host_byte_order == little_endian_byte_order ) ) || ( ( format == binary_little_endian_format ) && ( host_byte_order == big_endian_byte_order ) ) )
         {
             swap_byte_order ( value );
         }
@@ -530,7 +530,8 @@ inline bool ply::ply_parser::parse_list_property ( format_type format, std::istr
     {
         size_type size;
         istream.read ( reinterpret_cast<char*> ( &size ), sizeof ( size_type ) );
-        if ( ( ( format == binary_big_endian_format ) && ( host_byte_order == little_endian_byte_order ) ) || ( ( format == binary_little_endian_format ) && ( host_byte_order == little_endian_byte_order ) ) )
+
+        if ( ( ( format == binary_big_endian_format ) && ( host_byte_order == little_endian_byte_order ) ) || ( ( format == binary_little_endian_format ) && ( host_byte_order == big_endian_byte_order ) ) )
         {
             swap_byte_order ( size );
         }
@@ -558,7 +559,7 @@ inline bool ply::ply_parser::parse_list_property ( format_type format, std::istr
                 }
                 return false;
             }
-            if ( ( ( format == binary_big_endian_format ) && ( host_byte_order == little_endian_byte_order ) ) || ( ( format == binary_little_endian_format ) && ( host_byte_order == little_endian_byte_order ) ) )
+            if ( ( ( format == binary_big_endian_format ) && ( host_byte_order == little_endian_byte_order ) ) || ( ( format == binary_little_endian_format ) && ( host_byte_order == big_endian_byte_order ) ) )
             {
                 swap_byte_order ( value );
             }
@@ -573,7 +574,7 @@ inline bool ply::ply_parser::parse_list_property ( format_type format, std::istr
         }
         return true;
     }
-    
+
 }
 
 #endif // PLY_PLY_PARSER_HPP_INCLUDED
