@@ -362,6 +362,9 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new SimpleROPModel6(paraValue,indValue);  
   else if(idValue=="SimpleROPModel7")
     return new SimpleROPModel7(paraValue,indValue); 
+  else if(idValue=="UpInternalGradientModel")
+    return new UpInternalGradientModel(paraValue,indValue); 
+ 
   //directionReaction.h, directionUpdate.cc
   else if (idValue == "ContinousMTDirection")
     return new ContinousMTDirection(paraValue, indValue);

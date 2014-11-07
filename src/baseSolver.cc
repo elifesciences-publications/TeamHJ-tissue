@@ -1133,7 +1133,7 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
  
 
    else if (printFlag_==104) {// Init style
-    printInit(os);
+    printInitCenterTri(os);
   }
 
 

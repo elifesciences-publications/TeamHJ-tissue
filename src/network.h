@@ -1146,7 +1146,29 @@ class AuxinModelSimple5 : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+///
+/// @brief A cell-wall based auxin transport model including PINs with down the inernal gradient. Here PIN exocytosis does depend on auxin in neighbouring wall compartment.
+/// Documantation to follow
+
+class UpInternalGradientModel : public BaseReaction {
+  
+ public:
+  
+ UpInternalGradientModel(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
 
 #endif
+
+
 
 
