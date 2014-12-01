@@ -203,6 +203,7 @@ class CreationSpatialSphere : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+
 ///
 /// @brief In each cell a molecule is produced/created with rate dependent on the distance of the cell from a ring
 ///
@@ -261,6 +262,64 @@ class CreationSpatialRing : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+///
+/// @brief In each cell a molecule is produced/created with rate dependent on one of
+/// the coordinates of each cell
+///
+/// The variable update is for each cell given by ( SIGN= -1, higher production for
+/// lower values of the coordinate)
+///
+/// @f[ \frac{dc}{dt} = V \frac{X^n}{X^n + x^n} @f]
+///
+/// or (SIGN = +1, higher production at larger coordinate values),
+///
+/// @f[ \frac{dc}{dt} = V \frac{x^n}{x^n + X^n} @f]
+///
+/// where @f$ V, X, n, SIGN@f$ are constant parameters, @f$ c @f$ is the variable to
+/// be updated and @f$ x @f$ is the cell coordinate used to set the rate-dependent
+/// production.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// creationSpatialSphere 4 2 1 1
+/// V X n SIGN
+/// c_index
+/// x_index
+/// @endverbatim
+///
+class CreationSpatialCoordinate: public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  CreationSpatialCoordinate(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
 
 
 #endif

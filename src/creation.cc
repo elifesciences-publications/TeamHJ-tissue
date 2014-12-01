@@ -330,3 +330,78 @@ derivs(Tissue &T,
 
   }
 }
+
+CreationSpatialCoordinate::
+CreationSpatialCoordinate(std::vector<double> &paraValue, 
+	     std::vector< std::vector<size_t> > 
+	     &indValue ) 
+{  
+
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=4 ) {
+    std::cerr << "CreationSpatialCoordinate::CreationSpatialCoordinate() "
+	      << "Uses four parameters V_max X(K_Hill) n_Hill and X_sign\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 1 || indValue[1].size() != 1 ) {
+    std::cerr << "CreationSpatialCoordinate::"
+	      << "CreationSpatialCoordinate() "
+	      << "Two levels of indices used: index for variable to be updated given as first index, index for the spatial coordinate to use given as the second index" << std::endl;
+    exit(0);
+  }
+  // Sign should be -/+1
+  if( paraValue[3] != -1 && paraValue[3] != 1 ) {
+    std::cerr << "CreationSpatialCoordinate::CreationSpatialCoordinate() "
+	      << "X_sign should be +/-1 to set production inside/outside X"
+	      << std::endl;
+    exit(0);
+  }
+	
+  // Set the variable values
+  setId("creationSpatialCoordinate");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "V_max";
+  tmp[1] = "X (K_Hill)";
+  tmp[2] = "n_Hill";
+  tmp[3] = "X_sign";  
+  setParameterId( tmp );
+}
+
+void CreationSpatialCoordinate::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  //Do the update for each cell
+  size_t numCells = T.numCell();
+
+  size_t cIndex = variableIndex(0,0);
+  size_t xIndex = variableIndex(1,0);
+  double powK_ = std::pow(parameter(1),parameter(2));
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {
+
+    //Calculate cell center from vertices positions
+    std::vector<double> cellCenter;
+    cellCenter = T.cell(cellI).positionFromVertex(vertexData);
+    assert( cellCenter.size() == vertexData[0].size() );
+
+    double powX = std::pow(cellCenter[xIndex],parameter(2));
+	
+    if (parameter(3)>0.0)
+      cellDerivs[cellI][cIndex] += parameter(0)*powX/(powK_+powX);
+    else
+      cellDerivs[cellI][cIndex] += parameter(0)*powK_/(powK_+powX);
+
+
+  }
+}
