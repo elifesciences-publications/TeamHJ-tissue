@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 class Tissue;
 class Vertex;
 //-----------------------------------------------------------------------------
@@ -60,7 +61,10 @@ namespace IO
     {
       return x*x+y*y+z*z;
     }
-
+    Vector operator+(const Vector& v)
+    {
+      return Vector(x+v.x,y+v.y,z+v.z);
+    }
     double x,y,z;
   };
 }
@@ -123,12 +127,18 @@ public:
   void write_cells(Tissue const& t);
   /// @brief Write cells with shrinked geometry leaving space for walls display
   void write_cells2(Tissue const& t);
+  /// @brief Write cells with shrinked geometry leaving space only for outer walls display
+  void write_cells3(Tissue const& t);
   /// @brief Write walls using lines
   void write_walls(Tissue const& t);
   /// @brief Write walls using 2D elements and assuming single wall between cells
   void write_walls2(Tissue const& t);
   /// @brief Write walls using 2D elements and assuming double wall between cells
   void write_walls3(Tissue const& t);
+  /// @brief Write inner walls only using lines and assuming double wall between cells
+  void write_inner_walls(Tissue const& t);
+  /// @brief Write outer walls using 2D elements and assuming double wall between cells
+  void write_outer_walls(Tissue const& t);
 protected:
   // cell and wall geometry for walls as line segments
   void write_cell_point_geometry(Tissue const& t);
@@ -140,7 +150,15 @@ protected:
   void write_cell_geometry2(Tissue const& t, Cell_type ct = POLYGON);
   void write_wall_point_geometry2(Tissue const& t, std::vector<Vertex*> & verts);
   void write_wall_geometry2(Tissue const& t, std::vector<Vertex*> const& verts);
-
+  // cell and wall geometry for 2D walls printing inner and outer cell walls separately based on the flag in the last wall variable
+  void write_cell_point_geometry3(Tissue const& t, std::vector<IO::Point>& disp_points, std::vector<char>& vertex_flag, std::vector< std::map<size_t,size_t> >& cvp_map, size_t flag_pos);
+  void write_cell_geometry3(Tissue const& t, Cell_type ct = POLYGON);
+  size_t prepare_marked_vertices( Tissue const& t, std::vector<char>& vertex_flag, size_t flag_pos, double flag_val );
+  std::pair<size_t, size_t> prepare_wall_point_geometry3(Tissue const& t, std::vector<IO::Point>& disp_points, std::vector<char>& vertex_flag, std::vector< std::map<size_t,size_t> >& cvp_map, size_t flag_pos, double flag_val);
+  void write_outer_wall_point_geometry3 ( Tissue const& t, std::vector<IO::Point>& disp_points, std::vector<char>& vertex_flag, std::vector<uint>& index_map ); 
+  void write_outer_wall_geometry3 ( Tissue const& t, std::vector<uint>& index_map, std::vector< std::map<size_t,size_t> >& cvp_map, size_t offset, size_t flag_pos, double flag_val );
+  void write_inner_wall_point_geometry3 ( Tissue const& t, std::vector<char>& vertex_flag, std::vector<uint>& index_map, size_t counter );
+  void write_inner_wall_geometry3( Tissue const& t, std::vector<uint>& index_map, size_t flag_pos, double flag_val );
   void write_piece_header(int n_pts, int n_cell);
   void write_piece_footer();
 
@@ -152,14 +170,20 @@ protected:
   void write_cell_data_footer(){ *m_os << "</CellData>\n"; }
   void write_cell_data(Tissue const& t);
 
-  void write_wall_data_header(std::string s){ *m_os << "<CellData " << s << ">\n"; }
-  void write_wall_data_footer(){ *m_os << "</CellData>\n"; }
-  // wall data for single wall between cells
-  void write_wall_data(Tissue const& t);
-	///
-	/// @brief Writes the data from the wall variables assuming paired structure of composite double wall between cells
-	///
-  void write_wall_data2(Tissue const& t);
+    void write_wall_data_header ( std::string s )
+    {
+        *m_os << "<CellData " << s << ">\n";
+    }
+    void write_wall_data_footer()
+    {
+        *m_os << "</CellData>\n";
+    }
+    // wall data for single wall between cells
+    void write_wall_data ( Tissue const& t );
+    /// @brief Writes the data from the wall variables assuming paired structure of composite double wall between cells
+    void write_wall_data2 ( Tissue const& t );
+    /// @brief Writes the data only from the walls matched by the value of the flag. Variables are assumed to have paired structure of composite double wall between cells
+    void write_wall_data3 ( Tissue const& t, size_t flag_pos, double flag_val, bool project_cell_variables = false );
 
   void header()
   {

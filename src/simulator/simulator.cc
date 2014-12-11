@@ -38,6 +38,25 @@ int main(int argc,char *argv[]) {
 //   std::cout << "exiting\n";
 //   return 0;
   //END testing ply format reader override
+  //BEGIN testing vtu format reader override
+//     Tissue t;
+//     std::string filename ( argv[1] );
+//     t.readInit ( filename.c_str(),1 );
+//     PLY_file ply_f ( filename );
+//     std::cout << "creating filenames\n";
+//     std::string pvdFile = "tmp/tissue.pvd";
+//     std::vector<std::string> files;
+//     files.push_back("tmp/VTK_cells.vtu");
+//     files.push_back("tmp/VTK_inner_walls.vtu");
+//     files.push_back("tmp/VTK_outer_walls.vtu");
+//     
+//     std::cout << "writing...\n";
+//     PVD_file::writeFullPvd ( pvdFile, files,1 );
+//     PVD_file::writeInnerOuterWalls ( t, files[0], files[1], files[2], 0,1,0 );
+//     std::cout << "exiting\n";
+//     return 0;
+  //END testing vtu format reader override
+    
   //Command line handling
   myConfig::registerOption("init_output", 1);
   myConfig::registerOption("init_output_format", 1);

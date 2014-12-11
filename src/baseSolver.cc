@@ -561,13 +561,24 @@ void BaseSolver::print(std::ostream &os)
     //////////////////////////////////////////////////////////////////////
     //End Pij printing wall version
   }
+    //printing inner and outer walls separately in vtk format
+    else if ( printFlag_==9 )
+    {
+        std::string pvdFile = "tmp/tissue.pvd";
+        std::vector<std::string> files;
+        files.push_back ( "tmp/VTK_cells.vtu" );
+        files.push_back ( "tmp/VTK_inner_walls.vtu" );
+        files.push_back ( "tmp/VTK_outer_walls.vtu" );
 
+        static size_t numCellVar = T_->cell ( 0 ).numVariable();
+        setTissueVariables ( numCellVar );
 
-
-
-
-
-
+        if ( tCount==0 )
+        {
+            PVD_file::writeFullPvd ( pvdFile, files, numPrint_ );
+        }
+        PVD_file::writeInnerOuterWalls ( *T_, files[0], files[1], files[2], 0,1,0 );
+    }
 
   //
   // Ad hoc and temporary print flags
