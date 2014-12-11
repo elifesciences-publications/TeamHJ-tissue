@@ -47,7 +47,7 @@ public:
     /// @brief write pvd file in full for 'n' steps 
     void static writeFullPvd ( const std::string filename, std::vector<std::string>& filenames,  size_t n );
     /// @brief Write just VTU_files for a supplied counter without touching PVD file separating cell walls to inner and outer based on a flag in those walls
-    void static writeInnerOuterWalls ( Tissue const& t, const std::string vtu_filename1, const std::string vtu_filename2, const std::string vtu_filename3, int flag2, int flag3, size_t count );
+    void static writeInnerOuterWalls ( Tissue const& t, const std::string vtu_filename1, const std::string vtu_filename2, const std::string vtu_filename3, size_t count );
     /// @brief Get the filename of an i'th vtu file associated with this pvd
     std::string const& getVtuFilename ( int i = 0 ) const
     {

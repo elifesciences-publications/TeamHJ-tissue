@@ -577,7 +577,7 @@ void BaseSolver::print(std::ostream &os)
         {
             PVD_file::writeFullPvd ( pvdFile, files, numPrint_ );
         }
-        PVD_file::writeInnerOuterWalls ( *T_, files[0], files[1], files[2], 0,1,0 );
+        PVD_file::writeInnerOuterWalls ( *T_, files[0], files[1], files[2], tCount );
     }
 
   //

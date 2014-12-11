@@ -327,7 +327,7 @@ void PVD_file::writeFullPvd ( const std::string filename, std::vector<std::strin
     pvdFile.close();
 }
 //-----------------------------------------------------------------------------
-void PVD_file::writeInnerOuterWalls ( Tissue const& t, const std::string vtu_filename1, const std::string vtu_filename2, const std::string vtu_filename3, int flag2, int flag3, size_t count )
+void PVD_file::writeInnerOuterWalls ( Tissue const& t, const std::string vtu_filename1, const std::string vtu_filename2, const std::string vtu_filename3, size_t count )
 {
     std::vector<std::string> basenames ( 3 ), filenames ( 3 );
     basenames[0] = vtu_filename1;
