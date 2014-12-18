@@ -554,7 +554,10 @@ void VTUostream::write_wall_point_geometry2 ( Tissue const& t, std::vector<Verte
         std::vector<double> cent ( 3 );
         cent = c.positionFromVertex();
         Point center ( cent[0], cent[1], cent[2] );
-        while ( vpit != vpend )
+        
+        int nwall = cit->numWall();
+        for ( int i = 0; i < nwall; ++i )
+
         {
             Point p = Point ( **vpit++ ).displace_towards ( center, D );
             *m_os << p.x << " " << p.y << " " << p.z << "\n";
