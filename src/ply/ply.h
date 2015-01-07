@@ -1,16 +1,22 @@
 #ifndef PLY_PLY_HPP_INCLUDED
 #define PLY_PLY_HPP_INCLUDED
 
-#include <tr1/cstdint>
+#define C11NSPACE std
+// #define C11NSPACE boost
+#if C11NSPACE == std
+#include <cstdint>
+#elif C11NSPACE == boost
+#include <boost/cstdint.hpp>
+#endif
 
 namespace ply {
 
-typedef std::tr1::int8_t int8;
-typedef std::tr1::int16_t int16;
-typedef std::tr1::int32_t int32;
-typedef std::tr1::uint8_t uint8;
-typedef std::tr1::uint16_t uint16;
-typedef std::tr1::uint32_t uint32;
+typedef C11NSPACE::int8_t int8;
+typedef C11NSPACE::int16_t int16;
+typedef C11NSPACE::int32_t int32;
+typedef C11NSPACE::uint8_t uint8;
+typedef C11NSPACE::uint16_t uint16;
+typedef C11NSPACE::uint32_t uint32;
 typedef float float32;
 typedef double float64;
 

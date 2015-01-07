@@ -8,9 +8,6 @@
 #include <string>
 #include <vector>
 
-#include <tr1/functional>
-#include <tr1/memory>
-
 #include <boost/mpl/fold.hpp>
 #include <boost/mpl/inherit.hpp>
 #include <boost/mpl/inherit_linearly.hpp>
@@ -22,6 +19,15 @@
 #include "byte_order.h"
 #include "io_operators.h"
 
+#if C11NSPACE == std
+#include <functional>
+#include <memory>
+#elif C11NSPACE == boost
+#include <boost/functional.hpp>
+#include <boost/memory_order.hpp>
+#endif
+
+
 namespace ply
 {
 
@@ -29,32 +35,32 @@ class ply_parser
 {
 public:
 
-    typedef std::tr1::function<void ( std::size_t, const std::string& ) > info_callback_type;
-    typedef std::tr1::function<void ( std::size_t, const std::string& ) > warning_callback_type;
-    typedef std::tr1::function<void ( std::size_t, const std::string& ) > error_callback_type;
+    typedef C11NSPACE::function<void ( std::size_t, const std::string& ) > info_callback_type;
+    typedef C11NSPACE::function<void ( std::size_t, const std::string& ) > warning_callback_type;
+    typedef C11NSPACE::function<void ( std::size_t, const std::string& ) > error_callback_type;
 
-    typedef std::tr1::function<void () > magic_callback_type;
-    typedef std::tr1::function<void ( format_type, const std::string& ) > format_callback_type;
-    typedef std::tr1::function<void ( const std::string& ) > comment_callback_type;
-    typedef std::tr1::function<void ( const std::string& ) > obj_info_callback_type;
-    typedef std::tr1::function<bool () > end_header_callback_type;
+    typedef C11NSPACE::function<void () > magic_callback_type;
+    typedef C11NSPACE::function<void ( format_type, const std::string& ) > format_callback_type;
+    typedef C11NSPACE::function<void ( const std::string& ) > comment_callback_type;
+    typedef C11NSPACE::function<void ( const std::string& ) > obj_info_callback_type;
+    typedef C11NSPACE::function<bool () > end_header_callback_type;
 
-    typedef std::tr1::function<void() > begin_element_callback_type;
-    typedef std::tr1::function<void() > end_element_callback_type;
-    typedef std::tr1::tuple<begin_element_callback_type, end_element_callback_type> element_callbacks_type;
-    typedef std::tr1::function<element_callbacks_type ( const std::string&, std::size_t ) > element_definition_callback_type;
+    typedef C11NSPACE::function<void() > begin_element_callback_type;
+    typedef C11NSPACE::function<void() > end_element_callback_type;
+    typedef C11NSPACE::tuple<begin_element_callback_type, end_element_callback_type> element_callbacks_type;
+    typedef C11NSPACE::function<element_callbacks_type ( const std::string&, std::size_t ) > element_definition_callback_type;
 
     template <typename ScalarType>
     struct scalar_property_callback_type
     {
-        typedef std::tr1::function<void ( ScalarType ) > type;
+        typedef C11NSPACE::function<void ( ScalarType ) > type;
     };
 
     template <typename ScalarType>
     struct scalar_property_definition_callback_type
     {
         typedef typename scalar_property_callback_type<ScalarType>::type scalar_property_callback_type;
-        typedef std::tr1::function<scalar_property_callback_type ( const std::string&, const std::string& ) > type;
+        typedef C11NSPACE::function<scalar_property_callback_type ( const std::string&, const std::string& ) > type;
     };
 
     typedef boost::mpl::vector<int8, int16, int32, uint8, uint16, uint32, float32, float64> scalar_types;
@@ -102,19 +108,19 @@ public:
     template <typename SizeType, typename ScalarType>
     struct list_property_begin_callback_type
     {
-        typedef std::tr1::function<void ( SizeType ) > type;
+        typedef C11NSPACE::function<void ( SizeType ) > type;
     };
 
     template <typename SizeType, typename ScalarType>
     struct list_property_element_callback_type
     {
-        typedef std::tr1::function<void ( ScalarType ) > type;
+        typedef C11NSPACE::function<void ( ScalarType ) > type;
     };
 
     template <typename SizeType, typename ScalarType>
     struct list_property_end_callback_type
     {
-        typedef std::tr1::function<void () > type;
+        typedef C11NSPACE::function<void () > type;
     };
 
     template <typename SizeType, typename ScalarType>
@@ -123,8 +129,8 @@ public:
         typedef typename list_property_begin_callback_type<SizeType, ScalarType>::type list_property_begin_callback_type;
         typedef typename list_property_element_callback_type<SizeType, ScalarType>::type list_property_element_callback_type;
         typedef typename list_property_end_callback_type<SizeType, ScalarType>::type list_property_end_callback_type;
-        typedef std::tr1::function<
-        std::tr1::tuple<
+        typedef C11NSPACE::function<
+        C11NSPACE::tuple<
         list_property_begin_callback_type,
         list_property_element_callback_type,
         list_property_end_callback_type
@@ -256,7 +262,7 @@ private:
         std::size_t count;
         begin_element_callback_type begin_element_callback;
         end_element_callback_type end_element_callback;
-        std::vector<std::tr1::shared_ptr<property> > properties;
+        std::vector<C11NSPACE::shared_ptr<property> > properties;
     };
 
     flags_type flags_;
@@ -392,7 +398,7 @@ inline void ply::ply_parser::parse_scalar_property_definition ( const std::strin
             warning_callback_ ( line_number_, "property ‘" + std::string ( type_traits<scalar_type>::name() ) + " " + property_name + "’ of element ‘" + current_element_->name + "’ is not handled" );
         }
     }
-    current_element_->properties.push_back ( std::tr1::shared_ptr<property> ( new scalar_property<scalar_type> ( property_name, scalar_property_callback ) ) );
+    current_element_->properties.push_back ( C11NSPACE::shared_ptr<property> ( new scalar_property<scalar_type> ( property_name, scalar_property_callback ) ) );
 }
 
 template <typename SizeType, typename ScalarType>
@@ -404,19 +410,19 @@ inline void ply::ply_parser::parse_list_property_definition ( const std::string&
     typedef typename list_property_begin_callback_type<size_type, scalar_type>::type list_property_begin_callback_type;
     typedef typename list_property_element_callback_type<size_type, scalar_type>::type list_property_element_callback_type;
     typedef typename list_property_end_callback_type<size_type, scalar_type>::type list_property_end_callback_type;
-    std::tr1::tuple<list_property_begin_callback_type, list_property_element_callback_type, list_property_end_callback_type> list_property_callbacks;
+    C11NSPACE::tuple<list_property_begin_callback_type, list_property_element_callback_type, list_property_end_callback_type> list_property_callbacks;
     if ( list_property_definition_callback )
     {
         list_property_callbacks = list_property_definition_callback ( current_element_->name, property_name );
     }
-    if ( !std::tr1::get<0> ( list_property_callbacks ) || !std::tr1::get<1> ( list_property_callbacks ) || !std::tr1::get<2> ( list_property_callbacks ) )
+    if ( !C11NSPACE::get<0> ( list_property_callbacks ) || !C11NSPACE::get<1> ( list_property_callbacks ) || !C11NSPACE::get<2> ( list_property_callbacks ) )
     {
         if ( warning_callback_ )
         {
             warning_callback_ ( line_number_, "property ‘list " + std::string ( type_traits<size_type>::name() ) + " " + std::string ( type_traits<scalar_type>::name() ) + " " + property_name + "’ of element ‘" + current_element_->name + "’ is not handled" );
         }
     }
-    current_element_->properties.push_back ( std::tr1::shared_ptr<property> ( new list_property<size_type, scalar_type> ( property_name, std::tr1::get<0> ( list_property_callbacks ), std::tr1::get<1> ( list_property_callbacks ), std::tr1::get<2> ( list_property_callbacks ) ) ) );
+    current_element_->properties.push_back ( C11NSPACE::shared_ptr<property> ( new list_property<size_type, scalar_type> ( property_name, C11NSPACE::get<0> ( list_property_callbacks ), C11NSPACE::get<1> ( list_property_callbacks ), C11NSPACE::get<2> ( list_property_callbacks ) ) ) );
 }
 
 template <typename ScalarType>
