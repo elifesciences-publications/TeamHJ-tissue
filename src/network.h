@@ -1145,7 +1145,6 @@ class AuxinModelSimple5 : public BaseReaction {
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
 };
-
 ///
 /// @brief A cell-wall based auxin transport model including PINs with down the inernal gradient. Here PIN exocytosis does depend on auxin in neighbouring wall compartment.
 /// Documantation to follow
@@ -1167,7 +1166,260 @@ class UpInternalGradientModel : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+
+///
+/// @brief A cell-wall based auxin transport model including PINs with down the inernal gradient. Here PIN exocytosis does depend on auxin in neighbouring wall compartment.
+/// Documantation to follow
+
+class DownInternalGradientModel : public BaseReaction {
+  
+ public:
+  
+ DownInternalGradientModel(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
+
+///
+/// @brief A cell-wall based auxin transport model including PINs with down the inernal gradient. Here PIN exocytosis does depend on auxin in neighbouring wall compartment.
+/// Documantation to follow
+
+class UpExternalGradientModel : public BaseReaction {
+  
+ public:
+  
+ UpExternalGradientModel(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
+
+
+///
+/// @brief A cell-wall based auxin transport model including PINs with down the inernal gradient. Here PIN exocytosis does depend on auxin in neighbouring wall compartment.
+/// Documantation to follow
+
+class DownInternalGradientModelSingleCell : public BaseReaction {
+  
+ public:
+  
+ DownInternalGradientModelSingleCell(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
+///
+/// @brief A cell-wall based auxin transport model including PINs with cross membrane interaction (inspired by ROPs). Here PIN exocytosis does depend on auxin in neighbouring wall compartment.
+///
+/// A complete (hopefully) pattern generating auxin model based on cell and wall
+/// compartments. It uses two compartments for each wall and a single for the cells.
+/// Auxin and PIN  molecules are updated according to:
+///  
+///  
+/// @f[ \frac{dA_i}{dt} = p_0 - p_1 A_i +\sum_{j}(p_2A_{ij}- p_3 A_i) - 
+///  p_4 \sum_{j} (P_{ij} A_i) @f]
+///  
+/// @f[ \frac{dA_{ij}}{dt} = (from above) + p_5 (A_{ji}-A_{ij}) @f]
+///
+/// @f[ \frac{dP_i}{dt} = p_6 - p_7 P_i*A_ij + \sum_j (p_8 P_{ij} - p_{11} P_i(Ai Pij-Aj Pji)) @f] 
+///  
+/// @f[ \frac{dP_{ij}}{dt} = (from above) @f]
+///
+/// In this model PIN in neighbouring cell acts by repressing PIN exocytosis.
+///  
+/// In the model file the reaction is given by:
+/// @verbatim
+/// AuxinFluxModel 12 2 2 2
+/// p_0 ... p_11
+/// ci_auxin ci_PIN 
+/// wi_auxin wi_PIN 
+/// @endverbatim
+///
+class AuxinFluxModel : public BaseReaction {
+  
+ public:
+  
+  AuxinFluxModel(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
+
+///
+/// @brief A polarity model based on Abley et all Development 2013.
+///
+/// A and B  molecules are updated according to(needs editing):
+///  
+///  
+/// @f[ \frac{dA_i}{dt} = p_0 - p_1 A_i +\sum_{j}(p_2A_{ij}- p_3 A_i) - 
+///  p_4 \sum_{j} (P_{ij} A_i) @f]
+///  
+/// @f[ \frac{dA_{ij}}{dt} = (from above) + p_5 (A_{ji}-A_{ij}) @f]
+///
+/// @f[ \frac{dB_i}{dt} = p_6 - p_7 P_i*A_ij + \sum_j (p_8 P_{ij} - p_{11} P_i*(Ai*Pij-Aj*Pji)) @f] 
+///  
+/// @f[ \frac{dB_{ij}}{dt} = (from above) @f]
+///
+///In this model PIN in neighbouring cell acts by repressing PIN exocytosis.
+///  
+/// In the model file the reaction is given by:
+/// @verbatim
+/// IntracellularPartitioning 5 2 2 2
+/// p_0 ... p_11
+/// ci_auxin ci_PIN 
+/// wi_auxin wi_PIN 
+/// @endverbatim
+///
+class IntracellularPartitioning : public BaseReaction {
+  
+ public:
+  
+  IntracellularPartitioning(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
+
+///
+/// @brief A polarity model based on Abley et all Development 2013.
+///
+/// A and B  molecules are updated according to(needs editing):
+///  
+/// @f[ \frac{dA_i}{dt} = p_0 - p_1 A_i +\sum_{j}(p_2A_{ij}- p_3 A_i) - 
+///  p_4 \sum_{j} (P_{ij} A_i) @f]
+///  
+/// @f[ \frac{dA_{ij}}{dt} = (from above) + p_5 (A_{ji}-A_{ij}) @f]
+///
+/// @f[ \frac{dP_i}{dt} = p_6 - p_7 P_i*A_ij + \sum_j (p_8 P_{ij} - p_{11} P_i\frac{p_{10}^{p_9}}{p_{10}^{p_9}+P_{ji}^{p_9}}) @f] 
+///  
+/// @f[ \frac{dP_{ij}}{dt} = (from above) @f]
+///
+///In this model PIN in neighbouring cell acts by repressing PIN exocytosis.
+///  
+/// In the model file the reaction is given by:
+/// @verbatim
+///IntracellularCoupling 6 2 2 2
+/// p_0 ... p_11
+/// ci_auxin ci_PIN 
+/// wi_auxin wi_PIN 
+/// @endverbatim
+///
+class IntracellularCoupling : public BaseReaction {
+  
+ public:
+  
+  IntracellularCoupling(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
+///
+/// @brief A polarity model based on Abley et all Development 2013.
+///
+/// A and B  molecules are updated according to(needs editing):
+///  
+///  
+/// @f[ \frac{dA_i}{dt} = p_0 - p_1 A_i +\sum_{j}(p_2A_{ij}- p_3 A_i) - 
+///  p_4 \sum_{j} (P_{ij} A_i) @f]
+///  
+/// @f[ \frac{dA_{ij}}{dt} = (from above) + p_5 (A_{ji}-A_{ij}) @f]
+///
+/// @f[ \frac{dP_i}{dt} = p_6 - p_7 P_i*A_ij + \sum_j (p_8 P_{ij} - p_{11} P_i\frac{p_{10}^{p_9}}{p_{10}^{p_9}+P_{ji}^{p_9}}) @f] 
+///  
+/// @f[ \frac{dP_{ij}}{dt} = (from above) @f]
+///
+///In this model PIN in neighbouring cell acts by repressing PIN exocytosis.
+///  
+/// In the model file the reaction is given by:
+/// @verbatim
+///  IntracellularIndirectCoupling 12 2 3 3
+/// p_0 ... p_11
+/// ci_auxin ci_PIN 
+/// wi_auxin wi_PIN 
+/// @endverbatim
+///
+class IntracellularIndirectCoupling : public BaseReaction {
+  
+ public:
+  
+  IntracellularIndirectCoupling(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
+
+
+
+
+
+
 #endif
+
+
 
 
 

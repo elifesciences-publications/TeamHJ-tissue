@@ -2948,7 +2948,7 @@ SimpleROPModel4(std::vector<double> &paraValue,
 	      << "13 parameters used (see network.h)\n";
     exit(0);
   }
-  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 3 ) {
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 2) {
     std::cerr << "SimpleROPModel4::"
 	      << "SimpleROPModel4() "
 	      << "Two cell variable indices (first row) and two wall variable"
@@ -3745,6 +3745,7 @@ derivs(Tissue &T,
 
 
 
+
 UpInternalGradientModel::
 UpInternalGradientModel(std::vector<double> &paraValue, 
 	      std::vector< std::vector<size_t> > 
@@ -3890,6 +3891,897 @@ derivs(Tissue &T,
   }
 }
 
+
+
+
+
+DownInternalGradientModel::
+DownInternalGradientModel(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=15 ) {
+    std::cerr << "DownInternalGradientModel::"
+	      << "DownInternalGradientModel() "
+	      << "15 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 3 ) {
+    std::cerr << "DownInternalGradientModel::"
+	      << "DownInternalGradientModel() "
+	      << "Two cell variable indices (first row) and three wall variable"
+	      << " indices are used (auxin,PIN, membrane marker)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("DownInternalGradientModel");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "c_IAA";
+  tmp[1] = "d_IAA";
+  tmp[2] = "p_IAAH(in)";
+  tmp[3] = "p_IAAH(out)";
+  tmp[4] = "p_IAA-";
+  tmp[5] = "D_IAA";
+  tmp[6] = "c_PIN";
+  tmp[7] = "d_PIN";
+  tmp[8] = "endo_PIN";
+  tmp[9] = "exo_PIN";
+  tmp[10] = "K_hill";
+  tmp[11] = "n_hill";
+  tmp[12] = "endo_back";
+  tmp[13] = "D_c_auxin";
+  tmp[14] = "D_c_pin";
+  setParameterId( tmp );
+}
+
+void DownInternalGradientModel::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);//auxin
+  size_t pI = variableIndex(0,1);//pin
+  size_t awI = variableIndex(1,0);//auxin (wall)
+  size_t pwI = variableIndex(1,1);//pin (membrane/wall)
+  size_t mwI = variableIndex(1,2);//(membrane marker)
+
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  awI<wallData[0].size() &&
+	  pwI<wallData[0].size()  &&
+	  mwI<wallData[0].size() );
+
+ for (size_t i=0; i<numCells; ++i) {
+	  
+    //Production and degradation
+    cellDerivs[i][aI] += parameter(0) - parameter(1)*cellData[i][aI];
+    cellDerivs[i][pI] += parameter(6)*cellData[i][aI]/(parameter(4)+cellData[i][aI]) - parameter(7)*cellData[i][pI];
+
+    
+    //Auxin transport and protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background()  && wallData[j][mwI]==1) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+	double fac = parameter(2)*cellData[i][aI] +
+	  parameter(3)*cellData[i][aI]*wallData[j][pwI]; //p_2 A_i + p_4 A_i P_ij
+	
+	cellDerivs[i][aI] -= fac;
+	cellDerivs[iNeighbor][aI] += fac;
+	
+	
+	//PIN cycling
+	fac = parameter(8)*wallData[j][pwI]
+	  -	  parameter(9)*cellData[i][pI]*std::pow(parameter(10),parameter(11))/( std::pow(parameter(10),parameter(11)) + std::pow(cellData[i][aI],parameter(11)) );
+	wallDerivs[j][pwI] -= fac;
+	cellDerivs[i][pI] += fac;
+
+
+      }
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background()  && wallData[j][mwI]==1) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell1()->index();
+	double fac = parameter(2)*cellData[i][aI] +
+	  parameter(3)*cellData[i][aI]*wallData[j][pwI+1];
+	
+	cellDerivs[i][aI] -= fac;
+	cellDerivs[iNeighbor][aI] += fac;
+
+
+	//PIN cycling
+
+	fac = parameter(8)*wallData[j][pwI+1]
+	  -parameter(9)*cellData[i][pI]*std::pow(parameter(10),parameter(11))/( std::pow(parameter(10),parameter(11)) + std::pow(cellData[i][aI],parameter(11)) ) ;
+
+	wallDerivs[j][pwI+1] -= fac;
+	cellDerivs[i][pI] += fac;
+      }
+
+  else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background()  && wallData[j][mwI]==0) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell1()->index();
+	double fac = parameter(13)*cellData[i][aI];
+	double fac2 = parameter(14)*cellData[i][pI];
+	cellDerivs[i][aI] -= fac;
+        cellDerivs[i][pI] -= fac2;
+	cellDerivs[iNeighbor][aI] += fac;
+	cellDerivs[iNeighbor][pI] += fac2;
+      }
+
+  else if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background()  && wallData[j][mwI]==0) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+	double fac = parameter(13)*cellData[i][aI];
+	double fac2 = parameter(14)*cellData[i][pI];
+	
+	cellDerivs[i][aI] -= fac;
+        cellDerivs[i][pI] -= fac2;
+	cellDerivs[iNeighbor][aI] += fac;
+	cellDerivs[iNeighbor][pI] += fac2;
+
+      }
+    }
+  }
+}
+
+
+UpExternalGradientModel::
+UpExternalGradientModel(std::vector<double> &paraValue,
+                          std::vector< std::vector<size_t> >
+                          &indValue ) {
+    
+    //Do some checks on the parameters and variable indeces
+    //
+    if( paraValue.size()!=15 ) {
+        std::cerr << "UpExternalGradientModel::"
+        << "UpExternalGradientModel() "
+        << "15 parameters used (see network.h)\n";
+        exit(0);
+    }
+    if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 3 ) {
+        std::cerr << "UpExternalGradientModel::"
+        << "UpExternalGradientModel() "
+        << "Two cell variable indices (first row) and three wall variable"
+        << " indices are used (auxin,PIN, membrane marker)." << std::endl;
+        exit(0);
+    }
+    //Set the variable values
+    //
+    setId("UpExternalGradientModel");
+    setParameter(paraValue);
+    setVariableIndex(indValue);
+    
+    //Set the parameter identities
+    //
+    std::vector<std::string> tmp( numParameter() );
+    tmp.resize( numParameter() );
+    tmp[0] = "c_IAA";
+    tmp[1] = "d_IAA";
+    tmp[2] = "p_IAAH(in)";
+    tmp[3] = "p_IAAH(out)";
+    tmp[4] = "p_IAA-";
+    tmp[5] = "D_IAA";
+    tmp[6] = "c_PIN";
+    tmp[7] = "d_PIN";
+    tmp[8] = "endo_PIN";
+    tmp[9] = "exo_PIN";
+    tmp[10] = "K_hill";
+    tmp[11] = "n_hill";
+    tmp[12] = "endo_back";
+    tmp[13] = "D_c_auxin";
+    tmp[14] = "D_c_pin";
+    setParameterId( tmp );
+}
+
+void UpExternalGradientModel::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs )
+{
+    size_t numCells = T.numCell();
+    size_t aI = variableIndex(0,0);//auxin
+    size_t pI = variableIndex(0,1);//pin
+    size_t awI = variableIndex(1,0);//auxin (wall)
+    size_t pwI = variableIndex(1,1);//pin (membrane/wall)
+    size_t mwI = variableIndex(1,2);//(membrane marker)
+    
+    assert( aI<cellData[0].size() &&
+           pI<cellData[0].size() &&
+           awI<wallData[0].size() &&
+           pwI<wallData[0].size()  &&
+           mwI<wallData[0].size() );
+    
+    for (size_t i=0; i<numCells; ++i) {
+        
+        //Production and degradation
+        cellDerivs[i][aI] += parameter(0) - parameter(1)*cellData[i][aI];
+        cellDerivs[i][pI] += parameter(6)*cellData[i][aI]/(parameter(4)+cellData[i][aI]) - parameter(7)*cellData[i][pI];
+        
+        
+        //Auxin transport and protein cycling
+        size_t numWalls = T.cell(i).numWall();
+        for (size_t k=0; k<numWalls; ++k) {
+            size_t j = T.cell(i).wall(k)->index();
+            if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background()  && wallData[j][mwI]==1) {
+                // cell-cell transport
+                size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+                double fac = parameter(2)*cellData[i][aI] +
+                parameter(3)*cellData[i][aI]*wallData[j][pwI]; //p_2 A_i + p_4 A_i P_ij
+                
+                cellDerivs[i][aI] -= fac;
+                cellDerivs[iNeighbor][aI] += fac;
+                
+                
+                //PIN cycling
+                fac = parameter(8)*wallData[j][pwI]
+                -	  parameter(9)*cellData[i][pI]*std::pow(cellData[iNeighbor][aI],parameter(11))/( std::pow(parameter(10),parameter(11)) + std::pow(cellData[iNeighbor][aI],parameter(11)) );
+                wallDerivs[j][pwI] -= fac;
+                cellDerivs[i][pI] += fac;
+                
+                
+            }
+            else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background()  && wallData[j][mwI]==1) {
+                // cell-cell transport
+                size_t iNeighbor = T.cell(i).wall(k)->cell1()->index();
+                double fac = parameter(2)*cellData[i][aI] +
+                parameter(3)*cellData[i][aI]*wallData[j][pwI+1];
+                
+                cellDerivs[i][aI] -= fac;
+                cellDerivs[iNeighbor][aI] += fac;
+                
+                
+                //PIN cycling
+                
+                fac = parameter(8)*wallData[j][pwI+1]
+                -parameter(9)*cellData[i][pI]*std::pow(cellData[iNeighbor][aI],parameter(11))/( std::pow(parameter(10),parameter(11)) + std::pow(cellData[iNeighbor][aI],parameter(11)) ) ;
+                
+                wallDerivs[j][pwI+1] -= fac;
+                cellDerivs[i][pI] += fac;
+            }
+            
+            else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background()  && wallData[j][mwI]==0) {
+                // cell-cell transport
+                size_t iNeighbor = T.cell(i).wall(k)->cell1()->index();
+                double fac = parameter(13)*cellData[i][aI];
+                double fac2 = parameter(14)*cellData[i][pI];
+                cellDerivs[i][aI] -= fac;
+                cellDerivs[i][pI] -= fac2;
+                cellDerivs[iNeighbor][aI] += fac;
+                cellDerivs[iNeighbor][pI] += fac2;
+            }
+            
+            else if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background()  && wallData[j][mwI]==0) {
+                // cell-cell transport
+                size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+                double fac = parameter(13)*cellData[i][aI];
+                double fac2 = parameter(14)*cellData[i][pI];
+                
+                cellDerivs[i][aI] -= fac;
+                cellDerivs[i][pI] -= fac2;
+                cellDerivs[iNeighbor][aI] += fac;
+                cellDerivs[iNeighbor][pI] += fac2;
+                
+            }
+        }
+    }
+}
+
+
+
+
+DownInternalGradientModelSingleCell::
+DownInternalGradientModelSingleCell(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=15 ) {
+    std::cerr << "DownInternalGradientModelSingleCell::"
+	      << "DownInternalGradientModelSingleCell() "
+	      << "15 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 3 ) {
+    std::cerr << "DownInternalGradientModelSingleCell::"
+	      << "DownInternalGradientModelSingleCell() "
+	      << "Two cell variable indices (first row) and three wall variable"
+	      << " indices are used (auxin,PIN, membrane marker)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("DownInternalGradientModelSingleCell");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "c_IAA";
+  tmp[1] = "d_IAA";
+  tmp[2] = "p_IAAH(in)";
+  tmp[3] = "p_IAAH(out)";
+  tmp[4] = "p_IAA-";
+  tmp[5] = "D_IAA";
+  tmp[6] = "c_PIN";
+  tmp[7] = "d_PIN";
+  tmp[8] = "endo_PIN";
+  tmp[9] = "exo_PIN";
+  tmp[10] = "K_hill";
+  tmp[11] = "n_hill";
+  tmp[12] = "endo_back";
+  tmp[13] = "D_c_auxin";
+  tmp[14] = "D_c_pin";
+  setParameterId( tmp );
+}
+
+void DownInternalGradientModelSingleCell::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);//auxin
+  size_t pI = variableIndex(0,1);//pin
+  size_t awI = variableIndex(1,0);//auxin (wall)
+  size_t pwI = variableIndex(1,1);//pin (membrane/wall)
+  size_t mwI = variableIndex(1,2);//(membrane marker)
+
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  awI<wallData[0].size() &&
+	  pwI<wallData[0].size()  &&
+	  mwI<wallData[0].size() );
+
+ for (size_t i=0; i<numCells; ++i) {
+	  
+    //Production and degradation
+    cellDerivs[i][aI] += parameter(0) - parameter(1)*cellData[i][aI];
+    cellDerivs[i][pI] += parameter(6)*cellData[i][aI]/(parameter(4)+cellData[i][aI]) - parameter(7)*cellData[i][pI];
+
+    
+    //Auxin transport and protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+      if( T.cell(i).wall(k)->cell1()->index() == i  && wallData[j][mwI]==1) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+	
+	
+	//PIN cycling
+	double 	fac = parameter(8)*wallData[j][pwI]-parameter(9)*cellData[i][pI]*std::pow(parameter(10),parameter(11))/( std::pow(parameter(10),parameter(11)) + std::pow(cellData[i][aI],parameter(11)) );
+	wallDerivs[j][pwI] -= fac;
+	cellDerivs[i][pI] += fac;
+
+
+      }
+
+if( T.cell(i).wall(k)->cell2()->index() == i  && wallData[j][mwI]==1) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+	
+double fac = parameter(8)*wallData[j][pwI+1]
+	  -parameter(9)*cellData[i][pI]*std::pow(parameter(10),parameter(11))/( std::pow(parameter(10),parameter(11)) + std::pow(cellData[i][aI],parameter(11)) ) ;
+
+	wallDerivs[j][pwI+1] -= fac;
+	cellDerivs[i][pI] += fac;
+
+
+      }
+     
+  
+  else if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background()  && wallData[j][mwI]==0) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+	double fac = parameter(13)*cellData[i][aI];
+	double fac2 = parameter(14)*cellData[i][pI];
+	
+	cellDerivs[i][aI] -= fac;
+        cellDerivs[i][pI] -= fac2;
+	cellDerivs[iNeighbor][aI] += fac;
+	cellDerivs[iNeighbor][pI] += fac2;
+
+      }
+    }
+  }
+}
+
+
+
+
+AuxinFluxModel::
+AuxinFluxModel(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=11 ) {
+    std::cerr << "AuxinFluxModel::"
+	      << "AuxinFluxModel() "
+	      << "11 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 2 ) {
+    std::cerr << "AuxinFluxModel::"
+	      << "AuxinFluxModel() "
+	      << "Two cell variable indices (first row) and two wall variable"
+	      << " indices are used (auxin,PIN)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("AuxinFluxModel");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "c_IAA";
+  tmp[1] = "d_IAA";
+  tmp[2] = "D";
+  tmp[3] = "T";
+  tmp[4] = "K";
+  tmp[5] = "n";
+  tmp[6] = "c_PIN";
+  tmp[7] = "d_PIN";
+  tmp[8] = "endo_PIN";
+  tmp[9] = "exo_PIN";
+  tmp[10] = "endo_back";
+  setParameterId( tmp );
+}
+
+void AuxinFluxModel::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);//auxin
+  size_t pI = variableIndex(0,1);//pin
+  size_t awI = variableIndex(1,0);//auxin (wall)
+  size_t pwI = variableIndex(1,1);//pin (membrane/wall)
+
+
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  awI<wallData[0].size() &&
+	  pwI<wallData[0].size() );
+
+ for (size_t i=0; i<numCells; ++i) {
+	  
+    //Production and degradation
+    cellDerivs[i][aI] += parameter(0) - parameter(1)*cellData[i][aI];
+    cellDerivs[i][pI] += parameter(6)*cellData[i][aI]/(parameter(4)+cellData[i][aI]) - parameter(7)*cellData[i][pI];
+
+    
+    //Auxin transport and protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+	double fac = parameter(2)*cellData[i][aI] + parameter(3)*cellData[i][aI]*wallData[j][pwI]; //p_2 A_i + p_4 A_i P_ij
+	
+	cellDerivs[i][aI] -= fac;
+	cellDerivs[iNeighbor][aI] += fac;
+	if (parameter(2)*cellData[i][aI]-parameter(2)*cellData[iNeighbor][aI]+parameter(3)*cellData[i][aI]*wallData[j][pwI]-parameter(3)*cellData[iNeighbor][aI]*wallData[j][pwI+1]>=0) {
+	//PIN cycling
+	fac = parameter(8)*wallData[j][pwI] -parameter(10)*cellData[i][pI]
+	 - parameter(9)*cellData[i][pI]*std::pow((parameter(2)*cellData[i][aI]-parameter(2)*cellData[iNeighbor][aI])+parameter(3)*cellData[i][aI]*wallData[j][pwI]-parameter(3)*cellData[iNeighbor][aI]*wallData[j][pwI+1],2);}
+
+	else if ((parameter(3)*cellData[i][aI]*wallData[j][pwI]-parameter(3)*cellData[iNeighbor][aI]*wallData[j][pwI+1])<0){
+	//PIN cycling
+	fac = parameter(8)*wallData[j][pwI] -parameter(10)*cellData[i][pI];}
+
+	wallDerivs[j][pwI] -= fac;
+	cellDerivs[i][pI] += fac;
+
+
+      }
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell1()->index();
+	double fac = parameter(2)*cellData[i][aI] +
+	  parameter(3)*cellData[i][aI]*wallData[j][pwI+1];
+	
+	cellDerivs[i][aI] -= fac;
+	cellDerivs[iNeighbor][aI] += fac;
+
+
+	//PIN cycling
+	if (parameter(2)*cellData[i][aI]-parameter(2)*cellData[iNeighbor][aI]-parameter(3)*cellData[iNeighbor][aI]*wallData[j][pwI]+parameter(3)*cellData[i][aI]*wallData[j][pwI+1]>=0) {
+
+	  fac = parameter(8)* wallData[j][pwI+1]-parameter(10)*cellData[i][pI]
+      -parameter(9)*cellData[i][pI]*std::pow((parameter(2)*cellData[i][aI]-parameter(2)*cellData[iNeighbor][aI])+(-parameter(3)*cellData[iNeighbor][aI]*wallData[j][pwI]+parameter(3)*cellData[i][aI]*wallData[j][pwI+1]),2);}
+ else if (-parameter(3)*cellData[iNeighbor][aI]*wallData[j][pwI]+parameter(3)*cellData[i][aI]*wallData[j][pwI+1]<0) {
+
+	fac = parameter(8)*wallData[j][pwI+1] -parameter(10)*cellData[i][pI];}
+
+
+	wallDerivs[j][pwI+1] -= fac;
+	cellDerivs[i][pI] += fac;
+      }
+    }
+  }
+}
+
+
+
+
+IntracellularPartitioning::
+IntracellularPartitioning(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=5 ) {
+    std::cerr << "IntracellularPartitioning::"
+	      << "IntracellularPartitioning() "
+	      << "5 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 2 ) {
+    std::cerr << "IntracellularPartitioning::"
+	      << "IntracellularPartitioning() "
+	      << "Two cell variable indices (first row) and two wall variable"
+	      << " indices are used (auxin,PIN)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("IntracellularPartitioning");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "phi";
+  tmp[1] = "eta";
+  tmp[2] = "mu";
+  tmp[3] = "alpha";
+  tmp[4] = "D";
+  
+ 
+  setParameterId( tmp );
+}
+
+void IntracellularPartitioning::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);
+  size_t bI = variableIndex(0,1);
+  size_t astarwI = variableIndex(1,0);
+  size_t bstarwI = variableIndex(1,1);
+
+
+  assert( aI<cellData[0].size() &&
+	  bI<cellData[0].size() &&
+	  astarwI<wallData[0].size() &&
+	  bstarwI<wallData[0].size() );
+
+ for (size_t i=0; i<numCells; ++i) {
+	  
+  
+    
+    //Auxin transport and protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
+
+
+	//PIN cycling
+	double fac = (parameter(0)+parameter(1)*wallData[j][astarwI])*cellData[i][aI]-(parameter(2)+parameter(3)*wallData[j][bstarwI])*wallData[j][astarwI];
+
+	double facB = (parameter(0)+parameter(1)*wallData[j][bstarwI])*cellData[i][bI]-(parameter(2)+parameter(3)*wallData[j][astarwI])*wallData[j][bstarwI];
+
+
+
+	wallDerivs[j][astarwI] += fac;
+	cellDerivs[i][aI] -= fac;
+	wallDerivs[j][bstarwI] += facB;
+	cellDerivs[i][bI] -= facB;
+
+      }
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
+
+	double fac = (parameter(0)+parameter(1)*wallData[j][astarwI+1])*cellData[i][aI]-(parameter(2)+parameter(3)*wallData[j][bstarwI+1])*wallData[j][astarwI+1];
+
+	double facB = (parameter(0)+parameter(1)*wallData[j][bstarwI+1])*cellData[i][bI]-(parameter(2)+parameter(3)*wallData[j][astarwI+1])*wallData[j][bstarwI+1];
+
+
+
+	wallDerivs[j][astarwI+1] += fac;
+	cellDerivs[i][aI] -= fac;
+	wallDerivs[j][bstarwI+1] += facB;
+	cellDerivs[i][bI] -= facB;
+
+      }
+    }
+  }
+}
+
+
+
+
+IntracellularCoupling::
+IntracellularCoupling(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=6 ) {
+    std::cerr << "IntracellularCoupling::"
+	      << "IntracellularCoupling() "
+	      << "6 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 2 ) {
+    std::cerr << "IntracellularCoupling::"
+	      << "IntracellularCoupling() "
+	      << "Two cell variable indices (first row) and two wall variable"
+	      << " indices are used (auxin,PIN)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("IntracellularCoupling");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "phi";
+  tmp[1] = "eta";
+  tmp[2] = "mu";
+  tmp[3] = "alpha";
+  tmp[4] = "D";
+  tmp[5] = "D";
+  
+ 
+  setParameterId( tmp );
+}
+
+void IntracellularCoupling::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);
+  size_t bI = variableIndex(0,1);
+  size_t astarwI = variableIndex(1,0);
+  size_t bstarwI = variableIndex(1,1);
+
+
+  assert( aI<cellData[0].size() &&
+	  bI<cellData[0].size() &&
+	  astarwI<wallData[0].size() &&
+	  bstarwI<wallData[0].size() );
+
+ for (size_t i=0; i<numCells; ++i) {
+	  
+  
+    
+    //Auxin transport and protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
+
+
+	//PIN cycling
+	double fac = (parameter(0)+parameter(1)*wallData[j][astarwI])*cellData[i][aI]-(parameter(2)+parameter(3)*wallData[j][bstarwI]+parameter(5)*wallData[j][bstarwI]*wallData[j][astarwI+1])*wallData[j][astarwI];
+
+      double facB = (parameter(0)+parameter(1)*wallData[j][bstarwI])*cellData[i][bI]-(parameter(2)+parameter(3)*wallData[j][astarwI])*wallData[j][bstarwI];
+
+
+
+	wallDerivs[j][astarwI] += fac;
+	cellDerivs[i][aI] -= fac;
+	wallDerivs[j][bstarwI] += facB;
+	cellDerivs[i][bI] -= facB;
+
+      }
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
+
+	double fac = (parameter(0)+parameter(1)*wallData[j][astarwI+1])*cellData[i][aI]-(parameter(2)+parameter(3)*wallData[j][bstarwI+1] +parameter(5)*wallData[j][bstarwI+1]*wallData[j][astarwI])*wallData[j][astarwI+1];
+
+	double facB = (parameter(0)+parameter(1)*wallData[j][bstarwI+1])*cellData[i][bI]-(parameter(2)+parameter(3)*wallData[j][astarwI+1])*wallData[j][bstarwI+1];
+
+
+
+	wallDerivs[j][astarwI+1] += fac;
+	cellDerivs[i][aI] -= fac;
+	wallDerivs[j][bstarwI+1] += facB;
+	cellDerivs[i][bI] -= facB;
+
+      }
+    }
+  }
+}
+
+
+
+
+
+IntracellularIndirectCoupling::
+IntracellularIndirectCoupling(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=12 ) {
+    std::cerr << "IntracellularIndirectCoupling::"
+	      << "IntracellularIndirectCoupling() "
+	      << "11 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 3 || indValue[1].size() != 3 ) {
+    std::cerr << "IntracellularIndirectCoupling::"
+	      << "IntracellularIndirectCoupling() "
+	      << "Two cell variable indices (first row) and two wall variable"
+	      << " indices are used (auxin,PIN)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("IntracellularIndirectCoupling");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "phi";
+  tmp[1] = "eta";
+  tmp[2] = "mu";
+  tmp[3] = "alpha";
+  tmp[4] = "D";
+  tmp[5] = "D";
+  tmp[6] = "alpha";
+  tmp[7] = "D";
+  tmp[8] = "D";
+  tmp[9] = "D";
+  tmp[10] = "D";
+  tmp[11] = "D";
+ 
+  setParameterId( tmp );
+}
+
+void IntracellularIndirectCoupling::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);
+  size_t bI = variableIndex(0,1);
+  size_t mI = variableIndex(0,2);
+  size_t astarwI = variableIndex(1,0);
+  size_t bstarwI = variableIndex(1,1);
+  size_t mwI = variableIndex(1,2);
+
+
+  assert( aI<cellData[0].size() &&
+	  bI<cellData[0].size() &&
+	  mI<cellData[0].size() &&
+	  astarwI<wallData[0].size() &&
+	  bstarwI<wallData[0].size()  &&
+          mwI<wallData[0].size()) ;
+
+
+ for (size_t i=0; i<numCells; ++i) {
+	  
+  
+ //Production and degradation
+    cellDerivs[i][mI] += parameter(9) - parameter(10)*cellData[i][mI];
+ 
+    
+    //Auxin transport and protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
+	double fac = parameter(11)*wallData[j][mwI];
+	wallDerivs[j][mwI] -= fac;
+	wallDerivs[j][mwI+1] += fac;
+	//PIN cycling
+	 fac = (parameter(0)+parameter(1)*wallData[j][astarwI])*cellData[i][aI]-(parameter(2)+parameter(3)*wallData[j][bstarwI]+parameter(5)*wallData[j][mwI])*wallData[j][astarwI];
+
+      double facB = (parameter(0)+parameter(1)*wallData[j][bstarwI])*cellData[i][bI]-(parameter(2)+parameter(3)*wallData[j][astarwI])*wallData[j][bstarwI];
+      double facC = -parameter(6)*wallData[j][mwI]+parameter(7)*cellData[i][mI]+parameter(8)*wallData[j][bstarwI]*cellData[i][mI];
+
+
+	wallDerivs[j][astarwI] += fac;
+	cellDerivs[i][aI] -= fac;
+	wallDerivs[j][bstarwI] += facB;
+	cellDerivs[i][bI] -= facB;
+	wallDerivs[j][mwI] += facC;
+	cellDerivs[i][mI] -= facC;
+
+      }
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
+	// wall-wall diffusion
+	wallDerivs[j][mwI+1] -= parameter(11)*wallData[j][mwI+1];
+	wallDerivs[j][mwI] += parameter(11)*wallData[j][mwI+1];
+	double fac = (parameter(0)+parameter(1)*wallData[j][astarwI+1])*cellData[i][aI]-(parameter(2)+parameter(3)*wallData[j][bstarwI+1] +parameter(5)*wallData[j][mwI+1])*wallData[j][astarwI+1];
+
+	double facB = (parameter(0)+parameter(1)*wallData[j][bstarwI+1])*cellData[i][bI]-(parameter(2)+parameter(3)*wallData[j][astarwI+1])*wallData[j][bstarwI+1];
+
+    double facC = -parameter(6)*wallData[j][mwI+1]+parameter(7)*cellData[i][mI]+parameter(8)*wallData[j][bstarwI+1]*cellData[i][mI];
+
+	wallDerivs[j][astarwI+1] += fac;
+	cellDerivs[i][aI] -= fac;
+	wallDerivs[j][bstarwI+1] += facB;
+	cellDerivs[i][bI] -= facB;
+	wallDerivs[j][mwI+1] += facC;
+	cellDerivs[i][mI] -= facC;
+
+
+
+      }
+    }
+  }
+}
 
 
 

@@ -367,7 +367,23 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new SimpleROPModel7(paraValue,indValue); 
   else if(idValue=="UpInternalGradientModel")
     return new UpInternalGradientModel(paraValue,indValue); 
- 
+   else if(idValue=="DownInternalGradientModel")
+    return new UpInternalGradientModel(paraValue,indValue); 
+  else if(idValue=="DownInternalGradientModelSingleCell")
+    return new UpInternalGradientModel(paraValue,indValue); 
+  else if(idValue=="UpExternalGradientModel")
+    return new UpInternalGradientModel(paraValue,indValue); 
+  else if(idValue=="UpInternalGradientModel")
+    return new UpInternalGradientModel(paraValue,indValue); 
+  else if(idValue=="AuxinFluxModel")
+    return new AuxinFluxModel(paraValue,indValue);  
+ else if(idValue=="IntracellularPartitioning")
+    return new IntracellularPartitioning(paraValue,indValue); 
+ else if(idValue=="IntracellularCoupling")
+    return new IntracellularCoupling(paraValue,indValue); 
+ else if(idValue=="IntracellularIndirectCoupling")
+    return new IntracellularIndirectCoupling(paraValue,indValue); 
+
   //directionReaction.h, directionUpdate.cc
   else if (idValue == "ContinousMTDirection")
     return new ContinousMTDirection(paraValue, indValue);
