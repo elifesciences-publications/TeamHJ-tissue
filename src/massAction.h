@@ -98,6 +98,84 @@ class TwoToOne : public BaseReaction {
 };
 
 
+    
+    
+    
+    ///
+    /// @brief A one way mass action reaction assume one reactants and two products in walls.
+    ///
+    ///
+    ///
+    ///
+    /// @f[ \frac{dP_ij}{dt} = k_1 R_1 R_2 @f]
+    ///
+    /// @f[ \frac{dR_ij}{dt} = - k_1 R_1 R_2 @f]
+    ///
+    ///
+    ///
+    /// In the model file the reaction is given by:
+    /// @verbatim
+    /// MassAction::OneToTwo 1 2 3 0
+    /// p_0
+    /// r_wall p1_wall P2_wall
+    /// @endverbatim
+    ///
+    class OneToTwoWall : public BaseReaction {
+        
+    public:
+        
+        OneToTwoWall(std::vector<double> &paraValue,
+                 std::vector< std::vector<size_t> >
+                 &indValue );
+        
+        void derivs(Tissue &T,
+                    DataMatrix &cellData,
+                    DataMatrix &wallData,
+                    DataMatrix &vertexData,
+                    DataMatrix &cellDerivs,
+                    DataMatrix &wallDerivs,
+                    DataMatrix &vertexDerivs );
+    };
+    
+    
+    
+    ///
+    /// @brief A one way mass action reaction assume two reactants and a single product in walls
+    ///
+    ///
+    ///
+    ///
+    /// @f[ \frac{dP}{dt} = k_1 R_1 R_2 @f]
+    ///
+    /// @f[ \frac{dR_i}{dt} = - k_1 R_1 R_2 @f]
+    ///
+    ///
+    ///
+    /// In the model file the reaction is given by:
+    /// @verbatim
+    /// MassAction::TwoToOneWall 1 2 3 0
+    /// p_0
+    /// r1_wall r2_wall P_wall
+    /// @endverbatim
+    ///
+    class TwoToOneWall : public BaseReaction {
+        
+    public:
+        
+        TwoToOneWall(std::vector<double> &paraValue,
+                 std::vector< std::vector<size_t> > 
+                 &indValue );
+        
+        void derivs(Tissue &T,
+                    DataMatrix &cellData,
+                    DataMatrix &wallData,
+                    DataMatrix &vertexData,
+                    DataMatrix &cellDerivs,
+                    DataMatrix &wallDerivs,
+                    DataMatrix &vertexDerivs );
+    };
+    
+    
 
 
 

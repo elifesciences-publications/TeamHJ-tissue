@@ -486,6 +486,10 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new MassAction::OneToTwo(paraValue, indValue);
   else if (idValue=="MassAction::TwoToOne")
     return new MassAction::TwoToOne(paraValue, indValue);
+  else if (idValue=="MassAction::OneToTwoWall")
+      return new MassAction::OneToTwoWall(paraValue, indValue);
+  else if (idValue=="MassAction::TwoToOneWall")
+      return new MassAction::TwoToOneWall(paraValue, indValue);
 
 
   // Default, if nothing found
