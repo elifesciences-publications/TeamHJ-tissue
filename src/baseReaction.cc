@@ -481,11 +481,15 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if (idValue=="MembraneCycling::CellFluxExocytosis")
     return new MembraneCycling::CellFluxExocytosis(paraValue, indValue);
 
-	 //massAction.h
+  //massAction.h
+  else if (idValue=="MassAction::General")
+    return new MassAction::General(paraValue, indValue);
   else if (idValue=="MassAction::OneToTwo")
     return new MassAction::OneToTwo(paraValue, indValue);
   else if (idValue=="MassAction::TwoToOne")
     return new MassAction::TwoToOne(paraValue, indValue);
+  else if (idValue=="MassAction::GeneralWall")
+      return new MassAction::GeneralWall(paraValue, indValue);
   else if (idValue=="MassAction::OneToTwoWall")
       return new MassAction::OneToTwoWall(paraValue, indValue);
   else if (idValue=="MassAction::TwoToOneWall")
@@ -537,7 +541,24 @@ derivs(Tissue &T,
        DataMatrix &vertexDerivs ) 
 {
   std::cerr << "BaseReaction::derivs() should not be used. "
-	    << "Should always be mapped onto one of the real types.\n";
+	    << "Should always be mapped onto one of the real types." << std::endl;
+  exit(0);
+}  
+
+void BaseReaction::
+derivsWithAbs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &walldata,
+       DataMatrix &vertexData,
+       DataMatrix &cellderivs, 
+       DataMatrix &wallderivs,
+       DataMatrix &vertexDerivs,
+       DataMatrix &sdydtCell, 
+       DataMatrix &sdydtWall,
+       DataMatrix &sdydtVertex ) 
+{
+  std::cerr << "BaseReaction::derivsWithAbs() should not be used. "
+	    << "Should always be mapped onto one of the real types." << std::endl;
   exit(0);
 }  
 

@@ -672,6 +672,7 @@ void RK4::simulate(size_t verbose)
     printTime=startTime_-tiny;
     printDeltaTime=(endTime_-startTime_)/double(numPrint_-1);
   }
+  //
   // Go
   //
   t_=startTime_;
@@ -704,10 +705,10 @@ void RK4::simulate(size_t verbose)
     // Check for discrete and reaction updates
     //
     T_->updateDirection(h_,cellData_,wallData_,vertexData_,cellDerivs_,
-												wallDerivs_,vertexDerivs_);
+			wallDerivs_,vertexDerivs_);
     T_->updateReactions(cellData_,wallData_,vertexData_,h_);
     T_->checkCompartmentChange(cellData_,wallData_,vertexData_,
-															 cellDerivs_,wallDerivs_,vertexDerivs_ );
+			       cellDerivs_,wallDerivs_,vertexDerivs_ );
     
     // Check the tissue connectivity in each step
     T_->checkConnectivity(1);

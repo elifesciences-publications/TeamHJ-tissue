@@ -59,9 +59,30 @@ public:
     template <typename ScalarType>
     struct scalar_property_definition_callback_type
     {
+      //<<<<<<< .mine
+      //return static_cast<const callbacks_element<ScalarType>&>(callbacks_).callback;
+      //}
+      //template <typename ScalarType>
+      //typename scalar_property_definition_callback_type<ScalarType>::type& get()
+      //{
+      // return static_cast<callbacks_element<ScalarType>&>(callbacks_).callback;
+      //}
+      //template <typename ScalarType>
+      //friend tpename scalar_property_definition_callback_type<ScalarType>::type& at(scalar_property_definition_callbacks_type& scalar_property_definition_callbacks)
+      //{
+      //return scalar_property_definition_callbacks.get<ScalarType>();
+      //}
+      //template <typename ScalarType>
+      //friend const typename scalar_property_definition_callback_type<ScalarType>::type& at(const scalar_property_definition_callbacks_type& scalar_property_definition_callbacks)
+      //{
+      //return scalar_property_definition_callbacks.get<ScalarType>();
+      //}
+      //};
+      //=======
         typedef typename scalar_property_callback_type<ScalarType>::type scalar_property_callback_type;
         typedef C11NSPACE::function<scalar_property_callback_type ( const std::string&, const std::string& ) > type;
     };
+    //>>>>>>> .r612
 
     typedef boost::mpl::vector<int8, int16, int32, uint8, uint16, uint32, float32, float64> scalar_types;
 

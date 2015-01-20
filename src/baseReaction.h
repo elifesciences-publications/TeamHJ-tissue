@@ -257,6 +257,47 @@ class BaseReaction {
 		      DataMatrix &wallDerivs,
 		      DataMatrix &vertexDerivs );
   ///
+  /// @brief Calculates the derivative given the state in
+  /// cell[wall,vertex]Data and adds it to cell[wall,vertex]Derivs.
+  ///
+  /// This function, together with the constructor are the main functions
+  /// needed to create a new reaction class. It calculates the time derivative
+  /// contribution from a reaction given the state in cellData, wallData, and vertexData
+  /// via the indices given
+  /// in the member variableIndex and parameters given in the member parameter
+  /// and adds the result to cellDerivs, wallDerivs, and vertexDerivs. 
+  /// The individual reaction derivs() functions are called from Tissue::derivs().
+  /// Note: The reactions need to loop over the tissue elements themselves, since this is
+  /// not done in Tissue::derivs() (unlike the similar setup in Organism::derivs()).
+  /// Note: If the derivs function is not defined for a specific reaction, this virtual
+  /// function will be called, which will exit the program.
+  ///
+  /// @see Tissue::derivs()
+  ///
+  /// @param T The Tissue is provided such that connection information and other
+  /// functions defined in the Tissue, Cells, Walls, and Vertices can be used.
+  ///
+  /// @param cellData The current state for the cells used for the update.
+  /// @param wallData The current state for the walls used for the update.
+  /// @param vertexData The current state for the vertices used for the update.
+  /// @param cellDerivs The cell derivs to which the output of the reaction is added.
+  /// @param wallDerivs The wall derivs to which the output of the reaction is added.
+  /// @param vertexDerivs The vertex derivs to which the output of the reaction is added.
+  /// @param sdydtCell Stores the absolute values of cellDerivs contributions.
+  /// @param sdydtWall Stores the absolute values of wallDerivs contributions.
+  /// @param sdydtVertex Stores the absolute values of vertexDerivs contributions.
+  ///
+  virtual void derivsWithAbs(Tissue &T,
+			     DataMatrix &cellData,
+			     DataMatrix &wallData,
+			     DataMatrix &vertexData,
+			     DataMatrix &cellDerivs,
+			     DataMatrix &wallDerivs,
+			     DataMatrix &vertexDerivs,
+			     DataMatrix &sdydtCell,
+			     DataMatrix &sdydtWall,
+			     DataMatrix &sdydtVertex );
+  ///
   /// @brief For reactions that need to update its parameters (state) during
   /// the simulation
   ///

@@ -2292,6 +2292,37 @@ void Tissue::derivs( DataMatrix &cellData,
 			cellDeriv,wallDeriv,vertexDeriv);
 }
 
+void Tissue::derivsWithAbs( DataMatrix &cellData,
+			    DataMatrix &wallData,
+			    DataMatrix &vertexData,
+			    DataMatrix &cellDeriv,
+			    DataMatrix &wallDeriv,
+			    DataMatrix &vertexDeriv,
+			    DataMatrix &sdydtCell,
+			    DataMatrix &sdydtWall,
+			    DataMatrix &sdydtVertex ) 
+{  
+  //Set all derivatives to zero
+  for( size_t i=0 ; i<cellDeriv.size() ; ++i ) {
+    std::fill(cellDeriv[i].begin(),cellDeriv[i].end(),0.0);
+    std::fill(sdydtCell[i].begin(),sdydtCell[i].end(),0.0);
+  }
+  for( size_t i=0 ; i<wallDeriv.size() ; ++i ) {
+    std::fill(wallDeriv[i].begin(),wallDeriv[i].end(),0.0);
+    std::fill(sdydtWall[i].begin(),sdydtWall[i].end(),0.0);
+  }
+  for( size_t i=0 ; i<vertexDeriv.size() ; ++i ) {
+    std::fill(vertexDeriv[i].begin(),vertexDeriv[i].end(),0.0);
+    std::fill(sdydtVertex[i].begin(),sdydtVertex[i].end(),0.0);
+  }  
+
+  //Calculate derivative contributions from all reactions
+  for( size_t r=0 ; r<numReaction() ; ++r )
+    reaction(r)->derivsWithAbs(*this,cellData,wallData,vertexData,
+			       cellDeriv,wallDeriv,vertexDeriv,
+			       sdydtCell,sdydtWall,sdydtVertex);
+}
+
 void::Tissue::initiateReactions(DataMatrix &cellData,
 				DataMatrix &wallData,
 				DataMatrix &vertexData,

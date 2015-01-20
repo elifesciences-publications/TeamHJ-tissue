@@ -628,6 +628,25 @@ class Tissue {
 	       DataMatrix &wallDeriv,
 	       DataMatrix &vertexDeriv );
   ///
+  /// @brief Calculates the derivatives given the state provided and stores also abs values of derivatives  
+  ///
+  /// A derivatives function used when integrating the
+  /// system that also provide the summed absolute values of the variables. This is used by solvers
+  /// adding noise to the update. It calls the derivsWithAbs functions for all its subclasses and
+  /// adds it all up.
+  ///
+  /// @see HeunIto 
+  ///
+  void derivsWithAbs( DataMatrix &cellData,
+		      DataMatrix &wallData,
+		      DataMatrix &vertexData,
+		      DataMatrix &cellDeriv,
+		      DataMatrix &wallDeriv,
+		      DataMatrix &vertexDeriv,
+		      DataMatrix &sdydtCell,
+		      DataMatrix &sdydtWall,
+		      DataMatrix &sdydtVertex );
+  ///
   /// @brief Initiates the variables via reactions
   ///
   /// This function is called before numerical integration of the
