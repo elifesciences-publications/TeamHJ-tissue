@@ -13,14 +13,17 @@
 #include "tissue.h"
 #include "baseCompartmentChange.h"
 
+
+
+
 ///
 /// @brief Divides a cell when volume above a threshold, with new wall perpendicular to the longest wall segment.
-///
 /// Divides a cell when volume above a threshold. New wall is created
 /// prependicular to the longest cell wall. In a model file it is defined as
+/// 
 /// @verbatim
 /// DivisionVolumeViaLongestWall 3 1 [1]
-/// V_th L^{wall}_{frac} L^{wall}_{threshold}
+/// V_th //L^{wall}_{frac} L^{wall}_{threshold}
 /// I1
 /// @endverbatim
 ///
@@ -83,6 +86,52 @@ class DivisionVolumeViaLongestWallCenterTriangulation : public BaseCompartmentCh
  public:
   
   DivisionVolumeViaLongestWallCenterTriangulation(std::vector<double> &paraValue, 
+                                                  std::vector< std::vector<size_t> > 
+                                                  &indValue );
+  int flag(Tissue *T,size_t i,
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData,
+	   DataMatrix &cellDerivs,
+	   DataMatrix &wallDerivs,
+	   DataMatrix &vertexDerivs );
+  void update(Tissue* T,size_t i,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );  
+};
+
+
+
+
+///
+/// @brief Divides a cell when volume above a threshold, with new wall perpendicular to the longest wall segment.
+///
+/// Divides a cell when volume above a threshold in 3D with centerTriangulation. New wall is created
+/// prependicular to the longest cell wall. In a model file it is defined as
+/// @verbatim
+/// DivisionVolumeViaLongestWall3DCenterTriangulation 3 2 [1] 2
+/// V_th L^{wall}_{frac} L^{wall}_{threshold}
+/// I1
+/// com index, restinglengthIndex
+/// @endverbatim
+///
+/// where @f$V_{th}@f$ is the cell volume threshold, @f$L^{wall}_{frac}@f$ is the resting length 
+/// of the new wall (1.0 sets it to the distance between the vertices, and @f$L^{wall}_{threshold}@f$ 
+/// is the smallest (relative) length of the new subwalls (i.e. if closer than this to an existing vertex
+/// it will be moved to this distance from the old vertex).
+///
+/// The list of indices given are for those variables that need to be updated due to the division,
+/// e.g. concentrations do not, the volume itself (if stored) needs to as well as molecular numbers.
+/// 
+class DivisionVolumeViaLongestWall3DCenterTriangulation : public BaseCompartmentChange {
+  
+ public:
+  
+  DivisionVolumeViaLongestWall3DCenterTriangulation(std::vector<double> &paraValue, 
                                                   std::vector< std::vector<size_t> > 
                                                   &indValue );
   int flag(Tissue *T,size_t i,
@@ -177,10 +226,10 @@ class DivisionVolumeViaLongestWallSpatial : public BaseCompartmentChange {
 	      DataMatrix &vertexDerivs );  
 };
 
-//!Divides a cell when volume above a threshold in 3D
-/*!Divides a cell when volume above a threshold. Same as
-  DivisionVolumeViaLongestWall but used for surfaces in 3D.
-*/
+/// @brief Divides a cell when volume above a threshold in 3D
+/// Divides a cell when volume above a threshold. Same as
+/// DivisionVolumeViaLongestWall but used for surfaces in 3D.
+
 class DivisionVolumeViaLongestWall3D : public BaseCompartmentChange {
   
  public:
@@ -239,10 +288,10 @@ class DivisionVolumeViaLongestWall3DSpatial : public BaseCompartmentChange {
 	      DataMatrix &vertexDerivs );  
 };
 
-//!Divides a cell when volume above a threshold
-/*!Divides a cell when volume above a threshold. New wall is created
-  prependicular to maximal strain rate.
-*/
+/// @brief Divides a cell when volume above a threshold
+/// Divides a cell when volume above a threshold. New wall is created
+///  prependicular to maximal strain rate.
+
 class DivisionVolumeViaStrain : public BaseCompartmentChange {
   
  public:
@@ -267,10 +316,10 @@ class DivisionVolumeViaStrain : public BaseCompartmentChange {
 	      DataMatrix &vertexDerivs );  
 };
 
-//!Divides a cell when volume above a threshold
-/*!Divides a cell when volume above a threshold. New wall is created
-  prependicular to direction given as cell variable.
-*/
+/// @brief Divides a cell when volume above a threshold
+/// Divides a cell when volume above a threshold. New wall is created
+/// prependicular to direction given as cell variable.
+
 class DivisionVolumeViaDirection : public BaseCompartmentChange {
   
  public:
@@ -295,10 +344,10 @@ class DivisionVolumeViaDirection : public BaseCompartmentChange {
 	      DataMatrix &vertexDerivs );  
 };
 
-//!Divides a cell when volume above a threshold
-/*!Divides a cell when volume above a threshold. New wall is created
-  in a random direction through center of mass.
-*/
+/// @brief Divides a cell when volume above a threshold
+/// Divides a cell when volume above a threshold. New wall is created
+///  in a random direction through center of mass.
+
 class DivisionVolumeRandomDirection : public BaseCompartmentChange {
   
  public:
@@ -379,10 +428,10 @@ class DivisionForceDirection : public BaseCompartmentChange
 	      DataMatrix &vertexDerivs);  
 };
 
-//!Divides a cell when volume above a threshold
-/*!Divides a cell when volume above a threshold. New wall is created at shortest
-  path that divides the volume in equal parts. 
-*/
+/// @brief Divides a cell when volume above a threshold
+/// Divides a cell when volume above a threshold. New wall is created at shortest
+/// path that divides the volume in equal parts. 
+
 class DivisionVolumeViaShortestPath : public BaseCompartmentChange {
   
  public:
@@ -406,6 +455,51 @@ class DivisionVolumeViaShortestPath : public BaseCompartmentChange {
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );  
 };
+
+
+
+
+
+
+///
+/// @brief Divides a cell when volume above a threshold, with New wall created at shortest
+///  path that divides the volume (not!) in equal parts. Using centerTriangulation and doubleLength 
+/// formats are optional and can be done by setting the coresponding flags. 
+///
+/// @verbatim
+///
+/// DivisionShortestPath 4 2 0/1 1 
+/// V_{threshold} 
+/// L^{wall}_{frac} (relative of new wall)
+/// L^{wall}_{threshold} (disallowed closeness)
+/// centerCom flag(0:random, 1:COM)
+///
+/// I1 (optional volume related index to be updated)
+///
+/// cell time index(optional)
+///
+/// @endverbatim
+///
+/// or
+///
+/// @verbatim
+///
+/// DivisionShortestPath 6 3 0/1 1 2 
+/// V_{threshold} 
+/// L^{wall}_{frac} (relative of new wall)
+/// L^{wall}_{threshold} (disallowed closeness)
+/// centerCom flag(0:random, 1:COM)
+/// centerTriangulation flag (0/1)
+/// double length flag (0/1)
+///
+/// I1 (optional volume related index to be updated)
+///
+/// cell time index(optional)
+///
+/// com index 
+/// restinglengthIndex
+///
+/// @endverbatim
 
 class DivisionShortestPath : public BaseCompartmentChange
 {
@@ -515,7 +609,7 @@ class DivisionRandom : public BaseCompartmentChange
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs);  
   
-  /** Returns an integer between 0 and n - 1. */
+  // Returns an integer between 0 and n - 1. 
   int random(int n);
 };
 
