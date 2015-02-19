@@ -698,7 +698,7 @@ derivs(Tissue &T,
   size_t dimension = vertexData[0].size();
   
   // std:: cerr<<"derives.................................... "
-  for (size_t vertex=0; vertex<numBoundaryVertices-1; vertex++){//for the boundary vertices
+  for (size_t vertex=0; vertex<numBoundaryVertices; vertex++){//for the boundary vertices
     size_t N=boundaryVertices[vertex];
     double norLength=std::abs(boundaryNormal[vertex][0])+
       std::abs(boundaryNormal[vertex][1])+
@@ -1599,12 +1599,21 @@ void scaleTemplate::initiate(Tissue &T,
   
   // Move vertices
   for( size_t VertexIndex=0 ; VertexIndex<numVertices ; ++VertexIndex ) {
-    
-       	vertexData[ VertexIndex][0]=fac*vertexData[ VertexIndex][0];
-    	vertexData[ VertexIndex][1]=fac*vertexData[ VertexIndex][1];
-    	vertexData[ VertexIndex][2]=fac*vertexData[ VertexIndex][2];
+
+    // ad-hoc
+    // if(vertexData[ VertexIndex][1]>=0)
+    //   vertexData[ VertexIndex][1]=std::pow(vertexData[ VertexIndex][1],0.75);
+       
+    // if(vertexData[ VertexIndex][1]<0)
+    //   vertexData[ VertexIndex][1]=-std::pow(-vertexData[ VertexIndex][1],0.75);
+
+
+
+    vertexData[ VertexIndex][0]=fac*vertexData[ VertexIndex][0];
+    vertexData[ VertexIndex][1]=fac*vertexData[ VertexIndex][1];
+    vertexData[ VertexIndex][2]=fac*vertexData[ VertexIndex][2];
      
-    } 
+  } 
 
   for (size_t i=0; i<numWall; ++i) {
     wallData[i][0] = fac*wallData[i][0];
@@ -1650,6 +1659,71 @@ void scaleTemplate::update(Tissue &T,
 			   double h)
 {
   
+}
+
+
+/////////////////////////////////////////////
+copyCellVector::copyCellVector(std::vector<double> &paraValue, 
+                               std::vector< std::vector<size_t> > &indValue)
+{
+  if (paraValue.size() != 0) {
+    std::cerr << "copyCellVector::copyCellVector() "
+	      << "Uses no parameter\n";
+    exit(0);
+  }
+  
+  if (indValue.size() != 1 || indValue[0].size() != 2) {
+    std::cerr << "scaleTemplate::scaleTemplate() "
+	      << "one index level with 2 indices.\n";
+    exit(0);
+  }
+	
+  setId("copyCellVector");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // std::vector<std::string> tmp(numParameter());
+  // tmp[0] = "onlyInUpdateFlag";
+  // setParameterId(tmp);
+  
+  
+}
+
+void copyCellVector::initiate(Tissue &T,
+					       DataMatrix &cellData,
+					       DataMatrix &wallData,
+					       DataMatrix &vertexData,
+					       DataMatrix &cellDerivs,
+					       DataMatrix &wallDerivs,
+					       DataMatrix &vertexDerivs)
+{
+  size_t numCells = T.numCell();
+  // copy vectors
+  for( size_t cellInd=0 ; cellInd<numCells ; ++cellInd ) {
+    cellData[cellInd][variableIndex(0,1)  ]=cellData[cellInd][variableIndex(0,0)  ];
+    cellData[cellInd][variableIndex(0,1)+1]=cellData[cellInd][variableIndex(0,0)+1];
+    cellData[cellInd][variableIndex(0,1)+2]=cellData[cellInd][variableIndex(0,0)+2];
+    cellData[cellInd][variableIndex(0,1)+3]=cellData[cellInd][variableIndex(0,0)+3];
+  } 
+  
+}
+
+void copyCellVector::derivs(Tissue &T,
+                            DataMatrix &cellData,
+                            DataMatrix &wallData,
+                            DataMatrix &vertexData,
+                            DataMatrix &cellDerivs,
+                            DataMatrix &wallDerivs,
+                            DataMatrix &vertexDerivs) 
+{
+}
+
+void copyCellVector::update(Tissue &T,
+                            DataMatrix &cellData,
+                            DataMatrix &wallData,
+                            DataMatrix &vertexData,
+                            double h)
+{
 }
 
 
