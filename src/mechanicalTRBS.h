@@ -410,6 +410,9 @@ class VertexFromTRBSMT : public BaseReaction {
 /// The value for perpendicular strain is maximal strain value.  
 
 class VertexFromTRBScenterTriangulationMT : public BaseReaction {
+private:
+  
+  
   
  public:
   ///
@@ -586,6 +589,91 @@ public:
   /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
   ///
   FiberModel(std::vector<double> &paraValue, 
+             std::vector< std::vector<size_t> > 
+             &indValue );  
+ ///
+  /// @brief Reaction initiation applied before simulation starts
+  ///
+  /// @see BaseReaction::initiate(Tissue &T,...)
+  ///
+  void initiate(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData, 
+              double h); 
+};
+
+
+
+
+///
+/// @brief Updates Young modulus of cells within "update" based on linear or nonlinear Fiber_model.
+///
+/// @details
+/// ...
+/// 
+/// In a model file the reaction is defined as
+/// @verbatim
+/// 
+/// FiberDeposition 6 1 6
+/// 
+///  k_rate
+///  initial uniform fiber 
+///  velocity threshold
+///  init flag
+///  k_hill
+///  n_hill
+///
+///  anisotropy index.
+///  misses stress index
+///  cell area index
+///  Young Fiber index
+///  Young Longitudinal Fiber index
+///  velocity index
+///
+///
+/// @endverbatim
+///
+class FiberDeposition : public BaseReaction {
+  
+public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  FiberDeposition(std::vector<double> &paraValue, 
              std::vector< std::vector<size_t> > 
              &indValue );  
  ///
