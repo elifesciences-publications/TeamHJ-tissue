@@ -17,7 +17,7 @@
 #include "wall.h"
 #include "myFiles.h"
 #include "myMath.h"
-#include "ply_reader.h"
+//#include "ply_reader.h"
 
 Tissue::Tissue() {  
   cell_.reserve(200000);
@@ -106,132 +106,132 @@ Tissue::Tissue( DataMatrix &cellData,
   //
   // set cell variables
   //
-	size_t numCellVar = cellData[0].size();
+  size_t numCellVar = cellData[0].size();
   if( numCellVar ) {
     for( size_t i=0 ; i<numCell ; ++i ) {
-			if (cellData[i].size() != numCellVar) {
-				std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
-									<< "Wrong number of variables in cell " << i << std::endl;
-				exit(-1);
-			}
+      if (cellData[i].size() != numCellVar) {
+        std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+                  << "Wrong number of variables in cell " << i << std::endl;
+        exit(-1);
+      }
       for( size_t j=0 ; j<numCellVar ; ++j ) {
-				cell(i).addVariable(cellData[i][j]);
+        cell(i).addVariable(cellData[i][j]);
       }
     }
-	}
-	//
+  }
+  //
   // Set wall data
   //
-	if (wallData[0].size() < 1) {
-		std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
-							<< " At least wall length must be given in wall variables." << std::endl; 
-		exit(-1);
-	}
-	size_t numWallVar=wallData.size();
-	for (size_t i = 0; i < numWall; ++i) {
-		if (wallData[i].size() != numWallVar) {
-			std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
-								<< "Wrong number of variables in wall " << i << std::endl;
-			exit(-1);
-		}
-		wall(i).setLength(wallData[i][0]);
-		for (size_t j=1; j<numWallVar; ++j) {
-			wall(i).addVariable(wallData[i][j]);
-		}
-	}
-	//
+  if (wallData[0].size() < 1) {
+    std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+              << " At least wall length must be given in wall variables." << std::endl; 
+    exit(-1);
+  }
+  size_t numWallVar=wallData.size();
+  for (size_t i = 0; i < numWall; ++i) {
+    if (wallData[i].size() != numWallVar) {
+      std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+                << "Wrong number of variables in wall " << i << std::endl;
+      exit(-1);
+    }
+    wall(i).setLength(wallData[i][0]);
+    for (size_t j=1; j<numWallVar; ++j) {
+      wall(i).addVariable(wallData[i][j]);
+    }
+  }
+  //
   //Set vertex positions
   //
   size_t dimension = vertexData[0].size();
-	assert( dimension==2 || dimension==3 );
+  assert( dimension==2 || dimension==3 );
   for( size_t i=0 ; i<numVertex ; ++i ) {
-		if (vertexData[i].size() != dimension) {
-			std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
-								<< "Wrong dimension in vertex " << i << std::endl;
-			exit(-1);
-		}
+    if (vertexData[i].size() != dimension) {
+      std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+                << "Wrong dimension in vertex " << i << std::endl;
+      exit(-1);
+    }
     vertex(i).setPosition(vertexData[i]);
   }
-	//
-	// Set connectivity
   //
-	// Cell-Vertex
-	//
-	if (numCell!=cellVertex.size()) {
-		std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
-							<< "Cell number in cell variables not same as in cell vertex." << std::endl;
-		exit(-1);
-	}
-	for (size_t i=0; i<numCell; ++i) {
-		size_t numCellVertex=cellVertex.size();
-		for (size_t k=0; k<numCellVertex; ++k) {
-			size_t j=cellVertex[i][k];
-			cell(i).addVertex( vertexP(j) );
-			vertex(j).addCell( cellP(i) );
-		}
-	}
+  // Set connectivity
   //
-	// Wall-Vertex
-	//
-	if (numWall!=wallVertex.size()) {
-		std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
-							<< "Wall number in wall variables not same as in wall vertex." << std::endl;
-		exit(-1);
-	}
-	for (size_t i=0; i<numWall; ++i) {
-		assert (wallVertex.size()==2);
-		size_t j1=wallVertex[i][0];
-		size_t j2=wallVertex[i][1];
-		vertex(j1).addWall( wallP(i) );
-		vertex(j2).addWall( wallP(i) );
-		wall(i).setVertex( vertexP(j1),vertexP(j2) );
-	}
-	//
-	// Cell-Wall
-	//
-	// For each wall, find one or two cells that have the same vertex pair. 
-	// If two cells connect wall with these, and if one connect wall with this and background.
-	//
-	for (size_t wI=0; wI<numWall; ++wI) {
-		size_t cellCount=0;
-		std::vector<size_t> cI(2,numCell);
-		size_t vI1=wallVertex[wI][0];
-		size_t vI2=wallVertex[wI][1];
-		for (size_t i=0; i<numCell; ++i) {
-			size_t cellVertexCount=0;
-			for (size_t k=0; k<cellVertex[i].size(); ++k) {
-				if (cellVertex[i][k]==vI1 || cellVertex[i][k]==vI2) {
-					++cellVertexCount;
-				}
-			}
-			if (cellVertexCount==2) {//cell and wall connected
-				if (cellCount>1) {
-					std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
-										<< " More than two cells found to wall " << wI << std::endl;
-					exit(-1);
-				}
-				cell(i).addWall(wallP(wI));
-				cI[cellCount] = i;
-				++cellCount;
-			}
-		}
-		if (cellCount==1) {
-			wall(wI).setCell( cellP(cI[0]),background() );
-		}
-		else if (cellCount==2) {
-			wall(wI).setCell( cellP(cI[0]),cellP(cI[1]) );
-		}
-		else {
-			std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
-								<< " Wrong number of cells found to wall " << wI << std::endl;
-			exit(-1);
-		}		
-	}
-
-	//Sort all cellWalls and cellVertices to comply with area calculations
-	//and plotting
-	sortCellWallAndCellVertex();
-	checkConnectivity(verbose);
+  // Cell-Vertex
+  //
+  if (numCell!=cellVertex.size()) {
+    std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+              << "Cell number in cell variables not same as in cell vertex." << std::endl;
+    exit(-1);
+  }
+  for (size_t i=0; i<numCell; ++i) {
+    size_t numCellVertex=cellVertex.size();
+    for (size_t k=0; k<numCellVertex; ++k) {
+      size_t j=cellVertex[i][k];
+      cell(i).addVertex( vertexP(j) );
+      vertex(j).addCell( cellP(i) );
+    }
+  }
+  //
+  // Wall-Vertex
+  //
+  if (numWall!=wallVertex.size()) {
+    std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+              << "Wall number in wall variables not same as in wall vertex." << std::endl;
+    exit(-1);
+  }
+  for (size_t i=0; i<numWall; ++i) {
+    assert (wallVertex.size()==2);
+    size_t j1=wallVertex[i][0];
+    size_t j2=wallVertex[i][1];
+    vertex(j1).addWall( wallP(i) );
+    vertex(j2).addWall( wallP(i) );
+    wall(i).setVertex( vertexP(j1),vertexP(j2) );
+  }
+  //
+  // Cell-Wall
+  //
+  // For each wall, find one or two cells that have the same vertex pair. 
+  // If two cells connect wall with these, and if one connect wall with this and background.
+  //
+  for (size_t wI=0; wI<numWall; ++wI) {
+    size_t cellCount=0;
+    std::vector<size_t> cI(2,numCell);
+    size_t vI1=wallVertex[wI][0];
+    size_t vI2=wallVertex[wI][1];
+    for (size_t i=0; i<numCell; ++i) {
+      size_t cellVertexCount=0;
+      for (size_t k=0; k<cellVertex[i].size(); ++k) {
+        if (cellVertex[i][k]==vI1 || cellVertex[i][k]==vI2) {
+          ++cellVertexCount;
+        }
+      }
+      if (cellVertexCount==2) {//cell and wall connected
+        if (cellCount>1) {
+          std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+                    << " More than two cells found to wall " << wI << std::endl;
+          exit(-1);
+        }
+        cell(i).addWall(wallP(wI));
+        cI[cellCount] = i;
+        ++cellCount;
+      }
+    }
+    if (cellCount==1) {
+      wall(wI).setCell( cellP(cI[0]),background() );
+    }
+    else if (cellCount==2) {
+      wall(wI).setCell( cellP(cI[0]),cellP(cI[1]) );
+    }
+    else {
+      std::cerr << "Tissue::Tissue(cellData,wallData,vertexData,cellVertex,wallVertex) "
+                << " Wrong number of cells found to wall " << wI << std::endl;
+      exit(-1);
+    }		
+  }
+  
+  //Sort all cellWalls and cellVertices to comply with area calculations
+  //and plotting
+  sortCellWallAndCellVertex();
+  checkConnectivity(verbose);
 }
 
 
@@ -549,22 +549,22 @@ void Tissue::readInitCenterTri(const char *initFile,int verbose) {
     //cell-vertex
     if( c1 != static_cast<size_t>(-1) ) {
       if( !cell(c1).hasVertex(v1p) ) {
-				cell(c1).addVertex( v1p );
-				vertex(v1).addCell( c1p );
+        cell(c1).addVertex( v1p );
+        vertex(v1).addCell( c1p );
       }
       if( !cell(c1).hasVertex(v2p) ) {
-				cell(c1).addVertex( v2p );
-				vertex(v2).addCell( c1p );
+        cell(c1).addVertex( v2p );
+        vertex(v2).addCell( c1p );
       }
     }
     if( c2 != static_cast<size_t>(-1) ) {
       if( !cell(c2).hasVertex(v1p) ) {
-				cell(c2).addVertex( v1p );
-				vertex(v1).addCell( c2p );
+        cell(c2).addVertex( v1p );
+        vertex(v1).addCell( c2p );
       }
       if( !cell(c2).hasVertex(v2p) ) {
-				cell(c2).addVertex( v2p );
-				vertex(v2).addCell( c2p );
+        cell(c2).addVertex( v2p );
+        vertex(v2).addCell( c2p );
       }
     }
   }
@@ -588,12 +588,12 @@ void Tissue::readInitCenterTri(const char *initFile,int verbose) {
       IN >> pos[j];
     vertex(i).setPosition(pos);
   }
-	
+  
   //Read wall data
   //
   if( verbose )
     std::cerr << "Tissue::readInit(IN) - reading wall data" << std::endl;
-	
+  
   size_t numWallTmp,numLength,numVar;
   IN >> numWallTmp;
   IN >> numLength;
@@ -606,16 +606,16 @@ void Tissue::readInitCenterTri(const char *initFile,int verbose) {
   double length;
   double value;
   for (size_t i = 0; i < numWall(); ++i) {
-	  IN >> length;
-	  wall(i).setLength(length);
-	  std::vector<double> variable;
-	  for (size_t j = 0; j < numVar; ++j) {
-	    IN >> value;
-	    variable.push_back(value);
-	  }
-	  wall(i).setVariable(variable);
+    IN >> length;
+    wall(i).setLength(length);
+    std::vector<double> variable;
+    for (size_t j = 0; j < numVar; ++j) {
+      IN >> value;
+      variable.push_back(value);
+    }
+    wall(i).setVariable(variable);
   }
-
+  
   // Read cell variables
   //
   if( verbose )
@@ -1337,9 +1337,9 @@ void Tissue::readInitMGXTriMesh( const char *initFile, int verbose )
 
 void Tissue::readInitPLYMesh(const char *initFile, int verbose)
 {
-  PLY_file ply_file(initFile);
-  PLY_reader ply_reader;
-  ply_reader.read(ply_file, *this);
+  //PLY_file ply_file(initFile);
+  //PLY_reader ply_reader;
+  //ply_reader.read(ply_file, *this);
 }
 
 void Tissue::readModel(std::ifstream &IN,int verbose) {
@@ -3402,6 +3402,36 @@ void Tissue::divideCell( Cell *divCell, size_t wI, size_t w3I,
     }
   }		
   //checkConnectivity(1);
+
+
+  
+  //    cell(Nc).sortWallAndVertex(*this);
+
+
+  
+  // for( size_t cl=0 ; cl<Nc+1 ; cl++ ){
+  //   cell(cl).sortWallAndVertex(*this);
+  //   std::cerr<<"cell "<< cl<<std::endl;    
+  //   for( size_t wl=0 ; wl<cell(cl).numWall() ; wl++ ){
+  //     std::cerr<<"wall "<< wl<<"("<<cell(cl).wall(wl)-> index()<<")"
+  //              <<" between nodes " 
+  //              <<cell(cl).wall(wl)->vertex1()-> index()<<","
+  //              <<cell(cl).wall(wl)->vertex2()-> index()
+  //              <<std::endl;
+  //   }
+    
+  // }
+  // std::cerr<<std::endl;
+  // for( size_t cl=0 ; cl<Nc+1 ; cl++ ){
+  //   std::cerr<<"cell "<< cl<<" vertices    :";    
+  //   for( size_t wl=0 ; wl<cell(cl).numWall() ; wl++ ){
+  //     std::cerr << wl<<"("<<cell(cl).vertex(wl)-> index()<<")  ";
+      
+  //   }
+  //   std::cerr<<std::endl;
+  // }
+  
+
 }
 
 
@@ -3817,386 +3847,11 @@ void Tissue::branchCell( Cell *brCell, size_t wI,
 
 
 
-void Tissue::
-divideCellCenterTriangulation( Cell *divCell, size_t b, size_t e, size_t centerIndex,
-			       DataMatrix &cellData,
-			       DataMatrix &wallData,
-			       DataMatrix &vertexData,
-			       DataMatrix &cellDeriv,
-			       DataMatrix &wallDeriv,
-			       DataMatrix &vertexDeriv,
-			       std::vector<size_t> &volumeChangeList )
-{
-  // size_t dimension=vertexData[0].size();
-  // size_t cellIndex = divCell->index();
-  // std::vector<double> centerPosition(dimension);
-  // for (size_t i=0; i<dimension; i++ ) {
-  //   centerPosition[i] = cellData[cellIndex][centerIndex+i];
-  // }
-  
-//   //=================================================================
-//   // Changing the indices - new cells vs original cell
-//   //=================================================================  
-//   size_t nv = divCell->numVertex();
-//   size_t nvLeft,nvRight;
-//   if (e>b) {
-//     nvLeft=e-b+4;
-//     nvRight=b-e+4+nv;
-//   }
-//   else {
-//     nvLeft=e-b+4+nv;
-//     nvRight=e-b+4;
-//   }
-//   // LHS
-//   std::vector<double> tmpPosition(dimension);
-//   std::vector<Vertex*> vertexLeft(nvLeft);
-//   std::vector<Wall*> wallLeft(nvLeft);
-//   vertexLeft[0] = new Vertex(centerPosition,numVertex());
-//   vertexData.push_back(centerPosition);
-//   vertexLeft[1]= divCell->vertex(b);
-//   wallLeft[0] = new Wall(0.0,numWall());
-//   wallData.push_back(wallData[0]);
-//   size_t v1 = divCell->vertex(b)->index();
-//   size_t v2 = divCell->vertex((b+1)%nv)->index();
-//   for (size_t d=0; d<dimension; ++d)
-//     tmpPosition[d] = 0.5*(vertexData[v1][d]+vertexData[v2][d]);
-//   vertexLeft[2] = new Vertex(tmpPosition,numVertex()+1); //middle point of b & (b+1)mod(nv);
-//   vertexData.push_back(tmpPosition);
-
-//   for (size_t i=3; i<nvLeft-2; ++i)
-//     vertexLeft[i] = divCell->vertex( (b+i-2)%nv );
-  
-//   v1 = divCell->vertex(e)->index();
-//   v2 = divCell->vertex((e+nv-1)%nv)->index();
-//   for (size_t d=0; d<dimension; ++d)
-//     tmpPosition[d] = 0.5*(vertexData[v1][d]+vertexData[v2][d]);
-//   vertexLeft[nvLeft-2]= new Vertex(tmpPosition,numVertex()+2);//middle point of (e-1)mod(nv) & e;
-//   vertexData.push_back(tmpPosition);
-
-//   vertexLeft[nvLeft-1]=divCell->vertex(e);
-
-//   // Add vertices to cell Left
-//   Cell Left(cellIndex,"");
-//   for (size_t i=0; i<nvLeft; ++i)
-//     Left.addVertex(vertexLeft[i]);
-
-//   //RHS
-//   std::vector<Vertex*> vertexRight(nvRight);
-//   vertexRight[0]=vertexLeft[0];
-//   vertexRight[1]=divCell->vertex(e);
-
-//   v1 = divCell->vertex(e)->index();
-//   v2 = divCell->vertex((e+1)%nv)->index();
-//   for (size_t d=0; d<dimension; ++d)
-//     tmpPosition[d] = 0.5*(vertexData[v1][d]+vertexData[v2][d]);
-//   vertexRight[2] = new Vertex(tmpPosition,numVertex()+3); //middle point of e & (e+1)mod(nv);
-//   vertexData.push_back(tmpPosition);
-
-//   for (size_t i=3; i<nvLeft-2; ++i)
-//     vertexRight[i] = divCell->vertex( (e+i-2)%nv );
-
-//   v1 = divCell->vertex(b)->index();
-//   v2 = divCell->vertex((b+nv-1)%nv)->index();
-//   for (size_t d=0; d<dimension; ++d)
-//     tmpPosition[d] = 0.5*(vertexData[v1][d]+vertexData[v2][d]);
-//   vertexRight[nvRight-2]= new Vertex(tmpPosition,numVertex()+4);//middle point of (b-1)mod(nv) & b;
-//   vertexData.push_back(tmpPosition);
-
-//   vertexRight[nvRight-1]=divCell->vertex(b);
-
-//   // Add vertices to cell Right
-//   Cell Right(numCell(),"");
-//   for (size_t i=0; i<nvRight; ++i)
-//     Right.addVertex(vertexRight[i]);
-//   cellData.push_back(cellData[cellIndex]);
-
-  
-//   //=====================================
-//   // Selecting centers of new cells
-//   //===================================== 
-//   // choosing the best line for LEFT cell
-//   double areaTemp=0;
-//   std::vector<double> subareaTemp(nvLeft-4);
-//   size_t counter=0;
-//   subareaTemp[counter] = myMath::areaTriangle(vertexLeft[0]->position(),
-// 					      vertexLeft[1]->position(),
-// 					      vertexLeft[3]->position());
-//   counter++;
-//   for (size_t i=3; i<nvLeft-3; ++i) {
-//     subareaTemp[counter] = subareaTemp[counter-1] +
-//       myMath::areaTriangle(vertexLeft[0]->position(),
-// 			   vertexLeft[i]->position(),
-// 			   vertexLeft[i+1]->position());
-//     counter++;
-//   }
-//   subareaTemp[counter] = subareaTemp[counter-1] +
-//     myMath::areaTriangle(vertexLeft[0]->position(),
-// 			 vertexLeft[nvLeft-3]->position(),
-// 			 vertexLeft[nvLeft-1]->position());  
-//   areaTemp = subareaTemp[counter];
-//   double halfArea = 0.5*areaTemp;
-  
-//   double bestArea = std::abs(subareaTemp[0]-halfArea);
-//   size_t bestTri = 0;
-//   size_t bestVert = 3;
-//   counter = 1;
-//   for (size_t i=3; i<nvLeft-3; ++i) {
-//     if (std::abs(subareaTemp[counter]-halfArea)<bestArea ) { 
-//       bestVert= i+1;
-//       bestTri = counter;
-//       bestArea = std::abs(subareaTemp[counter]-halfArea);
-//     }
-//     counter++;
-//   }
-//   size_t eLeft=bestVert;
-//   std::vector<double> cLeft(dimension);
-//   for (size_t d=0; d<dimension; ++d)
-//     cLeft[d] = 0.5*(vertexLeft[0]->position(d)+vertexLeft[eLeft]->position(d));
-
-//   // choosing the best line for RIGHT cell
-//   areaTemp=0;
-//   subareaTemp.resize(nvRight-4);
-//   counter=0;
-//   subareaTemp[counter] = myMath::areaTriangle(vertexRight[0]->position(),
-// 					      vertexRight[1]->position(),
-// 					      vertexRight[3]->position());
-//   counter++;
-//   for (size_t i=3; i<nvRight-3; ++i) {
-//     subareaTemp[counter] = subareaTemp[counter-1] +
-//       myMath::areaTriangle(vertexRight[0]->position(),
-// 			   vertexRight[i]->position(),
-// 			   vertexRight[i+1]->position());
-//     counter++;
-//   }
-//   subareaTemp[counter] = subareaTemp[counter-1] +
-//     myMath::areaTriangle(vertexRight[0]->position(),
-// 			 vertexRight[nvRight-3]->position(),
-// 			 vertexRight[nvRight-1]->position());  
-//   areaTemp = subareaTemp[counter];
-//   halfArea = 0.5*areaTemp;
-  
-//   bestArea = std::abs(subareaTemp[0]-halfArea);
-//   bestTri = 0;
-//   bestVert = 3;
-//   counter = 1;
-//   for (size_t i=3; i<nvRight-3; ++i) {
-//     if (std::abs(subareaTemp[counter]-halfArea)<bestArea ) { 
-//       bestVert= i+1;
-//       bestTri = counter;
-//       bestArea = std::abs(subareaTemp[counter]-halfArea);
-//     }
-//     counter++;
-//   }
-//   size_t eRight=bestVert;
-//   std::vector<double> cRight(dimension);
-//   for (size_t d=0; d<dimension; ++d)
-//     cRight[d] = 0.5*(vertexRight[0]->position(d)+vertexRight[eRight]->position(d));
-
-// //===============================
-// // Calculating resting shape
-// //===============================
-
-// //LHS angles
-//   std::vector<double> angleLeftCell(nvLeft);
-//   std::vector<double> angleLeftCellL(nvLeft);
-//   std::vector<double> angleLeftCellR(nvLeft);
-//   size_t edgeStart = centerIndex+dimension;//internal edges start at this index in cellData
-//   angleLeftCellL[0]=0.0;
-//   for (size_t i=1; i<eLeft-1; ++i) {
-//     size_t eI1 = edgeStart+((b+i-1)%nv);
-//     size_t eI2 = edgeStart+((b+i)%nv);
-//     size_t wI = divCell->wall((b+i-1)%nv)->index();
-//     double a = ( cellData[cellIndex][eI1]*cellData[cellIndex][eI1]
-// 		 + cellData[cellIndex][eI2]*cellData[cellIndex][eI2]
-// 		 - wallData[wI][0]*wallData[wI][0] )  
-//       / (2.0*cellData[cellIndex][eI1]*cellData[cellIndex][eI2]);
-//     angleLeftCellL[0] += std::acos(a);
-//   }
-  
-//   size_t eI1 = edgeStart+b;
-//   size_t eI2 = edgeStart+((b+1)%nv);
-//   size_t wI = divCell->wall(b)->index();
-//   double a = ( cellData[cellIndex][eI1]*cellData[cellIndex][eI1]
-// 	       +wallData[wI][0]*wallData[wI][0]
-// 	       -cellData[cellIndex][eI2]*cellData[cellIndex][eI2] ) 
-//     / (2.0*cellData[cellIndex][eI1]*wallData[wI][0]);
-//   angleLeftCell[1] = std::acos(a);
-  
-//   angleLeftCell[2]=myMath::pi();
-  
-//   for (size_t i=3; i<nvLeft-2; ++i) {
-//     eI1 = edgeStart+((b+i-3)%nv);
-//     eI2 = edgeStart+((b+i-2)%nv);
-//     wI = divCell->wall((b+i-3)%nv)->index();
-//     double ar = ( cellData[cellIndex][eI2]*cellData[cellIndex][eI2]
-// 		  +wallData[wI][0]*wallData[wI][0]
-// 		  -cellData[cellIndex][eI1]*cellData[cellIndex][eI1])  / 
-//       (2.0*cellData[cellIndex][eI2]*wallData[wI][0]);
-    
-//     eI1 = edgeStart+((b+i-1)%nv);
-//     eI2 = edgeStart+((b+i-2)%nv);
-//     wI = divCell->wall((b+i-2)%nv)->index();
-//     double al = ( cellData[cellIndex][eI2]*cellData[cellIndex][eI2]
-// 		  +wallData[wI][0]*wallData[wI][0]
-// 		  -cellData[cellIndex][eI1]*cellData[cellIndex][eI1] )
-//       / (2.0*cellData[cellIndex][eI2]*wallData[wI][0]);
-//     angleLeftCell[i]=std::acos(ar)+std::acos(al);
-//   } 
-  
-//   angleLeftCell[nvLeft-2]=myMath::pi();
-  
-//   eI1 = edgeStart+e;
-//   eI2 = edgeStart+((nv+e-1)%nv);
-//   wI = divCell->wall(nv+e-1)->index();
-//   a = ( cellData[cellIndex][eI1]*cellData[cellIndex][eI1]
-// 	+wallData[wI][0]*wallData[wI][0]
-// 	-cellData[cellIndex][eI2]*cellData[cellIndex][eI2] ) 
-//     / (2.0*cellData[cellIndex][eI1]*wallData[wI][0]);
-//   angleLeftCell[nvLeft-1] = std::acos(a);
-  
-//   //RHS angles
-//   std::vector<double> angleRightCell(nvRight);
-//   std::vector<double> angleRightCellL(nvRight);
-//   std::vector<double> angleRightCellR(nvRight);
-//   angleRightCellL[0]=0.0;
-//   for (size_t i=1; i<eRight-1; ++i) {
-//     eI1 = edgeStart+((e+i-1)%nv);
-//     eI2 = edgeStart+((e+i)%nv);
-//     wI = divCell->wall((e+i-1)%nv)->index();
-//     a = ( cellData[cellIndex][eI1]*cellData[cellIndex][eI1]
-// 	  + cellData[cellIndex][eI2]*cellData[cellIndex][eI2]
-// 	  - wallData[wI][0]*wallData[wI][0] )  
-//       / (2.0*cellData[cellIndex][eI1]*cellData[cellIndex][eI2]);
-//     angleRightCellL[0] += std::acos(a);
-//   }
-  
-//   eI1 = edgeStart+e;
-//   eI2 = edgeStart+((e+1)%nv);
-//   wI = divCell->wall(e)->index();
-//   a = ( cellData[cellIndex][eI1]*cellData[cellIndex][eI1]
-// 	+wallData[wI][0]*wallData[wI][0]
-// 	-cellData[cellIndex][eI2]*cellData[cellIndex][eI2] ) 
-//     / (2.0*cellData[cellIndex][eI1]*wallData[wI][0]);
-//   angleRightCell[1] = std::acos(a);
-  
-//   angleRightCell[2]=myMath::pi();
-  
-//   for (size_t i=3; i<nvRight-2; ++i) {
-//     eI1 = edgeStart+((e+i-3)%nv);
-//     eI2 = edgeStart+((e+i-2)%nv);
-//     wI = divCell->wall((e+i-3)%nv)->index();
-//     double ar = ( cellData[cellIndex][eI2]*cellData[cellIndex][eI2]
-// 		  +wallData[wI][0]*wallData[wI][0]
-// 		  -cellData[cellIndex][eI1]*cellData[cellIndex][eI1])  / 
-//       (2.0*cellData[cellIndex][eI2]*wallData[wI][0]);
-    
-//     eI1 = edgeStart+((e+i-1)%nv);
-//     eI2 = edgeStart+((e+i-2)%nv);
-//     wI = divCell->wall((e+i-2)%nv)->index();
-//     double al = ( cellData[cellIndex][eI2]*cellData[cellIndex][eI2]
-// 		  +wallData[wI][0]*wallData[wI][0]
-// 		  -cellData[cellIndex][eI1]*cellData[cellIndex][eI1] )
-//       / (2.0*cellData[cellIndex][eI2]*wallData[wI][0]);
-//     angleRightCell[i]=std::acos(ar)+std::acos(al);
-//   } 
-  
-//   angleRightCell[nvRight-2]=myMath::pi();
-  
-//   eI1 = edgeStart+b;
-//   eI2 = edgeStart+((nv+b-1)%nv);
-//   wI = divCell->wall(nv+b-1)->index();
-//   a = ( cellData[cellIndex][eI1]*cellData[cellIndex][eI1]
-// 	+wallData[wI][0]*wallData[wI][0]
-// 	-cellData[cellIndex][eI2]*cellData[cellIndex][eI2] ) 
-//     / (2.0*cellData[cellIndex][eI1]*wallData[wI][0]);
-//   angleRightCell[nvRight-1] = std::acos(a);
-  
-//   //LHS walls
-//   std::vector<double> wallLeft(nvLeft);
-//   wallLeft[0]=cellData[cellIndex][edgeStart+b];
-//   wI = divCell->wall(b)->index();
-//   wallLeft[1]=wallLeft[2]=0.5*wallData[wI][0];
-//   for (size_t i=3; i<nvLeft-3; ++i) { 
-//     wI = divCell->wall((b+i-2)%nv)->index();
-//     wallLeft[i]=wallData[wI][0];
-//   }
-//   wI = divCell->wall((nv+e-1)%nv)->index();
-//   wallLeft[nvLeft-3]=wallLeft[nvLeft-2]=0.5*wallData[wI][0];
-//   wallLeft[nvLeft-1]=cellData[cellIndex][edgeStart+e];
-  
-//   //LHS internal edges
-//   std::vector<double> internalWallLeft(nvLeft);
-//   double ratio=0.5;
-//   internalWallLeft[0] = ratio*cellData[cellIndex][edgeStart+((b+eLeft-2)%nv)];
-
-//   internalWallLeft[1] = std::sqrt(internalWallLeft[0]*internalWallLeft[0] + 
-// 				  wallLeft[0]*wallLeft[0] - 
-// 				  2*internalWallLeft[0]*wallLeft[0]*std::cos(angleLeftCellL[0]));
-
-//   angleLeftCellR[1] = std::acos((WallLeft[0]*WallLeft[0]+internalWallLeft[1]*internalWallLeft[1]-internalWallLeft[0]*internalWallLeft[0])
-//                                 /(2*WallLeft[0]*internalWallLeft[1]));
-//   angleLeftCellL[1] = angleLeftCell[1]-angleLeftCellR[1];
- 
-//   for (size_t i=2; i<nvLeft; ++i) {
-//     internalWallLeft[i] = std::sqrt( internalWallLeft[i-1]*internalWallLeft[i-1] + 
-// 				     wallLeft[i-1]*wallLeft[i-1]
-// 				     -2.0*internalWallLeft[i-1]*wallLeft[i-1]*
-// 				     std::cos(angleLeftCellL[i-1]) );
-//     angleLeftCellR[i]=std::acos((WallLeft[i-1]*WallLeft[i-1]+internalWallLeft[i]*internalWallLeft[i]-internalWallLeft[i-1]*internalWallLeft[i-1])
-//                                 /(2*WallLeft[i-1]*internalWallLeft[i]));
-//     angleLeftCellL[i]=angleLeftCell[i]-angleLeftCellR[i];
-//     }
-//   //this must be consistant with above equations:
-//   // internalWallLeft[eLeft]=(1-ratio)*internalWallOld[(b+eLeft-2)mod(nv)]; 
-  
-// //RHS walls
-//   std::vector<double> wallRight(nvRight);
-//   wallRight[0]=cellData[cellIndex][edgeStart+e];
-//   wI = divCell->wall(e)->index();
-//   wallRight[1]=wallRight[2]=0.5*wallData[wI][0];
-//   for (size_t i=3; i<nvRight-3; ++i) { 
-//     wI = divCell->wall((e+i-2)%nv)->index();
-//     wallRight[i]=wallData[wI][0];
-//   }
-//   wI = divCell->wall((nv+b-1)%nv)->index();
-//   wallRight[nvRight-3]=wallRight[nvRight-2]=0.5*wallData[wI][0];
-//   wallRight[nvRight-1]=cellData[cellIndex][edgeStart+b];
-  
-//   //RHS internal edges
-//   std::vector<double> internalWallRight(nvRight);
-//   internalWallRight[0] = ratio*cellData[cellIndex][edgeStart+((e+eRight-2)%nv)];
-
-//   internalWallRight[1] = std::sqrt(internalWallRight[0]*internalWallRight[0] + 
-// 				  wallRight[0]*wallRight[0] - 
-// 				  2*internalWallRight[0]*wallRight[0]*std::cos(angleRightCellL[0]));
-
-//   angleRightCellR[1] = std::acos((WallRight[0]*WallRight[0]+internalWallRight[1]*internalWallRight[1]-internalWallRight[0]*internalWallRight[0])
-//                                 /(2*WallRight[0]*internalWallRight[1]));
-
-//   angleRightCellL[1] = angleRightCell[1]-angleRightCellR[1];
- 
-//   for (size_t i=2; i<nvRight; ++i) {
-//     internalWallRight[i] = std::sqrt( internalWallRight[i-1]*internalWallRight[i-1] + 
-// 				      wallRight[i-1]*wallRight[i-1]
-// 				      -2.0*internalWallRight[i-1]*wallRight[i-1]*
-// 				      std::cos(angleRightCellL[i-1]) );
-//     angleRightCellR[i]=std::acos((WallRight[i-1]*WallRight[i-1]+internalWallRight[i]*internalWallRight[i]-internalWallRight[i-1]*internalWallRight[i-1])
-//                                 /(2*WallRight[i-1]*internalWallRight[i]));
-
-//     angleRightCellL[i]=angleRightCell[i]-angleRightCellR[i];
-//   }
-//   //this must be consistant with above equations:
-//   // internalWallRight[eRight]=(1-ratio)*internalWallOld[(e+eRight-2)mod(nv)]; 
-}
 
 
-
-
-
-////////////////////////// begin dividecellCentertiangulation
 
 void Tissue::
-divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I, 
+divideCellCenterTriangulation( Cell *divCell, size_t wI, size_t w3I, 
                                size_t centerIndex,size_t wallLengthIndex, 
                                std::vector<double> &v1Pos,
                                std::vector<double> &v2Pos,
@@ -4207,7 +3862,8 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
                                DataMatrix &wallDeriv,
                                DataMatrix &vertexDeriv,
                                std::vector<size_t> &volumeChangeList,
-                               double threshold) 
+                               double threshold,
+                               size_t doubleFlag) 
 
 {	
   size_t Nc=numCell(),Nw=numWall(),Nv=numVertex();
@@ -4215,6 +3871,138 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
   size_t dimension = vertexData[0].size();
   size_t numCellWalls=cell(cellIndex).numWall();
   size_t lengthInternalIndex=centerIndex+dimension;
+  size_t wIindex=cell(cellIndex).wall(wI) -> index();
+  size_t w3Iindex=cell(cellIndex).wall(w3I) -> index();
+
+
+
+  // storing internal walls of the neghbor cells if they exist
+  size_t cellWI, cellW3I;
+  bool WIhasNeighbor,W3IhasNeighbor;
+  WIhasNeighbor=false;
+  W3IhasNeighbor=false;
+ 
+  if( cell(cellIndex).wall(wI)->cell1()->index()==cellIndex &&
+      cell(cellIndex).wall(wI)->cell2() != background() ){
+    cellWI=cell(cellIndex).wall(wI)->cell2()->index();
+    WIhasNeighbor=true;
+  }
+  else if( cell(cellIndex).wall(wI)->cell2()->index()==cellIndex &&
+           cell(cellIndex).wall(wI)->cell1() != background() ){
+    cellWI=cell(cellIndex).wall(wI)->cell1()->index();
+    WIhasNeighbor=true;
+  }
+  else if( cell(cellIndex).wall(wI)->cell1()->index() != cellIndex &&
+           cell(cellIndex).wall(wI)->cell2()->index() != cellIndex ){
+    std::cerr << "Tissue::divideCell() "
+              << "Wall wI not connected to dividing cell" 
+              << std::endl;
+    exit(-1);
+  }
+   
+  if(cell(cellIndex).wall(w3I)->cell1()->index()==cellIndex &&
+     cell(cellIndex).wall(w3I)->cell2() != background() ){
+    cellW3I=cell(cellIndex).wall(w3I)->cell2()->index();
+    W3IhasNeighbor=true;   
+  }
+  else if( cell(cellIndex).wall(w3I)->cell2()->index()==cellIndex &&
+           cell(cellIndex).wall(w3I)->cell1() != background() ){
+    cellW3I=cell(cellIndex).wall(w3I)->cell1()->index();           
+    W3IhasNeighbor=true;   
+  }
+  else if( cell(cellIndex).wall(w3I)->cell1()->index() != cellIndex &&
+           cell(cellIndex).wall(w3I)->cell2()->index() != cellIndex ){
+    std::cerr << "Tissue::divideCell() "
+              << "Wall w3I not connected to dividing cell" 
+              << std::endl;
+    exit(-1);
+  }
+
+ 
+  // storing growing component of the main walls of the dividing cell and its neighbors 
+  // and internal length of the neighbors.
+  std::vector<std::vector<double> > cellL, cellWIL, cellWIintL, cellW3IL, cellW3IintL;
+  if (doubleFlag==1){ // if double resting length
+    cellL.resize(cell(cellIndex).numWall());
+    for(size_t kk=0; kk<cell(cellIndex).numWall(); kk++){
+      cellL[kk].resize(2);
+      cellL[kk][0]=cell(cellIndex).wall(kk) -> index();
+      cellL[kk][1]=cellData[cellIndex][centerIndex+dimension+2*cell(cellIndex).numWall()+kk];
+    }  
+    
+    if(WIhasNeighbor){
+      size_t numWal=cell(cellWI).numVertex();
+      cellWIL.resize(numWal);      
+      cellWIintL.resize(2*numWal);
+      for(size_t kk=0; kk<numWal; ++kk){
+        
+        cellWIintL[2*kk].resize(3); // vertex and wall indices + internal wall length
+        cellWIintL[2*kk+1].resize(3);
+        cellWIL[kk].resize(2); // wall index and wall length
+
+        cellWIintL[2*kk][1]=cell(cellWI).wall((kk+numWal-1)%numWal) -> index();
+        cellWIintL[2*kk+1][1]=cell(cellWI).wall(kk) -> index();
+       
+        cellWIintL[2*kk][0]=cell(cellWI).vertex(kk) -> index();
+        cellWIintL[2*kk+1][0]=cell(cellWI).vertex(kk) -> index();
+
+        cellWIintL[2*kk][2]=cellData[cellWI][centerIndex+dimension+2*kk];
+        cellWIintL[2*kk+1][2]=cellData[cellWI][centerIndex+dimension+2*kk+1];
+
+        cellWIL[kk][0]=cell(cellWI).wall(kk) -> index();
+        cellWIL[kk][1]=cellData[cellWI][centerIndex+dimension+2*numWal+kk];
+
+      }
+    }
+
+    if(W3IhasNeighbor){
+      size_t numWal=cell(cellW3I).numVertex();
+      cellW3IL.resize(numWal);      
+      cellW3IintL.resize(2*numWal);
+      
+      for(size_t kk=0; kk<numWal; ++kk){
+        
+        cellW3IintL[2*kk].resize(3); // vertex and wall indices + internal wall length
+        cellW3IintL[2*kk+1].resize(3);
+        cellW3IL[kk].resize(2); // wall index and wall length
+        
+        cellW3IintL[2*kk][1]=cell(cellW3I).wall((kk+numWal-1)%numWal) -> index();
+        cellW3IintL[2*kk+1][1]=cell(cellW3I).wall(kk) -> index();
+        
+        cellW3IintL[2*kk][0]=cell(cellW3I).vertex(kk) -> index();
+        cellW3IintL[2*kk+1][0]=cell(cellW3I).vertex(kk) -> index();
+        cellW3IintL[2*kk][2]=cellData[cellW3I][centerIndex+dimension+2*kk];
+        cellW3IintL[2*kk+1][2]=cellData[cellW3I][centerIndex+dimension+2*kk+1];
+
+        cellW3IL[kk][0]=cell(cellW3I).wall(kk) -> index();
+        cellW3IL[kk][1]=cellData[cellW3I][centerIndex+dimension+2*numWal+kk];
+
+      }
+    }
+    // for(size_t z=0; z<cellW3IL.size(); z++) // go through the cellW3IL vector
+    //   std::cerr<<cellData[cellW3I][centerIndex+dimension+2*cell(cellW3I).numVertex()+z] <<"  ";      
+
+  }
+  else if(doubleFlag==0){// if single resting length with averaging
+    if(WIhasNeighbor){
+      cellWIintL.resize(cell(cellWI).numVertex()); 
+      for(size_t kk=0; kk<cell(cellWI).numVertex(); kk++){
+        cellWIintL[kk].resize(2);
+        cellWIintL[kk][0]=cell(cellWI).vertex(kk) -> index();
+        cellWIintL[kk][1]=cellData[cellWI][centerIndex+dimension+kk];
+      }
+    }
+    if(W3IhasNeighbor){
+      cellW3IintL.resize(cell(cellW3I).numVertex()); 
+      for(size_t kk=0; kk<cell(cellW3I).numVertex(); kk++){
+        cellW3IintL[kk].resize(2);
+        cellW3IintL[kk][0]=cell(cellW3I).vertex(kk) -> index();
+        cellW3IintL[kk][1]=cellData[cellW3I][centerIndex+dimension+kk];
+      }
+    }
+  }
+
+  
   // calculating the averaged strain tensor of the cell
   ////////////begin strain
   double StrainCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};  
@@ -4238,15 +4026,22 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
     
     
     
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    
     // Resting lengths are from com-vertex(wallindex), 
     // vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
     std::vector<double> restingLength(3);
-    restingLength[0] = cellData[cellIndex][lengthInternalIndex + wallindex];
-    restingLength[1] = wallData[w2][wallLengthIndex];
-    restingLength[2] = cellData[cellIndex][lengthInternalIndex + kPlusOneMod];
+    if(doubleFlag==1){ // double resting length
+      restingLength[0] = cellData[cellIndex][lengthInternalIndex + 2*wallindex+1];
+      //restingLength[1] = wallData[w2][wallLengthIndex]+wallData[w2][wallLengthIndex+restAddIndex];
+      restingLength[1] = wallData[w2][wallLengthIndex]+
+        cellData[cellIndex][lengthInternalIndex+2*numCellWalls+wallindex];
+      restingLength[2] = cellData[cellIndex][lengthInternalIndex + 2*kPlusOneMod];      
+    }
+    else if(doubleFlag==0){    // single resting length
+      restingLength[0] = cellData[cellIndex][lengthInternalIndex + wallindex];
+      restingLength[1] = wallData[w2][wallLengthIndex];
+      restingLength[2] = cellData[cellIndex][lengthInternalIndex + kPlusOneMod];
+    }
+
     // Lengths are from com-vertex(wallindex), 
     // vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
     std::vector<double> length(3);
@@ -4353,11 +4148,11 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
     // STRAIN:
     
     double DeformGrad[2][2]={{0,0},{0,0}}; // F=Sigma i Qi x Di ----------------------
-    for ( int i=0 ; i<3 ; ++i ) {
-      DeformGrad[0][0]=DeformGrad[0][0]+positionLocal[i][0]*ShapeVectorResting[i][0];
-      DeformGrad[1][0]=DeformGrad[1][0]+positionLocal[i][1]*ShapeVectorResting[i][0];
-      DeformGrad[0][1]=DeformGrad[0][1]+positionLocal[i][0]*ShapeVectorResting[i][1];
-      DeformGrad[1][1]=DeformGrad[1][1]+positionLocal[i][1]*ShapeVectorResting[i][1];
+    for ( int ii=0 ; ii<3 ; ++ii ) {
+      DeformGrad[0][0]=DeformGrad[0][0]+positionLocal[ii][0]*ShapeVectorResting[ii][0];
+      DeformGrad[1][0]=DeformGrad[1][0]+positionLocal[ii][1]*ShapeVectorResting[ii][0];
+      DeformGrad[0][1]=DeformGrad[0][1]+positionLocal[ii][0]*ShapeVectorResting[ii][1];
+      DeformGrad[1][1]=DeformGrad[1][1]+positionLocal[ii][1]*ShapeVectorResting[ii][1];
     } 
     
     
@@ -4574,12 +4369,30 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
   //   maximalStrainValue=maximalStrainValue2;
   //   maximalStrainValue2=maximalStrainValue3; 
   //}
-  
-  
+  //std::cerr<<std::endl;
+  std::cerr<<" in the cell "<<cellIndex<<std::endl
+           <<"  strain before "
+           <<maximalStrainValue <<"  "
+           <<maximalStrainValue2<<"  "
+           <<maximalStrainValue3<<"  "<<std::endl;
 
   //////////// end strain
+  
+  std::vector<double> centroid(3);
+  for( size_t ind=0; ind<cell(cellIndex).numWall(); ++ind )
+    for( size_t d=0; d<dimension; ++d ){
+      centroid[d]+=vertexData[cell(cellIndex).vertex(ind) -> index()][d];
+    }
+  
+  for( size_t d=0; d<dimension; ++d ){
+    centroid[d]/=cell(cellIndex).numWall();
+  }
+  
 
-
+  std::vector<double> centroidNorm(3);
+  for( size_t d=0; d<dimension; ++d ){
+    centroidNorm[d]=cellData[cellIndex][centerIndex+d]-centroid[d];
+  }
 
   //Move new vertices if closer than threshold to old vertex
   if( threshold>=0.0 ) {
@@ -4673,10 +4486,40 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
   tmpWall.setIndex(Nw);
   addWall(tmpWall);
   wallData.resize(Nw+1,wallData[0]);
-  double tmpLength = 0.0;
+  // the new wall calculated based on strain
+  std::vector<double> comWallVector(3);
   for( size_t d=0 ; d<dimension ; ++d )
-    tmpLength += (v1Pos[d]-v2Pos[d])*(v1Pos[d]-v2Pos[d]);
-  wallData[Nw][0] = std::sqrt( tmpLength );
+    comWallVector[d]= (v1Pos[d]-v2Pos[d]);
+  wallData[Nw][wallLengthIndex] =std::sqrt( 
+                                           ( comWallVector[0]*eigenVectorStrain[0][Istrain]
+                                             +comWallVector[1]*eigenVectorStrain[1][Istrain]
+                                             +comWallVector[2]*eigenVectorStrain[2][Istrain])
+                                           *( comWallVector[0]*eigenVectorStrain[0][Istrain]
+                                              +comWallVector[1]*eigenVectorStrain[1][Istrain]
+                                              +comWallVector[2]*eigenVectorStrain[2][Istrain])
+                                           *(1-2*maximalStrainValue)
+			    
+                                           +( comWallVector[0]*eigenVectorStrain[0][Istrain2]
+                                              +comWallVector[1]*eigenVectorStrain[1][Istrain2]
+                                              +comWallVector[2]*eigenVectorStrain[2][Istrain2])
+                                           *( comWallVector[0]*eigenVectorStrain[0][Istrain2]
+                                              +comWallVector[1]*eigenVectorStrain[1][Istrain2]
+                                              +comWallVector[2]*eigenVectorStrain[2][Istrain2])
+                                           *(1-2*maximalStrainValue2)
+                                           
+                                           + ( comWallVector[0]*eigenVectorStrain[0][Istrain3]
+                                               +comWallVector[1]*eigenVectorStrain[1][Istrain3]
+                                               +comWallVector[2]*eigenVectorStrain[2][Istrain3])
+                                           *( comWallVector[0]*eigenVectorStrain[0][Istrain3]
+                                              +comWallVector[1]*eigenVectorStrain[1][Istrain3]
+                                              +comWallVector[2]*eigenVectorStrain[2][Istrain3])
+                                           *(1-2*maximalStrainValue3)
+                                            );
+  if (doubleFlag==1)// for the wall springs
+    wallData[Nw][wallLengthIndex+1]=std::sqrt(comWallVector[0]*comWallVector[0]+
+                                              comWallVector[1]*comWallVector[1]+
+                                              comWallVector[2]*comWallVector[2]);
+
   
   //Wall continuing the first selected wall
   addWall( *(cell(cellIndex).wall(wI)) );
@@ -4686,7 +4529,7 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
   double oldL = wallData[cell(cellIndex).wall(wI)->index()][0];
   size_t v1w = cell(cellIndex).wall(wI)->vertex1()->index();
   size_t v2w = cell(cellIndex).wall(wI)->vertex2()->index();
-  tmpLength=0.0; 
+  double tmpLength=0.0; 
   double tmpLengthFrac=0.0; 
   for( size_t d=0 ; d<dimension ; ++d ) {
     tmpLengthFrac += (v1Pos[d]-vertexData[v1w][d])*
@@ -4698,9 +4541,13 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
   tmpLengthFrac = std::sqrt( tmpLengthFrac );
   double lengthFrac = tmpLengthFrac/tmpLength;
   wallData.resize(Nw+2,wallData[cell(cellIndex).wall(wI)->index()]);
-  wallData[cell(cellIndex).wall(wI)->index()][0] = lengthFrac*oldL;
-  wallData[Nw+1][0] = oldL-wallData[cell(cellIndex).wall(wI)->index()][0];
-  
+  wallData[cell(cellIndex).wall(wI)->index()][wallLengthIndex] = lengthFrac*oldL;
+  wallData[Nw+1][wallLengthIndex] = oldL-wallData[cell(cellIndex).wall(wI)->index()][wallLengthIndex];
+  if (doubleFlag==1){// for the wall springs
+    wallData[cell(cellIndex).wall(wI)->index()][wallLengthIndex+1] = lengthFrac*oldL;
+    wallData[Nw+1][wallLengthIndex+1] = oldL-wallData[cell(cellIndex).wall(wI)->index()][wallLengthIndex];
+  }
+
   //Wall continuing the second selected wall
   addWall(*(cell(cellIndex).wall(w3I)));
   wall(Nw+2).setIndex(Nw+2);
@@ -4721,8 +4568,13 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
   tmpLengthFrac = std::sqrt( tmpLengthFrac );
   lengthFrac = tmpLengthFrac/tmpLength;
   wallData.resize(Nw+3,wallData[cell(cellIndex).wall(w3I)->index()]);
-  wallData[cell(cellIndex).wall(w3I)->index()][0] = lengthFrac*oldL;
-  wallData[Nw+2][0] = oldL-wallData[cell(cellIndex).wall(w3I)->index()][0];
+  wallData[cell(cellIndex).wall(w3I)->index()][wallLengthIndex] = lengthFrac*oldL;
+  wallData[Nw+2][wallLengthIndex] = oldL-wallData[cell(cellIndex).wall(w3I)->index()][wallLengthIndex];
+  if (doubleFlag==1){// for the wall springs
+    wallData[cell(cellIndex).wall(w3I)->index()][wallLengthIndex+1] = lengthFrac*oldL;
+    wallData[Nw+2][wallLengthIndex+1] = oldL-wallData[cell(cellIndex).wall(w3I)->index()][wallLengthIndex];
+  }
+
   
   //Resize derivative matrix as well
   wallDeriv.resize(Nw+3,wallDeriv[0]);
@@ -4737,13 +4589,7 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
   size_t tmpWIndex = cell(cellIndex).wall(wI)->index(); 
   size_t tmpVIndex = cell(cellIndex).wall(wI)->vertex1()->index();
   size_t nextW = wI;
-  //size_t count=0;
-  //std::cerr << "wI=" << wI << "(" << cell(cellIndex).wall(wI)->index() 
-  //				<< ") w3I=" << w3I << "(" << cell(cellIndex).wall(w3I)->index() 
-  //				<< ")" << std::endl;
   do {
-    //std::cerr << count << " " << nextW << "  " << tmpWIndex << " " 
-    //				<< tmpVIndex << std::endl;
     //add to new vectors
     oldWIndex.push_back( tmpWIndex );
     oldVIndex.push_back( tmpVIndex );
@@ -4761,7 +4607,7 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
       }
     }
     if( flag != 1 ) {
-      std::cerr << "Tissue::divideCell() " << flag  
+      std::cerr << "Tissue::divideCellCentertriangulation() " << flag  
 		<< " walls marked for next wall..." << std::endl;
       std::cerr << tmpVIndex << std::endl;
       for( size_t w=0 ; w<cell(cellIndex).numWall() ; ++w ) {
@@ -4777,7 +4623,7 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
     else if( cell(cellIndex).wall(nextW)->vertex2()->index()==tmpVIndex )
       tmpVIndex = cell(cellIndex).wall(nextW)->vertex1()->index();
     else {
-      std::cerr << "Tissue::DivideCell() " 
+      std::cerr << "Tissue::DivideCellCentertriangulation() " 
 		<< "Wrong vertex indices for chosen wall " 
 		<< cell(cellIndex).wall(nextW)->vertex1()->index() << " "
 		<< cell(cellIndex).wall(nextW)->vertex2()->index() << std::endl;
@@ -4802,8 +4648,6 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
   usedWIndex[w3I]=0;
   nextW=wI;
   do {
-    //std::cerr << count << " " << nextW << "  " << tmpWIndex << " " 
-    //				<< tmpVIndex << std::endl;
     //add to new vectors
     newWIndex.push_back( tmpWIndex );
     newVIndex.push_back( tmpVIndex );
@@ -4835,8 +4679,6 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
 		<< cell(cellIndex).wall(nextW)->vertex2() << std::endl;
       exit(-1);
     }
-    //std::cerr << count++ << " " << nextW << "  " << tmpWIndex << " " 
-    //				<< tmpVIndex << std::endl;
   } while( nextW != w3I ); 
   if( cell(cellIndex).wall(nextW)->vertex1()->index()==newVIndex[newVIndex.size()-1] )
     newWIndex.push_back(cell(cellIndex).wall(w3I)->index());
@@ -4861,29 +4703,7 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
   //newWIndex.push_back(Nw+1);
   //newWIndex.push_back(Nw+2);
   
-  //std::cerr << "Cell " << cellIndex << " has " << cell(cellIndex).numWall() << " walls and " 
-  //				<< cell(cellIndex).numVertex() << " vertices" << std::endl;
-  // 	for( size_t w=0 ; w<cell(cellIndex).numWall() ; ++w )
-  // 		std::cerr << cell(cellIndex).wall(w)->index() << " ";
-  // 	std::cerr << std::endl;
-  // 	for( size_t v=0 ; v<cell(cellIndex).numVertex() ; ++v )
-  // 		std::cerr << cell(cellIndex).vertex(v)->index() << " ";
-  // 	std::cerr << std::endl;
   
-  // 	for( size_t k=0 ; k<oldWIndex.size() ; ++k )
-  // 		std::cerr << oldWIndex[k] << " ";
-  // 	std::cerr << "  ";
-  // 	for( size_t k=0 ; k<newWIndex.size() ; ++k )
-  // 		std::cerr << newWIndex[k] << " ";
-  // 	std::cerr << std::endl;
-  
-  // 	for( size_t k=0 ; k<oldVIndex.size() ; ++k )
-  // 		std::cerr << oldVIndex[k] << " ";
-  // 	std::cerr << "  ";
-  // 	for( size_t k=0 ; k<newVIndex.size() ; ++k )
-  // 		std::cerr << newVIndex[k] << " ";
-  // 	std::cerr << std::endl;
-  //exit(0);
   
   //Set vertices and cells for the walls
   wall(Nw).setVertex( &(vertex(Nv)),&(vertex(Nv+1)) );
@@ -4920,7 +4740,7 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
     }
   }
   else {
-    std::cerr << "Tissue::divideCell() "
+    std::cerr << "Tissue::divideCellCentertriangulation() "
 	      << "First wall not connected to dividing cell" << std::endl;
     std::cerr << cellIndex << " " << cell(cellIndex).index() << "\t" 
 	      << wall( cell(cellIndex).wall(wI)->index() ).cell1()->index() << " "
@@ -5000,7 +4820,7 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
   }
   
   //Set cells and walls for the vertices
-  //
+
   for( size_t v=0 ; v<newVIndex.size() ; ++v ) {
     std::vector<Cell*> tmpCell;
     std::vector<Wall*> tmpWall;
@@ -5010,11 +4830,13 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
       tmpCell.push_back( &(cell(Nc)) );
       //plus one more
       if( cell(cellIndex).wall(wI)->cell1()->index()==cellIndex &&
-	  cell(cellIndex).wall(wI)->cell2() != background() )
+	  cell(cellIndex).wall(wI)->cell2() != background() ){
 	tmpCell.push_back( cell(cellIndex).wall(wI)->cell2() );
+      }
       else if( cell(cellIndex).wall(wI)->cell2()->index()==cellIndex &&
-	       cell(cellIndex).wall(wI)->cell1() != background() )
+               cell(cellIndex).wall(wI)->cell1() != background() ){
 	tmpCell.push_back( cell(cellIndex).wall(wI)->cell1() );
+      }
       else if( cell(cellIndex).wall(wI)->cell1()->index() != cellIndex &&
 	       cell(cellIndex).wall(wI)->cell2()->index() != cellIndex ){
 	std::cerr << "Tissue::divideCell() "
@@ -5033,13 +4855,15 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
       //plus one more
       if( cell(cellIndex).wall(w3I)->cell1()->index()==cellIndex ||
 	  cell(cellIndex).wall(w3I)->cell1()->index()==Nc ) {
-	if( cell(cellIndex).wall(w3I)->cell2() != background() )
+	if( cell(cellIndex).wall(w3I)->cell2() != background() ){
 	  tmpCell.push_back( cell(cellIndex).wall(w3I)->cell2() );
+        }
       }
       else if( cell(cellIndex).wall(w3I)->cell2()->index()==cellIndex ||
 	       cell(cellIndex).wall(w3I)->cell2()->index()==Nc ) {
-	if( cell(cellIndex).wall(w3I)->cell1() != background() )
+	if( cell(cellIndex).wall(w3I)->cell1() != background() ){
 	  tmpCell.push_back( cell(cellIndex).wall(w3I)->cell1() );
+        }
       }
       else {
 	std::cerr << "Tissue::divideCell() "
@@ -5094,7 +4918,7 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
       }
     }
   }
-  
+
   //Set walls and vertices for the cells
   //This should be done after the vertex and wall insertion not to
   //mess up wI and w3I
@@ -5120,22 +4944,36 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
     tmpV[v] = &(vertex(newVIndex[v]));
   cell(Nc).setWall(tmpW);
   cell(Nc).setVertex(tmpV);
-  assert( wall(Nw).cell1()->index()==i );
+  assert( wall(Nw).cell1()->index()==cellIndex );
   assert( wall(Nw).cell2()->index()==Nc );
   
   //Update directional wall vector if applicable
   updateDirectionDivision(cellIndex,cellData,wallData,vertexData,
 			  cellDeriv,wallDeriv,vertexDeriv);
   
+
+
+
+
+  size_t firstwall;
   // Update the volume dependent variables for each cell variable index 
   // given in volumeChangeList
+  double fi;
+  double fn;
   if (volumeChangeList.size()) {
+
     cell(cellIndex).sortWallAndVertex(*this);
     cell(Nc).sortWallAndVertex(*this);
+    if(WIhasNeighbor)
+      cell(cellWI).sortWallAndVertex(*this);
+    if(W3IhasNeighbor)
+      cell(cellW3I).sortWallAndVertex(*this);
+
+    
     double Vi = cell(cellIndex).calculateVolume(vertexData);
     double Vn = cell(Nc).calculateVolume(vertexData);
-    double fi = Vi/(Vi+Vn);
-    double fn = Vn/(Vi+Vn);
+    fi = Vi/(Vi+Vn);
+    fn = Vn/(Vi+Vn);
     
     for (size_t k=0; k<volumeChangeList.size(); ++k) {
       cellData[cellIndex][volumeChangeList[k]] *= fi;
@@ -5144,11 +4982,36 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
   }		
   //checkConnectivity(1);
   
-  //setting cell centers and internal walls in cellData for cells i and Nc
-  cellData[cellIndex].resize(centerIndex+dimension+cell(cellIndex).numWall());
-  cellData[Nc].resize(centerIndex+dimension+cell(Nc).numWall());
   
-  // cell centers
+
+  // sorting all the cells involved in division
+  cell(cellIndex).sortWallAndVertex(*this);
+  cell(Nc).sortWallAndVertex(*this);
+  if(WIhasNeighbor)
+    cell(cellWI).sortWallAndVertex(*this);
+  if(W3IhasNeighbor)
+    cell(cellW3I).sortWallAndVertex(*this);
+  
+  
+  
+ 
+
+  //setting cell centers and internal walls in cellData for cells cellIndex and Nc
+  if (doubleFlag==1){
+    cellData[cellIndex].resize(centerIndex+dimension+3*cell(cellIndex).numWall());
+    cellData[Nc].resize(centerIndex+dimension+3*cell(Nc).numWall());
+    
+    cellDeriv[cellIndex].resize(centerIndex+dimension+3*cell(cellIndex).numWall());
+    cellDeriv[Nc].resize(centerIndex+dimension+3*cell(Nc).numWall());
+  }
+  if (doubleFlag==0){
+    cellData[cellIndex].resize(centerIndex+dimension+cell(cellIndex).numWall());
+    cellData[Nc].resize(centerIndex+dimension+cell(Nc).numWall());
+    
+    cellDeriv[cellIndex].resize(centerIndex+dimension+cell(cellIndex).numWall());
+    cellDeriv[Nc].resize(centerIndex+dimension+cell(Nc).numWall());
+  }
+  // cell centroids 
   for (size_t d=0; d< dimension; ++d){
     cellData[cellIndex][centerIndex+d]=0;
     cellData[Nc][centerIndex+d]=0;
@@ -5167,6 +5030,12 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
     cellData[Nc][centerIndex+d]/=cell(Nc).numWall();
   }
   
+  //centroidNorm
+  for (size_t d=0; d< dimension; ++d){
+    cellData[cellIndex][centerIndex+d]+=fi*centroidNorm[d];
+    cellData[Nc][centerIndex+d]+=fn*centroidNorm[d];
+  }
+  
   std::vector<std::vector<double> > 
     internalVectorI(cell(cellIndex).numWall(), std::vector<double>(3)), 
     internalVectorNc(cell(Nc).numWall(), std::vector<double>(3)) ;
@@ -5181,73 +5050,1217 @@ divideCellCenterTriangulation1( Cell *divCell, size_t wI, size_t w3I,
       internalVectorNc[k][d]=
         vertexData[cell(Nc).vertex(k)->index()][d]
         -cellData[Nc][centerIndex+d];
+  
 
-  for (size_t k=0; k<cell(cellIndex).numWall(); ++k) 
-    cellData[cellIndex][centerIndex+dimension+k]=std::sqrt( 
-                                                    ( internalVectorI[k][0]*eigenVectorStrain[0][0]
-                                                      +internalVectorI[k][1]*eigenVectorStrain[1][0]
-                                                      +internalVectorI[k][2]*eigenVectorStrain[2][0])
-                                                    *( internalVectorI[k][0]*eigenVectorStrain[0][0]
-                                                       +internalVectorI[k][1]*eigenVectorStrain[1][0]
-                                                       +internalVectorI[k][2]*eigenVectorStrain[2][0])
-                                                    *(1-maximalStrainValue)*(1-maximalStrainValue)
-                                                    
-                                                    +( internalVectorI[k][0]*eigenVectorStrain[0][1]
-                                                       +internalVectorI[k][1]*eigenVectorStrain[1][1]
-                                                       +internalVectorI[k][2]*eigenVectorStrain[2][1])
-                                                    *( internalVectorI[k][0]*eigenVectorStrain[0][1]
-                                                       +internalVectorI[k][1]*eigenVectorStrain[1][1]
-                                                       +internalVectorI[k][2]*eigenVectorStrain[2][1])
-                                                    *(1-maximalStrainValue2)*(1-maximalStrainValue2)
-                                                    
-                                                    +( internalVectorI[k][0]*eigenVectorStrain[0][2]
-                                                       +internalVectorI[k][1]*eigenVectorStrain[1][2]
-                                                       +internalVectorI[k][2]*eigenVectorStrain[2][2])
-                                                    *( internalVectorI[k][0]*eigenVectorStrain[0][2]
-                                                       +internalVectorI[k][1]*eigenVectorStrain[1][2]
-                                                       +internalVectorI[k][2]*eigenVectorStrain[2][2])
-                                                    *(1-maximalStrainValue3)*(1-maximalStrainValue3)
-                                                     );
   
-  for (size_t k=0; k<cell(Nc).numWall(); ++k) 
-    cellData[Nc][centerIndex+dimension+k]=std::sqrt( 
-                                                    ( internalVectorNc[k][0]*eigenVectorStrain[0][0]
-                                                      +internalVectorNc[k][1]*eigenVectorStrain[1][0]
-                                                      +internalVectorNc[k][2]*eigenVectorStrain[2][0])
-                                                    *( internalVectorNc[k][0]*eigenVectorStrain[0][0]
-                                                       +internalVectorNc[k][1]*eigenVectorStrain[1][0]
-                                                       +internalVectorNc[k][2]*eigenVectorStrain[2][0])
-                                                    *(1-maximalStrainValue)*(1-maximalStrainValue)
-                                                    
-                                                    +( internalVectorNc[k][0]*eigenVectorStrain[0][1]
-                                                       +internalVectorNc[k][1]*eigenVectorStrain[1][1]
-                                                       +internalVectorNc[k][2]*eigenVectorStrain[2][1])
-                                                    *( internalVectorNc[k][0]*eigenVectorStrain[0][1]
-                                                       +internalVectorNc[k][1]*eigenVectorStrain[1][1]
-                                                       +internalVectorNc[k][2]*eigenVectorStrain[2][1])
-                                                    *(1-maximalStrainValue2)*(1-maximalStrainValue2)
-                                                    
-                                                    +( internalVectorNc[k][0]*eigenVectorStrain[0][2]
-                                                       +internalVectorNc[k][1]*eigenVectorStrain[1][2]
-                                                       +internalVectorNc[k][2]*eigenVectorStrain[2][2])
-                                                    *( internalVectorNc[k][0]*eigenVectorStrain[0][2]
-                                                       +internalVectorNc[k][1]*eigenVectorStrain[1][2]
-                                                       +internalVectorNc[k][2]*eigenVectorStrain[2][2])
-                                                    *(1-maximalStrainValue3)*(1-maximalStrainValue3)
-                                                     );
+  //strain
+  if (doubleFlag==1){
+    for (size_t k=0; k<cell(cellIndex).numWall(); ++k){ 
+      cellData[cellIndex][centerIndex+dimension+2*k]=
+        std::sqrt( 
+                  ( internalVectorI[k][0]*eigenVectorStrain[0][Istrain]
+                    +internalVectorI[k][1]*eigenVectorStrain[1][Istrain]
+                    +internalVectorI[k][2]*eigenVectorStrain[2][Istrain])
+                  *( internalVectorI[k][0]*eigenVectorStrain[0][Istrain]
+                     +internalVectorI[k][1]*eigenVectorStrain[1][Istrain]
+                     +internalVectorI[k][2]*eigenVectorStrain[2][Istrain])
+                  *(1-2*maximalStrainValue)
+                  
+                  +( internalVectorI[k][0]*eigenVectorStrain[0][Istrain2]
+                     +internalVectorI[k][1]*eigenVectorStrain[1][Istrain2]
+                     +internalVectorI[k][2]*eigenVectorStrain[2][Istrain2])
+                  *( internalVectorI[k][0]*eigenVectorStrain[0][Istrain2]
+                     +internalVectorI[k][1]*eigenVectorStrain[1][Istrain2]
+                     +internalVectorI[k][2]*eigenVectorStrain[2][Istrain2])
+                  *(1-2*maximalStrainValue2)
+                  
+                  +( internalVectorI[k][0]*eigenVectorStrain[0][Istrain3]
+                     +internalVectorI[k][1]*eigenVectorStrain[1][Istrain3]
+                     +internalVectorI[k][2]*eigenVectorStrain[2][Istrain3])
+                  *( internalVectorI[k][0]*eigenVectorStrain[0][Istrain3]
+                     +internalVectorI[k][1]*eigenVectorStrain[1][Istrain3]
+                     +internalVectorI[k][2]*eigenVectorStrain[2][Istrain3])
+                  *(1-2*maximalStrainValue3)
+                   );
+      cellData[cellIndex][centerIndex+dimension+2*k+1]=cellData[cellIndex][centerIndex+dimension+2*k];
+    }
+    for (size_t k=0; k<cell(Nc).numWall(); ++k){ 
+      cellData[Nc][centerIndex+dimension+2*k]=
+        std::sqrt( 
+                  ( internalVectorNc[k][0]*eigenVectorStrain[0][Istrain]
+                    +internalVectorNc[k][1]*eigenVectorStrain[1][Istrain]
+                    +internalVectorNc[k][2]*eigenVectorStrain[2][Istrain])
+                  *( internalVectorNc[k][0]*eigenVectorStrain[0][Istrain]
+                     +internalVectorNc[k][1]*eigenVectorStrain[1][Istrain]
+                     +internalVectorNc[k][2]*eigenVectorStrain[2][Istrain])
+                  *(1-2*maximalStrainValue)
+                  
+                  +( internalVectorNc[k][0]*eigenVectorStrain[0][Istrain2]
+                     +internalVectorNc[k][1]*eigenVectorStrain[1][Istrain2]
+                     +internalVectorNc[k][2]*eigenVectorStrain[2][Istrain2])
+                  *( internalVectorNc[k][0]*eigenVectorStrain[0][Istrain2]
+                     +internalVectorNc[k][1]*eigenVectorStrain[1][Istrain2]
+                     +internalVectorNc[k][2]*eigenVectorStrain[2][Istrain2])
+                  *(1-2*maximalStrainValue2)
+                  
+                  +( internalVectorNc[k][0]*eigenVectorStrain[0][Istrain3]
+                     +internalVectorNc[k][1]*eigenVectorStrain[1][Istrain3]
+                     +internalVectorNc[k][2]*eigenVectorStrain[2][Istrain3])
+                  *( internalVectorNc[k][0]*eigenVectorStrain[0][Istrain3]
+                     +internalVectorNc[k][1]*eigenVectorStrain[1][Istrain3]
+                     +internalVectorNc[k][2]*eigenVectorStrain[2][Istrain3])
+                  *(1-2*maximalStrainValue3)
+                   );
+      cellData[Nc][centerIndex+dimension+2*k+1]=cellData[Nc][centerIndex+dimension+2*k];
+    }
+  }
+  
+
+  if (doubleFlag==0){
+    for (size_t k=0; k<cell(cellIndex).numWall(); ++k) 
+      cellData[cellIndex][centerIndex+dimension+k]=
+        std::sqrt( 
+                  ( internalVectorI[k][0]*eigenVectorStrain[0][Istrain]
+                    +internalVectorI[k][1]*eigenVectorStrain[1][Istrain]
+                    +internalVectorI[k][2]*eigenVectorStrain[2][Istrain])
+                  *( internalVectorI[k][0]*eigenVectorStrain[0][Istrain]
+                     +internalVectorI[k][1]*eigenVectorStrain[1][Istrain]
+                     +internalVectorI[k][2]*eigenVectorStrain[2][Istrain])
+                  *(1-2*maximalStrainValue)
+                  
+                  +( internalVectorI[k][0]*eigenVectorStrain[0][Istrain2]
+                     +internalVectorI[k][1]*eigenVectorStrain[1][Istrain2]
+                     +internalVectorI[k][2]*eigenVectorStrain[2][Istrain2])
+                  *( internalVectorI[k][0]*eigenVectorStrain[0][Istrain2]
+                     +internalVectorI[k][1]*eigenVectorStrain[1][Istrain2]
+                     +internalVectorI[k][2]*eigenVectorStrain[2][Istrain2])
+                  *(1-2*maximalStrainValue2)
+                  
+                  +( internalVectorI[k][0]*eigenVectorStrain[0][Istrain3]
+                     +internalVectorI[k][1]*eigenVectorStrain[1][Istrain3]
+                     +internalVectorI[k][2]*eigenVectorStrain[2][Istrain3])
+                  *( internalVectorI[k][0]*eigenVectorStrain[0][Istrain3]
+                     +internalVectorI[k][1]*eigenVectorStrain[1][Istrain3]
+                     +internalVectorI[k][2]*eigenVectorStrain[2][Istrain3])
+                  *(1-2*maximalStrainValue3)
+                   );
+    
+    for (size_t k=0; k<cell(Nc).numWall(); ++k) 
+      cellData[Nc][centerIndex+dimension+k]=
+        std::sqrt( 
+                  ( internalVectorNc[k][0]*eigenVectorStrain[0][Istrain]
+                    +internalVectorNc[k][1]*eigenVectorStrain[1][Istrain]
+                    +internalVectorNc[k][2]*eigenVectorStrain[2][Istrain])
+                  *( internalVectorNc[k][0]*eigenVectorStrain[0][Istrain]
+                     +internalVectorNc[k][1]*eigenVectorStrain[1][Istrain]
+                     +internalVectorNc[k][2]*eigenVectorStrain[2][Istrain])
+                  *(1-2*maximalStrainValue)
+                  
+                  +( internalVectorNc[k][0]*eigenVectorStrain[0][Istrain2]
+                     +internalVectorNc[k][1]*eigenVectorStrain[1][Istrain2]
+                     +internalVectorNc[k][2]*eigenVectorStrain[2][Istrain2])
+                  *( internalVectorNc[k][0]*eigenVectorStrain[0][Istrain2]
+                     +internalVectorNc[k][1]*eigenVectorStrain[1][Istrain2]
+                     +internalVectorNc[k][2]*eigenVectorStrain[2][Istrain2])
+                  *(1-2*maximalStrainValue2)
+                  
+                  +( internalVectorNc[k][0]*eigenVectorStrain[0][Istrain3]
+                     +internalVectorNc[k][1]*eigenVectorStrain[1][Istrain3]
+                     +internalVectorNc[k][2]*eigenVectorStrain[2][Istrain3])
+                  *( internalVectorNc[k][0]*eigenVectorStrain[0][Istrain3]
+                     +internalVectorNc[k][1]*eigenVectorStrain[1][Istrain3]
+                     +internalVectorNc[k][2]*eigenVectorStrain[2][Istrain3])
+                  *(1-2*maximalStrainValue3)
+                   );
+  }
+
+  // setting growing components of main walls in cellIndex and Nc
+  if (doubleFlag==1){// double resting length
+    size_t numWallCellIndex=cell(cellIndex).numWall();
+    size_t numWallNc=cell(Nc).numWall();
+    double wIcomp, w3Icomp;
+    
+    for(size_t z=0; z<numWallCellIndex+numWallNc-4; z++){ // go through the cellL vector
+      if(cellL[z][0]==wIindex)
+        wIcomp=cellL[z][1];
+      if(cellL[z][0]==w3Iindex)
+        w3Icomp=cellL[z][1];
+    }
+    
+
+
+    for(size_t yy=0; yy<numWallCellIndex; yy++){// for each wall in the new cellIndex
+      size_t wallyy=cell(cellIndex).wall(yy) -> index(); // get the index of the wall
+
+      for(size_t z=0; z<numWallCellIndex+numWallNc-4; z++) // go through the cellL vector
+        if(cellL[z][0]==wallyy)
+          cellData[cellIndex][centerIndex+dimension+2*numWallCellIndex+yy]=cellL[z][1];
+      
+      if(wallyy==wIindex)
+        cellData[cellIndex][centerIndex+dimension+2*numWallCellIndex+yy]=
+          (wallData[wIindex][0]/(wallData[wIindex][0]+wallData[Nw+1][0]))*wIcomp;
+      if(wallyy==w3Iindex)
+        cellData[cellIndex][centerIndex+dimension+2*numWallCellIndex+yy]=
+          (wallData[w3Iindex][0]/(wallData[w3Iindex][0]+wallData[Nw+2][0]))*w3Icomp;
+      if(wallyy==Nw)//New wall dividing old cell is new with zero growing component
+        cellData[cellIndex][centerIndex+dimension+2*numWallCellIndex+yy]=0;
+      if(wallyy==Nw+1)
+        cellData[cellIndex][centerIndex+dimension+2*numWallCellIndex+yy]=
+          (wallData[Nw+1][0]/(wallData[wIindex][0]+wallData[Nw+1][0]))*wIcomp;
+      if(wallyy==Nw+2)
+        cellData[cellIndex][centerIndex+dimension+2*numWallCellIndex+yy]=
+          (wallData[Nw+2][0]/(wallData[w3Iindex][0]+wallData[Nw+2][0]))*w3Icomp;
+    }
+
+
+
+    for(size_t yy=0; yy<numWallNc; yy++){// for each wall in the new Nc
+      size_t wallyy=cell(Nc).wall(yy) -> index(); // get the index of the wall
+      
+      for(size_t z=0; z<numWallCellIndex+numWallNc-4; z++) // go through the cellL vector
+        if(cellL[z][0]==wallyy)
+          cellData[Nc][centerIndex+dimension+2*numWallNc+yy]=cellL[z][1];
+      
+      if(wallyy==wIindex)
+        cellData[Nc][centerIndex+dimension+2*numWallNc+yy]=
+          (wallData[wIindex][0]/(wallData[wIindex][0]+wallData[Nw+1][0]))*wIcomp;
+      if(wallyy==w3Iindex)
+        cellData[Nc][centerIndex+dimension+2*numWallNc+yy]=
+          (wallData[w3Iindex][0]/(wallData[w3Iindex][0]+wallData[Nw+2][0]))*w3Icomp;
+      if(wallyy==Nw)//New wall dividing old cell is new with zero growing component
+        cellData[Nc][centerIndex+dimension+2*numWallNc+yy]=0;
+      if(wallyy==Nw+1)
+        cellData[Nc][centerIndex+dimension+2*numWallNc+yy]=
+          (wallData[Nw+1][0]/(wallData[wIindex][0]+wallData[Nw+1][0]))*wIcomp;
+      if(wallyy==Nw+2)
+        cellData[Nc][centerIndex+dimension+2*numWallNc+yy]=
+          (wallData[Nw+2][0]/(wallData[w3Iindex][0]+wallData[Nw+2][0]))*w3Icomp;
+      
+    }
+   
+    if(WIhasNeighbor){
+
+      cellData[cellWI].resize(cellData[cellWI].size()+3);
+      size_t numWallCellWI=cell(cellWI).numWall();
+
+      for(size_t z=0; z<numWallCellWI-1; z++){ // go through the cellWIL vector
+        if(cellWIL[z][0]==wIindex)
+          wIcomp=cellWIL[z][1];
+      }
+
+      for(size_t yy=0; yy<numWallCellWI; yy++){// for each wall in the cellWI
+        size_t wallyy=cell(cellWI).wall(yy) -> index(); // get the index of the wall
+        
+        for(size_t z=0; z<numWallCellWI-1; z++) // go through the cellWIL vector
+          if(cellWIL[z][0]==wallyy)
+            cellData[cellWI][centerIndex+dimension+2*numWallCellWI+yy]=cellWIL[z][1];
+        
+        if(wallyy==wIindex)
+          cellData[cellWI][centerIndex+dimension+2*numWallCellWI+yy]=
+            (wallData[wIindex][0]/(wallData[wIindex][0]+wallData[Nw+1][0]))*wIcomp;
+
+        if(wallyy==Nw+1)
+          cellData[cellWI][centerIndex+dimension+2*numWallCellWI+yy]=
+            (wallData[Nw+1][0]/(wallData[wIindex][0]+wallData[Nw+1][0]))*wIcomp;
+        
+      }
+    }
+    
+    if(W3IhasNeighbor){
+      
+      cellData[cellW3I].resize(cellData[cellW3I].size()+3);
+      size_t numWallCellW3I=cell(cellW3I).numWall();
+      
+      for(size_t z=0; z<numWallCellW3I-1; z++){ // go through the cellW3IL vector
+        if(cellW3IL[z][0]==w3Iindex)
+          w3Icomp=cellW3IL[z][1];
+      }
+
+      for(size_t yy=0; yy<numWallCellW3I; yy++){// for each wall in the cellW3IL
+        size_t wallyy=cell(cellW3I).wall(yy) -> index(); // get the index of the wall
+        
+        for(size_t z=0; z<numWallCellW3I-1; z++) // go through the cellW3IL vector
+          if(cellW3IL[z][0]==wallyy)
+            cellData[cellW3I][centerIndex+dimension+2*numWallCellW3I+yy]=cellW3IL[z][1];
+        
+        if(wallyy==w3Iindex)
+          cellData[cellW3I][centerIndex+dimension+2*numWallCellW3I+yy]=
+            (wallData[w3Iindex][0]/(wallData[w3Iindex][0]+wallData[Nw+2][0]))*w3Icomp;
+                
+        if(wallyy==Nw+2)
+          cellData[cellW3I][centerIndex+dimension+2*numWallCellW3I+yy]=
+            (wallData[Nw+2][0]/(wallData[w3Iindex][0]+wallData[Nw+2][0]))*w3Icomp;
+
+               
+      }
+    }
+  }
+  
+  //Update directional wall vector if applicable 
+  updateDirectionDivision(cellIndex,cellData,wallData,vertexData,
+			  cellDeriv,wallDeriv,vertexDeriv);
   
   
-  // maximalStrainValue2=StrainCellGlobal[Istrain2][Istrain2];
-  //  maximalStrainValue3=StrainCellGlobal[Istrain3][Istrain3];
-  //    eigenVectorStrain[0][0]/=temp;
-  //    eigenVectorStrain[1][0]  
+  //setting internal length of neighbors if applicable
+  if (WIhasNeighbor){
+    size_t numVcellWI=cell(cellWI).numVertex();    
+    if(doubleFlag==1){
+      //cellData[cellWI].resize(cellData[cellWI].size()+3);  // it is done before
+      for(size_t kk=0; kk<numVcellWI; kk++){                                    // go through vertices
+        size_t kkPlusOne = (kk+1)%numVcellWI;
+        size_t VcellWI=cell(cellWI).vertex(kk)-> index();                       // pick the vertex index
+        size_t WcellWI=cell(cellWI).wall(kk)-> index();                         // pick the wall index
+        size_t VcellWIPlusOne=cell(cellWI).vertex(kkPlusOne)-> index();         // pick the next vertex index
+        for(size_t yy=0; yy<2*numVcellWI-2; yy++){                              // for each vertex go through  
+
+          if(VcellWI==cellWIintL[yy][0] && (WcellWI==cellWIintL[yy][1] || WcellWI==Nw+1) )
+            cellData[cellWI][centerIndex+dimension+2*kk+1]=cellWIintL[yy][2];
+          
+          if(VcellWIPlusOne==cellWIintL[yy][0] && (WcellWI==cellWIintL[yy][1] || WcellWI==Nw+1))
+            cellData[cellWI][centerIndex+dimension+2*kkPlusOne]=cellWIintL[yy][2];
+        }
+      }
+    }
+    if(doubleFlag==0){
+      cellData[cellWI].resize(cellData[cellWI].size()+1);
+      for(size_t kk=0; kk<numVcellWI; kk++){
+        size_t VcellWI=cell(cellWI).vertex(kk)-> index();
+        for(size_t yy=0; yy<numVcellWI-1; yy++)
+          if(VcellWI==cellWIintL[yy][0])
+            cellData[cellWI][centerIndex+dimension+kk]=cellWIintL[yy][1];
+      }
+    }
+    
+    size_t WI1, WI2, InsrtLind;
+    double newLength;
+    bool WI1Chosen=false, WI2Chosen=false;
+    size_t vl1,vl2;
+
+    for( size_t wl=0 ; wl<numVcellWI ; wl++ ) {
+      if((cell(cellWI).wall(wl)->vertex1()-> index()==Nv ||cell(cellWI).wall(wl)->vertex2()-> index()==Nv) 
+         && !WI1Chosen){
+        WI1=cell(cellWI).wall(wl)-> index();
+        WI1Chosen=true;
+        if(cell(cellWI).wall(wl)->vertex1()-> index()==Nv)
+          vl1=cell(cellWI).wall(wl)->vertex2()-> index();
+        else
+          vl1=cell(cellWI).wall(wl)->vertex1()-> index();
+      }
+      if((cell(cellWI).wall(wl)->vertex1()-> index()==Nv ||cell(cellWI).wall(wl)->vertex2()-> index()==Nv) 
+         && WI1Chosen){
+        WI2=cell(cellWI).wall(wl)-> index();
+        WI2Chosen=true;
+        if(cell(cellWI).wall(wl)->vertex1()-> index()==Nv)
+          vl2=cell(cellWI).wall(wl)->vertex2()-> index();
+        else
+          vl2=cell(cellWI).wall(wl)->vertex1()-> index();
+      }
+    }
+    if(WI1Chosen && WI2Chosen){
+      size_t vl1temp,vl2temp;      
+      for(size_t iii=0; iii<numVcellWI; iii++){
+        if(cell(cellWI).vertex(iii)-> index()==vl1)
+          vl1temp=iii;
+        if(cell(cellWI).vertex(iii)-> index()==vl2)
+          vl2temp=iii;
+        if(cell(cellWI).vertex(iii)-> index()==Nv){
+          InsrtLind=iii;
+        }
+      }
+      vl1=vl1temp;
+      vl2=vl2temp;
+      double l1,l2,l3,l4;
+      if(doubleFlag==1){
+        if(InsrtLind==0){
+          l1=cellData[cellWI][centerIndex+dimension+2*vl1];
+          l2=cellData[cellWI][centerIndex+dimension+2*vl2+1];
+          l3=wallData[WI1][wallLengthIndex]+
+            cellData[cellWI][centerIndex+dimension+2*numVcellWI+InsrtLind];
+          l4=wallData[WI2][wallLengthIndex]+
+            cellData[cellWI][centerIndex+dimension+2*numVcellWI+vl2];           }
+        else{
+          l1=cellData[cellWI][centerIndex+dimension+2*vl1+1];
+          l2=cellData[cellWI][centerIndex+dimension+2*vl2];
+          l3=wallData[WI1][wallLengthIndex]+
+            cellData[cellWI][centerIndex+dimension+2*numVcellWI+vl1];
+          l4=wallData[WI2][wallLengthIndex]+
+            cellData[cellWI][centerIndex+dimension+2*numVcellWI+InsrtLind];
+        }
+      }
+      if(doubleFlag==0){
+        l1=cellData[cellWI][centerIndex+dimension+vl1];
+        l2=cellData[cellWI][centerIndex+dimension+vl2];   
+        l3=wallData[WI1][wallLengthIndex];
+        l4=wallData[WI2][wallLengthIndex];
+      }      
+      newLength=std::sqrt(((l2*l2*l3+l1*l1*l4)/(l3+l4))-l3*l4);
+      if(doubleFlag==1){
+        cellData[cellWI][centerIndex+dimension+2*InsrtLind]=newLength;
+        cellData[cellWI][centerIndex+dimension+2*InsrtLind+1]=newLength;
+      }
+      if(doubleFlag==0){
+        cellData[cellWI][centerIndex+dimension+InsrtLind]=newLength;
+      }
+    }
+    else{
+      std::cerr<<"in celldivision something goes wrong"<<std::endl;
+      exit(-1);      
+    }
+    
+    cellDeriv[cellWI].resize(cellData[cellWI].size());
+  }
+
+ 
+  if (W3IhasNeighbor){
+    size_t numVcellW3I=cell(cellW3I).numVertex();
+    if(doubleFlag==1){
+      //cellData[cellW3I].resize(cellData[cellW3I].size()+3);  // it is done before
+      for(size_t kk=0; kk<numVcellW3I; kk++){
+        size_t kkPlusOne = (kk+1)%numVcellW3I;
+        size_t VcellW3I=cell(cellW3I).vertex(kk)-> index();
+        size_t WcellW3I=cell(cellW3I).wall(kk)-> index();
+        size_t VcellW3IPlusOne=cell(cellW3I).vertex(kkPlusOne)-> index();
+        for(size_t yy=0; yy<2*numVcellW3I-2; yy++){
+
+          if(VcellW3I==cellW3IintL[yy][0] && (WcellW3I==cellW3IintL[yy][1] ||WcellW3I==Nw+2) )
+            cellData[cellW3I][centerIndex+dimension+2*kk+1]=cellW3IintL[yy][2];
+
+          if(VcellW3IPlusOne==cellW3IintL[yy][0] && (WcellW3I==cellW3IintL[yy][1] ||WcellW3I==Nw+2) )
+            cellData[cellW3I][centerIndex+dimension+2*kkPlusOne]=cellW3IintL[yy][2];
+        }
+      }
+    }
+    
+    if(doubleFlag==0){
+      cellData[cellW3I].resize(cellData[cellW3I].size()+1);
+      for(size_t kk=0; kk<numVcellW3I; kk++){
+        size_t VcellW3I=cell(cellW3I).vertex(kk)-> index();
+        for(size_t yy=0; yy<numVcellW3I-1; yy++)
+          if(VcellW3I==cellW3IintL[yy][0])
+            cellData[cellW3I][centerIndex+dimension+kk]=cellW3IintL[yy][1];
+      }
+    }
+    
+    size_t W3I1, W3I2, InsrtLind;
+    double newLength;
+    bool W3I1Chosen=false, W3I2Chosen=false;
+    size_t vl1,vl2;
+
+    for( size_t wl=0 ; wl<numVcellW3I ; wl++ ) {
+      if((cell(cellW3I).wall(wl)->vertex1()-> index()==Nv+1 || cell(cellW3I).wall(wl)->vertex2()-> index()==Nv+1) 
+         && !W3I1Chosen){
+        W3I1=cell(cellW3I).wall(wl)-> index();
+        W3I1Chosen=true;
+        if(cell(cellW3I).wall(wl)->vertex1()-> index()==Nv+1)
+          vl1=cell(cellW3I).wall(wl)->vertex2()-> index();
+        else
+          vl1=cell(cellW3I).wall(wl)->vertex1()-> index();
+      }
+      if((cell(cellW3I).wall(wl)->vertex1()-> index()==Nv+1 || cell(cellW3I).wall(wl)->vertex2()-> index()==Nv+1) 
+         && W3I1Chosen){
+        W3I2=cell(cellW3I).wall(wl)-> index();
+        W3I2Chosen=true;
+        if(cell(cellW3I).wall(wl)->vertex1()-> index()==Nv+1)
+          vl2=cell(cellW3I).wall(wl)->vertex2()-> index();
+        else
+          vl2=cell(cellW3I).wall(wl)->vertex1()-> index();
+      }
+    }
+    if(W3I1Chosen && W3I2Chosen){
+      size_t vl1temp,vl2temp;      
+      for(size_t iii=0; iii<numVcellW3I; iii++){
+        if(cell(cellW3I).vertex(iii)-> index()==vl1)
+          vl1temp=iii;
+        if(cell(cellW3I).vertex(iii)-> index()==vl2)
+          vl2temp=iii;
+        if(cell(cellW3I).vertex(iii)-> index()==Nv+1)
+          InsrtLind=iii;
+      }
+      vl1=vl1temp;
+      vl2=vl2temp;
+      double l1,l2,l3,l4;
+      if(doubleFlag==1){
+        if(InsrtLind==0){
+          l1=cellData[cellW3I][centerIndex+dimension+2*vl1];
+          l2=cellData[cellW3I][centerIndex+dimension+2*vl2+1];
+          l3=wallData[W3I1][wallLengthIndex]+
+            cellData[cellW3I][centerIndex+dimension+2*numVcellW3I+InsrtLind];
+          l4=wallData[W3I2][wallLengthIndex]+
+            cellData[cellW3I][centerIndex+dimension+2*numVcellW3I+vl2];           }
+        else{
+          l1=cellData[cellW3I][centerIndex+dimension+2*vl1+1];
+          l2=cellData[cellW3I][centerIndex+dimension+2*vl2];
+          l3=wallData[W3I1][wallLengthIndex]+
+            cellData[cellW3I][centerIndex+dimension+2*numVcellW3I+vl1];
+          l4=wallData[W3I2][wallLengthIndex]+
+            cellData[cellW3I][centerIndex+dimension+2*numVcellW3I+InsrtLind];
+        }
+      }
+      if(doubleFlag==0){
+        l1=cellData[cellW3I][centerIndex+dimension+vl1];
+        l2=cellData[cellW3I][centerIndex+dimension+vl2];   
+        l3=wallData[W3I1][wallLengthIndex];
+        l4=wallData[W3I2][wallLengthIndex];
+      }      
+      newLength=std::sqrt(((l2*l2*l3+l1*l1*l4)/(l3+l4))-l3*l4);
+      if(doubleFlag==1){
+        cellData[cellW3I][centerIndex+dimension+2*InsrtLind]=newLength;
+        cellData[cellW3I][centerIndex+dimension+2*InsrtLind+1]=newLength;
+      }
+      if(doubleFlag==0){
+        cellData[cellW3I][centerIndex+dimension+InsrtLind]=newLength;
+      }
+    }
+    else{
+      std::cerr<<"in celldivision something goes wrong"<<std::endl;
+      exit(-1);      
+    }
+    
+    cellDeriv[cellW3I].resize(cellData[cellW3I].size());
+  }
+
   
+  
+ ///////////////////////////////////////// adhoc for comparing strain before and after division
+ numCellWalls=cell(cellIndex).numWall();
+  // calculating the averaged strain tensor of the cell
+  ////////////begin strain
+ for(size_t gg=0; gg<3;gg++)  
+   for(size_t ggk=0; ggk<3;ggk++)  
+     StrainCellGlobal[gg][ggk]=0;
+ 
+  TotalCellArea=0;
+  for (size_t wallindex=0; wallindex<numCellWalls; ++wallindex) { 
+    size_t kPlusOneMod = (wallindex+1)%numCellWalls;
+    //size_t v1 = com;
+    size_t v2 = cell(cellIndex).vertex(wallindex)->index();
+    size_t v3 = cell(cellIndex).vertex(kPlusOneMod)->index();
+    //size_t w1 = internal wallindex
+    size_t w2 = cell(cellIndex).wall(wallindex)->index();
+    //size_t w3 = internal wallindex+1
+    
+    // Position matrix holds in rows positions for com, vertex(wallindex), vertex(wallindex+1)
+    DataMatrix position(3,vertexData[v2]);
+    for (size_t d=0; d<dimension; ++d)
+      position[0][d] = cellData[cellIndex][centerIndex+d]; // com position
+    //position[1] = vertexData[v2]; // given by initiation
+    position[2] = vertexData[v3];
+    //position[0][2] z for vertex 1 of the current element
+    
+    
+      
+    // Resting lengths are from com-vertex(wallindex), 
+    // vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
+    std::vector<double> restingLength(3);
+    if(doubleFlag==1){ // double resting length
+      restingLength[0] = cellData[cellIndex][lengthInternalIndex + 2*wallindex+1];
+      //restingLength[1] = wallData[w2][wallLengthIndex]+wallData[w2][wallLengthIndex+restAddIndex];
+      restingLength[1] = wallData[w2][wallLengthIndex]+
+        cellData[cellIndex][lengthInternalIndex+2*numCellWalls+wallindex];
+      restingLength[2] = cellData[cellIndex][lengthInternalIndex + 2*kPlusOneMod];      
+    }
+    else if(doubleFlag==0){    // single resting length
+      restingLength[0] = cellData[cellIndex][lengthInternalIndex + wallindex];
+      restingLength[1] = wallData[w2][wallLengthIndex];
+      restingLength[2] = cellData[cellIndex][lengthInternalIndex + kPlusOneMod];
+    }
+    // Lengths are from com-vertex(wallindex), 
+    // vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
+    std::vector<double> length(3);
+    length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
+                           (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
+                           (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
+    
+    length[1] = std::sqrt( (position[2][0]-position[1][0])*(position[2][0]-position[1][0]) +
+                           (position[2][1]-position[1][1])*(position[2][1]-position[1][1]) +
+                           (position[2][2]-position[1][2])*(position[2][2]-position[1][2]) );
+    
+    length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
+                           (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
+                           (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
+    
+    
+    // restingArea of the element (using Heron's formula)                                      
+    double restingArea=std::sqrt( ( restingLength[0]+restingLength[1]+restingLength[2])*
+                                  (-restingLength[0]+restingLength[1]+restingLength[2])*
+                                  ( restingLength[0]-restingLength[1]+restingLength[2])*
+                                  ( restingLength[0]+restingLength[1]-restingLength[2])  )*0.25;
+    TotalCellArea +=restingArea;
+    
+    //Current shape local coordinate of the element  (counterclockwise ordering of nodes/edges)
+    double CurrentAngle1=std::acos(  (length[0]*length[0]+length[1]*length[1]-length[2]*length[2])/
+                                     (length[0]*length[1]*2)    );
+    
+    double Qa=std::cos(CurrentAngle1)*length[0];
+    double Qc=std::sin(CurrentAngle1)*length[0];
+    double Qb=length[1];
+    
+    double positionLocal[3][2]={ {Qa , Qc}, 
+                                 {0  , 0 },  
+                                 {Qb , 0 }  };
+    
+    // Local coordinates of the resting shape ( counterclockwise )
+    double RestingAngle1=std::acos(  (restingLength[0]*restingLength[0]
+                                      +restingLength[1]*restingLength[1]
+                                      -restingLength[2]*restingLength[2])/
+                                     (restingLength[0]*restingLength[1]*2)    );
+    
+    double Pa=std::cos(RestingAngle1)*restingLength[0];
+    double Pc=std::sin(RestingAngle1)*restingLength[0];
+    double Pb=restingLength[1];
+    
+    // shape vector matrix in resting shape in local coordinate system  
+    //= inverse of coordinate matrix ( only first two elements i.e. ShapeVectorResting[3][2] )      
+    double ShapeVectorResting[3][3]={ {  0   ,       1/Pc      , 0 }, 
+                                      {-1/Pb , (Pa-Pb)/(Pb*Pc) , 1 },       
+                                      { 1/Pb ,     -Pa/(Pb*Pc) , 0 }  };
+    
+    // Rotation Matrix for changing coordinate systems for both Local to Global( Strain Tensor) 
+    // and Global to Local( Aniso Vector in the current shape)
+    double rotation[3][3];  
+    
+    double tempA=std::sqrt((position[2][0]-position[1][0])*(position[2][0]-position[1][0])+
+                           (position[2][1]-position[1][1])*(position[2][1]-position[1][1])+
+                           (position[2][2]-position[1][2])*(position[2][2]-position[1][2])  );
+    
+    double tempB=std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+                         (position[0][1]-position[1][1])*(position[0][1]-position[1][1])+
+                           (position[0][2]-position[1][2])*(position[0][2]-position[1][2])  );
+    
+    
+    double Xcurrent[3];      
+    Xcurrent[0]= (position[2][0]-position[1][0])/tempA;
+    Xcurrent[1]= (position[2][1]-position[1][1])/tempA;
+    Xcurrent[2]= (position[2][2]-position[1][2])/tempA;
+    
+    double Bcurrent[3];      
+    Bcurrent[0]= (position[0][0]-position[1][0])/tempB;
+    Bcurrent[1]= (position[0][1]-position[1][1])/tempB;
+    Bcurrent[2]= (position[0][2]-position[1][2])/tempB;
+    
+    double Zcurrent[3];      
+    Zcurrent[0]= Xcurrent[1]*Bcurrent[2]-Xcurrent[2]*Bcurrent[1];
+    Zcurrent[1]= Xcurrent[2]*Bcurrent[0]-Xcurrent[0]*Bcurrent[2];
+    Zcurrent[2]= Xcurrent[0]*Bcurrent[1]-Xcurrent[1]*Bcurrent[0];
+    
+    tempA=std:: sqrt(Zcurrent[0]*Zcurrent[0]+Zcurrent[1]*Zcurrent[1]+Zcurrent[2]*Zcurrent[2]);
+    Zcurrent[0]=Zcurrent[0]/tempA;
+    Zcurrent[1]=Zcurrent[1]/tempA;
+    Zcurrent[2]=Zcurrent[2]/tempA;
+    
+    double Ycurrent[3];      
+    Ycurrent[0]= Zcurrent[1]*Xcurrent[2]-Zcurrent[2]*Xcurrent[1];
+    Ycurrent[1]= Zcurrent[2]*Xcurrent[0]-Zcurrent[0]*Xcurrent[2];
+    Ycurrent[2]= Zcurrent[0]*Xcurrent[1]-Zcurrent[1]*Xcurrent[0];
+    
+    
+    rotation[0][0]=Xcurrent[0];
+    rotation[1][0]=Xcurrent[1];
+    rotation[2][0]=Xcurrent[2];
+    
+    rotation[0][1]=Ycurrent[0];
+    rotation[1][1]=Ycurrent[1];
+    rotation[2][1]=Ycurrent[2];
+    
+    rotation[0][2]=Zcurrent[0];
+    rotation[1][2]=Zcurrent[1];
+    rotation[2][2]=Zcurrent[2];  
+    
+    
+    // STRAIN:
+    
+    double DeformGrad[2][2]={{0,0},{0,0}}; // F=Sigma i Qi x Di ----------------------
+    for ( int ii=0 ; ii<3 ; ++ii ) {
+      DeformGrad[0][0]=DeformGrad[0][0]+positionLocal[ii][0]*ShapeVectorResting[ii][0];
+      DeformGrad[1][0]=DeformGrad[1][0]+positionLocal[ii][1]*ShapeVectorResting[ii][0];
+      DeformGrad[0][1]=DeformGrad[0][1]+positionLocal[ii][0]*ShapeVectorResting[ii][1];
+      DeformGrad[1][1]=DeformGrad[1][1]+positionLocal[ii][1]*ShapeVectorResting[ii][1];
+    } 
+    
+    
+    double LeftCauchy[2][2]; // B=FFt
+    LeftCauchy[0][0]=DeformGrad[0][0]*DeformGrad[0][0]+DeformGrad[0][1]*DeformGrad[0][1];
+    LeftCauchy[1][0]=DeformGrad[1][0]*DeformGrad[0][0]+DeformGrad[1][1]*DeformGrad[0][1];
+    LeftCauchy[0][1]=DeformGrad[0][0]*DeformGrad[1][0]+DeformGrad[0][1]*DeformGrad[1][1];
+    LeftCauchy[1][1]=DeformGrad[1][0]*DeformGrad[1][0]+DeformGrad[1][1]*DeformGrad[1][1];
+    
+    double StrainAlmansi[2][2]; // e=0.5(1-B^-1)  True strain tensor
+    double temp=LeftCauchy[0][0]*LeftCauchy[1][1]-LeftCauchy[1][0]*LeftCauchy[0][1]; // det(B)
+    StrainAlmansi[0][0]=0.5*(1-(LeftCauchy[1][1]/temp));
+    StrainAlmansi[1][0]=0.5*LeftCauchy[1][0]/temp;
+    StrainAlmansi[0][1]=0.5*LeftCauchy[0][1]/temp;  
+    StrainAlmansi[1][1]=0.5*(1-(LeftCauchy[0][0]/temp));
+  
+    
+    double StrainTensor[3][3]; // there are other alternatives than StrainAlmansi for strain tensor
+    StrainTensor[0][0]=StrainAlmansi[0][0];
+    StrainTensor[1][0]=StrainAlmansi[1][0];
+    StrainTensor[0][1]=StrainAlmansi[0][1];
+    StrainTensor[1][1]=StrainAlmansi[1][1];
+    
+    
+    StrainTensor[0][2]=0;  // adding 3rd dimension which is zero, the tensor is still in element plane
+    StrainTensor[1][2]=0;
+    StrainTensor[2][2]=0;
+    StrainTensor[2][0]=0;
+    StrainTensor[2][1]=0;
+    
+    
+    // rotating strain tensor to the global coordinate system
+    double tempR[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        for(int w=0 ; w<3 ; w++) 
+          tempR[r][s] += rotation[r][w]*StrainTensor[w][s];
+    
+    for (int r=0 ; r<3 ; r++) 
+    for (int s=0 ; s<3 ; s++) {
+      StrainTensor[r][s]=0;
+      for(int w=0 ; w<3 ; w++) 
+        StrainTensor[r][s] += tempR[r][w]*rotation[s][w]; 
+    }
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++)    
+        StrainCellGlobal[r][s] += restingArea*StrainTensor[r][s];
+  }
+  
+  for (int r=0 ; r<3 ; r++) 
+    for (int s=0 ; s<3 ; s++)    
+      StrainCellGlobal[r][s]= StrainCellGlobal[r][s]/TotalCellArea; 
+  
+
+
+  
+  
+  strainEpcilon =0.000001;
+  for(size_t gg=0; gg<3;gg++)  
+    for(size_t ggk=0; ggk<3;ggk++)
+      if(gg==ggk)  
+        eigenVectorStrain[gg][ggk]=1;
+      else
+        eigenVectorStrain[gg][ggk]=0;
+  
+  pivot=1;
+  pi=3.1415;
+  
+   //double RotAngle,Si,Co;
+  
+  
+  
+  pivot=std::abs(StrainCellGlobal[1][0]);
+  I=1;
+  J=0;
+  if (std::abs(StrainCellGlobal[2][0])>pivot) {
+    pivot=std::abs(StrainCellGlobal[2][0]);
+    I=2;
+    J=0;
+  }
+  if (std::abs(StrainCellGlobal[2][1])>pivot) {
+    pivot=std::abs(StrainCellGlobal[2][1]);
+    I=2;
+    J=1;
+  }
+  
+  
+  while (pivot> strainEpcilon) {
+    
+    if (std::abs(StrainCellGlobal[I][I]-StrainCellGlobal[J][J])< strainEpcilon ) {
+      RotAngle=pi/4;
+    }            
+    else {
+      RotAngle=0.5*std::atan((2*StrainCellGlobal[I][J])/(StrainCellGlobal[J][J]-StrainCellGlobal[I][I]));
+    }
+    Si=std::sin(RotAngle);
+    Co=std::cos(RotAngle);
+    double tempRot[3][3]={{1,0,0},{0,1,0},{0,0,1}};
+    tempRot[I][I]=Co;
+    tempRot[J][J]=Co;
+    tempRot[I][J]=Si;
+    tempRot[J][I]=-Si;
+    double tempStrain[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        for(int w=0 ; w<3 ; w++) 
+          tempStrain[r][s]=tempStrain[r][s]+StrainCellGlobal[r][w]*tempRot[w][s];
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        StrainCellGlobal[r][s]=0;
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        for(int w=0 ; w<3 ; w++) 
+          StrainCellGlobal[r][s]=StrainCellGlobal[r][s]+tempRot[w][r]*tempStrain[w][s];
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        tempStrain[r][s]=eigenVectorStrain[r][s];
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        eigenVectorStrain[r][s]=0;
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        for(int w=0 ; w<3 ; w++) 
+          eigenVectorStrain[r][s]=eigenVectorStrain[r][s]+tempStrain[r][w]*tempRot[w][s];
+    
+    
+    pivot=std::abs(StrainCellGlobal[1][0]);
+    I=1;
+    J=0;
+    if (std::abs(StrainCellGlobal[2][0])>pivot) {
+      pivot=std::abs(StrainCellGlobal[2][0]);
+      I=2;
+      J=0;
+    }
+    if (std::abs(StrainCellGlobal[2][1])>pivot) {
+      pivot=std::abs(StrainCellGlobal[2][1]);
+      I=2;
+      J=1;
+    }
+  }
+  
+  // normalizing eigenvectors (remove if not necessary)  
+  temp=std::sqrt(eigenVectorStrain[0][0]*eigenVectorStrain[0][0] +
+                 eigenVectorStrain[1][0]*eigenVectorStrain[1][0] +
+                 eigenVectorStrain[2][0]*eigenVectorStrain[2][0] );
+  if(temp>0){
+    eigenVectorStrain[0][0]/=temp;
+    eigenVectorStrain[1][0]/=temp;
+    eigenVectorStrain[2][0]/=temp;
+  }
+  temp=std::sqrt(eigenVectorStrain[0][1]*eigenVectorStrain[0][1] +
+                 eigenVectorStrain[1][1]*eigenVectorStrain[1][1] +
+                 eigenVectorStrain[2][1]*eigenVectorStrain[2][1] );
+  if(temp>0){
+    eigenVectorStrain[0][1]/=temp;
+    eigenVectorStrain[1][1]/=temp;
+    eigenVectorStrain[2][1]/=temp;
+  }
+  temp=std::sqrt(eigenVectorStrain[0][2]*eigenVectorStrain[0][2] +
+                 eigenVectorStrain[1][2]*eigenVectorStrain[1][2] +
+                 eigenVectorStrain[2][2]*eigenVectorStrain[2][2] );
+  if(temp>0){
+    eigenVectorStrain[0][2]/=temp;
+    eigenVectorStrain[1][2]/=temp;
+    eigenVectorStrain[2][2]/=temp;
+  }
+  
+  // maximal strain direction
+  maximalStrainValue=StrainCellGlobal[0][0];
+  Istrain=0;
+  if (StrainCellGlobal[1][1]>maximalStrainValue) 
+    {
+      maximalStrainValue=StrainCellGlobal[1][1];
+      Istrain=1;
+    }
+  if (StrainCellGlobal[2][2]>maximalStrainValue) 
+    {
+      maximalStrainValue=StrainCellGlobal[2][2];
+      Istrain=2;
+    }
+  
+  
+  // 2nd maximalstrain direction/value
+  //double maximalStrainValue2,maximalStrainValue3;
+  //int Istrain2,Istrain3;
+  if (Istrain==0) {
+    Istrain2=1;
+    Istrain3=2;
+  }
+  if (Istrain==1) {
+    Istrain2=0;
+    Istrain3=2;
+  }
+  if (Istrain==2) {
+    Istrain2=0;
+    Istrain3=1;
+  }
+  if(StrainCellGlobal[Istrain3][Istrain3] > StrainCellGlobal[Istrain2][Istrain2] ) {
+    temp=Istrain2;
+    Istrain2=Istrain3;
+    Istrain3=temp;
+  }
+  maximalStrainValue2=StrainCellGlobal[Istrain2][Istrain2];
+  maximalStrainValue3=StrainCellGlobal[Istrain3][Istrain3];
+
+  std::cerr<<"  strain after 1 "
+           <<maximalStrainValue <<"  "
+           <<maximalStrainValue2<<"  "
+           <<maximalStrainValue3<<"  "<<std::endl;
+
+
+  cellIndex=Nc;
+ // adhoc for comparing strain before and after division
+ numCellWalls=cell(cellIndex).numWall();
+  // calculating the averaged strain tensor of the cell
+  ////////////begin strain
+ for(size_t gg=0; gg<3;gg++)  
+   for(size_t ggk=0; ggk<3;ggk++)  
+     StrainCellGlobal[gg][ggk]=0;
+ 
+  TotalCellArea=0;
+  for (size_t wallindex=0; wallindex<numCellWalls; ++wallindex) { 
+    size_t kPlusOneMod = (wallindex+1)%numCellWalls;
+    //size_t v1 = com;
+    size_t v2 = cell(cellIndex).vertex(wallindex)->index();
+    size_t v3 = cell(cellIndex).vertex(kPlusOneMod)->index();
+    //size_t w1 = internal wallindex
+    size_t w2 = cell(cellIndex).wall(wallindex)->index();
+    //size_t w3 = internal wallindex+1
+    
+    // Position matrix holds in rows positions for com, vertex(wallindex), vertex(wallindex+1)
+    DataMatrix position(3,vertexData[v2]);
+    for (size_t d=0; d<dimension; ++d)
+      position[0][d] = cellData[cellIndex][centerIndex+d]; // com position
+    //position[1] = vertexData[v2]; // given by initiation
+    position[2] = vertexData[v3];
+    //position[0][2] z for vertex 1 of the current element
+    
+    
+    // Resting lengths are from com-vertex(wallindex), 
+    // vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
+    std::vector<double> restingLength(3);
+    if(doubleFlag==1){ // double resting length
+      restingLength[0] = cellData[cellIndex][lengthInternalIndex + 2*wallindex+1];
+      //restingLength[1] = wallData[w2][wallLengthIndex]+wallData[w2][wallLengthIndex+restAddIndex];
+      restingLength[1] = wallData[w2][wallLengthIndex]+
+        cellData[cellIndex][lengthInternalIndex+2*numCellWalls+wallindex];
+      restingLength[2] = cellData[cellIndex][lengthInternalIndex + 2*kPlusOneMod];      
+    }
+    else if(doubleFlag==0){    // single resting length
+      restingLength[0] = cellData[cellIndex][lengthInternalIndex + wallindex];
+      restingLength[1] = wallData[w2][wallLengthIndex];
+      restingLength[2] = cellData[cellIndex][lengthInternalIndex + kPlusOneMod];
+    }
+    // Lengths are from com-vertex(wallindex), 
+    // vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
+    std::vector<double> length(3);
+    length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
+                           (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
+                           (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
+    
+    length[1] = std::sqrt( (position[2][0]-position[1][0])*(position[2][0]-position[1][0]) +
+                           (position[2][1]-position[1][1])*(position[2][1]-position[1][1]) +
+                           (position[2][2]-position[1][2])*(position[2][2]-position[1][2]) );
+    
+    length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
+                           (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
+                           (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
+    
+    
+    // restingArea of the element (using Heron's formula)                                      
+    double restingArea=std::sqrt( ( restingLength[0]+restingLength[1]+restingLength[2])*
+                                  (-restingLength[0]+restingLength[1]+restingLength[2])*
+                                  ( restingLength[0]-restingLength[1]+restingLength[2])*
+                                  ( restingLength[0]+restingLength[1]-restingLength[2])  )*0.25;
+    TotalCellArea +=restingArea;
+    
+    //Current shape local coordinate of the element  (counterclockwise ordering of nodes/edges)
+    double CurrentAngle1=std::acos(  (length[0]*length[0]+length[1]*length[1]-length[2]*length[2])/
+                                     (length[0]*length[1]*2)    );
+    
+    double Qa=std::cos(CurrentAngle1)*length[0];
+    double Qc=std::sin(CurrentAngle1)*length[0];
+    double Qb=length[1];
+    
+    double positionLocal[3][2]={ {Qa , Qc}, 
+                                 {0  , 0 },  
+                                 {Qb , 0 }  };
+    
+    // Local coordinates of the resting shape ( counterclockwise )
+    double RestingAngle1=std::acos(  (restingLength[0]*restingLength[0]
+                                      +restingLength[1]*restingLength[1]
+                                      -restingLength[2]*restingLength[2])/
+                                     (restingLength[0]*restingLength[1]*2)    );
+    
+    double Pa=std::cos(RestingAngle1)*restingLength[0];
+    double Pc=std::sin(RestingAngle1)*restingLength[0];
+    double Pb=restingLength[1];
+    
+    // shape vector matrix in resting shape in local coordinate system  
+    //= inverse of coordinate matrix ( only first two elements i.e. ShapeVectorResting[3][2] )      
+    double ShapeVectorResting[3][3]={ {  0   ,       1/Pc      , 0 }, 
+                                      {-1/Pb , (Pa-Pb)/(Pb*Pc) , 1 },       
+                                      { 1/Pb ,     -Pa/(Pb*Pc) , 0 }  };
+    
+    // Rotation Matrix for changing coordinate systems for both Local to Global( Strain Tensor) 
+    // and Global to Local( Aniso Vector in the current shape)
+    double rotation[3][3];  
+    
+    double tempA=std::sqrt((position[2][0]-position[1][0])*(position[2][0]-position[1][0])+
+                           (position[2][1]-position[1][1])*(position[2][1]-position[1][1])+
+                           (position[2][2]-position[1][2])*(position[2][2]-position[1][2])  );
+    
+    double tempB=std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+                         (position[0][1]-position[1][1])*(position[0][1]-position[1][1])+
+                           (position[0][2]-position[1][2])*(position[0][2]-position[1][2])  );
+    
+    
+    double Xcurrent[3];      
+    Xcurrent[0]= (position[2][0]-position[1][0])/tempA;
+    Xcurrent[1]= (position[2][1]-position[1][1])/tempA;
+    Xcurrent[2]= (position[2][2]-position[1][2])/tempA;
+    
+    double Bcurrent[3];      
+    Bcurrent[0]= (position[0][0]-position[1][0])/tempB;
+    Bcurrent[1]= (position[0][1]-position[1][1])/tempB;
+    Bcurrent[2]= (position[0][2]-position[1][2])/tempB;
+    
+    double Zcurrent[3];      
+    Zcurrent[0]= Xcurrent[1]*Bcurrent[2]-Xcurrent[2]*Bcurrent[1];
+    Zcurrent[1]= Xcurrent[2]*Bcurrent[0]-Xcurrent[0]*Bcurrent[2];
+    Zcurrent[2]= Xcurrent[0]*Bcurrent[1]-Xcurrent[1]*Bcurrent[0];
+    
+    tempA=std:: sqrt(Zcurrent[0]*Zcurrent[0]+Zcurrent[1]*Zcurrent[1]+Zcurrent[2]*Zcurrent[2]);
+    Zcurrent[0]=Zcurrent[0]/tempA;
+    Zcurrent[1]=Zcurrent[1]/tempA;
+    Zcurrent[2]=Zcurrent[2]/tempA;
+    
+    double Ycurrent[3];      
+    Ycurrent[0]= Zcurrent[1]*Xcurrent[2]-Zcurrent[2]*Xcurrent[1];
+    Ycurrent[1]= Zcurrent[2]*Xcurrent[0]-Zcurrent[0]*Xcurrent[2];
+    Ycurrent[2]= Zcurrent[0]*Xcurrent[1]-Zcurrent[1]*Xcurrent[0];
+    
+    
+    rotation[0][0]=Xcurrent[0];
+    rotation[1][0]=Xcurrent[1];
+    rotation[2][0]=Xcurrent[2];
+    
+    rotation[0][1]=Ycurrent[0];
+    rotation[1][1]=Ycurrent[1];
+    rotation[2][1]=Ycurrent[2];
+    
+    rotation[0][2]=Zcurrent[0];
+    rotation[1][2]=Zcurrent[1];
+    rotation[2][2]=Zcurrent[2];  
+    
+    
+    // STRAIN:
+    
+    double DeformGrad[2][2]={{0,0},{0,0}}; // F=Sigma i Qi x Di ----------------------
+    for ( int ii=0 ; ii<3 ; ++ii ) {
+      DeformGrad[0][0]=DeformGrad[0][0]+positionLocal[ii][0]*ShapeVectorResting[ii][0];
+      DeformGrad[1][0]=DeformGrad[1][0]+positionLocal[ii][1]*ShapeVectorResting[ii][0];
+      DeformGrad[0][1]=DeformGrad[0][1]+positionLocal[ii][0]*ShapeVectorResting[ii][1];
+      DeformGrad[1][1]=DeformGrad[1][1]+positionLocal[ii][1]*ShapeVectorResting[ii][1];
+    } 
+    
+    
+    double LeftCauchy[2][2]; // B=FFt
+    LeftCauchy[0][0]=DeformGrad[0][0]*DeformGrad[0][0]+DeformGrad[0][1]*DeformGrad[0][1];
+    LeftCauchy[1][0]=DeformGrad[1][0]*DeformGrad[0][0]+DeformGrad[1][1]*DeformGrad[0][1];
+    LeftCauchy[0][1]=DeformGrad[0][0]*DeformGrad[1][0]+DeformGrad[0][1]*DeformGrad[1][1];
+    LeftCauchy[1][1]=DeformGrad[1][0]*DeformGrad[1][0]+DeformGrad[1][1]*DeformGrad[1][1];
+    
+    double StrainAlmansi[2][2]; // e=0.5(1-B^-1)  True strain tensor
+    double temp=LeftCauchy[0][0]*LeftCauchy[1][1]-LeftCauchy[1][0]*LeftCauchy[0][1]; // det(B)
+    StrainAlmansi[0][0]=0.5*(1-(LeftCauchy[1][1]/temp));
+    StrainAlmansi[1][0]=0.5*LeftCauchy[1][0]/temp;
+    StrainAlmansi[0][1]=0.5*LeftCauchy[0][1]/temp;  
+    StrainAlmansi[1][1]=0.5*(1-(LeftCauchy[0][0]/temp));
+  
+    
+    double StrainTensor[3][3]; // there are other alternatives than StrainAlmansi for strain tensor
+    StrainTensor[0][0]=StrainAlmansi[0][0];
+    StrainTensor[1][0]=StrainAlmansi[1][0];
+    StrainTensor[0][1]=StrainAlmansi[0][1];
+    StrainTensor[1][1]=StrainAlmansi[1][1];
+    
+    
+    StrainTensor[0][2]=0;  // adding 3rd dimension which is zero, the tensor is still in element plane
+    StrainTensor[1][2]=0;
+    StrainTensor[2][2]=0;
+    StrainTensor[2][0]=0;
+    StrainTensor[2][1]=0;
+    
+    
+    // rotating strain tensor to the global coordinate system
+    double tempR[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        for(int w=0 ; w<3 ; w++) 
+          tempR[r][s] += rotation[r][w]*StrainTensor[w][s];
+    
+    for (int r=0 ; r<3 ; r++) 
+    for (int s=0 ; s<3 ; s++) {
+      StrainTensor[r][s]=0;
+      for(int w=0 ; w<3 ; w++) 
+        StrainTensor[r][s] += tempR[r][w]*rotation[s][w]; 
+    }
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++)    
+        StrainCellGlobal[r][s] += restingArea*StrainTensor[r][s];
+  }
+  
+  for (int r=0 ; r<3 ; r++) 
+    for (int s=0 ; s<3 ; s++)    
+      StrainCellGlobal[r][s]= StrainCellGlobal[r][s]/TotalCellArea; 
+  
+
+
+  
+  
+  strainEpcilon =0.000001;
+  for(size_t gg=0; gg<3;gg++)  
+    for(size_t ggk=0; ggk<3;ggk++)
+      if(gg==ggk)  
+        eigenVectorStrain[gg][ggk]=1;
+      else
+        eigenVectorStrain[gg][ggk]=0;
+  
+  pivot=1;
+  pi=3.1415;
+  
+   //double RotAngle,Si,Co;
+  
+  
+  
+  pivot=std::abs(StrainCellGlobal[1][0]);
+  I=1;
+  J=0;
+  if (std::abs(StrainCellGlobal[2][0])>pivot) {
+    pivot=std::abs(StrainCellGlobal[2][0]);
+    I=2;
+    J=0;
+  }
+  if (std::abs(StrainCellGlobal[2][1])>pivot) {
+    pivot=std::abs(StrainCellGlobal[2][1]);
+    I=2;
+    J=1;
+  }
+  
+  
+  while (pivot> strainEpcilon) {
+    
+    if (std::abs(StrainCellGlobal[I][I]-StrainCellGlobal[J][J])< strainEpcilon ) {
+      RotAngle=pi/4;
+    }            
+    else {
+      RotAngle=0.5*std::atan((2*StrainCellGlobal[I][J])/(StrainCellGlobal[J][J]-StrainCellGlobal[I][I]));
+    }
+    Si=std::sin(RotAngle);
+    Co=std::cos(RotAngle);
+    double tempRot[3][3]={{1,0,0},{0,1,0},{0,0,1}};
+    tempRot[I][I]=Co;
+    tempRot[J][J]=Co;
+    tempRot[I][J]=Si;
+    tempRot[J][I]=-Si;
+    double tempStrain[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        for(int w=0 ; w<3 ; w++) 
+          tempStrain[r][s]=tempStrain[r][s]+StrainCellGlobal[r][w]*tempRot[w][s];
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        StrainCellGlobal[r][s]=0;
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        for(int w=0 ; w<3 ; w++) 
+          StrainCellGlobal[r][s]=StrainCellGlobal[r][s]+tempRot[w][r]*tempStrain[w][s];
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        tempStrain[r][s]=eigenVectorStrain[r][s];
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        eigenVectorStrain[r][s]=0;
+    
+    for (int r=0 ; r<3 ; r++) 
+      for (int s=0 ; s<3 ; s++) 
+        for(int w=0 ; w<3 ; w++) 
+          eigenVectorStrain[r][s]=eigenVectorStrain[r][s]+tempStrain[r][w]*tempRot[w][s];
+    
+    
+    pivot=std::abs(StrainCellGlobal[1][0]);
+    I=1;
+    J=0;
+    if (std::abs(StrainCellGlobal[2][0])>pivot) {
+      pivot=std::abs(StrainCellGlobal[2][0]);
+      I=2;
+      J=0;
+    }
+    if (std::abs(StrainCellGlobal[2][1])>pivot) {
+      pivot=std::abs(StrainCellGlobal[2][1]);
+      I=2;
+      J=1;
+    }
+  }
+  
+  // normalizing eigenvectors (remove if not necessary)  
+  temp=std::sqrt(eigenVectorStrain[0][0]*eigenVectorStrain[0][0] +
+                 eigenVectorStrain[1][0]*eigenVectorStrain[1][0] +
+                 eigenVectorStrain[2][0]*eigenVectorStrain[2][0] );
+  if(temp>0){
+    eigenVectorStrain[0][0]/=temp;
+    eigenVectorStrain[1][0]/=temp;
+    eigenVectorStrain[2][0]/=temp;
+  }
+  temp=std::sqrt(eigenVectorStrain[0][1]*eigenVectorStrain[0][1] +
+                 eigenVectorStrain[1][1]*eigenVectorStrain[1][1] +
+                 eigenVectorStrain[2][1]*eigenVectorStrain[2][1] );
+  if(temp>0){
+    eigenVectorStrain[0][1]/=temp;
+    eigenVectorStrain[1][1]/=temp;
+    eigenVectorStrain[2][1]/=temp;
+  }
+  temp=std::sqrt(eigenVectorStrain[0][2]*eigenVectorStrain[0][2] +
+                 eigenVectorStrain[1][2]*eigenVectorStrain[1][2] +
+                 eigenVectorStrain[2][2]*eigenVectorStrain[2][2] );
+  if(temp>0){
+    eigenVectorStrain[0][2]/=temp;
+    eigenVectorStrain[1][2]/=temp;
+    eigenVectorStrain[2][2]/=temp;
+  }
+  
+  // maximal strain direction
+  maximalStrainValue=StrainCellGlobal[0][0];
+  Istrain=0;
+  if (StrainCellGlobal[1][1]>maximalStrainValue) 
+    {
+      maximalStrainValue=StrainCellGlobal[1][1];
+      Istrain=1;
+    }
+  if (StrainCellGlobal[2][2]>maximalStrainValue) 
+    {
+      maximalStrainValue=StrainCellGlobal[2][2];
+      Istrain=2;
+    }
+  
+  
+  // 2nd maximalstrain direction/value
+  //double maximalStrainValue2,maximalStrainValue3;
+  //int Istrain2,Istrain3;
+  if (Istrain==0) {
+    Istrain2=1;
+    Istrain3=2;
+  }
+  if (Istrain==1) {
+    Istrain2=0;
+    Istrain3=2;
+  }
+  if (Istrain==2) {
+    Istrain2=0;
+    Istrain3=1;
+  }
+  if(StrainCellGlobal[Istrain3][Istrain3] > StrainCellGlobal[Istrain2][Istrain2] ) {
+    temp=Istrain2;
+    Istrain2=Istrain3;
+    Istrain3=temp;
+  }
+  maximalStrainValue2=StrainCellGlobal[Istrain2][Istrain2];
+  maximalStrainValue3=StrainCellGlobal[Istrain3][Istrain3];
+  std::cerr<<"  strain after 2 "<<maximalStrainValue<<"  "<<maximalStrainValue2<<"  "<<maximalStrainValue3<<"  "<<std::endl;
+
+  ///////////////////////////////////////////////////////// end ad-hoc
+
 }
-
-////////////////////////// end dividecellCentertiangulation
-
-
-
 
 
 
