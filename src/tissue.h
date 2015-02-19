@@ -818,16 +818,8 @@ class Tissue {
   ///
   /// @note Requires that the cell is triangulated with the center position stored in the celldata
   ///
-  void divideCellCenterTriangulation( Cell *divCell, size_t v1, size_t v2,
-                                      size_t centerIndex,                                                                                                DataMatrix &cellData,
-				      DataMatrix &wallData,
-				      DataMatrix &vertexData,
-				      DataMatrix &cellDeriv,
-				      DataMatrix &wallDeriv,
-				      DataMatrix &vertexDeriv,
-				      std::vector<size_t> &volumeChangeList);
   
-  void divideCellCenterTriangulation1( Cell *divCell, size_t v1, size_t v2,
+  void divideCellCenterTriangulation( Cell *divCell, size_t v1, size_t v2,
                                       size_t centerIndex, size_t wallLengthIndex,                                                                        std::vector<double> &v1Pos,
                                       std::vector<double> &v2Pos,
 				      DataMatrix &cellData,
@@ -837,8 +829,8 @@ class Tissue {
 				      DataMatrix &wallDeriv,
 				      DataMatrix &vertexDeriv,
 				      std::vector<size_t> &volumeChangeList,
-                                      double threshold );
-  
+                                      double threshold, 
+                                      size_t doubleFlag); 
   ///
   /// @brief Sorts cell.wall and cell.vertex vectors to be cyclic 
   ///
