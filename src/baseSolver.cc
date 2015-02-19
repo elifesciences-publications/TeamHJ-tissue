@@ -734,9 +734,15 @@ void BaseSolver::print(std::ostream &os)
    os << T_->reaction(1)->parameter(1)<< " " 
       << T_->reaction(6)->parameter(1)<< " " 
       << cellData_[0][18] << " " 
-      << cellData_[0][23] << " " 
-      << cellData_[0][24] << std::endl;
-   //        young-Fiber     forceY    stress-anisotropy    cos(tet(MT,stress))  cos(tet(stress,strain))
+      << cellData_[0][23] << " "
+      << cellData_[0][24] << " "
+      << cellData_[0][17] << " "
+      << cellData_[0][11] << " "
+      << cellData_[0][28] << " "
+      << cellData_[0][7] << " " 
+      << cellData_[0][32] << std::endl;
+   //        young-Fiber     forceY    stress-anisotropy    cos(tet(MT,stress))  cos(tet(stress,strain)), 
+   // strain aniso, strain1, strain2, stress1, stress2.
    //os << T_->reaction(0)->parameter(0);
  }
   
@@ -848,6 +854,36 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
 	  <<std::endl;
    }
  }
+
+ else if( printFlag_==67 ) {// Print in vtu format and resting length
+   std::string pvdFile = "tmp/tissue.pvd";
+   std::string cellFile = "tmp/VTK_cells.vtu";
+   std::string wallFile = "tmp/VTK_walls.vtu";
+   static size_t numCellVar = T_->cell(0).numVariable();
+   setTissueVariables(numCellVar);
+   if( tCount==0 ) {
+     PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
+   }
+   PVD_file::write(*T_,cellFile,wallFile,tCount);
+   
+   //for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) 
+     os << wallData_[0][0]+wallData_[0][1]+wallData_[0][2]<<" "
+        << wallData_[1][0]+wallData_[1][1]+wallData_[1][2]<<" "
+        << wallData_[2][0]+wallData_[2][1]+wallData_[2][2]<<" "
+        << wallData_[3][0]+wallData_[3][1]+wallData_[3][2]<<" "
+        << cellData_[0][42] <<" "
+        << cellData_[0][43] <<" "
+        << cellData_[0][44] <<" "
+        << cellData_[0][45] <<" "
+        << cellData_[0][46] <<" "
+        << cellData_[0][47] <<" "
+        << cellData_[0][48] <<" "
+        << cellData_[0][49] <<"       "
+        << vertexDerivs_[0][1] <<" "
+        <<std::endl;
+   
+ }
+
   
   else if (printFlag_ == 96) {
     size_t dimensions = vertexData_[0].size();
@@ -1043,7 +1079,7 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
     PVD_file::write(*T_,cellFile,wallFile,tCount);
   }
 
-  else if( printFlag_==102 ) {// Print in vtu format and edges to study strain and growth
+  else if( printFlag_==102 ) {//(adhoc) Print in vtu format and edges to study strain and growth
     std::string pvdFile = "tmp/tissue.pvd";
     std::string cellFile = "tmp/VTK_cells.vtu";
     std::string wallFile = "tmp/VTK_walls.vtu";
@@ -1054,40 +1090,40 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
     }
     PVD_file::write(*T_,cellFile,wallFile,tCount);
     //if(tCount==numPrint_){
-      for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) {
+      // for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) {
         
-        double Length0=std::sqrt(
-                                 (vertexData_[0][0] - vertexData_[1][0])*
-                                 (vertexData_[0][0] - vertexData_[1][0])+
-                                 (vertexData_[0][1] - vertexData_[1][1])*
-                                 (vertexData_[0][1] - vertexData_[1][1])
-                                 );
-        double restLength0=wallData_[0][0];
-        double Length1=std::sqrt(
-                                 (vertexData_[2][0] - vertexData_[1][0])*
-                                 (vertexData_[2][0] - vertexData_[1][0])+
-                                 (vertexData_[2][1] - vertexData_[1][1])*
-                                 (vertexData_[2][1] - vertexData_[1][1])
-                                 );
-        double restLength1=wallData_[1][0];
-        double Length2=std::sqrt(
-                                 (cellData_[0][35+0] - vertexData_[1][0])*
-                                 (cellData_[0][35+0] - vertexData_[1][0])+
-                                 (cellData_[0][35+1] - vertexData_[1][1])*
-                                 (cellData_[0][35+1] - vertexData_[1][1])
-                                 );
-        double restLength2=cellData_[0][35+3];
+      //   double Length0=std::sqrt(
+      //                            (vertexData_[0][0] - vertexData_[1][0])*
+      //                            (vertexData_[0][0] - vertexData_[1][0])+
+      //                            (vertexData_[0][1] - vertexData_[1][1])*
+      //                            (vertexData_[0][1] - vertexData_[1][1])
+      //                            );
+      //   double restLength0=wallData_[0][0];
+      //   double Length1=std::sqrt(
+      //                            (vertexData_[2][0] - vertexData_[1][0])*
+      //                            (vertexData_[2][0] - vertexData_[1][0])+
+      //                            (vertexData_[2][1] - vertexData_[1][1])*
+      //                            (vertexData_[2][1] - vertexData_[1][1])
+      //                            );
+      //   double restLength1=wallData_[1][0];
+      //   double Length2=std::sqrt(
+      //                            (cellData_[0][35+0] - vertexData_[1][0])*
+      //                            (cellData_[0][35+0] - vertexData_[1][0])+
+      //                            (cellData_[0][35+1] - vertexData_[1][1])*
+      //                            (cellData_[0][35+1] - vertexData_[1][1])
+      //                            );
+      //   double restLength2=cellData_[0][35+3];
 
-        os <<  (Length0-restLength0)/restLength0 <<" " // edge0 strain (l-l0)/l0
-           <<  restLength0                     <<" "//  edge0-principalStrain  angle   
-           <<  (Length1-restLength1)/restLength1 <<" "//  edge1 strain
-           <<  restLength1                     <<" "//  edge1-principalStrain  angle 
-           <<  (Length2-restLength2)/restLength2 <<" "//  edge2 strain
-           <<  restLength2       <<" "//  edge2-principalStrain  angle 
-           <<  cellData_[0][11]  <<" "//  principalStrain1
-           <<  cellData_[0][11]  <<" "//  principalStrain2
-           <<std::endl;
-      }
+      //   os <<  (Length0-restLength0)/restLength0 <<" " // edge0 strain (l-l0)/l0
+      //      <<  restLength0                     <<" "//  edge0-principalStrain  angle   
+      //      <<  (Length1-restLength1)/restLength1 <<" "//  edge1 strain
+      //      <<  restLength1                     <<" "//  edge1-principalStrain  angle 
+      //      <<  (Length2-restLength2)/restLength2 <<" "//  edge2 strain
+      //      <<  restLength2       <<" "//  edge2-principalStrain  angle 
+      //      <<  cellData_[0][11]  <<" "//  principalStrain1
+      //      <<  cellData_[0][11]  <<" "//  principalStrain2
+      //      <<std::endl;
+      // }
       // }
   }
   
