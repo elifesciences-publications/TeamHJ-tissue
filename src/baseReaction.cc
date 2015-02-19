@@ -51,6 +51,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   }
   else if(idValue == "WallGrowthStress" || idValue == "WallGrowth::Stress" )
     return new WallGrowth::Stress(paraValue, indValue);
+  else if(idValue == "WallGrowthStrain" || idValue == "WallGrowth::Strain" )
+    return new WallGrowth::Strain(paraValue, indValue);
   else if (idValue == "WallGrowth::CenterTriangulation::Constant" ||
 	   idValue == "CenterTriangulation::WallGrowth::Constant")
     return new WallGrowth::CenterTriangulation::Constant(paraValue, indValue);
@@ -101,6 +103,10 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   //mechanicalSpring.h,mechanicalSpring.cc
   else if(idValue=="VertexFromWallSpring")
     return new VertexFromWallSpring(paraValue,indValue);
+  else if(idValue=="VertexFromWallSpringMTnew")
+    return new VertexFromWallSpringMTnew(paraValue,indValue);
+  else if(idValue=="VertexFromWallBoundarySpring")
+    return new VertexFromWallBoundarySpring(paraValue,indValue);
   else if(idValue=="CenterTriangulation::EdgeSpring")
     return new CenterTriangulation::EdgeSpring(paraValue,indValue);
   else if(idValue=="VertexFromDoubleWallSpring")
@@ -133,43 +139,45 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromExternalSpringFromPerpVertexDynamic(paraValue,indValue);
  else if(idValue=="cellcellRepulsion")
     return new cellcellRepulsion(paraValue,indValue);
-  else if (idValue=="VertexFromWallSpringAsymmetric" ||
-	   idValue=="VertexFromEpidermalWallSpringAsymmetric" ||
-	   idValue=="VertexFromEpidermalCellWallSpringAsymmetric") {
-    std::cerr << "BaseReaction::BaseReaction() All *SpringAsymmetric have been renamed "
-	      << "*Spring." << std::endl;
-    exit(-1);
-  }
+ else if(idValue=="vertexFromSubstrate")
+   return new vertexFromSubstrate(paraValue,indValue);
+ else if (idValue=="VertexFromWallSpringAsymmetric" ||
+          idValue=="VertexFromEpidermalWallSpringAsymmetric" ||
+          idValue=="VertexFromEpidermalCellWallSpringAsymmetric") {
+   std::cerr << "BaseReaction::BaseReaction() All *SpringAsymmetric have been renamed "
+             << "*Spring." << std::endl;
+   exit(-1);
+ }
   //Mechanical interactions between vertices
   //mechanical.h,mechanical.cc
-  else if(idValue=="VertexFromCellPowerdiagram")
-    return new VertexFromCellPowerdiagram(paraValue,indValue);
-  else if(idValue=="VertexFromCellPressure")
-    return new VertexFromCellPressure(paraValue,indValue);
-  else if(idValue=="CenterTriangulation::VertexFromCellPressure" ||
-	  idValue=="VertexFromCellPressurecenterTriangulation")
-    return new CenterTriangulation::VertexFromCellPressure(paraValue,indValue);
-  else if(idValue=="CenterTriangulation::VertexFromCellPressureLinear" ||
-	  idValue=="VertexFromCellPressurecenterTriangulationLinear")
-    return new CenterTriangulation::VertexFromCellPressureLinear(paraValue,indValue);
-  else if(idValue=="VertexFromCellPressureVolumeNormalized")
-    return new VertexFromCellPressureVolumeNormalized(paraValue,indValue);
-  else if(idValue=="VertexFromCellPressureThresholdFromMaxPos")
-    return new VertexFromCellPressureThresholdFromMaxPos(paraValue,indValue);
-  else if(idValue=="VertexFromCellInternalPressure")
-    return new VertexFromCellInternalPressure(paraValue,indValue);
-  else if(idValue=="VertexForceOrigoFromIndex")
-    return new VertexForceOrigoFromIndex(paraValue,indValue); 
-  else if(idValue=="CellForceOrigoFromIndex")
-    return new CellForceOrigoFromIndex(paraValue,indValue); 
-  else if(idValue=="CylinderForce")
-    return new CylinderForce(paraValue,indValue); 
-  else if(idValue=="SphereCylinderForce")
-    return new SphereCylinderForce(paraValue,indValue); 
-  else if(idValue=="SphereCylinderForceFromRadius")
-    return new SphereCylinderForceFromRadius(paraValue,indValue); 
-  else if(idValue=="InfiniteWallForce")
-    return new InfiniteWallForce(paraValue,indValue); 
+ else if(idValue=="VertexFromCellPowerdiagram")
+   return new VertexFromCellPowerdiagram(paraValue,indValue);
+ else if(idValue=="VertexFromCellPressure")
+   return new VertexFromCellPressure(paraValue,indValue);
+ else if(idValue=="CenterTriangulation::VertexFromCellPressure" ||
+         idValue=="VertexFromCellPressurecenterTriangulation")
+   return new CenterTriangulation::VertexFromCellPressure(paraValue,indValue);
+ else if(idValue=="CenterTriangulation::VertexFromCellPressureLinear" ||
+         idValue=="VertexFromCellPressurecenterTriangulationLinear")
+   return new CenterTriangulation::VertexFromCellPressureLinear(paraValue,indValue);
+ else if(idValue=="VertexFromCellPressureVolumeNormalized")
+   return new VertexFromCellPressureVolumeNormalized(paraValue,indValue);
+ else if(idValue=="VertexFromCellPressureThresholdFromMaxPos")
+   return new VertexFromCellPressureThresholdFromMaxPos(paraValue,indValue);
+ else if(idValue=="VertexFromCellInternalPressure")
+   return new VertexFromCellInternalPressure(paraValue,indValue);
+ else if(idValue=="VertexForceOrigoFromIndex")
+   return new VertexForceOrigoFromIndex(paraValue,indValue); 
+ else if(idValue=="CellForceOrigoFromIndex")
+   return new CellForceOrigoFromIndex(paraValue,indValue); 
+ else if(idValue=="CylinderForce")
+   return new CylinderForce(paraValue,indValue); 
+ else if(idValue=="SphereCylinderForce")
+   return new SphereCylinderForce(paraValue,indValue); 
+ else if(idValue=="SphereCylinderForceFromRadius")
+   return new SphereCylinderForceFromRadius(paraValue,indValue); 
+ else if(idValue=="InfiniteWallForce")
+   return new InfiniteWallForce(paraValue,indValue); 
   else if(idValue=="EpidermalVertexForce")
     return new EpidermalVertexForce(paraValue,indValue); 
   else if (idValue == "VertexFromPressureExperimental")
@@ -220,6 +228,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new AngleVector(paraValue,indValue);
   else if(idValue=="VertexFromHypocotylGrowth")
     return new VertexFromHypocotylGrowth(paraValue,indValue);
+  else if(idValue=="maxVelocity")
+    return new maxVelocity(paraValue,indValue);
   else if (idValue == "DebugReaction")
     return new DebugReaction(paraValue, indValue);
   
@@ -244,6 +254,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
    return new VertexFromTRBScenterTriangulationConcentrationHillMT(paraValue, indValue);
   else if (idValue == "FiberModel")
     return new FiberModel(paraValue, indValue);
+  else if (idValue == "FiberDeposition")
+    return new FiberDeposition(paraValue, indValue);
 
   // bending.h (.cc)
   else if (idValue == "Bending::NeighborCenter")
@@ -451,6 +463,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new MoveVerticesRandomlyCapCylinder(paraValue,indValue); 
  else if(idValue=="scaleTemplate")
     return new scaleTemplate(paraValue,indValue); 
+ else if(idValue=="copyCellVector")
+    return new copyCellVector(paraValue,indValue); 
 
 
   // cellTime.h
