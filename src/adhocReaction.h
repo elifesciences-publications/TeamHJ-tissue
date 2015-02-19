@@ -654,6 +654,52 @@ public:
 };
 
 
+///
+/// @brief scales the template by a factor via Initiate 
+/// copies vectors from one index to another in the cell vector
+/// ( 4 component after the indices will be copied)
+///
+/// @details In the model file the reaction is defined as:
+/// @verbatim
+/// copyCellVector 0 1 2
+/// copy_from_index
+/// copy_to_index
+/// @endverbatim 
+/// 
+class copyCellVector : public BaseReaction
+{
+public:
+	
+	copyCellVector(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+	
+	void initiate(Tissue &T,
+		      DataMatrix &cellData,
+		      DataMatrix &wallData,
+		      DataMatrix &vertexData,
+		      DataMatrix &cellDerivs,
+		      DataMatrix &wallDerivs,
+		      DataMatrix &vertexDerivs );
+	
+	void derivs(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
+	
+	void update(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		double h);
+
+
+};
+
+
 
 
 
