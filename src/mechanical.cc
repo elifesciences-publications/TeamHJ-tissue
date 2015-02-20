@@ -60,7 +60,7 @@ derivs(Tissue &T,
   
   //Assumming vertices and walls are sorted and 2 dimensions
   //
-  assert( dimension==2 );
+  assert( dimension ==2 );
   //For each cell
   for (size_t cellI = 0; cellI < numCells; ++cellI) {
     Cell &tmpCell = T.cell(cellI);
@@ -136,9 +136,14 @@ namespace CenterTriangulation {
     size_t dimension = T.vertex(0).numPosition(); 
     std::vector<double> cellCenter(dimension);
     
-  //Assumming vertices and walls are sorted
-  //
-  //For each cell
+    //Assumming vertices and walls are sorted in 3 dimensions
+    if (dimension !=3){
+      std::cerr << "CellTriangulationVertexFromCellPressure::derivs() "
+                << "assumes vertices in 3 dimensions." << std::endl;
+      exit(-1);	
+    }
+    //
+    //For each cell
     for (size_t cellI = 0; cellI < numCells; ++cellI) {
       Cell &tmpCell = T.cell(cellI);
       
@@ -150,16 +155,23 @@ namespace CenterTriangulation {
 	size_t v1I = tmpCell.vertex(k)->index();
 	size_t v2I = tmpCell.vertex((k + 1) % (tmpCell.numVertex()))->index();
 
-	// std::vector<double> nCell(dimension),nWall(dimension);
-	// //normal to the triangle plane
-	// nCell[0]=(vertexData[v1I][1]-cellCenter[1])*(vertexData[v2I][2]-cellCenter[2])-(vertexData[v1I][2]-cellCenter[2])*(vertexData[v2I][1]-cellCenter[1]);
-	// nCell[1]=(vertexData[v1I][2]-cellCenter[2])*(vertexData[v2I][0]-cellCenter[0])-(vertexData[v1I][0]-cellCenter[0])*(vertexData[v2I][2]-cellCenter[2]);
-	// nCell[2]=(vertexData[v1I][0]-cellCenter[0])*(vertexData[v2I][1]-cellCenter[1])-(vertexData[v1I][1]-cellCenter[1])*(vertexData[v2I][0]-cellCenter[0]);
-	// //normal to the wall outward
-	// nWall[0]=(vertexData[v2I][1]-vertexData[v1I][1])*nCells[2]-(vertexData[v2I][2]-vertexData[v1I][2])*nCells[1];
-	// nWall[1]=(vertexData[v2I][2]-vertexData[v1I][2])*nCells[0]-(vertexData[v2I][0]-vertexData[v1I][0])*nCells[2];
-	// nWall[2]=(vertexData[v2I][0]-vertexData[v1I][0])*nCells[1]-(vertexData[v2I][1]-vertexData[v1I][1])*nCells[0];
 
+	// //normal to the triangle plane
+	// std::vector<double> nCell(dimension), nWall(dimension);
+	// nCell[0]=(vertexData[v1I][1]-cellCenter[1])*(vertexData[v2I][2]-cellCenter[2])
+        //   -(vertexData[v1I][2]-cellCenter[2])*(vertexData[v2I][1]-cellCenter[1]);
+	// nCell[1]=(vertexData[v1I][2]-cellCenter[2])*(vertexData[v2I][0]-cellCenter[0])
+        //   -(vertexData[v1I][0]-cellCenter[0])*(vertexData[v2I][2]-cellCenter[2]);
+	// nCell[2]=(vertexData[v1I][0]-cellCenter[0])*(vertexData[v2I][1]-cellCenter[1])
+        //   -(vertexData[v1I][1]-cellCenter[1])*(vertexData[v2I][0]-cellCenter[0]);
+	// //NOTE normal to the wall outward counter clockwise/clockwise dependent
+	// nWall[0]=(vertexData[v2I][1]-vertexData[v1I][1])*nCell[2]
+        //   -(vertexData[v2I][2]-vertexData[v1I][2])*nCell[1];
+	// nWall[1]=(vertexData[v2I][2]-vertexData[v1I][2])*nCell[0]
+        //   -(vertexData[v2I][0]-vertexData[v1I][0])*nCell[2];
+	// nWall[2]=(vertexData[v2I][0]-vertexData[v1I][0])*nCell[1]
+        //   -(vertexData[v2I][1]-vertexData[v1I][1])*nCell[0];
+        
 	// double dxNorm = 0.0;
         // dxNorm =nWall[0]*nWall[0]+nWall[1]*nWall[1]+nWall[2]*nWall[2]; 
 	// if (dxNorm>0.0) {
@@ -171,9 +183,8 @@ namespace CenterTriangulation {
 	// else {
 	//   std::cerr << "CellTriangulationVertexFromCellPressure::derivs() "
 	// 	    << "strange wall length or direction." << std::endl;
-	// }
-
-
+        //   exit(-1);	
+        // }
 
 
 	std::vector<double> x0(dimension),dx(dimension);
@@ -183,8 +194,6 @@ namespace CenterTriangulation {
 	  // Caveat: This is NOT  normal to the wall in the triangle plane
 	  dx[d] = x0[d]-cellCenter[d];
 	}
-
-
 
 
 	double wallLength = 0.0;
@@ -201,6 +210,7 @@ namespace CenterTriangulation {
 	else {
 	  std::cerr << "CenterTriangulation::VertexFromCellPressure::derivs() "
 		    << "Strange wall length." << std::endl;
+          exit(-1);
 	}
 	wallFactor= ( dx[0]*wallVector[0]
 		      +dx[1]*wallVector[1]
@@ -220,14 +230,21 @@ namespace CenterTriangulation {
 	else {
 	  std::cerr << "CellTriangulationVertexFromCellPressure::derivs() "
 		    << "Force direction undetermined." << std::endl;
-	}
+          exit(-1);	
+        }
+
 	double factor = 0.5 * parameter(0);
+
 	if (parameter(1) == 1)
 	  {
 	    //NOTE maybe this one should be calculated using the central mesh vertex?
+            // Behruz: it is ok now
 	    double cellVolume = tmpCell.calculateVolume(vertexData);                                  
 	    factor /= std::fabs(cellVolume);         
 	  }
+
+
+
 	if(variableIndex(0,1)!=0) {
 	  factor*=cellData[cellI][variableIndex(0,1)];
 	}
@@ -310,7 +327,7 @@ namespace CenterTriangulation {
 	double dxNorm = 0.0;
 	for( size_t d=0 ; d<dimension ; ++d ) {
 	  x0[d] = 0.5*(vertexData[v1I][d] + vertexData[v2I][d]);
-	  // Caveat: This is  normal to the wall in the triangle plane
+	  // Caveat: This is  not normal to the wall in the triangle plane
 	  dx[d] = x0[d]-cellCenter[d];
 	}
 	double wallLength = 0.0;
@@ -333,7 +350,7 @@ namespace CenterTriangulation {
 		      +dx[2]*wallVector[2])/(wallLength*wallLength);
 	for( size_t d=0 ; d<dimension ; ++d ) {
 	  
-	  dx[d]=dx[d]-wallFactor*wallVector[d];
+	  dx[d]=dx[d]-wallFactor*wallVector[d]; // now it is normal to the wall
 	  dxNorm += dx[d]*dx[d];
 	}
 	if (dxNorm>0.0) {
@@ -373,7 +390,7 @@ namespace CenterTriangulation {
     if (timeFactor_ < 1.0 ) {
       timeFactor_ += h/parameter(numParameter()-1);
     }
-    if (timeFactor_ >1.0)
+    if (timeFactor_ >= 1.0)
       timeFactor_=1.0;
     //cellData[0][12]=timeFactor_*parameter(0);
   }
@@ -2277,13 +2294,13 @@ derivs(Tissue &T,
        // Get the cell size
        double A=1.0/3;
        if (parameter(1)==1.0 || parameter(1)==2.0 )
-	 A = Area/3;
+	 A = Area/2;
        double coeff =timeFactor_*parameter(0) * A;
        //update the vertex derivatives
        if (parameter(1)==0.0 || parameter(1)==1.0 ){                 
-         cellDerivs[cellIndex][comIndex  ] +=   coeff * normal[0];  
-         cellDerivs[cellIndex][comIndex+1] +=  coeff * normal[1];  
-         cellDerivs[cellIndex][comIndex+2] +=  coeff * normal[2];  
+         // cellDerivs[cellIndex][comIndex  ] +=   coeff * normal[0];  
+         // cellDerivs[cellIndex][comIndex+1] +=  coeff * normal[1];  
+         // cellDerivs[cellIndex][comIndex+2] +=  coeff * normal[2];  
          
          vertexDerivs[v2][0] +=  coeff * normal[0];  
          vertexDerivs[v2][1] +=  coeff * normal[1];  
@@ -2292,6 +2309,15 @@ derivs(Tissue &T,
          vertexDerivs[v3][0] +=  coeff * normal[0];  
          vertexDerivs[v3][1] +=  coeff * normal[1];  
          vertexDerivs[v3][2] +=  coeff * normal[2];   
+
+
+         // vertexDerivs[v2][0] +=  2*coeff * normal[0];  
+         // vertexDerivs[v2][1] +=  2*coeff * normal[1];  
+         // vertexDerivs[v2][2] +=  0.1*coeff * normal[2];  
+         
+         // vertexDerivs[v3][0] +=  2*coeff * normal[0];  
+         // vertexDerivs[v3][1] +=  2*coeff * normal[1];  
+         // vertexDerivs[v3][2] +=  0.1*coeff * normal[2];   
        }
        
        if (parameter(1)==2.0 ){                 
@@ -2307,7 +2333,9 @@ derivs(Tissue &T,
       
 			
      }// for over walls
-  }// for over cells  
+  }// for over cells
+
+  
 }
 
 
@@ -3650,12 +3678,18 @@ derivs(Tissue &T,
   for (size_t k=0 ; k<numVariableIndex(0); ++k) {
     size_t i = variableIndex(0,k);
     assert(i<vertexData.size());
- 
-    for (size_t d=0; d<vertexData[i].size(); ++d)
-    if( numParameter()>d )
-    	vertexDerivs[i][d] += timeFactor_*parameter(d);
-   
-   
+    
+    //for (size_t d=0; d<vertexData[i].size(); ++d)
+    //if( numParameter()>d )
+    //vertexDerivs[i][d] += timeFactor_*parameter(d);
+    
+    //ad-hoc
+    double tmp=std::abs(parameter(1));
+    vertexDerivs[i][0] += timeFactor_*parameter(0)*(-tmp+1.5);
+    vertexDerivs[i][1] += timeFactor_*parameter(1);
+    vertexDerivs[i][2] += timeFactor_*parameter(2);
+    
+    
   }
  
 }
@@ -4033,7 +4067,7 @@ derivs(Tissue &T,
        DataMatrix &cellDerivs,
        DataMatrix &wallDerivs,
        DataMatrix &vertexDerivs )
-{
+{ 
   size_t numVertices =T.numVertex();
   VolumeChange=0;
   for(size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex) 
@@ -4053,6 +4087,7 @@ derivs(Tissue &T,
                                       vertexDerivs[vertexIndex][1]*vertexDerivs[vertexIndex][1]+
                                       vertexDerivs[vertexIndex][2]*vertexDerivs[vertexIndex][2]  );
     }
+ 
   cellData[variableIndex(0,0)][variableIndex(0,1)]=VolumeChange;
   cellData[variableIndex(0,2)][variableIndex(0,3)]=deltaVolumeChange;
   cellData[variableIndex(0,4)][variableIndex(0,5)]=totalDerivative;
@@ -4508,6 +4543,71 @@ void VertexFromHypocotylGrowth::update(Tissue &T,
 
 
 
+maxVelocity::maxVelocity(std::vector<double> &paraValue,
+                         std::vector< std::vector<size_t> > &indValue )
+{ // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=0 ) {
+    std::cerr << "maxVelocity:: "
+	      << "maxVelocity() "
+	      << "Calculates  maximum velocity of vertices in tissue "
+              << "for checking closeness to mechanical equilibrum."
+              << "Uses no parameter. "
+              << std::endl;
+    exit(0);
+  }
+ if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+    std::cerr << "maxVelocity:: "
+	      << "maxVelocity() "
+	      << "1st level with 1 variable index used: "
+              << "store index for max velocity. "
+              << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("maxVelocity");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+
+ // Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  setParameterId( tmp );
+  
+}
+
+
+
+void maxVelocity::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  size_t numCells =T.numCell();
+  size_t velocityIndex=variableIndex(0,0);
+  if( vertexData[0].size()!=3 ) {
+    std::cerr << "maxVelocity:: "
+	      << "maxVelocity() "
+	      << "in 3 dimensions! "
+              << std::endl;
+    exit(0);
+  }
+
+
+  for(size_t cellIndex=0; cellIndex<numCells; ++cellIndex) {
+    size_t numCellVertices=T.cell(cellIndex).numVertex();
+    double cellVelocity=0;  
+    for(size_t VIndex=0; VIndex<numCellVertices; ++VIndex) 
+      cellVelocity +=std::sqrt( vertexDerivs[VIndex][0]*vertexDerivs[VIndex][0]+
+                                       vertexDerivs[VIndex][1]*vertexDerivs[VIndex][1]+
+                                       vertexDerivs[VIndex][2]*vertexDerivs[VIndex][2]);
+        
+    cellData[cellIndex][velocityIndex]=cellVelocity/numCellVertices;    
+  }
+}
 
 
 
