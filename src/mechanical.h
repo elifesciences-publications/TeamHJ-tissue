@@ -132,7 +132,11 @@ namespace CenterTriangulation {
   /// In a model file the reaction is defined as:
   /// @verbatim
   /// CenterTriangulation:VertexFromCellPressureLinear 3 1 1
-  /// P A_flag deltaT
+  /// Pressure 
+  /// V normalized_flag (0/1) 
+  /// deltaT
+  /// 
+  /// COM index
   /// @endverbatim
   /// @note Maybe it should rather be normal to the wall in the plane of the triangle?
   ///
@@ -1413,6 +1417,65 @@ class VertexFromHypocotylGrowth : public BaseReaction {
 	      double h);
   
 };
+
+///
+/// @brief Calculates the maximum velocity of vertices 
+/// and stores it in a given index in cellData vector 
+/// to check the closeness to mechanical equilibrium
+///
+/// @details Uses no parameter 
+/// The first index specifies the index for storage
+///
+/// In a model file the reaction is defined as:
+/// @verbatim
+/// maxVelocity 0 1 1
+/// velocity-store-index(angle-deg)
+/// @endverbatim
+/// 
+class maxVelocity : public BaseReaction 
+{
+
+ private:
+
+  DataMatrix vertexDataRest;
+  double VolumeChange;
+  double deltaVolumeChange;
+  double totalDerivative;
+ public:
+
+ ///
+ /// @brief Main constructor
+ ///
+ /// This is the main constructor which sets the parameters and variable
+ /// indices that defines the reaction.
+ ///
+ /// @param paraValue vector with parameters
+ ///
+ /// @param indValue vector of vectors with variable indices
+ ///
+ /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+ ///
+  maxVelocity(std::vector<double> &paraValue, 
+              std::vector< std::vector<size_t> > &indValue ); 
+
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  
+};
+
+
+
 
 // Do not use this reaction. Restricted area (unless you are a developer).
 class DebugReaction : public BaseReaction
