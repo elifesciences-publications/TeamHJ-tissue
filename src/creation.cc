@@ -405,3 +405,67 @@ derivs(Tissue &T,
 
   }
 }
+
+
+
+
+
+
+CreationFromList::
+CreationFromList(std::vector<double> &paraValue, 
+	     std::vector< std::vector<size_t> > 
+	     &indValue ) 
+{  
+
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=1 ) {
+    std::cerr << "CreationFromList::CreationFromList() "
+	      << "Uses one parameter k_c, the constant production rate"
+              <<std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 1 || indValue[1].size() < 1 ) {
+    std::cerr << "CreationFromList::"
+	      << "CreationFromList() "
+	      << "Two levels of indices used: index for variable to be updated given "
+              << "as first index, a list of cell indices given in the second level" 
+              << std::endl;
+    exit(0);
+  }
+  
+	
+  // Set the variable values
+  setId("creationFromList");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "k_c";
+  setParameterId(tmp);
+
+  proCells=indValue[1].size();
+}
+
+void CreationFromList::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  //Do the update for each cell
+  size_t numCells = T.numCell();
+
+  size_t cIndex = variableIndex(0,0);
+  
+  
+  //For the cells in the list
+  for (size_t cellI = 0; cellI < proCells; ++cellI) {
+   
+    cellDerivs[variableIndex(1,cellI)][cIndex] += parameter(0);
+    
+  }
+}

@@ -253,7 +253,9 @@ void UpdateMTDirection::derivs(Tissue &T,
 			       DataMatrix &vertexData,
 			       DataMatrix &cellDerivs,
 			       DataMatrix &wallDerivs,
-			       DataMatrix &vertexDerivs ) {}
+			       DataMatrix &vertexDerivs ) {
+
+     }
 
 void UpdateMTDirection::update(Tissue &T,
 			       DataMatrix &cellData,
@@ -333,23 +335,23 @@ void UpdateMTDirectionEquilibrium::derivs(Tissue &T,
 			       DataMatrix &wallDerivs,
 			       DataMatrix &vertexDerivs ) {
 
-  size_t numCell=cellData.size();
-  size_t velocityIndex=variableIndex(2,0);
+  // size_t numCell=cellData.size();
+  // size_t velocityIndex=variableIndex(2,0);
 
  
-  for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) {
-    size_t numwall= T.cell(cellIndex).numWall();
-    cellData[cellIndex][velocityIndex]=0;
-    for(size_t j=0; j< numwall ; j++){
-      size_t vtx = T.cell(cellIndex).vertex(j)->index();
-      cellData[cellIndex][velocityIndex] +=std::sqrt( vertexDerivs[vtx][0]*vertexDerivs[vtx][0]+
-                                                      vertexDerivs[vtx][1]*vertexDerivs[vtx][1]+
-                                                      vertexDerivs[vtx][2]*vertexDerivs[vtx][2] );  
-    }
-    //std::cerr<< cellData[cellIndex][velocityIndex] << std::endl;
+  // for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) {
+  //   size_t numwall= T.cell(cellIndex).numWall();
+  //   cellData[cellIndex][velocityIndex]=0;
+  //   for(size_t j=0; j< numwall ; j++){
+  //     size_t vtx = T.cell(cellIndex).vertex(j)->index();
+  //     cellData[cellIndex][velocityIndex] +=std::sqrt( vertexDerivs[vtx][0]*vertexDerivs[vtx][0]+
+  //                                                     vertexDerivs[vtx][1]*vertexDerivs[vtx][1]+
+  //                                                     vertexDerivs[vtx][2]*vertexDerivs[vtx][2] );  
+  //   }
+  //   //std::cerr<< cellData[cellIndex][velocityIndex] << std::endl;
    
-  }
-  
+  // }
+ 
 }
 
 void UpdateMTDirectionEquilibrium::update(Tissue &T,
@@ -372,10 +374,11 @@ void UpdateMTDirectionEquilibrium::update(Tissue &T,
     size_t v0=T.cell(cellIndex).vertex(0)->index();
     double zCell;
     zCell= vertexData[v0][2];
-    double stressDif=(cellData[cellIndex][stressIndex]-cellData[cellIndex][MTstressIndex]) /cellData[cellIndex][stressIndex];
+    double stressDif=1;//(cellData[cellIndex][stressIndex]-cellData[cellIndex][MTstressIndex]) /cellData[cellIndex][stressIndex];
 
-    if( zCell < 3500 && zCell > -3500 ){
-
+    //if( zCell < 3500 && zCell > -3500 ){
+  if(parameter(2)>=0 || cellData[cellIndex][37]>-45) // ad hoc
+    
     if (std::abs(stressDif) > parameter(2)) { 
       // std::cerr<<"target" <<" "<<cellData[cellIndex][inIndex] 
       // 	     <<" "<<cellData[cellIndex][inIndex+1] 
@@ -409,7 +412,7 @@ void UpdateMTDirectionEquilibrium::update(Tissue &T,
       }
     }
 
-    }// z threshold for applyng the update locally
+    //}// z threshold for applyng the update locally
 
 
 

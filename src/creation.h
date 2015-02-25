@@ -77,7 +77,7 @@ class CreationZero : public BaseReaction {
 /// In a model file the reaction is defined as
 ///
 /// @verbatim
-/// creationZero 1 2 1 1
+/// creationOne 1 2 1 1
 /// k_c
 /// c_index
 /// X_index
@@ -306,6 +306,64 @@ class CreationSpatialCoordinate: public BaseReaction {
   ///
   CreationSpatialCoordinate(std::vector<double> &paraValue, 
 	      std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
+
+
+///
+/// @brief In the cells with given indices a molecule is produced/created with constant rate.
+///
+/// The variable update is for each cell given by ( SIGN= -1, higher production for
+/// lower values of the coordinate)
+///
+/// @f[ \frac{dc}{dt} = k_c @f] if cell index is in the given list
+///
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// creationFromList 1 2 1 n
+/// k_c
+/// c_index
+/// a list of indices with n members
+/// @endverbatim
+///
+class CreationFromList: public BaseReaction {
+  
+  
+private: 
+  size_t proCells;
+
+public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  CreationFromList(std::vector<double> &paraValue, 
+                   std::vector< std::vector<size_t> > &indValue );
   
   ///
   /// @brief Derivative function for this reaction class

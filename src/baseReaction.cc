@@ -280,7 +280,9 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new CreationSpatialRing(paraValue,indValue); 
   else if(idValue=="CreationSpatialCoordinate")
     return new CreationSpatialCoordinate(paraValue,indValue); 
-
+  else if(idValue=="CreationFromList")
+    return new CreationFromList(paraValue,indValue); 
+  
   
   //degradation.h,degradation.cc
   else if(idValue=="DegradationOne")

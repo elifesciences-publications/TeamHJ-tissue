@@ -232,39 +232,53 @@ void RK5Adaptive::simulate(size_t verbose)
     
     // Rescale all temporary vectors as well
     if (cellData_.size() != yScalC.size() ||
-				wallData_.size() != yScalW.size() ||
-				vertexData_.size() != yScalV.size())
+        wallData_.size() != yScalW.size() ||
+        vertexData_.size() != yScalV.size())
       {
-				std::cerr << "RK5Adaptive::simulate() WARNING"
-									<< " rescaling temporary vectors not adopted for "
-									<< "center triangulation." << std::endl;
-				yScalC.resize(cellData_.size(), yScalC[0]);
-				yScalW.resize(wallData_.size(), yScalW[0]);
-				yScalV.resize(vertexData_.size(), yScalV[0]);
-				yTempC.resize(cellData_.size(), yTempC[0]);
-				yTempW.resize(wallData_.size(), yTempW[0]);
-				yTempV.resize(vertexData_.size(), yTempV[0]);
-				yErrC.resize(cellData_.size(), yErrC[0]);
-				yErrW.resize(wallData_.size(), yErrW[0]);
-				yErrV.resize(vertexData_.size(), yErrV[0]);
-				ak2C.resize(cellData_.size(), ak2C[0]);
-				ak2W.resize(wallData_.size(), ak2W[0]);
-				ak2V.resize(vertexData_.size(), ak2V[0]);
-				ak3C.resize(cellData_.size(), ak3C[0]);
-				ak3W.resize(wallData_.size(), ak3W[0]);
-				ak3V.resize(vertexData_.size(), ak3V[0]);
-				ak4C.resize(cellData_.size(), ak4C[0]);
-				ak4W.resize(wallData_.size(), ak4W[0]);
-				ak4V.resize(vertexData_.size(), ak4V[0]);
-				ak5C.resize(cellData_.size(), ak5C[0]);
-				ak5W.resize(wallData_.size(), ak5W[0]);
-				ak5V.resize(vertexData_.size(), ak5V[0]);
-				ak6C.resize(cellData_.size(), ak6C[0]);
-				ak6W.resize(wallData_.size(), ak6W[0]);
-				ak6V.resize(vertexData_.size(), ak6V[0]);
-				yTempRkckC.resize(cellData_.size(), yTempRkckC[0]);
-				yTempRkckW.resize(wallData_.size(), yTempRkckW[0]);
-				yTempRkckV.resize(vertexData_.size(), yTempRkckV[0]);
+        std::cerr << "RK5Adaptive::simulate() WARNING"
+                  << " rescaling temporary vectors not adopted for "
+                  << "center triangulation." << std::endl;
+        yScalC.resize(cellData_.size(), yScalC[0]);
+        yScalW.resize(wallData_.size(), yScalW[0]);
+        yScalV.resize(vertexData_.size(), yScalV[0]);
+        yTempC.resize(cellData_.size(), yTempC[0]);
+        yTempW.resize(wallData_.size(), yTempW[0]);
+        yTempV.resize(vertexData_.size(), yTempV[0]);
+        yErrC.resize(cellData_.size(), yErrC[0]);
+        yErrW.resize(wallData_.size(), yErrW[0]);
+        yErrV.resize(vertexData_.size(), yErrV[0]);
+        ak2C.resize(cellData_.size(), ak2C[0]);
+        ak2W.resize(wallData_.size(), ak2W[0]);
+        ak2V.resize(vertexData_.size(), ak2V[0]);
+        ak3C.resize(cellData_.size(), ak3C[0]);
+        ak3W.resize(wallData_.size(), ak3W[0]);
+        ak3V.resize(vertexData_.size(), ak3V[0]);
+        ak4C.resize(cellData_.size(), ak4C[0]);
+        ak4W.resize(wallData_.size(), ak4W[0]);
+        ak4V.resize(vertexData_.size(), ak4V[0]);
+        ak5C.resize(cellData_.size(), ak5C[0]);
+        ak5W.resize(wallData_.size(), ak5W[0]);
+        ak5V.resize(vertexData_.size(), ak5V[0]);
+        ak6C.resize(cellData_.size(), ak6C[0]);
+        ak6W.resize(wallData_.size(), ak6W[0]);
+        ak6V.resize(vertexData_.size(), ak6V[0]);
+        yTempRkckC.resize(cellData_.size(), yTempRkckC[0]);
+        yTempRkckW.resize(wallData_.size(), yTempRkckW[0]);
+        yTempRkckV.resize(vertexData_.size(), yTempRkckV[0]);
+        
+        
+        for (size_t ii=0; ii<cellData_.size(); ++ii) {
+          yScalC[ii].resize(cellData_[ii].size());
+          yErrC[ii].resize(cellData_[ii].size());
+          yTempC[ii].resize(cellData_[ii].size());
+          ak2C[ii].resize(cellData_[ii].size());
+          ak3C[ii].resize(cellData_[ii].size());
+          ak4C[ii].resize(cellData_[ii].size());
+          ak5C[ii].resize(cellData_[ii].size());
+          ak6C[ii].resize(cellData_[ii].size());
+          yTempRkckC[ii].resize(cellData_[ii].size());
+        }
+                        
       }
     
     // If the end t is passed return (print if applicable)
