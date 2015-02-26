@@ -62,6 +62,30 @@ derivs(Tissue &T,
   }
 }
 
+void CreationZero::
+derivsWithAbs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs,
+	      DataMatrix &sdydtCell,
+	      DataMatrix &sdydtWall,
+	      DataMatrix &sdydtVertex ) 
+{
+  //Do the update for each cell
+  size_t numCells = T.numCell();
+  
+  size_t cIndex = variableIndex(0,0);
+  double k_c = parameter(0);
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {      
+    cellDerivs[cellI][cIndex] += k_c;
+    sdydtCell[cellI][cIndex] += k_c;
+  }
+}
+
 CreationOne::
 CreationOne(std::vector<double> &paraValue, 
 	     std::vector< std::vector<size_t> > 
@@ -116,6 +140,33 @@ derivs(Tissue &T,
   }
 }
 
+void CreationOne::
+derivsWithAbs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs,
+	      DataMatrix &sdydtCell,
+	      DataMatrix &sdydtWall,
+	      DataMatrix &sdydtVertex ) 
+{
+  //Do the update for each cell
+  size_t numCells = T.numCell();
+  
+  size_t cIndex = variableIndex(0,0);
+  size_t xIndex = variableIndex(1,0);
+  double k_c = parameter(0);
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {      
+    double value = k_c * cellData[cellI][xIndex];
+    cellDerivs[cellI][cIndex] += value;
+    sdydtCell[cellI][cIndex] += value;    
+  }
+}
+
+  
 CreationTwo::
 CreationTwo(std::vector<double> &paraValue, 
 	     std::vector< std::vector<size_t> > 

@@ -326,7 +326,10 @@ class Grn : public BaseReaction {
 
 
 
-
+///
+/// @brief The class Grn use a neural network inspired mathematics for gene
+/// regulation where neighbor input is accounted for.
+///
 class Gsrn2 : public BaseReaction {
   
 public:

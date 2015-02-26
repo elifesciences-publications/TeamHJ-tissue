@@ -60,9 +60,23 @@ class CreationZero : public BaseReaction {
 	      DataMatrix &cellDerivs,
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
+  ///
+  /// @brief Derivative function for this reaction class calculating the absolute value for noise solvers
+  ///
+  /// @see BaseReaction::derivsWithAbs(Compartment &compartment,size_t species,...)
+  ///
+  void derivsWithAbs(Tissue &T,
+		     DataMatrix &cellData,
+		     DataMatrix &wallData,
+		     DataMatrix &vertexData,
+		     DataMatrix &cellDerivs,
+		     DataMatrix &wallDerivs,
+		     DataMatrix &vertexDerivs,
+		     DataMatrix &sdydtCell,
+		     DataMatrix &sdydtWall,
+		     DataMatrix &sdydtVertex );
+  
 };
-
-
 
 ///
 /// @brief In each cell a molecule is produced/created with a rate dependent on another molecule.
@@ -114,6 +128,21 @@ class CreationOne : public BaseReaction {
 	      DataMatrix &cellDerivs,
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
+  ///
+  /// @brief Derivative function for this reaction class calculating the absolute value for noise solvers
+  ///
+  /// @see BaseReaction::derivsWithAbs(Compartment &compartment,size_t species,...)
+  ///
+  void derivsWithAbs(Tissue &T,
+		     DataMatrix &cellData,
+		     DataMatrix &wallData,
+		     DataMatrix &vertexData,
+		     DataMatrix &cellDerivs,
+		     DataMatrix &wallDerivs,
+		     DataMatrix &vertexDerivs,
+		     DataMatrix &sdydtCell,
+		     DataMatrix &sdydtWall,
+		     DataMatrix &sdydtVertex );
 };
 
 class CreationTwo : public BaseReaction {

@@ -21,8 +21,8 @@ SHELL = /bin/sh
 CXX = g++
 #CXXFLAGS = -g -Wall -pedantic -ansi
 #LDFLAGS = -g -Wall -pedantic -ansi 
-CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic   -std=c++0x -I/sw/include/
-LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic 
+CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi -std=c++11 -stdlib=libc++ -I/sw/include/
+LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi -std=c++11 -stdlib=libc++ -L/sw/lib/ 
 
 #Sourcefiles etc.
 SIM_SRC = simulator/simulator.cc
