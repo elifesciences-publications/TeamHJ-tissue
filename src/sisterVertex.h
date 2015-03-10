@@ -224,7 +224,11 @@ namespace SisterVertex {
   /// after all reactions updating vertex positions.
   ///
   class CombineDerivatives : public BaseReaction {
+ 
+  private:
     
+    std::vector<std::vector<double>> sisters; 
+ 
   public:
     ///
     /// @brief Main constructor
@@ -241,6 +245,19 @@ namespace SisterVertex {
     CombineDerivatives(std::vector<double> &paraValue, 
 		       std::vector< std::vector<size_t> > 
 		       &indValue );
+   
+    ///
+    /// @brief Reaction initiation applied before simulation starts
+    ///
+    /// @see BaseReaction::initiate(Tissue &T,...)
+    ///
+    void initiate(Tissue &T,
+		  DataMatrix &cellData,
+		  DataMatrix &wallData,
+		  DataMatrix &vertexData,
+		  DataMatrix &cellDerivs,
+		  DataMatrix &wallDerivs,
+		  DataMatrix &vertexDerivs);    
     
     ///
     /// @brief Derivative function for this reaction class
