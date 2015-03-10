@@ -308,107 +308,35 @@ namespace SisterVertex {
       tmpsisters[i][2]=0;
     }
     
-    // size_t HH=tmpsisters[0].size();
-    //    std::cerr<<" here......."<<N<<std::endl;
-
-
-
-
-
     size_t counter=1;
     for(size_t i=0; i<N; ++i)
       if(tmpsisters[i][2]==0){
-        
         tmpsisters[i][2]=counter;
         sisters.resize(counter);
         sisters[counter-1].push_back(tmpsisters[i][0]);
         sisters[counter-1].push_back(tmpsisters[i][1]);
-        
-       
-
- 
         for(size_t j=i+1; j<N; j++)
           if(tmpsisters[j][2]==0){
             size_t M=sisters[counter-1].size();
-            
-
-            
-            // std::cerr<<tmpsisters[j][0]<<"  "<<tmpsisters[j][1]<<"  "<<tmpsisters[j][2]<<std::endl;
-            
-            
-            // std::cerr<<" sisters group "<<counter-1<<":  ";
-            // for(size_t ii=0; ii<M; ++ii){
-            //   std::cerr<<sisters[counter-1][ii]<<"  ";
-            // }
-            // std::cerr<<std::endl;
-
-
-            //std::cerr<<" here......."<<M<<std::endl;
-            
-            //std::cerr<<tmpsisters[j][0]<<"  "<<tmpsisters[j][1]<<std::endl;
-            //std::cerr<<i<<" "<<j<<"  "<<M<<std::endl;
-           
             size_t ww=0;
             for(size_t k=0; k<M; ++k){
-              if(tmpsisters[j][0]==sisters[counter-1][k]){
-                //std::cerr<<tmpsisters[j][0]<<"...1...  "<<sisters[counter-1][k]<<" ww: "<<ww<<std::endl;
-                //          std::cerr<<"...1...  "<<std::endl;                
+              if(tmpsisters[j][0]==sisters[counter-1][k])
                 ww+=1;
-              }
-            
-              if(tmpsisters[j][1]==sisters[counter-1][k]){
-                //std::cerr<<tmpsisters[j][1]<<"...2...  "<<sisters[counter-1][k]<<" ww: "<<ww<<std::endl;
-                //std::cerr<<"...2...  "<<std::endl;                
+              if(tmpsisters[j][1]==sisters[counter-1][k])
                 ww+=2;
-              }
             }
-            //std::cerr<<"ww:  "<<ww<<std::endl;                
-
-
             if(ww==1)
               sisters[counter-1].push_back(tmpsisters[j][1]);
             if(ww==2)
               sisters[counter-1].push_back(tmpsisters[j][0]);
-
             if(ww!=0)
               tmpsisters[j][2]=counter;
           }
-
-
-
         counter++;
-
-
-
       }
-
-
-    // for(size_t i=0; i<N; ++i){
-    //   std::cerr<<tmpsisters[i][0]<<"  "<<tmpsisters[i][1]<<"  "<<tmpsisters[i][2]<<std::endl;
-    // }
-    
-    
-    
-
-    // std::cerr<<std::endl;
-    // size_t MM=sisters.size();
-    // std::cerr<<counter<<" ";
-    // std::cerr<<std::endl;
-
-    // for(size_t k=0; k<MM; ++k){
-    //   size_t Mn=sisters[k].size();
-    //   for(size_t L=0; L<Mn; ++L){
-    //     std::cerr<<sisters[k][L]<<" ";          
-    //   }
-    //   std::cerr<<std::endl;
-    // }
-    
-
-
-    
   }
   
-
+  
   void CombineDerivatives::
   derivs(Tissue &T,
 	 DataMatrix &cellData,
@@ -434,5 +362,5 @@ namespace SisterVertex {
     }
     
   }
-
+  
 }
