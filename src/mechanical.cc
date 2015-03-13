@@ -2206,66 +2206,67 @@ derivs(Tissue &T,
  size_t comIndex = variableIndex(0,0);
  size_t lengthInternalIndex = comIndex+dimension;
 
-  for (size_t cellIndex= 0; cellIndex< numCells; ++cellIndex) {  
-
-    size_t numWalls = T.cell(cellIndex).numWall();
-    //Cell cell = T.cell(n);        
-    // double normal[3]={0,0,0};
-    // normal[0]=cellData[n][normalVectorIndex  ]; 
-    // normal[1]=cellData[n][normalVectorIndex+1]; 
-    // normal[2]=cellData[n][normalVectorIndex+2]; 
-
+ for (size_t cellIndex= 0; cellIndex< numCells; ++cellIndex) 
+   if(cellData[cellIndex][38]==-1){  
+     
+     size_t numWalls = T.cell(cellIndex).numWall();
+     //Cell cell = T.cell(n);        
+     // double normal[3]={0,0,0};
+     // normal[0]=cellData[n][normalVectorIndex  ]; 
+     // normal[1]=cellData[n][normalVectorIndex+1]; 
+     // normal[2]=cellData[n][normalVectorIndex+2]; 
+     
      if(  T.cell(cellIndex).numVertex()!= numWalls ) {
        std::cerr << "VertexFromTRBCellPlaneLinearcenterTriangulationMT::derivs() same number of vertices and walls."
-		<< " Not for cells with " << T.cell(cellIndex).numWall() << " walls and "
-		<< T.cell(cellIndex).numVertex() << " vertices!"	
-		<< std::endl;
-      exit(-1);
-    }
+                 << " Not for cells with " << T.cell(cellIndex).numWall() << " walls and "
+                 << T.cell(cellIndex).numVertex() << " vertices!"	
+                 << std::endl;
+       exit(-1);
+     }
      // One triangle per 'vertex' in cyclic order
      for (size_t wallindex=0; wallindex<numWalls; ++wallindex) { 
        size_t kPlusOneMod = (wallindex+1)%numWalls;
        //size_t v1 = com;
        size_t v2 = T.cell(cellIndex).vertex(wallindex)->index();
        size_t v3 = T.cell(cellIndex).vertex(kPlusOneMod)->index();
-
+       
        //size_t w1 = internal wallindex
-      size_t w2 = T.cell(cellIndex).wall(wallindex)->index();
-      //size_t w3 = internal wallindex+1
-      // Position matrix holds in rows positions for com, vertex(wallindex), vertex(wallindex+1)
-      DataMatrix position(3,vertexData[v2]);
-      for (size_t d=0; d<dimension; ++d)
-	position[0][d] = cellData[cellIndex][comIndex+d]; // com position
-      //position[1] = vertexData[v2]; // given by initiation
-      position[2] = vertexData[v3];
-      //position[0][2] z for vertex 1 of the current element
-
-      // Lengths are from com-vertex(wallindex), vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
-      std::vector<double> length(numWalls);
-      length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
-			     (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
-			     (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
-      
-      length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
-        
-      length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
-			     (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
-			     (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
-
-      // current Area of the element (using Heron's formula)                                      
-      double Area=std::sqrt( ( length[0]+length[1]+length[2])*
-			     (-length[0]+length[1]+length[2])*
-			     ( length[0]-length[1]+length[2])*
-			     ( length[0]+length[1]-length[2])  )*0.25;
-
-      double tempA=std::sqrt((position[2][0]-position[1][0])*(position[2][0]-position[1][0])+
-                             (position[2][1]-position[1][1])*(position[2][1]-position[1][1])+
-                             (position[2][2]-position[1][2])*(position[2][2]-position[1][2])  );
-
-      double tempB=std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
-                             (position[0][1]-position[1][1])*(position[0][1]-position[1][1])+
-                             (position[0][2]-position[1][2])*(position[0][2]-position[1][2])  );
-
+       size_t w2 = T.cell(cellIndex).wall(wallindex)->index();
+       //size_t w3 = internal wallindex+1
+       // Position matrix holds in rows positions for com, vertex(wallindex), vertex(wallindex+1)
+       DataMatrix position(3,vertexData[v2]);
+       for (size_t d=0; d<dimension; ++d)
+         position[0][d] = cellData[cellIndex][comIndex+d]; // com position
+       //position[1] = vertexData[v2]; // given by initiation
+       position[2] = vertexData[v3];
+       //position[0][2] z for vertex 1 of the current element
+       
+       // Lengths are from com-vertex(wallindex), vertex(wallindex)-vertex(wallindex+1) (wall(wallindex)), com-vertex(wallindex+1)
+       std::vector<double> length(numWalls);
+       length[0] = std::sqrt( (position[0][0]-position[1][0])*(position[0][0]-position[1][0]) +
+                              (position[0][1]-position[1][1])*(position[0][1]-position[1][1]) +
+                              (position[0][2]-position[1][2])*(position[0][2]-position[1][2]) );
+       
+       length[1] = T.wall(w2).lengthFromVertexPosition(vertexData);
+       
+       length[2] = std::sqrt( (position[0][0]-position[2][0])*(position[0][0]-position[2][0]) +
+                              (position[0][1]-position[2][1])*(position[0][1]-position[2][1]) +
+                              (position[0][2]-position[2][2])*(position[0][2]-position[2][2]) );
+       
+       // current Area of the element (using Heron's formula)                                      
+       double Area=std::sqrt( ( length[0]+length[1]+length[2])*
+                              (-length[0]+length[1]+length[2])*
+                              ( length[0]-length[1]+length[2])*
+                              ( length[0]+length[1]-length[2])  )*0.25;
+       
+       double tempA=std::sqrt((position[2][0]-position[1][0])*(position[2][0]-position[1][0])+
+                              (position[2][1]-position[1][1])*(position[2][1]-position[1][1])+
+                              (position[2][2]-position[1][2])*(position[2][2]-position[1][2])  );
+       
+       double tempB=std::sqrt((position[0][0]-position[1][0])*(position[0][0]-position[1][0])+
+                              (position[0][1]-position[1][1])*(position[0][1]-position[1][1])+
+                              (position[0][2]-position[1][2])*(position[0][2]-position[1][2])  );
+       
       double Xcurrent[3];      
       Xcurrent[0]= (position[2][0]-position[1][0])/tempA;
       Xcurrent[1]= (position[2][1]-position[1][1])/tempA;
@@ -2275,7 +2276,7 @@ derivs(Tissue &T,
       Bcurrent[0]= (position[0][0]-position[1][0])/tempB;
       Bcurrent[1]= (position[0][1]-position[1][1])/tempB;
       Bcurrent[2]= (position[0][2]-position[1][2])/tempB;
-
+      
       double normal[3];      
       normal[0]= Xcurrent[1]*Bcurrent[2]-Xcurrent[2]*Bcurrent[1];
       normal[1]= Xcurrent[2]*Bcurrent[0]-Xcurrent[0]*Bcurrent[2];
@@ -3679,15 +3680,15 @@ derivs(Tissue &T,
     size_t i = variableIndex(0,k);
     assert(i<vertexData.size());
     
-    //for (size_t d=0; d<vertexData[i].size(); ++d)
-    //if( numParameter()>d )
-    //vertexDerivs[i][d] += timeFactor_*parameter(d);
+    for (size_t d=0; d<vertexData[i].size(); ++d)
+      if( numParameter()>d )
+        vertexDerivs[i][d] += timeFactor_*parameter(d);
     
     //ad-hoc
-    double tmp=std::abs(parameter(1));
-    vertexDerivs[i][0] += timeFactor_*parameter(0)*(-tmp+1.5);
-    vertexDerivs[i][1] += timeFactor_*parameter(1);
-    vertexDerivs[i][2] += timeFactor_*parameter(2);
+    // double tmp=std::abs(parameter(1));
+    // vertexDerivs[i][0] += timeFactor_*parameter(0)*(-tmp+1.5);
+    // vertexDerivs[i][1] += timeFactor_*parameter(1);
+    // vertexDerivs[i][2] += timeFactor_*parameter(2);
     
     
   }
