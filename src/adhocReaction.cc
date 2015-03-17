@@ -1727,3 +1727,236 @@ void copyCellVector::update(Tissue &T,
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+restrictVertexRadially::restrictVertexRadially(std::vector<double> &paraValue, 
+                                               std::vector< std::vector<size_t> > &indValue)
+{
+  if (paraValue.size() != 0) {
+    std::cerr << "restrictVertexRadially::restrictVertexRadially() "
+	      << "Uses no parameter\n";
+    exit(0);
+  }
+  
+  if (indValue.size() != 0) {
+    std::cerr << "restrictVertexRadially::restrictVertexRadially() "
+	      << "no index.\n";
+    exit(0);
+  }
+	
+  setId("restrictVertexRadially");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+    
+}
+
+
+void restrictVertexRadially::derivs(Tissue &T,
+                                    DataMatrix &cellData,
+                                    DataMatrix &wallData,
+                                    DataMatrix &vertexData,
+                                    DataMatrix &cellDerivs,
+                                    DataMatrix &wallDerivs,
+                                    DataMatrix &vertexDerivs) 
+{
+  size_t numVertices = T.numVertex();
+    
+  // restrict vertices radially in xy plane
+  for( size_t VertexIndex=0 ; VertexIndex<numVertices ; ++VertexIndex ) {
+    double tmp=std::sqrt(vertexData[VertexIndex][0]*vertexData[VertexIndex][0]+
+                         vertexData[VertexIndex][1]*vertexData[VertexIndex][1]);
+    double tmp1=vertexData[VertexIndex][0]/tmp;
+    double tmp2=vertexData[VertexIndex][1]/tmp;
+    tmp=(vertexDerivs[VertexIndex][0]*tmp1+vertexDerivs[VertexIndex][1]*tmp2);
+    vertexDerivs[VertexIndex][0]=tmp*tmp1;
+    vertexDerivs[VertexIndex][1]=tmp*tmp2;
+  }
+}
+
+void restrictVertexRadially::update(Tissue &T,
+                                    DataMatrix &cellData,
+                                    DataMatrix &wallData,
+                                    DataMatrix &vertexData,
+                                    double h)
+{
+}
+
+
+
+
+
+
+VertexFromRotationalForceLinear::
+VertexFromRotationalForceLinear(std::vector<double> &paraValue, 
+                                std::vector< std::vector<size_t> > 
+                                &indValue ) 
+{  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()<2 || paraValue.size()>4 ) {
+    std::cerr << "VertexFromRotationalForceLinear::"
+	      << "VertexFromRotationalForceLinear() "
+	      << "Uses a force vector that should be in one (x), two (x,y) or three (x,y,z) "
+	      << "dimensions plus a deltaT that sets the time the linear increase is applied." 
+	      << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() < 1 ) {
+    std::cerr << "VertexFromRotationalForceLinear::"
+	      << "VertexFromRotationalForceLinear() "
+	      << "List of vertex indices given in first level." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexFromRotationalForceLinear");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "F_x";
+  if (numParameter()==2)
+    tmp[1] = "deltaT";
+  else if (numParameter()==3) {
+    tmp[1] = "F_y";
+    tmp[2] = "deltaT";
+  }
+  else {
+    tmp[1] = "F_y";
+    tmp[2] = "F_z";
+    tmp[3] = "deltaT";
+  }
+  timeFactor_=0.0;
+  setParameterId( tmp );
+}
+
+
+
+
+
+
+void VertexFromRotationalForceLinear::
+initiate(Tissue &T,
+         DataMatrix &cellData,
+         DataMatrix &wallData,
+         DataMatrix &vertexData,
+         DataMatrix &cellDerivs,
+         DataMatrix &wallDerivs,
+         DataMatrix &vertexDerivs ){
+
+
+  // find the boundary vertices and store the positions and indices
+  size_t numVertices =T.numVertex();
+  double UpT=-50;
+  double DnT=-250;
+  for(size_t vIndex=0; vIndex<numVertices; ++vIndex){
+    if(vertexData[vIndex][2]>UpT){
+      size_t n=boundVerticesUp.size()+1;
+      boundVerticesUp.resize(n);
+      boundVerticesUp[n-1].push_back(vertexData[vIndex][0]);
+      boundVerticesUp[n-1].push_back(vertexData[vIndex][1]);
+      boundVerticesUp[n-1].push_back(vertexData[vIndex][2]);
+      boundVerticesUp[n-1].push_back(vIndex);
+    }
+    if(vertexData[vIndex][2]<DnT){
+      size_t n=boundVerticesDn.size()+1;
+      boundVerticesDn.resize(n);
+      boundVerticesDn[n-1].push_back(vertexData[vIndex][0]);
+      boundVerticesDn[n-1].push_back(vertexData[vIndex][1]);
+      boundVerticesDn[n-1].push_back(vertexData[vIndex][2]);
+      boundVerticesDn[n-1].push_back(vIndex);
+    }
+  }
+}
+
+void VertexFromRotationalForceLinear::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  // set derivetives of boundary to zero
+  size_t UpN, DnN;
+  UpN=boundVerticesUp.size();
+  DnN=boundVerticesDn.size();
+  for(size_t v=0; v<UpN; ++v)
+    for(size_t d=0; d<3; ++d)
+      vertexDerivs[boundVerticesUp[v][3]][d]=0;
+  for(size_t v=0; v<DnN; ++v)
+    for(size_t d=0; d<3; ++d)
+      vertexDerivs[boundVerticesDn[v][3]][d]=0;
+  
+}
+
+void VertexFromRotationalForceLinear::update(Tissue &T,
+				   DataMatrix &cellData,
+				   DataMatrix &wallData,
+				   DataMatrix &vertexData,
+				   double h)
+{
+  // rotate the position plane of boundaries
+  size_t UpN, DnN;
+  UpN=boundVerticesUp.size();
+  DnN=boundVerticesDn.size();
+  double deltaTet,tet;
+  deltaTet=0.2;
+  tet=h*deltaTet;  
+  double centerUp[3]={0,0,-107.50};
+  double centerDn[3]={0,0,-207.50};
+  double rot[3][3]= { { 0 , 0 , 0 } ,
+                      { 0 , 1 , 0 } ,
+                      { 0 , 0 , 0 } };
+
+  rot[0][0]= std::cos(tet);
+  rot[0][2]= std::sin(tet);
+  rot[2][0]=-std::sin(tet);
+  rot[2][2]= std::cos(tet);
+
+  // // rotate
+
+  for(size_t v=0; v<UpN; ++v)
+    for(size_t d=0; d<3; ++d)
+      vertexData[boundVerticesUp[v][3]][d]= 
+        rot[d][0]*(boundVerticesUp[v][0]-centerUp[0])+
+        rot[d][1]*(boundVerticesUp[v][1]-centerUp[1])+
+        rot[d][2]*(boundVerticesUp[v][2]-centerUp[2])+
+        +centerUp[d];
+  
+  rot[0][2]*=-1;
+  rot[2][0]*=-1;
+  
+  for(size_t v=0; v<DnN; ++v)
+    for(size_t d=0; d<3; ++d)
+      vertexData[boundVerticesDn[v][3]][d]= 
+        rot[d][0]*(boundVerticesDn[v][0]-centerDn[0])+
+        rot[d][1]*(boundVerticesDn[v][1]-centerDn[1])+
+        rot[d][2]*(boundVerticesDn[v][2]-centerDn[2])+
+        +centerDn[d];
+  
+  for(size_t v=0; v<UpN; ++v)
+    for(size_t d=0; d<3; ++d)
+      boundVerticesUp[v][d]=vertexData[boundVerticesUp[v][3]][d];
+  for(size_t v=0; v<DnN; ++v)
+    for(size_t d=0; d<3; ++d)
+      boundVerticesDn[v][d]=vertexData[boundVerticesDn[v][3]][d];
+  
+
+
+}
+
+
+
