@@ -2207,7 +2207,8 @@ derivs(Tissue &T,
  size_t lengthInternalIndex = comIndex+dimension;
 
  for (size_t cellIndex= 0; cellIndex< numCells; ++cellIndex) 
-   if(cellData[cellIndex][38]==-1){  
+   //if(cellData[cellIndex][38]==-1)
+   {  
      
      size_t numWalls = T.cell(cellIndex).numWall();
      //Cell cell = T.cell(n);        
