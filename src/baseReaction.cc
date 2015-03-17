@@ -461,13 +461,17 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new StrainTest(paraValue,indValue); 
   else if(idValue=="CalculateVertexStressDirection")
     return new CalculateVertexStressDirection(paraValue,indValue); 
- else if(idValue=="MoveVerticesRandomlyCapCylinder")
+  else if(idValue=="MoveVerticesRandomlyCapCylinder")
     return new MoveVerticesRandomlyCapCylinder(paraValue,indValue); 
- else if(idValue=="scaleTemplate")
+  else if(idValue=="scaleTemplate")
     return new scaleTemplate(paraValue,indValue); 
- else if(idValue=="copyCellVector")
+  else if(idValue=="copyCellVector")
     return new copyCellVector(paraValue,indValue); 
-
+  else if(idValue=="restrictVertexRadially")
+    return new restrictVertexRadially(paraValue,indValue); 
+  else if(idValue=="VertexFromRotationalForceLinear")
+    return new VertexFromRotationalForceLinear(paraValue,indValue); 
+  
 
   // cellTime.h
   else if (idValue=="CellTimeDerivative")
