@@ -28,13 +28,10 @@ namespace MembraneCycling {
 ///
 /// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis rate, p1 endocytosis rate.
 /// PIN  molecules are updated according to:
-///  
 ///
 /// @f[ \frac{dP_i}{dt} = -p_0 P_i +\sum_{j} p_1 P_{ij} @f] 
 ///  
 /// @f[ \frac{dP_{ij}}{dt} = p_0 P_i -p_1 P_{ij} @f]
-///
-///
 ///  
 /// In the model file the reaction is given by:
 /// @verbatim
@@ -115,14 +112,11 @@ class CrossMembraneNonLinear : public BaseReaction {
 ///
 /// It uses two compartments for each wall and a single for the cells. p0 gives maximal exocytosis rate, p1 the maximal endocytosis rate.
 /// PIN  molecules are updated according to:
-///  
 ///
 /// @f[ \frac{dP_i}{dt} =\sum_{j} -p_0 P_i P_{ji}+ p_1 P_ij P_{ji} @f] 
 ///  
 /// @f[ \frac{dP_{ij}}{dt} = p_0 P_i P_{ji}- p_1 P_i P_{ji} @f]
 ///
-///
-///  
 /// In the model file the reaction is given by:
 /// @verbatim
 /// MembraneCycling::CrossMembraneLinear 2 2 1 1
@@ -157,7 +151,6 @@ class CrossMembraneLinear : public BaseReaction {
 ///
 /// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis rate, p1 endocytosis rate.
 /// PIN  molecules are updated according to:
-///  
 /// @f[ \frac{dP_i}{dt} = \sum_{j}- p_0 P_i \frac{X_{ij}^{p_3}}{X_{ij}^{p_3}+{p_2}^{p_3}}+ p_1 P_{ij} \frac{X_{ij}^{p_3}}{X_{ij}^{p_3}+{p_2}^{p_3}} @f] 
 ///  
 /// @f[ \frac{dP_{ij}}{dt} =  p_0 P_i \frac{X_{ij}^{p_3}}{X_{ij}^{p_3}+{p_2}^{p_3}}- p_1 P_{ij} \frac{X_{ij}^{p_3}}{X_{ij}^{p_3}+{p_2}^{p_3}} @f]  @f]
@@ -194,14 +187,11 @@ class LocalWallFeedbackNonLinear : public BaseReaction {
 ///
 /// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis, p1 endocytosis.
 /// PIN  molecules are updated according to:
-///  
 ///
 /// @f[ \frac{dP_i}{dt} =\sum_{j}- p_0 P_i X_{ij}+ p_1 P_{ij} X_{ij} @f] 
 ///  
 /// @f[ \frac{dP_{ij}}{dt} = p_0 P_i X_{ij}- p_1 P_{ij} X_{ij} @f]
 ///
-///
-///  
 /// In the model file the reaction is given by:
 /// @verbatim
 /// MembraneCycling::LocalWallFeedbackLinear 2 2 1 2
@@ -240,10 +230,8 @@ class LocalWallFeedbackLinear : public BaseReaction {
 /// @f[ \frac{dP_i}{dt} =\sum_{j} - p_0 P_{i} \frac{A_{ji}^{p_3}}{A_{ji}^{p_3}+{p_2}^{p_3}}+ p_1 P_{ij} \frac{A_{ji}^{p_3}}{A_{ji}^{p_3}+{p_2}^{p_3}} @f] 
 ///  
 /// @f[ \frac{dP_{ij}}{dt} = p_0 P_{i} \frac{A_{ji}^{p_3}}{A_{ji}^{p_3}+{p_2}^{p_3}}- p_1 P_{ij} \frac{A_{ji}^{p_3}}{A_{ji}^{p_3}+{p_2}^{p_3}} @f] 
-///   @f]
 ///
 ///
-///  
 /// In the model file the reaction is given by:
 /// @verbatim
 /// membraneCycling::CellUpTheGradientNonLinear 4 2 2 1
@@ -278,14 +266,11 @@ class CellUpTheGradientNonLinear : public BaseReaction {
 ///
 /// It uses two compartments for each wall and a single for the cells.
 /// PIN  molecules are updated according to:
-///  
 ///
 /// @f[ \frac{dP_i}{dt} =\sum_{j} -p_0 P_{i} A_{ji}+p_1 P_{ij} A_{ji} @f] 
 ///  
 /// @f[ \frac{dP_{ij}}{dt} =  p_0 P_{i} A_{ji}-p_1 P_{ij} A_{ji} @f]
 ///
-///
-///  
 /// In the model file the reaction is given by:
 /// @verbatim
 /// membraneCycling::CellUpTheGradientLinear 2 2 2 1
@@ -331,14 +316,11 @@ class CellUpTheGradientLinear : public BaseReaction {
 ///
 /// It uses two compartments for each wall and a single for the cells.
 /// PIN  molecules are updated according to:
-///  
 ///
 /// @f[ \frac{dP_i}{dt} =- p_0 P_i \frac{A_{ij}^{p_3}}{A_{ij}^{p_3}+{p_2}^{p_3}}+ sum_{j} p_1 P_{ij} \frac{A_{ij}^{p_3}}{A_{ij}^{p_3}+{p_2}^{p_3}} @f] 
 ///  
 /// @f[ \frac{dP_{ij}}{dt} = p_0 P_i \frac{A_{ij}^{p_3}}{A_{ij}^{p_3}+{p_2}^{p_3}}- p_1 P_{ij} \frac{A_{ij}^{p_3}}{A_{ij}^{p_3}+{p_2}^{p_3}} @f]
 ///
-///
-///  
 /// In the model file the reaction is given by:
 /// @verbatim
 /// membraneCycling::InternalCellNonLinear 4 2 2 1
@@ -373,14 +355,11 @@ class InternalCellNonLinear : public BaseReaction {
 ///
 /// It uses two compartments for each wall and a single for the cells.
 /// PIN  molecules are updated according to:
-///  
 ///
 /// @f[ \frac{dP_i}{dt} = - p_0 P_i A_{ij}+\sum_{j}p_1 P_{ij} A_{ij} @f] 
 ///  
 /// @f[ \frac{dP_{ij}}{dt} =  p_0 P_i A_{ij}-p_1 P_{ij} A_{ij} @f]
 ///
-///
-///  
 /// In the model file the reaction is given by:
 /// @verbatim
 /// membraneCycling::InternalCellLinear 2 2 2 1
@@ -423,11 +402,8 @@ class InternalCellLinear : public BaseReaction {
 ///
 /// It uses two compartments for each wall and a single for the cells.
 /// PIN  molecules are updated according to:
-///  
+///  To do
 ///
-/// *TODO***
-///
-///  
 /// In the model file the reaction is given by:
 /// @verbatim
 /// CellFluxExocytosis 3 2 1 1
@@ -463,11 +439,11 @@ class CellFluxExocytosis : public BaseReaction {
 /// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis, p1 endocytosis.
 /// PIN  molecules are updated according to:
 ///  
-///
+
 /// @f[ \frac{dP_i}{dt} =\sum_{j} -p_0 P_{ij} \frac{P_{ij}^{p_3}}{P_{ij}^{p_3}+{p_2}^{p_3}} +p_1 P_{ij} \frac{P_{ij}^{p_3}}{P_{ij}^{p_3}+{p_2}^{p_3}} @f] 
 ///  
 /// @f[ \frac{dP_{ij}}{dt} =  p_0 P_{ij} \frac{P_{ij}^{p_3}}{P_{ij}^{p_3}+{p_2}^{p_3}}-p_1 P_{ij} \frac{P_{ij}^{p_3}}{P_{ij}^{p_3}+{p_2}^{p_3}} @f] 
-///   @f]
+///
 ///
 ///
 ///  
@@ -508,8 +484,6 @@ class PINFeedbackNonLinear : public BaseReaction {
 /// @f[ \frac{dP_i}{dt} =\sum_{j}- p_0 P_i X_{ij}+ p_1 P_i X_{ij} @f] 
 ///  
 /// @f[ \frac{dP_{ij}}{dt} = p_0 P_i X_{ij}-p_1 P_i X_{ij} @f]
-///
-///
 ///  
 /// In the model file the reaction is given by:
 /// @verbatim

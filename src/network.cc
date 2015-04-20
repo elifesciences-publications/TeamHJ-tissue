@@ -4787,3 +4787,188 @@ derivs(Tissue &T,
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DownInternalGradientModelGeometric::
+DownInternalGradientModelGeometric(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > 
+	      &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=15 ) {
+    std::cerr << "DownInternalGradientModelGeometric::"
+	      << "DownInternalGradientModelGeometric() "
+	      << "15 parameters used (see network.h)\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 2 || indValue[1].size() != 3 ) {
+    std::cerr << "DownInternalGradientModelGeometric::"
+	      << "DownInternalGradientModelGeometric() "
+	      << "Two cell variable indices (first row) and three wall variable"
+	      << " indices are used (auxin,PIN, membrane marker)." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("DownInternalGradientModelGeometric");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "c_IAA";
+  tmp[1] = "d_IAA";
+  tmp[2] = "p_IAAH(in)";
+  tmp[3] = "p_IAAH(out)";
+  tmp[4] = "p_IAA-";
+  tmp[5] = "D_IAA";
+  tmp[6] = "c_PIN";
+  tmp[7] = "d_PIN";
+  tmp[8] = "endo_PIN";
+  tmp[9] = "exo_PIN";
+  tmp[10] = "K_hill";
+  tmp[11] = "n_hill";
+  tmp[12] = "endo_back";
+  tmp[13] = "D_c_auxin";
+  tmp[14] = "D_c_pin";
+  setParameterId( tmp );
+}
+
+void DownInternalGradientModelGeometric::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);//auxin
+  size_t pI = variableIndex(0,1);//pin
+  size_t awI = variableIndex(1,0);//auxin (wall)
+  size_t pwI = variableIndex(1,1);//pin (membrane/wall)
+  size_t mwI = variableIndex(1,2);//(membrane marker)
+
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  awI<wallData[0].size() &&
+	  pwI<wallData[0].size()  &&
+	  mwI<wallData[0].size() );
+
+ 
+ 
+
+ for (size_t i=0; i<numCells; ++i) {
+	  
+    //Production and degradation
+    cellDerivs[i][aI] += parameter(0) - parameter(1)*cellData[i][aI];
+    cellDerivs[i][pI] += parameter(6)*cellData[i][aI]/(parameter(4)+cellData[i][aI]) - parameter(7)*cellData[i][pI];
+
+    
+    //Auxin transport and protein cycling
+    size_t numWalls = T.cell(i).numWall();
+    double cellVolume = T.cell(i).calculateVolume(vertexData);	
+    for (size_t k=0; k<numWalls; ++k) {
+      size_t j = T.cell(i).wall(k)->index();
+      double lengthWall = T.cell(i).wall(k)->length();
+      double g_ij = lengthWall/cellVolume;
+
+
+
+      // Checks if cell i is first or second neighbor to wall (wall variables are stored as pairs)
+      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background()  && wallData[j][mwI]==1) {
+
+	
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+  	double g_ji = lengthWall/T.cell(iNeighbor).calculateVolume(vertexData);
+	double fac = parameter(2)*cellData[i][aI] +parameter(3)*cellData[i][aI]*wallData[j][pwI]; //p_2 A_i + p_4 A_i P_ij
+	
+	cellDerivs[i][aI] -=  g_ij*fac;
+	cellDerivs[iNeighbor][aI] += g_ji*fac;
+	
+	
+	//PIN cycling
+	fac = parameter(8)*wallData[j][pwI]
+	  -	  parameter(9)*cellData[i][pI]*std::pow(parameter(10),parameter(11))/( std::pow(parameter(10),parameter(11)) + std::pow(cellData[i][aI],parameter(11)) );
+	wallDerivs[j][pwI] -= fac;
+	cellDerivs[i][pI] += g_ij*fac;
+
+
+      }
+      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background()  && wallData[j][mwI]==1) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell1()->index();
+        double g_ji = lengthWall/T.cell(iNeighbor).calculateVolume(vertexData);
+	double fac = parameter(2)*cellData[i][aI] +
+	  parameter(3)*cellData[i][aI]*wallData[j][pwI+1];
+	
+	cellDerivs[i][aI] -=  g_ij*fac;
+	cellDerivs[iNeighbor][aI] +=  g_ji*fac;
+
+
+	//PIN cycling
+
+	fac = parameter(8)*wallData[j][pwI+1]
+	  -parameter(9)*cellData[i][pI]*std::pow(parameter(10),parameter(11))/( std::pow(parameter(10),parameter(11)) + std::pow(cellData[i][aI],parameter(11)) ) ;
+
+	wallDerivs[j][pwI+1] -= fac;
+	cellDerivs[i][pI] += g_ij*fac;
+      }
+
+  else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background()  && wallData[j][mwI]==0) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell1()->index();
+        double g_ji = lengthWall/T.cell(iNeighbor).calculateVolume(vertexData);
+
+	double fac = parameter(13)*cellData[i][aI];
+	double fac2 = parameter(14)*cellData[i][pI];
+	cellDerivs[i][aI] -= g_ij* fac;
+        cellDerivs[i][pI] -= g_ij* fac2;
+	cellDerivs[iNeighbor][aI] += g_ji*fac;
+	cellDerivs[iNeighbor][pI] += g_ji*fac2;
+      }
+
+  else if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background()  && wallData[j][mwI]==0) {
+	// cell-cell transport
+	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+        double  g_ji = lengthWall/T.cell(iNeighbor).calculateVolume(vertexData);
+	double fac = parameter(13)*cellData[i][aI];
+	double fac2 = parameter(14)*cellData[i][pI];
+	
+	cellDerivs[i][aI] -=g_ij* fac;
+        cellDerivs[i][pI] -=g_ij* fac2;
+	cellDerivs[iNeighbor][aI] +=g_ji* fac;
+	cellDerivs[iNeighbor][pI] +=g_ji* fac2;
+
+      }
+    }
+  }
+}
+
+
+
+
+
+
+

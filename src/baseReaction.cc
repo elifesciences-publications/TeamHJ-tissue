@@ -282,6 +282,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new CreationSpatialCoordinate(paraValue,indValue); 
   else if(idValue=="CreationFromList")
     return new CreationFromList(paraValue,indValue); 
+  else if(idValue=="CreationOneGeometric")
+    return new CreationOneGeometric(paraValue,indValue); 
   
   
   //degradation.h,degradation.cc
@@ -289,6 +291,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new DegradationOne(paraValue,indValue); 
   else if(idValue=="DegradationTwo")
     return new DegradationTwo(paraValue,indValue); 
+  else if(idValue=="DegradationTwoGeometric")
+    return new DegradationTwoGeometric(paraValue,indValue); 
   else if(idValue=="DegradationHill")
     return new DegradationHill(paraValue,indValue); 
   //grn.h,grn.cc
@@ -384,6 +388,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     
    else if(idValue=="DownInternalGradientModel")
     return new DownInternalGradientModel(paraValue,indValue);
+   else if(idValue=="DownInternalGradientModelGeometric")
+    return new DownInternalGradientModelGeometric(paraValue,indValue);
     
   else if(idValue=="DownInternalGradientModelSingleCell")
     return new DownInternalGradientModelSingleCell(paraValue,indValue);

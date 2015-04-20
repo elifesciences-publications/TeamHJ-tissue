@@ -409,6 +409,61 @@ public:
 };
 
 
+
+///
+/// @brief In each cell a molecule is produced/created with a rate dependent on another molecule and cell volume.
+///
+/// The variable update is for each cell given by 
+///
+/// @f[ \frac{dc}{dt} = volume* k_c X @f]
+///
+/// where @f$ k_c @f$ is a constant parameter, @f$ c @f$ is the variable to be updated,
+/// and @f$ X @f$ is the concentration of the production-dependent molecule.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// creationOneGeometric 1 2 1 1
+/// k_c
+/// c_index
+/// X_index
+/// @endverbatim
+///
+class CreationOneGeometric : public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  CreationOneGeometric(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
+
 #endif
 
 

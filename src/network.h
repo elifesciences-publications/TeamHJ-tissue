@@ -1413,6 +1413,28 @@ class IntracellularIndirectCoupling : public BaseReaction {
 
 
 
+///
+/// @brief A cell-wall based auxin transport model including PINs with down the internal gradient. Here PIN exocytosis does depend on auxin in neighbouring wall compartment. includes gemoetric considerations
+/// Documantation to follow
+
+class DownInternalGradientModelGeometric : public BaseReaction {
+  
+ public:
+  
+ DownInternalGradientModelGeometric(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
 
 
 

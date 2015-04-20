@@ -12,6 +12,11 @@
 #include"baseReaction.h"
 #include<cmath>
 
+///
+/// @brief center triangulation namespace
+///
+
+
 namespace CenterTriangulation
 {
 
