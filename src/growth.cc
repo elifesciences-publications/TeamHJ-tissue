@@ -1490,6 +1490,80 @@ derivs(Tissue &T,
   }
 }
 
+MoveEpidermalVertexRadially::
+MoveEpidermalVertexRadially(std::vector<double> &paraValue, 
+		   std::vector< std::vector<size_t> > 
+		   &indValue ) {
+  
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=2 || ( paraValue[1]!=0 && paraValue[1]!=1) ) {
+    std::cerr << "MoveEpidermalVertexRadially::"
+	      << "MoveEpidermalVertexRadially() "
+	      << "Uses two parameters k_growth and r_pow (0,1)\n";
+    exit(0);
+  }  
+  if( indValue.size() != 0 ) {
+    std::cerr << "MoveEpidermalVertexRadially::"
+	      << "MoveEpidermalVertexRadially() "
+	      << "No variable index is used.\n";
+    exit(0);
+  }
+  // Set the variable values
+  //
+  setId("MoveEpidermalVertexRadially");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "k_growth";
+  tmp[0] = "r_pow";
+  setParameterId( tmp );
+}
+
+void MoveEpidermalVertexRadially::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  size_t numVertices = T.numVertex();
+  size_t dimension=vertexData[0].size();
+
+
+  for( size_t i=0 ; i<numVertices ; ++i ) {
+
+    if( T.vertex(i).isBoundary(T.background()))
+    {
+
+	double fac=parameter(0);
+	if( parameter(1)==0.0 ) {
+	  double r=0.0;
+ 
+	  for( size_t d=0 ; d<dimension ; ++d )
+	    r += vertexData[i][d]*vertexData[i][d];
+	  if( r>0.0 )
+	    r = std::sqrt(r);
+	  if( r>0.0 )
+	    fac /= r;
+	  else
+	    fac=0.0;
+	}
+	for( size_t d=0 ; d<dimension ; ++d )
+	  vertexDerivs[i][d] += fac*vertexData[i][d];
+
+    }
+
+  }
+}
+
+
 MoveVerteX::
 MoveVerteX(std::vector<double> &paraValue, 
 		   std::vector< std::vector<size_t> > 
@@ -1541,11 +1615,12 @@ derivs(Tissue &T,
 
   
   for( size_t i=0 ; i<numVertices ; ++i ) {
+
     double x= std::sqrt(vertexData[i][s_i]*vertexData[i][s_i]);
     if( growth_mode == 1 ) {
       fac *= vertexData[i][s_i];
     }
-
+    
     vertexDerivs[i][s_i] += fac;
   }
 }

@@ -88,6 +88,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new WallGrowth::Force(paraValue, indValue);
   else if(idValue == "MoveVertexRadially")
     return new MoveVertexRadially(paraValue, indValue);
+  else if(idValue == "MoveEpidermalVertexRadially")
+    return new MoveEpidermalVertexRadially(paraValue, indValue);
   else if(idValue == "MoveVerteX")
     return new MoveVerteX(paraValue, indValue);
   else if(idValue == "MoveVertexRadiallycenterTriangulation")

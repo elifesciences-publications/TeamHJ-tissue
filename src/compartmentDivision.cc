@@ -2555,12 +2555,20 @@ update(Tissue *T,size_t i,
       x1[1] = divCell->wall(k)->vertex1()->position(1);
       x2[0] = divCell->wall(k2)->vertex1()->position(0);
       x2[1] = divCell->wall(k2)->vertex1()->position(1);
+
+
       n1[0] = divCell->wall(k)->vertex2()->position(0)-x1[0];
       n1[1] = divCell->wall(k)->vertex2()->position(1)-x1[1];
       n2[0] = divCell->wall(k2)->vertex2()->position(0)-x2[0];
       n2[1] = divCell->wall(k2)->vertex2()->position(1)-x2[1];
       double wL1 = std::sqrt(n1[0]*n1[0]+n1[1]*n1[1]);
       double wL2 = std::sqrt(n2[0]*n2[0]+n2[1]*n2[1]);
+
+      //std::cerr << "x1[0]: " << x1[0] << "\n";
+      //std::cerr << "x1[1]: " << x1[1] << "\n";
+      //std::cerr << "pos0: " << divCell->wall(k2)->vertex2()->position(0) << "\n";
+      //std::cerr << "pos1: " << divCell->wall(k2)->vertex2()->position(1) << "\n";
+      //std::cerr << "wL1: " << wL1 << "\n";
       
       double t1=0.0, t2=0.0;
       double denominator = n2[0]*n2[1]-n2[0]*n1[1];
@@ -2632,10 +2640,18 @@ update(Tissue *T,size_t i,
         double alpha = std::acos(n1n2/(wL1*wL2));
         double A0 = 0.5*((x1[0]-x0[0])*(x2[1]-x0[1])-
                          (x1[1]-x0[1])*(x2[0]-x0[0]));
-        double root = std::sqrt((A0+Ahalf-A2)/(std::cos(alpha)*std::sin(alpha)));
+
+        double root = std::sqrt(std::fabs((A0+Ahalf-A2)/(std::cos(alpha)*std::sin(alpha)))); // not needed? added fabs of argument \andre
         double t1A = std::sqrt((x1[0]-x0[0])*(x1[0]-x0[0])+(x1[1]-x0[1])*(x1[1]-x0[1]));
         double t2A = std::sqrt((x2[0]-x0[0])*(x2[0]-x0[0])+(x2[1]-x0[1])*(x2[1]-x0[1]));
         //				double length = 2*(2*t1A+root)*std::cos(alpha);
+
+	//std::cerr << "A0: " << A0 << " Ahalf: " << Ahalf << " A2: " << A2 << "\n";
+	//std::cerr << "root**2: " << (A0+Ahalf-A2)/(std::cos(alpha)*std::sin(alpha)) << "\n";
+	//std::cerr << "root: " << root << "\n";
+	//std::cerr << "t1A: " << t1A << "\n";
+	//std::cerr << "root: " << root << "\n";
+
         std::cerr << divCell->index() << " " << k << " " << k2 
                   << "\t" << wL1 << " " << t1A+root << " (" << t1A-root << ")  "
                   << wL2 << " " << t2A+root << " (" << t2A-root << ")" << std::endl;
@@ -2650,7 +2666,7 @@ update(Tissue *T,size_t i,
       //maxLength = tmpLength;
     }
   }
-  exit(0);
+  //exit(0);
   double maxLength=0.0;
   
   std::vector<double> nW(dimension),nW2(dimension),v1Pos(dimension),
@@ -2707,7 +2723,7 @@ update(Tissue *T,size_t i,
     }
   }
   assert( w3I != divCell->numWall() && w3I != wI );
-  if( flag != 1 && !(flag==2 && vertexFlag) ) {
+  if( flag != 1 && !(flag==2 && vertexFlag)) {
     std::cerr << "divideVolumeViaShortestPath::update Warning"
               << " more than one wall possible as connection "
               << "for cell " 
