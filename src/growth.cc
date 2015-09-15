@@ -1626,6 +1626,67 @@ derivs(Tissue &T,
 }
 
 
+MoveVertexY::
+MoveVertexY(std::vector<double> &paraValue, 
+       std::vector< std::vector<size_t> > 
+       &indValue ) {
+  
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=2 || ( paraValue[1]!=0 && paraValue[1]!=1) ) {
+    std::cerr << "MoveVertexY::"
+        << "MoveVertexY() "
+        << "Uses two parameters k_growth and growth_mode (0,1)\n";
+    exit(0);
+  }  
+  if( indValue.size() != 0 ) {
+    std::cerr << "MoveVertexY::"
+        << "MoveVertexY() "
+        << "No variable index is used.\n";
+    exit(0);
+  }
+  // Set the variable values
+  //
+  setId("MoveVertexY");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "k_growth";
+  tmp[1] = "growth_mode";
+  setParameterId( tmp );
+}
+
+void MoveVertexY::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  size_t numVertices = T.numVertex();
+  size_t s_i = 1; // spatial index
+  size_t dimension=vertexData[s_i].size();
+  double fac=parameter(0);
+  size_t growth_mode = parameter(1);
+
+  
+  for( size_t i=0 ; i<numVertices ; ++i ) {
+
+    double x= std::sqrt(vertexData[i][s_i]*vertexData[i][s_i]);
+    if( growth_mode == 1 ) {
+      fac *= vertexData[i][s_i];
+    }
+    
+    vertexDerivs[i][s_i] += fac;
+  }
+}
+
 MoveVertexRadiallycenterTriangulation::
 MoveVertexRadiallycenterTriangulation(std::vector<double> &paraValue, 
 				      std::vector< std::vector<size_t> > 

@@ -92,6 +92,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new MoveEpidermalVertexRadially(paraValue, indValue);
   else if(idValue == "MoveVerteX")
     return new MoveVerteX(paraValue, indValue);
+  else if(idValue == "MoveVertexY")
+      return new MoveVertexY(paraValue, indValue);
   else if(idValue == "MoveVertexRadiallycenterTriangulation")
     return new MoveVertexRadiallycenterTriangulation(paraValue, indValue);
   else if(idValue == "MoveVertexSphereCylinder")
