@@ -1618,7 +1618,7 @@ derivs(Tissue &T,
       vertexDerivs[i][s_i] += fac*vertexData[i][s_i];
     }
     else {
-      if( vertexData[i][s_i] >= ) {
+      if( vertexData[i][s_i] >=0 ) {
 	vertexDerivs[i][s_i] += fac;
       }
       else {
@@ -1684,7 +1684,7 @@ derivs(Tissue &T,
       vertexDerivs[i][s_i] += fac*vertexData[i][s_i];
     }
     else {
-      if( vertexData[i][s_i] >= ) {
+      if( vertexData[i][s_i] >=0 ) {
 	vertexDerivs[i][s_i] += fac;
       }
       else {
