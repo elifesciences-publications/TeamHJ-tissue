@@ -394,6 +394,7 @@ void BaseSolver::print(std::ostream &os)
     }				
     os << std::endl;
   }
+
   //ply output
   else if ( printFlag_==6 ) {
     std::ostringstream ssCount;
@@ -586,6 +587,101 @@ void BaseSolver::print(std::ostream &os)
   //
   // Ad hoc and temporary print flags
   //
+
+  else if( printFlag_==25 ) { // This flag is printing the vtk paired wall and gnuplot outputs (corresponding to flags 2 and 5, respectively). The gnuplot output is written in a file called tissue.gdata.
+    
+    // Generating the output in gnuplot format. 
+
+    //Print the cells, first connected vertecis and then variables
+    std::ofstream of;
+
+    if (tCount==0) {
+      of.open("tissue.gdata");
+    }
+    else {
+      of.open("tissue.gdata",std::ios_base::app | std::ios_base::out);
+    }
+
+    size_t Nc = cellData_.size();
+    //os << Nc << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      of << "0 " << i << " " << t_ << " ";
+      for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+      of << cellData_[i][k] << " ";
+      of << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+   << T_->cell(i).numWall() << std::endl;
+    }   
+    size_t Nw = wallData_.size();
+    for( size_t i=0 ; i<Nw ; ++i ) {
+      of << "1 " << i << " " << t_ << " ";
+      for( size_t k=0 ; k<wallData_[i].size() ; ++k )
+  of << wallData_[i][k] << " ";
+      of << i << " " << T_->wall(i).lengthFromVertexPosition(vertexData_)
+   << " " << T_->wall(i).lengthFromVertexPosition(vertexData_)-wallData_[i][0]
+   << std::endl;
+    }       
+    of << std::endl;
+
+  // Generating the vtk paired wall outputs. 
+
+    if( tCount==0 )
+      os << numPrint_ << "\n";
+    size_t Nv = vertexData_.size(); 
+    if( !Nv ) {
+      os << "0 0" << std::endl << "0 0" << std::endl;
+      return;
+    }
+    //Print the vertex positions
+    size_t dimension = T_->vertex(0).numPosition(); // was vertexData_[0].size();
+    os << Nv << " " << dimension << std::endl;
+    for( size_t i=0 ; i<Nv ; ++i ) {
+      for( size_t d=0 ; d<dimension ; ++d )
+  os << vertexData_[i][d] << " ";
+      os << std::endl;
+    }
+    //os << std::endl;
+    //Print the cells, first connected vertecis and then variables
+
+    //size_t Nc = cellData_.size();
+    size_t numPrintCellVar = T_->cell(0).numVariable();
+    size_t numPrintVar=numPrintCellVar+1; // was cellData_[0].size()+3;   
+    os << Nc << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      size_t Ncv = T_->cell(i).numVertex(); 
+      os << Ncv << " ";
+      for( size_t k=0 ; k<Ncv ; ++k )
+  os << T_->cell(i).vertex(k)->index() << " ";
+      
+      for (size_t k=0; k<numPrintCellVar; ++k) // was for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+  os << cellData_[i][k] << " ";
+      //os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+      //<< T_->cell(i).numWall() << std::endl;
+   os << T_->cell(i).numWall() << std::endl;
+    }   
+    // Print wall variables, first the two connected vertices and then the variables
+    numPrintVar=T_->wall(0).numVariable()+5; // was wallData_[0].size()+4;
+    //size_t Nw = wallData_.size();
+    os << Nw << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nw ; ++i ) {
+      //os << "2 ";
+      os << T_->wall(i).vertex1()->index() << " " 
+   << T_->wall(i).vertex2()->index() << " ";
+      for( size_t k=0 ; k<wallData_[i].size() ; ++k )
+  os << wallData_[i][k] << " ";
+      double distance = T_->wall(i).lengthFromVertexPosition(vertexData_);
+      os << i << " " << distance
+   << " " << distance-wallData_[i][0] << " " << (distance-wallData_[i][0])/wallData_[i][0]
+   << std::endl;
+    }   
+    os << std::endl;
+
+
+  }
+
+
+  //
+  // Ad hoc and temporary print flags
+  //
   
     else if( printFlag_==48 ) {
 
@@ -601,6 +697,8 @@ void BaseSolver::print(std::ostream &os)
  for( size_t i=Nc-1 ; i<Nc ; ++i ) 
     os << cellData_[i][4] <<std::endl;
  }  
+
+
 
  //
   // Ad hoc and temporary print flags
