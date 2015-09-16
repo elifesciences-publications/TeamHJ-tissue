@@ -675,6 +675,83 @@ void BaseSolver::print(std::ostream &os)
   }
 
 
+  else if( printFlag_==26 ) { // Same as flag 25, but without printing the wall variables in the output file with gnuplot format. This flag is printing the vtk paired wall and gnuplot outputs (corresponding to flags 2 and 5, respectively). The gnuplot output is written in a file called tissue.gdata.
+    
+    // Generating the output in gnuplot format. 
+
+    //Print the cells, first connected vertecis and then variables
+    std::ofstream of;
+
+    if (tCount==0) {
+      of.open("tissue.gdata");
+    }
+    else {
+      of.open("tissue.gdata",std::ios_base::app | std::ios_base::out);
+    }
+
+    size_t Nc = cellData_.size();
+    //os << Nc << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      of << "0 " << i << " " << t_ << " ";
+      for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+      of << cellData_[i][k] << " ";
+      of << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+   << T_->cell(i).numWall() << std::endl;
+    }         
+    of << std::endl;
+
+  // Generating the vtk paired wall outputs. 
+
+    std::string pvdFile = "tmp/tissue.pvd";
+    std::string cellFile = "tmp/VTK_cells.vtu";
+    std::string wallFile = "tmp/VTK_walls.vtu";
+    static size_t numCellVar = T_->cell(0).numVariable();
+    setTissueVariables(numCellVar);
+    if( tCount==0 ) {
+        PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
+    }
+    PVD_file::writeTwoWall(*T_,cellFile,wallFile,tCount);
+  }
+  //
+  // Print vertex and cell variables
+  //
+  else if( printFlag_==3 ) {
+    if( tCount==0 )
+      os << numPrint_ << "\n";
+    size_t Nv = vertexData_.size(); 
+    if( !Nv ) {
+      os << "0 0" << std::endl << "0 0" << std::endl;
+      return;
+    }
+    //Print the vertex positions
+    size_t dimension = T_->vertex(0).numPosition(); // was vertexData_[0].size();
+    os << Nv << " " << dimension << std::endl;
+    for( size_t i=0 ; i<Nv ; ++i ) {
+      for( size_t d=0 ; d<dimension ; ++d )
+  os << vertexData_[i][d] << " ";
+      os << std::endl;
+    }
+    //os << std::endl;
+    //Print the cells, first connected vertecis and then variables
+    size_t Nc = cellData_.size();
+    int numPrintVar=T_->cell(0).numVariable()+3; // was cellData_[0].size()+3;
+    os << Nc << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      size_t Ncv = T_->cell(i).numVertex(); 
+      os << Ncv << " ";
+      for( size_t k=0 ; k<Ncv ; ++k )
+  os << T_->cell(i).vertex(k)->index() << " ";
+      
+      for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+  os << cellData_[i][k] << " ";
+      os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+   << T_->cell(i).numWall() << std::endl;
+    }   
+    os << std::endl;
+
+
+  }
+
   //
   // Ad hoc and temporary print flags
   //
