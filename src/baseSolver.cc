@@ -624,6 +624,20 @@ void BaseSolver::print(std::ostream &os)
 
   // Generating the vtk paired wall outputs. 
 
+    std::string pvdFile = "tmp/tissue.pvd";
+    std::string cellFile = "tmp/VTK_cells.vtu";
+    std::string wallFile = "tmp/VTK_walls.vtu";
+    static size_t numCellVar = T_->cell(0).numVariable();
+    setTissueVariables(numCellVar);
+    if( tCount==0 ) {
+        PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
+    }
+    PVD_file::writeTwoWall(*T_,cellFile,wallFile,tCount);
+  }
+  //
+  // Print vertex and cell variables
+  //
+  else if( printFlag_==3 ) {
     if( tCount==0 )
       os << numPrint_ << "\n";
     size_t Nv = vertexData_.size(); 
@@ -641,10 +655,8 @@ void BaseSolver::print(std::ostream &os)
     }
     //os << std::endl;
     //Print the cells, first connected vertecis and then variables
-
-    //size_t Nc = cellData_.size();
-    size_t numPrintCellVar = T_->cell(0).numVariable();
-    size_t numPrintVar=numPrintCellVar+1; // was cellData_[0].size()+3;   
+    size_t Nc = cellData_.size();
+    int numPrintVar=T_->cell(0).numVariable()+3; // was cellData_[0].size()+3;
     os << Nc << " " << numPrintVar << std::endl;
     for( size_t i=0 ; i<Nc ; ++i ) {
       size_t Ncv = T_->cell(i).numVertex(); 
@@ -652,26 +664,10 @@ void BaseSolver::print(std::ostream &os)
       for( size_t k=0 ; k<Ncv ; ++k )
   os << T_->cell(i).vertex(k)->index() << " ";
       
-      for (size_t k=0; k<numPrintCellVar; ++k) // was for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+      for( size_t k=0 ; k<cellData_[i].size() ; ++k )
   os << cellData_[i][k] << " ";
-      //os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
-      //<< T_->cell(i).numWall() << std::endl;
-   os << T_->cell(i).numWall() << std::endl;
-    }   
-    // Print wall variables, first the two connected vertices and then the variables
-    numPrintVar=T_->wall(0).numVariable()+5; // was wallData_[0].size()+4;
-    //size_t Nw = wallData_.size();
-    os << Nw << " " << numPrintVar << std::endl;
-    for( size_t i=0 ; i<Nw ; ++i ) {
-      //os << "2 ";
-      os << T_->wall(i).vertex1()->index() << " " 
-   << T_->wall(i).vertex2()->index() << " ";
-      for( size_t k=0 ; k<wallData_[i].size() ; ++k )
-  os << wallData_[i][k] << " ";
-      double distance = T_->wall(i).lengthFromVertexPosition(vertexData_);
-      os << i << " " << distance
-   << " " << distance-wallData_[i][0] << " " << (distance-wallData_[i][0])/wallData_[i][0]
-   << std::endl;
+      os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+   << T_->cell(i).numWall() << std::endl;
     }   
     os << std::endl;
 
