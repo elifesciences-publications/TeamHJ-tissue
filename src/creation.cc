@@ -577,3 +577,73 @@ derivs(Tissue &T,
     cellDerivs[cellI][cIndex] += cellVolume*k_c*cellData[cellI][xIndex];
   }
 }
+
+
+
+CreationSinus::CreationSinus(std::vector<double> &paraValue, 
+                             std::vector< std::vector<size_t> > 
+                             &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=3 ) {
+    std::cerr << "CreationSinus::CreationSinus() "
+              << "Uses three parameters amplitude, period, and phase." << std::endl;
+    exit(0);
+  }
+
+
+  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+    std::cerr << "CreationSinus::"
+        << "CreationSinus() "
+        << "Index for variable to be updated given." << std::endl;
+    exit(0);
+  }
+
+  // Set the variable values
+  setId("creationSinus");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "amplitude";
+  tmp[1] = "period";
+  tmp[2] = "phase";
+
+}
+
+void CreationSinus::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  
+
+  //Do the update for each cell
+  size_t numCells = T.numCell();
+
+  size_t cIndex = variableIndex(0,0);
+
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {      
+    cellDerivs[cellI][cIndex] += parameter(0)*
+    ( 1.0 + std::sin(6.28*(time_/parameter(1) + parameter(2) ) ) );};
+     
+}
+
+void CreationSinus::
+update(double h, double t, std::vector< std::vector<double> > &y)
+{
+  time_=t;
+}
+
+void CreationSinus::
+initiate(double t, std::vector< std::vector<double> > &y)
+{
+  time_=t;
+}

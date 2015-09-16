@@ -288,6 +288,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new CreationFromList(paraValue,indValue); 
   else if(idValue=="CreationOneGeometric")
     return new CreationOneGeometric(paraValue,indValue); 
+  else if(idValue=="creationSinus")
+    return new CreationSinus(paraValue,indValue);
   
   
   //degradation.h,degradation.cc
