@@ -1609,19 +1609,22 @@ derivs(Tissue &T,
   
   size_t numVertices = T.numVertex();
   size_t s_i = 0; // spatial index
-  size_t dimension=vertexData[s_i].size();
   double fac=parameter(0);
+  size_t dimension=vertexData[s_i].size();
   size_t growth_mode = parameter(1);
 
-  
   for( size_t i=0 ; i<numVertices ; ++i ) {
-
-    double x= std::sqrt(vertexData[i][s_i]*vertexData[i][s_i]);
     if( growth_mode == 1 ) {
-      fac *= vertexData[i][s_i];
+      vertexDerivs[i][s_i] += fac*vertexData[i][s_i];
     }
-    
-    vertexDerivs[i][s_i] += fac;
+    else {
+      if( vertexData[i][s_i] >= ) {
+	vertexDerivs[i][s_i] += fac;
+      }
+      else {
+	vertexDerivs[i][s_i] -= fac;
+      }
+    }
   }
 }
 
@@ -1676,21 +1679,21 @@ derivs(Tissue &T,
   size_t growth_mode = parameter(1);
   //std::cout <<  "fac = " << fac << "\n";
 
-  
   for( size_t i=0 ; i<numVertices ; ++i ) {
-
-    double x= std::sqrt(vertexData[i][s_i]*vertexData[i][s_i]);
     if( growth_mode == 1 ) {
-      fac *= vertexData[i][s_i];
-          //  std::cout <<  "vertexData = " << vertexData[i][s_i] << "\n";
-
+      vertexDerivs[i][s_i] += fac*vertexData[i][s_i];
     }
-    
-    vertexDerivs[i][s_i] += fac;
-     // std::cout <<  "vertexDerivs = " << vertexDerivs[i][s_i] << "\n";
-
+    else {
+      if( vertexData[i][s_i] >= ) {
+	vertexDerivs[i][s_i] += fac;
+      }
+      else {
+	vertexDerivs[i][s_i] -= fac;
+      }
+    }
   }
 }
+  
 
 MoveVertexRadiallycenterTriangulation::
 MoveVertexRadiallycenterTriangulation(std::vector<double> &paraValue, 
