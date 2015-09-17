@@ -234,7 +234,7 @@ void BaseSolver::print(std::ostream &os)
     //Print the cells, first connected vertecis and then variables
     size_t Nc = cellData_.size();
     size_t numPrintCellVar = T_->cell(0).numVariable();
-    size_t numPrintVar=numPrintCellVar+1; // was cellData_[0].size()+3;   
+    size_t numPrintVar=numPrintCellVar+2; // was cellData_[0].size()+3;   
     os << Nc << " " << numPrintVar << std::endl;
     for( size_t i=0 ; i<Nc ; ++i ) {
       size_t Ncv = T_->cell(i).numVertex(); 
@@ -242,11 +242,13 @@ void BaseSolver::print(std::ostream &os)
       for( size_t k=0 ; k<Ncv ; ++k )
 	os << T_->cell(i).vertex(k)->index() << " ";
       
-      for (size_t k=0; k<numPrintCellVar; ++k) // was for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+      for (size_t k=0; k<numPrintCellVar; ++k) { // was for( size_t k=0 ; k<cellData_[i].size() ; ++k )
 	os << cellData_[i][k] << " ";
+      }
       //os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
       //<< T_->cell(i).numWall() << std::endl;
-	 os << T_->cell(i).numWall() << std::endl;
+      os << T_->cell(i).calculateVolume(vertexData_) << " ";
+      os << T_->cell(i).numWall() << std::endl;
     }		
     // Print wall variables, first the two connected vertices and then the variables
     numPrintVar=T_->wall(0).numVariable()+5; // was wallData_[0].size()+4;

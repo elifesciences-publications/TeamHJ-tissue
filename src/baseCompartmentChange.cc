@@ -14,53 +14,50 @@
 
 BaseCompartmentChange::~BaseCompartmentChange(){}
 
-//!Factory creator, all creation should be mapped onto this one 
-/*! Given the idValue a compartmentChange of the defined type is returned
-  (using new Class).*/
 BaseCompartmentChange *
 BaseCompartmentChange::
 createCompartmentChange(std::vector<double> &paraValue,
-												std::vector< std::vector<size_t> > &indValue, 
-												std::string idValue ) {
+			std::vector< std::vector<size_t> > &indValue, 
+			std::string idValue ) {
   
   //Cell divisions
   //compartmentDivision.h,compartmentDivision.cc
   if(idValue=="DivisionVolumeViaLongestWall")
-    return new DivisionVolumeViaLongestWall(paraValue,indValue);
+    return new Division::VolumeViaLongestWall(paraValue,indValue);
   if(idValue=="DivisionVolumeViaLongestWallCenterTriangulation")
-    return new DivisionVolumeViaLongestWallCenterTriangulation(paraValue,indValue);
+    return new Division::VolumeViaLongestWallCenterTriangulation(paraValue,indValue);
   if(idValue=="DivisionVolumeViaLongestWall3DCenterTriangulation")
-    return new DivisionVolumeViaLongestWall3DCenterTriangulation(paraValue,indValue);
+    return new Division::VolumeViaLongestWall3DCenterTriangulation(paraValue,indValue);
   if(idValue=="Branching")
-    return new Branching(paraValue,indValue);
+    return new Division::Branching(paraValue,indValue);
   if(idValue=="DivisionVolumeViaLongestWallSpatial")
-    return new DivisionVolumeViaLongestWallSpatial(paraValue,indValue);
+    return new Division::VolumeViaLongestWallSpatial(paraValue,indValue);
   else if(idValue=="DivisionVolumeViaLongestWall3D")
-    return new DivisionVolumeViaLongestWall3D(paraValue,indValue);
+    return new Division::VolumeViaLongestWall3D(paraValue,indValue);
   else if(idValue=="DivisionVolumeViaLongestWall3DSpatial")
-    return new DivisionVolumeViaLongestWall3DSpatial(paraValue,indValue);
+    return new Division::VolumeViaLongestWall3DSpatial(paraValue,indValue);
   else if(idValue=="DivisionVolumeViaStrain")
-    return new DivisionVolumeViaStrain(paraValue,indValue);
+    return new Division::VolumeViaStrain(paraValue,indValue);
   else if(idValue=="DivisionVolumeViaDirection")
-    return new DivisionVolumeViaDirection(paraValue,indValue);
+    return new Division::VolumeViaDirection(paraValue,indValue);
   else if(idValue=="DivisionVolumeRandomDirection")
-    return new DivisionVolumeRandomDirection(paraValue,indValue);
+    return new Division::VolumeRandomDirection(paraValue,indValue);
   else if(idValue=="DivisionVolumeRandomDirectionCenterTriangulation")
-    return new DivisionVolumeRandomDirectionCenterTriangulation(paraValue,indValue);
+    return new Division::VolumeRandomDirectionCenterTriangulation(paraValue,indValue);
   else if(idValue=="DivisionVolumeViaShortestPath")
-    return new DivisionVolumeViaShortestPath(paraValue,indValue);
+    return new Division::VolumeViaShortestPath(paraValue,indValue);
   else if (idValue == "DivisionForceDirection")
-    return new DivisionForceDirection(paraValue, indValue);
+    return new Division::ForceDirection(paraValue, indValue);
   else if (idValue == "DivisionShortestPath")
-    return new DivisionShortestPath(paraValue, indValue);
+    return new Division::ShortestPath(paraValue, indValue);
   else if (idValue == "DivisionShortestPathGiantCells")
-    return new DivisionShortestPathGiantCells(paraValue, indValue);
+    return new Division::ShortestPathGiantCells(paraValue, indValue);
   else if (idValue == "DivisionRandom")
-    return new DivisionRandom(paraValue, indValue);
+    return new Division::Random(paraValue, indValue);
   else if(idValue=="DivisionVolumeRandomDirectionGiantCells")
-    return new DivisionVolumeRandomDirectionGiantCells(paraValue,indValue);
+    return new Division::VolumeRandomDirectionGiantCells(paraValue,indValue);
   else if(idValue == "DivisionMainAxis")
-    return new DivisionMainAxis(paraValue,indValue); 
+    return new Division::MainAxis(paraValue,indValue); 
   //compartmentRemoval.h,compartmentRemoval.cc
   else if(idValue=="RemovalIndex")
     return new RemovalIndex(paraValue,indValue);
