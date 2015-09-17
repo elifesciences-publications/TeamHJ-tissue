@@ -10,7 +10,7 @@
 #include "myRandom.h"
 
 HeunIto::HeunIto(Tissue *T,std::ifstream &IN)
-  :BaseSolver(T,IN)
+  : BaseSolver(T,IN)
 {
   readParameterFile(IN);
 }

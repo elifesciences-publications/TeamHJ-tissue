@@ -79,7 +79,7 @@ BaseSolver* BaseSolver::getSolver(Tissue *T, const std::string &file)
   else if (idValue == "Euler")
     solver = new Euler(T,(std::ifstream &) *IN);
   else if (idValue == "HeunIto")
-    solver = new HeunIto(T,(std::ifstream &) IN);
+    solver = new HeunIto(T,(std::ifstream &) *IN);
   else {
     std::cerr << "BaseSolver::BaseSolver() - "
 	      << "Unknown solver: " << idValue << std::endl;
