@@ -97,6 +97,49 @@ derivs(Tissue &T,
   }
 }
 
+
+void Hill::
+derivsWithAbs(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &wallData,
+        DataMatrix &vertexData,
+        DataMatrix &cellDerivs,
+        DataMatrix &wallDerivs,
+        DataMatrix &vertexDerivs,
+        DataMatrix &sdydtCell,
+        DataMatrix &sdydtWall,
+        DataMatrix &sdydtVertex ){
+  // Do the update for each cell
+  size_t numCells = T.numCell();
+  size_t cIndex = variableIndex(0,0);
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {      
+  //
+    double contribution=parameter(0);
+    size_t parameterIndex=1;
+    // Activator contributions
+    for( size_t i=0 ; i<numVariableIndex(1) ; i++ ) {
+      double c = std::pow(cellData[cellI][variableIndex(1,i)], 
+           parameter(parameterIndex+1));
+      contribution *= c
+      / ( std::pow(parameter(parameterIndex),parameter(parameterIndex+1)) + c );
+      parameterIndex+=2;
+    }
+    // Repressor contributions
+   for( size_t i=0 ; i<numVariableIndex(2) ; i++ ) {
+     double c = std::pow(parameter(parameterIndex),parameter(parameterIndex+1));
+     contribution *= c /
+       ( c + std::pow(cellData[cellI][variableIndex(2,i)],
+          parameter(parameterIndex+1)) );
+     parameterIndex+=2;
+   }   
+    cellDerivs[cellI][cIndex] += contribution; 
+    sdydtCell[cellI][cIndex] += contribution;    
+
+  }
+}
+
+
 HillGeneralOne::HillGeneralOne(std::vector<double> &paraValue, 
 			       std::vector< std::vector<size_t> > 
 			       &indValue ) 

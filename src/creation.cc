@@ -608,7 +608,7 @@ CreationSinus::CreationSinus(std::vector<double> &paraValue,
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "amplitude";
-  tmp[1] = "period";
+  tmp[1] = "frequency";
   tmp[2] = "phase";
 
 }
@@ -636,14 +636,53 @@ derivs(Tissue &T,
      
 }
 
+
 void CreationSinus::
-update(double h, double t, std::vector< std::vector<double> > &y)
+derivsWithAbs(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &wallData,
+        DataMatrix &vertexData,
+        DataMatrix &cellDerivs,
+        DataMatrix &wallDerivs,
+        DataMatrix &vertexDerivs,
+        DataMatrix &sdydtCell,
+        DataMatrix &sdydtWall,
+        DataMatrix &sdydtVertex ) 
 {
-  time_=t;
+  //Do the update for each cell
+  size_t numCells = T.numCell();
+  
+  size_t cIndex = variableIndex(0,0);
+  double k_c = parameter(0);
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+      double value = parameter(0)*
+    ( 1.0 + std::sin(6.28*(time_/parameter(1) + parameter(2) ) ) );
+    
+    cellDerivs[cellI][cIndex]  += value;
+    sdydtCell[cellI][cIndex]  += value;
+  }
+}
+
+
+void CreationSinus::
+update(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &walldata,
+        DataMatrix &vertexData,
+        double h) 
+{
+  time_+=h;
 }
 
 void CreationSinus::
-initiate(double t, std::vector< std::vector<double> > &y)
+initiate(Tissue &T,
+          DataMatrix &cellData,
+          DataMatrix &walldata,
+          DataMatrix &vertexData,
+          DataMatrix &cellderivs, 
+          DataMatrix &wallderivs,
+          DataMatrix &vertexDerivs)
 {
-  time_=t;
+  time_=0;
 }

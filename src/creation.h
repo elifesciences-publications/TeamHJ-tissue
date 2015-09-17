@@ -518,17 +518,37 @@ class CreationSinus : public BaseReaction {
         DataMatrix &wallDerivs,
         DataMatrix &vertexDerivs );
 
-  ///
-  /// @see BaseReaction::update()
-  ///
-  void update(double h, double t,
-        std::vector< std::vector<double> > &y);
+
+    void derivsWithAbs(Tissue &T,
+         DataMatrix &cellData,
+         DataMatrix &wallData,
+         DataMatrix &vertexData,
+         DataMatrix &cellDerivs,
+         DataMatrix &wallDerivs,
+         DataMatrix &vertexDerivs,
+         DataMatrix &sdydtCell,
+         DataMatrix &sdydtWall,
+         DataMatrix &sdydtVertex );
 
   ///
   /// @see BaseReaction::update()
   ///
-  void initiate(double t,
-                std::vector< std::vector<double> > &y);
+  void update(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &walldata,
+        DataMatrix &vertexData,
+        double h) ;
+
+  ///
+  /// @see BaseReaction::update()
+  ///
+  void initiate(Tissue &T,
+          DataMatrix &cellData,
+          DataMatrix &walldata,
+          DataMatrix &vertexData,
+          DataMatrix &cellderivs, 
+          DataMatrix &wallderivs,
+          DataMatrix &vertexDerivs );
 };
 
 
