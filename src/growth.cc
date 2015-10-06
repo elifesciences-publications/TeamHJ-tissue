@@ -176,6 +176,51 @@ namespace WallGrowth {
   }
 
 
+  void Stress::
+  derivsWithAbs(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &wallData,
+        DataMatrix &vertexData,
+        DataMatrix &cellDerivs,
+        DataMatrix &wallDerivs,
+        DataMatrix &vertexDerivs,
+        DataMatrix &sdydtCell,
+        DataMatrix &sdydtWall,
+        DataMatrix &sdydtVertex){
+    
+    size_t numWalls = T.numWall();
+    size_t lengthIndex = variableIndex(0,0);
+    
+    for( size_t i=0 ; i<numWalls ; ++i ) {
+      size_t v1 = T.wall(i).vertex1()->index();
+      size_t v2 = T.wall(i).vertex2()->index();
+      double stress=0.0;
+      if (!parameter(2)) {//Stress used, read from saved data in the wall
+  for (size_t k=0; k<numVariableIndex(1); ++k)
+    stress += wallData[i][variableIndex(1,k)];
+      }
+      else { //Strain/stretch used
+  double distance=0.0;
+  for( size_t d=0 ; d<vertexData[v1].size() ; d++ )
+    distance += (vertexData[v1][d]-vertexData[v2][d])*
+      (vertexData[v1][d]-vertexData[v2][d]);
+  distance = std::sqrt(distance);
+  stress = (distance-wallData[i][lengthIndex]) /
+    wallData[i][lengthIndex];
+      }
+      if (parameter(1)==0.0 || stress > parameter(1)) {
+  double growthRate = parameter(0)*(stress - parameter(1));
+  if (parameter(3))
+    growthRate *= wallData[i][lengthIndex];
+  if (numParameter()>4) {
+    growthRate *= (1.0 - wallData[i][lengthIndex]/parameter(4));
+  }
+  wallDerivs[i][lengthIndex] += growthRate;
+      }
+    }
+  }
+
+
 
 
   // strain
@@ -1490,6 +1535,40 @@ derivs(Tissue &T,
   }
 }
 
+
+void MoveVertexRadially::derivsWithAbs(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &wallData,
+        DataMatrix &vertexData,
+        DataMatrix &cellDerivs,
+        DataMatrix &wallDerivs,
+        DataMatrix &vertexDerivs,
+        DataMatrix &sdydtCell,
+        DataMatrix &sdydtWall,
+        DataMatrix &sdydtVertex )  {
+  
+  size_t numVertices = T.numVertex();
+  size_t dimension=vertexData[0].size();
+  
+  for( size_t i=0 ; i<numVertices ; ++i ) {
+    double fac=parameter(0);
+    if( parameter(1)==0.0 ) {
+      double r=0.0;
+      for( size_t d=0 ; d<dimension ; ++d )
+  r += vertexData[i][d]*vertexData[i][d];
+      if( r>0.0 )
+  r = std::sqrt(r);
+      if( r>0.0 )
+  fac /= r;
+      else
+  fac=0.0;
+    }
+    for( size_t d=0 ; d<dimension ; ++d )
+      vertexDerivs[i][d] += fac*vertexData[i][d];
+  }
+}
+
+
 MoveEpidermalVertexRadially::
 MoveEpidermalVertexRadially(std::vector<double> &paraValue, 
 		   std::vector< std::vector<size_t> > 
@@ -1629,6 +1708,39 @@ derivs(Tissue &T,
 }
 
 
+void MoveVerteX::derivsWithAbs(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &wallData,
+        DataMatrix &vertexData,
+        DataMatrix &cellDerivs,
+        DataMatrix &wallDerivs,
+        DataMatrix &vertexDerivs,
+        DataMatrix &sdydtCell,
+        DataMatrix &sdydtWall,
+        DataMatrix &sdydtVertex ){
+  
+  size_t numVertices = T.numVertex();
+  size_t s_i = 0; // spatial index
+  double fac=parameter(0);
+  size_t dimension=vertexData[s_i].size();
+  size_t growth_mode = parameter(1);
+
+  for( size_t i=0 ; i<numVertices ; ++i ) {
+    if( growth_mode == 1 ) {
+      vertexDerivs[i][s_i] += fac*vertexData[i][s_i];
+    }
+    else {
+      if( vertexData[i][s_i] >=0 ) {
+  vertexDerivs[i][s_i] += fac;
+      }
+      else {
+  vertexDerivs[i][s_i] -= fac;
+      }
+    }
+  }
+}
+
+
 MoveVertexY::
 MoveVertexY(std::vector<double> &paraValue, 
        std::vector< std::vector<size_t> > 
@@ -1693,6 +1805,41 @@ derivs(Tissue &T,
     }
   }
 }
+
+void MoveVertexY::
+derivsWithAbs(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &wallData,
+        DataMatrix &vertexData,
+        DataMatrix &cellDerivs,
+        DataMatrix &wallDerivs,
+        DataMatrix &vertexDerivs,
+        DataMatrix &sdydtCell,
+        DataMatrix &sdydtWall,
+        DataMatrix &sdydtVertex ) {
+  
+  size_t numVertices = T.numVertex();
+  size_t s_i = 1; // spatial index
+  size_t dimension=vertexData[s_i].size();
+  double fac=parameter(0);
+  size_t growth_mode = parameter(1);
+  //std::cout <<  "fac = " << fac << "\n";
+
+  for( size_t i=0 ; i<numVertices ; ++i ) {
+    if( growth_mode == 1 ) {
+      vertexDerivs[i][s_i] += fac*vertexData[i][s_i];
+    }
+    else {
+      if( vertexData[i][s_i] >=0 ) {
+  vertexDerivs[i][s_i] += fac;
+      }
+      else {
+  vertexDerivs[i][s_i] -= fac;
+      }
+    }
+  }
+}
+
   
 
 MoveVertexRadiallycenterTriangulation::

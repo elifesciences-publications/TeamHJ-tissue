@@ -85,6 +85,9 @@ namespace WallGrowth {
 	      DataMatrix &cellDerivs,
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
+
+
+
   };
     
   ///
@@ -157,6 +160,19 @@ namespace WallGrowth {
 		DataMatrix &cellDerivs,
 		DataMatrix &wallDerivs,
 		DataMatrix &vertexDerivs );
+
+
+      void derivsWithAbs(Tissue &T,
+         DataMatrix &cellData,
+         DataMatrix &wallData,
+         DataMatrix &vertexData,
+         DataMatrix &cellDerivs,
+         DataMatrix &wallDerivs,
+         DataMatrix &vertexDerivs,
+         DataMatrix &sdydtCell,
+         DataMatrix &sdydtWall,
+         DataMatrix &sdydtVertex );
+
   };
 
   ///
@@ -633,7 +649,11 @@ namespace WallGrowth {
 		  DataMatrix &cellDerivs,
 		  DataMatrix &wallDerivs,
 		  DataMatrix &vertexDerivs );
+
+
     };
+
+
 
     
 
@@ -750,6 +770,17 @@ public:
                 DataMatrix &cellDerivs,
                 DataMatrix &wallDerivs,
                 DataMatrix &vertexDerivs );
+
+    void derivsWithAbs(Tissue &T,
+         DataMatrix &cellData,
+         DataMatrix &wallData,
+         DataMatrix &vertexData,
+         DataMatrix &cellDerivs,
+         DataMatrix &wallDerivs,
+         DataMatrix &vertexDerivs,
+         DataMatrix &sdydtCell,
+         DataMatrix &sdydtWall,
+         DataMatrix &sdydtVertex );
 };
 
 ///
@@ -852,6 +883,17 @@ public:
                 DataMatrix &cellDerivs,
                 DataMatrix &wallDerivs,
                 DataMatrix &vertexDerivs );
+
+    void derivsWithAbs(Tissue &T,
+         DataMatrix &cellData,
+         DataMatrix &wallData,
+         DataMatrix &vertexData,
+         DataMatrix &cellDerivs,
+         DataMatrix &wallDerivs,
+         DataMatrix &vertexDerivs,
+         DataMatrix &sdydtCell,
+         DataMatrix &sdydtWall,
+         DataMatrix &sdydtVertex );
 };
 
 
@@ -904,6 +946,17 @@ public:
                 DataMatrix &cellDerivs,
                 DataMatrix &wallDerivs,
                 DataMatrix &vertexDerivs );
+
+    void derivsWithAbs(Tissue &T,
+         DataMatrix &cellData,
+         DataMatrix &wallData,
+         DataMatrix &vertexData,
+         DataMatrix &cellDerivs,
+         DataMatrix &wallDerivs,
+         DataMatrix &vertexDerivs,
+         DataMatrix &sdydtCell,
+         DataMatrix &sdydtWall,
+         DataMatrix &sdydtVertex );
 };
 
 ///

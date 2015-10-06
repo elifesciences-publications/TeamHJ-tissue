@@ -97,6 +97,18 @@ class VertexFromWallSpring : public BaseReaction {
 	      DataMatrix &cellDerivs,
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
+
+  void derivsWithAbs(Tissue &T,
+         DataMatrix &cellData,
+         DataMatrix &wallData,
+         DataMatrix &vertexData,
+         DataMatrix &cellDerivs,
+         DataMatrix &wallDerivs,
+         DataMatrix &vertexDerivs,
+         DataMatrix &sdydtCell,
+         DataMatrix &sdydtWall,
+         DataMatrix &sdydtVertex );
+
 };
 
 ///

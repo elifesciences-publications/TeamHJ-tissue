@@ -2317,10 +2317,10 @@ void Tissue::derivsWithAbs( DataMatrix &cellData,
   }  
 
   //Calculate derivative contributions from all reactions
-  for( size_t r=0 ; r<numReaction() ; ++r )
+  for( size_t r=0 ; r<numReaction() ; ++r ){
     reaction(r)->derivsWithAbs(*this,cellData,wallData,vertexData,
 			       cellDeriv,wallDeriv,vertexDeriv,
-			       sdydtCell,sdydtWall,sdydtVertex);
+			       sdydtCell,sdydtWall,sdydtVertex);}
 }
 
 void::Tissue::initiateReactions(DataMatrix &cellData,

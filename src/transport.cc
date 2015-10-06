@@ -151,7 +151,7 @@ derivs(Tissue &T,
       }
       double fac = parameter(0)*wallData[j][pwI+pwIadd];
       wallDerivs[j][pwI+pwIadd] -= 2.*fac;
-
+      std::cout << "x = " << parameter(0) << ' u' << wallData[j][pwI+pwIadd]<<"\n";
       size_t kNext = (k+1)%numWalls;     
       size_t jNext = T.cell(i).wall(kNext)->index();   
       if( T.cell(i).wall(kNext)->cell1()->index() == i) {

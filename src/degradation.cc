@@ -79,11 +79,10 @@ derivsWithAbs(Tissue &T,
   size_t numCells = T.numCell();
   
   size_t cIndex = variableIndex(0,0);
-  size_t xIndex = variableIndex(1,0);
   double k_c = parameter(0);
   //For each cell
   for (size_t cellI = 0; cellI < numCells; ++cellI) {  
-      double value = k_c * cellData[cellI][xIndex];
+      double value = k_c * cellData[cellI][cIndex];
     
     cellDerivs[cellI][cIndex]  -= value;
     sdydtCell[cellI][cIndex]  += value;

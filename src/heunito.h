@@ -11,7 +11,7 @@
 #include "baseSolver.h"
 
 ///
-/// @brief Heun numerical solver in the Ito interpretation
+/// @brief Heun numerical solver in the Ito interpretation. 
 ///
 /// This class implements the solver described in (Carrillo et al. 2003 PRE)
 ///
@@ -78,6 +78,7 @@ class HeunIto : public BaseSolver {
 	       DataMatrix &dydt2Wall,
 	       DataMatrix &dydt2Vertex);
 };
+
 
 #endif /* HEUNITO_H */
 

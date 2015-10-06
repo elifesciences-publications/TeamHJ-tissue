@@ -72,6 +72,7 @@ void HeunIto::simulate(size_t verbose)
 	  wallData_.size()==wallDerivs_.size() );
   assert( vertexData_.size() == T_->numVertex() && 
 	  vertexData_.size()==vertexDerivs_.size() );
+
   //
   // Create all vectors that will be needed by the HeunIto algorithm
   //
@@ -119,19 +120,22 @@ void HeunIto::simulate(size_t verbose)
     printTime=startTime_-tiny;
     printDeltaTime=(endTime_-startTime_)/double(numPrint_-1);
   }
+  
+
   //
   // Go
   //
   t_=startTime_;
   numOk_ = numBad_ = 0;
   while( t_<endTime_ ) {
+
     if (debugFlag()) {
       cellDataCopy_[debugCount()] = cellData_;
     } 
     //Update the derivatives
     T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,
 	       vertexDerivs_);
-    
+
     //Print if applicable 
     if( doPrint && t_ >= printTime ) {
       printTime += printDeltaTime;
@@ -147,7 +151,6 @@ void HeunIto::simulate(size_t verbose)
     heunito(sdydtCell,sdydtWall,sdydtVertex,stCell,stWall,stVertex,
 	    y1Cell,y1Wall,y1Vertex,dydt2Cell,dydt2Wall,dydt2Vertex);
     numOk_++;
-    
     //
     // Check for discrete and reaction updates
     //
@@ -159,10 +162,10 @@ void HeunIto::simulate(size_t verbose)
     
     // Check the tissue connectivity in each step
     T_->checkConnectivity(1);
-    
+   
     // Resize temporary containers as well
     if(cellData_.size() != sdydtCell.size() ) {
-      sdydtCell.resize( cellData_.size(), sdydtCell[0] );
+      sdydtCell.resize(cellData_.size(), sdydtCell[0] );
       stCell.resize( cellDerivs_.size(), stCell[0] );
       y1Cell.resize( cellDerivs_.size(), y1Cell[0] );
       dydt2Cell.resize( cellDerivs_.size(), dydt2Cell[0] );
@@ -173,18 +176,18 @@ void HeunIto::simulate(size_t verbose)
       sdydtVertex.resize( vertexData_.size(), sdydtVertex[0] );
       stVertex.resize( vertexDerivs_.size(), stVertex[0] );
       y1Vertex.resize( vertexDerivs_.size(), y1Vertex[0] );
-      dydt2Vertex.resize( vertexDerivs_.size(), dydt2Vertex[0] );
+      dydt2Vertex.resize(vertexDerivs_.size(), dydt2Vertex[0] );
     }
     
-    //update time variable
+    //  update time variable
     if( (t_+h_)==t_ ) {
       std::cerr << "HeunIto::simulate() Step size too small.";
       exit(-1);
     }
     t_ += h_;
-  }
+  } //  end of the integration loop 
   if( doPrint ) {
-    //Update the derivatives
+    //  Update the derivatives
     T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,
 	       vertexDerivs_);
     print();
@@ -207,10 +210,12 @@ void HeunIto::heunito(DataMatrix &sdydtCell,
 		      DataMatrix &dydt2Vertex)
 { 
   double hh=0.5*h_;
-  
+// cellData_ updating automatically; others require the rescale...
   T_->derivsWithAbs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,vertexDerivs_,
 		    sdydtCell,sdydtWall,sdydtVertex);// first step
+
   DataMatrix randCell( sdydtCell.size() ),randWall( sdydtWall.size() ),randVertex( sdydtVertex.size() );
+
   for(size_t i=0 ; i<sdydtCell.size() ; ++i ) {
     randCell[i].resize( sdydtCell[i].size() );
     for( size_t j=0 ; j<sdydtCell[i].size() ; ++j ) {      

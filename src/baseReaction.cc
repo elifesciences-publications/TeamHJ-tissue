@@ -24,6 +24,8 @@
 #include "transport.h"
 #include "sisterVertex.h"
 #include "membraneCycling.h"
+#include "membraneCyclingAll.h"
+
 
 #include"massAction.h"
 
@@ -513,6 +515,12 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if (idValue=="MembraneCycling::CellFluxExocytosis")
     return new MembraneCycling::CellFluxExocytosis(paraValue, indValue);
 
+ // MembraneCyclingAll.h
+  else if (idValue=="MembraneCyclingAll::Constant")
+    return new MembraneCyclingAll::Constant(paraValue, indValue);
+  else if (idValue=="MembraneCyclingAll::LocalWallFeedbackNonLinear")
+    return new MembraneCyclingAll::LocalWallFeedbackNonLinear(paraValue, indValue);
+
   //massAction.h
   else if (idValue=="MassAction::General")
     return new MassAction::General(paraValue, indValue);
@@ -587,7 +595,7 @@ derivsWithAbs(Tissue &T,
        DataMatrix &vertexDerivs,
        DataMatrix &sdydtCell, 
        DataMatrix &sdydtWall,
-       DataMatrix &sdydtVertex ) 
+       DataMatrix &sdydtVertex) 
 {
   std::cerr << "BaseReaction::derivsWithAbs() should not be used. "
 	    << "Should always be mapped onto one of the real types." << std::endl;

@@ -852,6 +852,21 @@ derivs(Tissue &T,
 }
 
 void CenterCOM::
+derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex)
+{
+  
+}
+
+void CenterCOM::
 update(Tissue &T,
        DataMatrix &cellData,
        DataMatrix &wallData,
