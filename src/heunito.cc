@@ -244,21 +244,21 @@ void HeunIto::heunito(DataMatrix &sdydtCell,
   T_->derivs(y1Cell,y1Wall,y1Vertex,dydt2Cell,dydt2Wall,dydt2Vertex);//second step
   for(size_t i=0 ; i<sdydtCell.size() ; ++i ) {
     for( size_t j=0 ; j<sdydtCell[i].size() ; ++j ) {      
-      cellData_[i][j] = y1Cell[i][j]+hh*(cellDerivs_[i][j]+dydt2Cell[i][j])+stCell[i][j]*randCell[i][j];      
+      cellData_[i][j] = cellData_[i][j]+hh*(cellDerivs_[i][j]+dydt2Cell[i][j])+stCell[i][j]*randCell[i][j];      
       if(cellData_[i][j]<0.0 )// Setting and absortive barrier at 0
 	cellData_[i][j]=0.0; 
     }
   }
   for(size_t i=0 ; i<sdydtWall.size() ; ++i ) {
     for( size_t j=0 ; j<sdydtWall[i].size() ; ++j ) {      
-      wallData_[i][j] = y1Wall[i][j]+hh*(wallDerivs_[i][j]+dydt2Wall[i][j])+stWall[i][j]*randWall[i][j];      
+      wallData_[i][j] = wallData_[i][j]+hh*(wallDerivs_[i][j]+dydt2Wall[i][j])+stWall[i][j]*randWall[i][j];      
       if(wallData_[i][j]<0.0 )// Setting and absortive barrier at 0
 	wallData_[i][j]=0.0; 
     }
   }
   for(size_t i=0 ; i<sdydtVertex.size() ; ++i ) {
     for( size_t j=0 ; j<sdydtVertex[i].size() ; ++j ) {      
-      vertexData_[i][j] = y1Vertex[i][j]+hh*(vertexDerivs_[i][j]+dydt2Vertex[i][j])+
+      vertexData_[i][j] = vertexData_[i][j]+hh*(vertexDerivs_[i][j]+dydt2Vertex[i][j])+
 	stVertex[i][j]*randVertex[i][j];      
       if(vertexData_[i][j]<0.0 )// Setting and absortive barrier at 0
 	vertexData_[i][j]=0.0; 

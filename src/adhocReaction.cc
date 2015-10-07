@@ -877,9 +877,9 @@ update(Tissue &T,
   size_t numVertices = T.numVertex();
   
   std::vector<double> com(dimension, 0.0);
-  
   for (size_t i = 0; i < numVertices; ++i) {
     for (size_t d = 0; d < dimension; ++d) {
+      std::cerr<<i<<" "<<d<<" "<<vertexData[i][d]<<"\n";
       com[d] += vertexData[i][d];
     }
   }
@@ -891,6 +891,7 @@ update(Tissue &T,
   for (size_t i = 0; i < numVertices; ++i) {
     for (size_t d = 0; d < dimension; ++d) {
       vertexData[i][d] -= com[d];
+
     }
   }
 }
@@ -1975,3 +1976,93 @@ void VertexFromRotationalForceLinear::update(Tissue &T,
 
 
 
+
+ThresholdSwitch::ThresholdSwitch(std::vector<double> &paraValue, 
+                                                       std::vector< std::vector<size_t> > &indValue ) 
+{
+  //
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=2 ) {
+    std::cerr << "ThresholdSwitch::ThresholdSwitch()  parameter used "
+        << "Threshold" << std::endl;
+    exit(0);
+  }
+  if( indValue.size()!=2 || indValue[0].size()!=1 || indValue[1].size()!=1 ) {
+    std::cerr << "ThresholdSwitch::ThresholdSwitch() "
+              << "Two levels of variable indices are used, "
+              << "one for the threshold variable (single index)"
+              << ", and one for a list of variables to change" 
+              << std::endl;
+    exit(0);
+  }
+  //
+  // Set the variable values
+  //
+  setId("add");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  //
+  // Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "const";
+  tmp[1] = "switchtype";
+  setParameterId( tmp );
+}
+
+void ThresholdSwitch::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  // Nothing to be done for the derivative function.
+}
+
+  
+void ThresholdSwitch::
+derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex)
+{
+  // Nothing to be done for the derivative function.
+}
+
+
+void ThresholdSwitch::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h) 
+{
+
+    size_t numCells = T.numCell();
+  
+  size_t cIndex = variableIndex(0,0);
+  size_t c2Index = variableIndex(1,0);
+
+
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+
+    if (cellData[cellI][cIndex]>=parameter(0)  ) {
+          cellData[cellI][c2Index]=1;
+      }
+    else if ( cellData[cellI][cIndex]<parameter(0) && parameter(1)==0 )
+  {cellData[cellI][c2Index]=0;}
+
+}
+}

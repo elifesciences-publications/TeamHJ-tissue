@@ -652,7 +652,7 @@ void BaseSolver::print(std::ostream &os)
     os << Nv << " " << dimension << std::endl;
     for( size_t i=0 ; i<Nv ; ++i ) {
       for( size_t d=0 ; d<dimension ; ++d )
-  os << vertexData_[i][d] << " ";
+      os << vertexData_[i][d] << " ";
       os << std::endl;
     }
     //os << std::endl;

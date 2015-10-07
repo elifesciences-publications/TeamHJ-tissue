@@ -485,7 +485,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new restrictVertexRadially(paraValue,indValue); 
   else if(idValue=="VertexFromRotationalForceLinear")
     return new VertexFromRotationalForceLinear(paraValue,indValue); 
-  
+  else if(idValue=="ThresholdSwitch")
+    return new ThresholdSwitch(paraValue,indValue); 
 
   // cellTime.h
   else if (idValue=="CellTimeDerivative")
