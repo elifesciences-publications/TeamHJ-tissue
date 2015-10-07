@@ -222,6 +222,8 @@ void HeunIto::heunito(DataMatrix &sdydtCell,
       randCell[i][j] = myRandom::Grand();
       stCell[i][j] = sqrt(sdydtCell[i][j]*h_/vol_);
       y1Cell[i][j] = cellData_[i][j]+h_*cellDerivs_[i][j]+stCell[i][j]*randCell[i][j];
+      if(y1Cell[i][j]<0.0) // Setting and absortive barrier at 0
+         y1Cell[i][j]=0.0; 
     }
   }
   for(size_t i=0 ; i<sdydtWall.size() ; ++i ) {
@@ -230,6 +232,8 @@ void HeunIto::heunito(DataMatrix &sdydtCell,
       randWall[i][j] = myRandom::Grand();
       stWall[i][j] = sqrt(sdydtWall[i][j]*h_/vol_);
       y1Wall[i][j] = wallData_[i][j]+h_*wallDerivs_[i][j]+stWall[i][j]*randWall[i][j];
+            if(y1Wall[i][j]<0.0) // Setting and absortive barrier at 0
+         y1Wall[i][j]=0.0; 
     }
   }
   for(size_t i=0 ; i<sdydtVertex.size() ; ++i ) {
@@ -260,8 +264,8 @@ void HeunIto::heunito(DataMatrix &sdydtCell,
     for( size_t j=0 ; j<sdydtVertex[i].size() ; ++j ) {      
       vertexData_[i][j] = vertexData_[i][j]+hh*(vertexDerivs_[i][j]+dydt2Vertex[i][j])+
 	stVertex[i][j]*randVertex[i][j];      
-      if(vertexData_[i][j]<0.0 )// Setting and absortive barrier at 0
-	vertexData_[i][j]=0.0; 
+   //   if(vertexData_[i][j]<0.0 )// Setting and absortive barrier at 0
+	//vertexData_[i][j]=0.0; 
     }
   }
 }
