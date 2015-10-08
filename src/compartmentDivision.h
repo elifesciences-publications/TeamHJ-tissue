@@ -672,6 +672,35 @@ namespace Division {
       }
     };
   };
+
+
+
+
+    class FlagResetViaLongestWall : public BaseCompartmentChange {
+    
+  public:
+    
+    FlagResetViaLongestWall(std::vector<double> &paraValue, 
+         std::vector< std::vector<size_t> > 
+         &indValue );
+    int flag(Tissue *T,size_t i,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs );
+    void update(Tissue* T,size_t i,
+    DataMatrix &cellData,
+    DataMatrix &wallData,
+    DataMatrix &vertexData,
+    DataMatrix &cellDerivs,
+    DataMatrix &wallDerivs,
+    DataMatrix &vertexDerivs );  
+  };
+
+
+
 } //end namespace Division
 #endif
   

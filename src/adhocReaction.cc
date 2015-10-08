@@ -879,7 +879,6 @@ update(Tissue &T,
   std::vector<double> com(dimension, 0.0);
   for (size_t i = 0; i < numVertices; ++i) {
     for (size_t d = 0; d < dimension; ++d) {
-      std::cerr<<i<<" "<<d<<" "<<vertexData[i][d]<<"\n";
       com[d] += vertexData[i][d];
     }
   }

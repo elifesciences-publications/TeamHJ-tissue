@@ -233,7 +233,7 @@ void HeunIto::heunito(DataMatrix &sdydtCell,
       stWall[i][j] = sqrt(sdydtWall[i][j]*h_/vol_);
       y1Wall[i][j] = wallData_[i][j]+h_*wallDerivs_[i][j]+stWall[i][j]*randWall[i][j];
             if(y1Wall[i][j]<0.0) // Setting and absortive barrier at 0
-         y1Wall[i][j]=0.0; 
+              y1Wall[i][j]=0.0; 
     }
   }
   for(size_t i=0 ; i<sdydtVertex.size() ; ++i ) {

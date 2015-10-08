@@ -58,6 +58,8 @@ createCompartmentChange(std::vector<double> &paraValue,
     return new Division::VolumeRandomDirectionGiantCells(paraValue,indValue);
   else if(idValue == "DivisionMainAxis")
     return new Division::MainAxis(paraValue,indValue); 
+  if(idValue=="DivisionFlagResetViaLongestWall")
+    return new Division::FlagResetViaLongestWall(paraValue,indValue);
   //compartmentRemoval.h,compartmentRemoval.cc
   else if(idValue=="RemovalIndex")
     return new RemovalIndex(paraValue,indValue);
