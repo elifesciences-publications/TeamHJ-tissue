@@ -9,6 +9,7 @@
 #define COMPARTMENTDIVISION_H
 
 #include <cmath>
+#include <vector>
 
 #include "tissue.h"
 #include "baseCompartmentChange.h"
@@ -603,8 +604,8 @@ namespace Division {
       double qx, qy;
     };
     
-    ShortestPath(std::vector<double> &paraValue, 
-			 std::vector< std::vector<size_t> > &indValue);
+    STAViaShortestPath(std::vector<double> &paraValue,
+		       std::vector< std::vector<size_t> > &indValue);
     
     int flag(Tissue *T, size_t i,
 	     DataMatrix &cellData,
@@ -621,7 +622,7 @@ namespace Division {
 		DataMatrix &wallDerivs,
 		DataMatrix &vertexDerivs);  
     
-    std::vector<ShortestPath::Candidate> 
+    std::vector<STAViaShortestPath::Candidate> 
       getCandidates(Tissue* T, size_t i,
 		    DataMatrix &cellData,
 		    DataMatrix &wallData,
@@ -675,8 +676,7 @@ namespace Division {
   /// restinglengthIndex
   ///
   /// @endverbatim
-
-    class FlagResetShortestPath : public BaseCompartmentChange
+  class FlagResetShortestPath : public BaseCompartmentChange
   {
   public:
     struct Candidate {

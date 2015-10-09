@@ -52,7 +52,7 @@ createCompartmentChange(std::vector<double> &paraValue,
     return new Division::ShortestPath(paraValue, indValue);
   else if (idValue == "Division::STAViaShortestPath")
     return new Division::STAViaShortestPath(paraValue, indValue);
-  else if (idValue == "FlagResetDivisionShortestPath")
+  else if (idValue == "Division::FlagResetShortestPath")
     return new Division::FlagResetShortestPath(paraValue, indValue);
   else if (idValue == "DivisionShortestPathGiantCells")
     return new Division::ShortestPathGiantCells(paraValue, indValue);

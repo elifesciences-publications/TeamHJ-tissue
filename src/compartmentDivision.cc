@@ -3452,9 +3452,672 @@ namespace Division {
     return (a >= 0) ? +1 : -1;
   }
 
+  STAViaShortestPath::STAViaShortestPath(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > &indValue)
+  {
+    if ( paraValue.size() != 4 &&  paraValue.size() != 6 ) {
+      std::cerr << "DivisionSTAViaShortestPath::DivisionSTAViaShortestPath() "
+		<< "Four or six parameters are used V_threshold, Lwall_fraction, "
+		<< "Lwall_threshold, and COM (1 = COM, 0 = Random) "
+		<< "If six parameters are used, two additional parameters are for " 
+		<< "centerTriangulation(1) and double resting length (1: double, 0:single). "
+		<<std::endl;
+      std::exit(EXIT_FAILURE);
+    }
+  
+    if ((indValue.size() == 2 && indValue[1].size() != 1) || 
+	(indValue.size() == 3 && indValue[2].size() != 2)) {
+      std::cerr << "DivisionSTAViaShortestPath::DivisionSTAViaShortestPath() "
+		<< "First level: Variable indices for volume dependent cell variables are used.\n"
+		<< "Second level (optional): Cell time index."
+		<< "Third level (if centerTriangulated): first:Com index, second: wall length index"
+		<<std::endl;
+      exit(EXIT_FAILURE);
+    }
+  
+    setId("DivisionSTAViaShortestPath");
+    setNumChange(1);
+    setParameter(paraValue);  
+    setVariableIndex(indValue);
+  
+    std::vector<std::string> tmp(numParameter());
+    tmp.resize (numParameter());
+    tmp[0] = "V_threshold";
+    tmp[1] = "Lwall_fraction";
+    tmp[2] = "Lwall_threshold";
+    tmp[3] = "COM";
+    if(numParameter()==6){
+      tmp[4] = "centerTriangulationFlag";
+      tmp[5] = "doubleLengthFlag";
+    }
+    setParameterId(tmp);
+  }
+
+  int STAViaShortestPath::flag(Tissue *T, size_t i,
+			 DataMatrix &cellData,
+			 DataMatrix &wallData,
+			 DataMatrix &vertexData,
+			 DataMatrix &cellDerivs,
+			 DataMatrix &wallDerivs,
+			 DataMatrix &vertexDerivs)
+  {
+    if (T->cell(i).calculateVolume(vertexData) > parameter(0))
+      {
+	return 1;
+      } 
+    else
+      {
+	return 0;
+      }
+  }
+
+  void STAViaShortestPath::update(Tissue* T, size_t i,
+			    DataMatrix &cellData,
+			    DataMatrix &wallData,
+			    DataMatrix &vertexData,
+			    DataMatrix &cellDerivs,
+			    DataMatrix &wallDerivs,
+			    DataMatrix &vertexDerivs)
+  {
+    Cell &cell = T->cell(i);
+  
+    // if (vertexData[0].size() != 2)
+    //   {
+    //     std::cerr << "Division::STAViaShortestPath only supports two dimensions.\n";
+    //     std::exit(EXIT_FAILURE);
+    //   }
+  
+
+    // projecting the cell to the perpendicular plane to the averaged normal
+    double rot[3][3]={{1,0,0},{0,1,0},{0,0,1}};
+    std::vector<std::vector<double> > verticesPosition;
+    verticesPosition.resize(cell.numVertex());
+    std::vector<double> centerTmp(3), COMTmp(3); 
+  
+    if (vertexData[0].size() == 3){
+      // storing the vertex positions
+      for(size_t k=0; k< cell.numVertex(); ++k) {
+	verticesPosition[k].resize(3);
+	size_t Vind=cell.vertex(k) -> index();
+	verticesPosition[k][0]=vertexData[Vind][0];
+	verticesPosition[k][1]=vertexData[Vind][1];
+	verticesPosition[k][2]=vertexData[Vind][2];
+      }
+      // storing COM position    
+      if(numParameter()==6 && parameter(4)==1) {// centerTriangulation
+	COMTmp[0]=cellData[i][variableIndex(2,0)  ];
+	COMTmp[1]=cellData[i][variableIndex(2,0)+1];
+	COMTmp[2]=cellData[i][variableIndex(2,0)+2];
+      }    
+      // Finding the average normal vector to the cell plane
+      std::vector<double> normal(3);
+      normal[0]=0;
+      normal[1]=0;
+      normal[2]=0;
+    
+      //  double area=0;
+      for (size_t k=1; k< cell.numWall()-1; ++k) {
+	std::vector<double> x0(3),x1(3),x2(3);
+	size_t ind1=cell.vertex(0) -> index();
+	size_t ind2=cell.vertex(k) -> index();
+	size_t ind3=cell.vertex(k+1) -> index();
+	//std::cerr<<ind1<<" "<<ind2<<" "<<ind3<<" "<<std::endl;
+	//normal to the element
+	std::vector<double> temp(3);
+	temp[0]=(vertexData[ind2][1]-vertexData[ind1][1])*(vertexData[ind3][2]-vertexData[ind1][2])
+	  -(vertexData[ind2][2]-vertexData[ind1][2])*(vertexData[ind3][1]-vertexData[ind1][1]);
+	temp[1]=(vertexData[ind2][2]-vertexData[ind1][2])*(vertexData[ind3][0]-vertexData[ind1][0])
+	  -(vertexData[ind2][0]-vertexData[ind1][0])*(vertexData[ind3][2]-vertexData[ind1][2]);
+	temp[2]=(vertexData[ind2][0]-vertexData[ind1][0])*(vertexData[ind3][1]-vertexData[ind1][1])
+	  -(vertexData[ind2][1]-vertexData[ind1][1])*(vertexData[ind3][0]-vertexData[ind1][0]);
+    
+	normal[0]+=temp[0];
+	normal[1]+=temp[1];
+	normal[2]+=temp[2];
+	//std::cerr<<normal[0]<<" "<<normal[1]<<" "<<normal[2]<<" "<<area<<std::endl;  
+      
+	//total area of the cell
+	//area +=std::sqrt(temp[0]*temp[0]+temp[1]*temp[1]+temp[2]*temp[2])/2;
+      }
+      double norm=std::sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
+      // normalizing the normal vector
+      normal[0]/=norm;
+      normal[1]/=norm;
+      normal[2]/=norm;
+      //std::cerr<<normal[0]<<" "<<normal[1]<<" "<<normal[2]<<" "<<area<<std::endl;  
+    
+    
+      //std::cerr<<deltaTet<<" "<<nplane<<std::endl;  
+      // rotation matrix for going to the perpendicular plane to thr averaged normal
+  
+      if(normal[2]!=1){ // if there rotation matrix is not 1
+	rot[0][0]=normal[2]+((normal[1]*normal[1])/(normal[2]+1));
+	rot[1][1]=normal[2]+((normal[0]*normal[0])/(normal[2]+1));
+	rot[0][1]= - (normal[0]*normal[1])/(normal[2]+1) ;
+	rot[1][0]= - (normal[1]*normal[0])/(normal[2]+1) ;
+      
+	rot[0][2]=-normal[0];
+	rot[2][0]= normal[0];
+	rot[1][2]=-normal[1];
+	rot[2][1]= normal[1];
+	rot[2][2]= normal[2];
+      
+      }
+      //rotating the cell vertices
+      //std::vector<double> tmpVertex(3);
+    
+      for(size_t k=0; k< cell.numVertex(); ++k){
+      
+	size_t Vind=cell.vertex(k) -> index();
+	for(size_t ii=0; ii< 3; ++ii) {
+	  vertexData[Vind][ii]=0;
+	  for(size_t jj=0; jj< 3; ++jj){ 
+	    vertexData[Vind][ii]+=rot[ii][jj]*verticesPosition[k][jj];
+	  }
+	}
+      }
+
+      // rotating the center is cell is centertriangulated
+      if(numParameter()==6 && parameter(4)==1) {// centerTriangulation
+	cellData[i][variableIndex(2,0)  ]=rot[0][0]*COMTmp[0]+rot[0][1]*COMTmp[1]+rot[0][2]*COMTmp[2];
+	cellData[i][variableIndex(2,0)+1]=rot[1][0]*COMTmp[0]+rot[1][1]*COMTmp[1]+rot[1][2]*COMTmp[2];
+	cellData[i][variableIndex(2,0)+2]=rot[2][0]*COMTmp[0]+rot[2][1]*COMTmp[1]+rot[2][2]*COMTmp[2];
+      }
+
+      centerTmp=cell.positionFromVertex(vertexData);
+
+
+      // std::cerr<<"normal "<<normal[0]<<" "<<normal[1]<<" "<<normal[2]<<std::endl;
+      //  for(size_t k=0; k< cell.numVertex(); ++k){
+      //    size_t Vind=cell.vertex(k) -> index();
+      //    std::cerr<<"vertex "<<k<<" "
+      //             <<vertexData[Vind][0]<<" "
+      //             <<vertexData[Vind][1]<<" "
+      //             <<vertexData[Vind][2]<<std::endl;
+      //  }
+      //  std::cerr<<"cell center "
+      //           <<cellData[i][variableIndex(2,0)  ]<<" "
+      //           <<cellData[i][variableIndex(2,0)+1]<<" "
+      //           <<cellData[i][variableIndex(2,0)+2]<<std::endl;
+      //  std::cerr<<"cell centroid "
+      //           <<centerTmp[0]<<" "
+      //           <<centerTmp[1]<<" "
+      //           <<centerTmp[2]<<std::endl;
+
+    
+  
+  
+    }
+  
+  
+
+  
+    std::vector<Candidate> candidates = 
+      getCandidates(T, i, cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs);
+  
+    if (candidates.size() == 0)
+      {
+	return;
+      }
+  
+    Candidate winner = { std::numeric_limits<double>::max(), 0, 0, 0, 0, 0, 0 };
+    for (size_t i = 0; i < candidates.size(); ++i) {
+      if (candidates[i].distance < winner.distance) {
+	winner = candidates[i];
+      }
+    }
+  
+    // std::cerr << "Winner: " << std::endl
+    //           << " distance = " << winner.distance << std::endl
+    //           << " p = (" << winner.px << ", " << winner.py << ")" << std::endl
+    //           << " q = (" << winner.qx << ", " << winner.qy << ")" << std::endl;
+  
+    size_t numWallTmp = wallData.size();
+    assert(numWallTmp == T->numWall());
+  
+  
+    std::vector<double> p(3);
+    p[0] = winner.px;
+    p[1] = winner.py;
+    std::vector<double> q(3);
+    q[0] = winner.qx;
+    q[1] = winner.qy;
+  
+    if (vertexData[0].size() == 3){
+
+      double px=p[0],py=p[1],qx=q[0], qy=q[1];
+      // p.resize(3);
+      // q.resize(3);
 
 
 
+
+      // size_t V1W1=(cell.wall(winner.wall1) -> vertex1()) -> index();
+      // size_t V2W1=(cell.wall(winner.wall1) -> vertex2()) -> index();
+      // size_t V1W2=(cell.wall(winner.wall2) -> vertex1()) -> index();
+      // size_t V2W2=(cell.wall(winner.wall2) -> vertex2()) -> index();
+    
+      // std::cerr<<std::endl;
+      // std::cerr<<" v1w1 "<<vertexData[V1W1][0]<<"  "<<vertexData[V1W1][1]<<"  "<<vertexData[V1W1][2]<<std::endl;
+      // std::cerr<<" v2w1 "<<vertexData[V2W1][0]<<"  "<<vertexData[V2W1][1]<<"  "<<vertexData[V2W1][2]<<std::endl;
+      // std::cerr<<" v1w2 "<<vertexData[V1W2][0]<<"  "<<vertexData[V1W2][1]<<"  "<<vertexData[V1W2][2]<<std::endl;
+      // std::cerr<<" v2w2 "<<vertexData[V2W2][0]<<"  "<<vertexData[V2W2][1]<<"  "<<vertexData[V2W2][2]<<std::endl;
+      // std::cerr<<" p "<<p[0]<<"  "<<p[1]<<"  "<<p[2]<<std::endl;
+      // std::cerr<<" q "<<q[0]<<"  "<<q[1]<<"  "<<q[2]<<std::endl;
+      // std::cerr<<" com "<<COMTmp[0]<<"  "<<COMTmp[1]<<"  "<<COMTmp[2]<<std::endl;
+
+      // //testing the rotation matrix    
+      // std::vector<std::vector<double> > rotTemp(3);
+      // for(size_t iii=0; iii< 3; ++iii)
+      //   rotTemp[iii].resize(3);
+      // for(size_t iii=0; iii< 3; ++iii)
+      //   for(size_t jjj=0; jjj<3; ++jjj)
+      //     for(size_t kkk=0; kkk<3; ++kkk)
+      //       rotTemp[iii][jjj]+=rot[iii][kkk]*rot[jjj][kkk];
+      // for(size_t iii=0; iii< 3; ++iii)
+      //   std::cerr<<"rot   "<<rotTemp[iii][0]<<" "<<rotTemp[iii][1]<<" "<<rotTemp[iii][2]<<std::endl;
+    
+      //rotating back the found positions for division points
+    
+      p[0]= rot[0][0]*px + rot[1][0]*py + rot[2][0]*centerTmp[2];
+      p[1]= rot[0][1]*px + rot[1][1]*py + rot[2][1]*centerTmp[2];
+      p[2]= rot[0][2]*px + rot[1][2]*py + rot[2][2]*centerTmp[2];
+    
+      q[0]= rot[0][0]*qx + rot[1][0]*qy + rot[2][0]*centerTmp[2];
+      q[1]= rot[0][1]*qx + rot[1][1]*qy + rot[2][1]*centerTmp[2];
+      q[2]= rot[0][2]*qx + rot[1][2]*qy + rot[2][2]*centerTmp[2];
+      // these positions might be out of walls but close, depending on the flatness of the cell plane
+
+      for(size_t k=0; k< cell.numVertex(); ++k){// copying back the original positions
+	size_t Vind=cell.vertex(k) -> index();
+	for(size_t ii=0; ii< 3; ++ii) 
+	  vertexData[Vind][ii]=verticesPosition[k][ii];
+      }
+      // copynig back the centerCOM
+      if(numParameter()==6 && parameter(4)==1) {// centerTriangulation
+	cellData[i][variableIndex(2,0)  ]=COMTmp[0];
+	cellData[i][variableIndex(2,0)+1]=COMTmp[1];
+	cellData[i][variableIndex(2,0)+2]=COMTmp[2];
+      }
+    
+   
+
+      size_t V1W1=(cell.wall(winner.wall1) -> vertex1()) -> index();
+      size_t V2W1=(cell.wall(winner.wall1) -> vertex2()) -> index();
+      size_t V1W2=(cell.wall(winner.wall2) -> vertex1()) -> index();
+      size_t V2W2=(cell.wall(winner.wall2) -> vertex2()) -> index();
+    
+      // //closest point on wall1 to p 
+      std::vector<double> tmpVec(3), wallVec(3);
+      for(size_t k=0; k< 3; ++k){
+	tmpVec[k]=p[k]-vertexData[V1W1][k];
+	wallVec[k]=vertexData[V2W1][k]-vertexData[V1W1][k];
+      }
+
+
+      double normW=std::sqrt(wallVec[0]*wallVec[0]+wallVec[1]*wallVec[1]+wallVec[2]*wallVec[2]);
+      for(size_t k=0; k< 3; ++k)
+	if(normW!=0)
+	  wallVec[k]/=normW;
+	else{
+	  std::cerr<<" in DivisionSTAViaShortestPath first wall vector is wrong"<<std::endl;
+	  exit(0);
+	}
+    
+
+      // projecting the vector between first wall vertex and p on wall vector
+      double norm1=tmpVec[0]*wallVec[0]+tmpVec[1]*wallVec[1]+tmpVec[2]*wallVec[2];
+
+      // normW=std::sqrt(tmpVec[0]*tmpVec[0]+tmpVec[1]*tmpVec[1]+tmpVec[2]*tmpVec[2]);
+      // std::cerr<<std::endl<<" angle 1  "<<norm1/normW<<std::endl;
+      if (normW>0)
+	for(size_t k=0; k< 3; ++k)      
+	  p[k]=vertexData[V1W1][k]+norm1*wallVec[k];    
+      else{
+	std::cerr<<" in DivisionSTAViaShortestPath p is wrong"<<std::endl;
+	exit(0);    
+      }
+    
+      //closest point on wall2 to q 
+      for(size_t k=0; k< 3; ++k){
+	tmpVec[k]=q[k]-vertexData[V1W2][k];
+	wallVec[k]=vertexData[V2W2][k]-vertexData[V1W2][k];
+      }
+    
+      normW=std::sqrt(wallVec[0]*wallVec[0]+wallVec[1]*wallVec[1]+wallVec[2]*wallVec[2]);
+      for(size_t k=0; k< 3; ++k)
+	if(normW!=0)
+	  wallVec[k]/=normW;
+	else{
+	  std::cerr<<" in DivisionSTAViaShortestPath second wall vector is wrong"<<std::endl;
+	  exit(0);
+	}
+
+
+      // projecting the vector between second wall vertex and q on wall vector
+      norm1=tmpVec[0]*wallVec[0]+tmpVec[1]*wallVec[1]+tmpVec[2]*wallVec[2];
+    
+      // normW=std::sqrt(tmpVec[0]*tmpVec[0]+tmpVec[1]*tmpVec[1]+tmpVec[2]*tmpVec[2]);
+      // std::cerr<<std::endl<<" angle 2  "<<norm1/normW<<std::endl;
+      if (normW>0)
+	for(size_t k=0; k< 3; ++k)      
+	  q[k]=vertexData[V1W2][k]+norm1*wallVec[k];    
+      else{
+	std::cerr<<" in DivisionSTAViaShortestPath q is wrong"<<std::endl;
+	exit(0);    
+      }
+    
+
+    
+    }
+
+    // std::cerr<<" before:: "<<std::endl;
+    // for(size_t k=0; k< cellData[cell.index()].size(); ++k)
+    //   std::cerr<<cellData[cell.index()][k]<<"  ";
+    // std::cerr<<std::endl;
+
+    if (numVariableIndexLevel() == 2)
+      {
+	const size_t timeIndex = variableIndex(1, 0);
+      
+	const double age = cellData[cell.index()][timeIndex];
+      
+	std::cerr << "Cell age at division is " << age << "\n";
+      
+	cellData[cell.index()][timeIndex] = 0.0;
+      }
+
+
+  
+    if(numParameter()==6 && parameter(4)==1) {// centerTriangulation
+      if(parameter(5)==0 || parameter(5)==1)
+	T->divideCellCenterTriangulation(&cell, winner.wall1, winner.wall2,
+					 variableIndex(2,0),variableIndex(2,1),
+					 p, q, cellData, wallData, vertexData,
+					 cellDerivs,wallDerivs,vertexDerivs,variableIndex(0),
+					 parameter(2),
+					 parameter(5));
+      else{
+	std::cerr<<"parameter(5) should be 0 or 1"
+		 <<std::endl;
+	exit(-1);
+      }
+    }
+    else
+      T->divideCell(&cell, winner.wall1, winner.wall2, 
+		    p, q, cellData, wallData, vertexData,
+		    cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), 
+		    parameter(2));
+  
+    assert (numWallTmp + 3 == T->numWall());
+  
+    //Change length of new wall between the divided daugther cells
+    wallData[numWallTmp][0] *= parameter(1);
+  
+
+    //  std::cerr<<"  after::  "<<std::endl;
+    //  for(size_t k=0; k< cellData[cell.index()].size(); ++k)
+    //    std::cerr<<cellData[cell.index()][k]<<"  ";
+    //  std::cerr<<std::endl;
+    // std::cerr<<std::endl;
+    //  for(size_t k=0; k< cellData[(T -> numCell())-1].size(); ++k)
+    //    std::cerr<<cellData[(T -> numCell())-1][k]<<"  ";
+    //  std::cerr<<std::endl;
+
+
+
+    //Check that the division did not mess up the data structure
+    //T->checkConnectivity(1);
+  }
+
+  std::vector<STAViaShortestPath::Candidate> 
+  STAViaShortestPath::getCandidates(Tissue* T, size_t i,
+			      DataMatrix &cellData,
+			      DataMatrix &wallData,
+			      DataMatrix &vertexData,
+			      DataMatrix &cellDerivs,
+			      DataMatrix &wallDerivs,
+			      DataMatrix &vertexDerivs)
+  {
+    Cell cell = T->cell(i);
+  
+    assert(cell.numWall() > 1);
+  
+    std::vector<double> o;
+  
+    if (parameter(3) == 1)
+      {
+	o = cell.positionFromVertex(vertexData);
+      }
+    else
+      {
+	try
+	  {
+	    o = cell.randomPositionInCell(vertexData);
+	  }
+	catch (Cell::FailedToFindRandomPositionInCellException)
+	  {
+	    return std::vector<Candidate>();
+	  }
+      }
+  
+    double ox = o[0];
+    double oy = o[1];
+  
+
+    std::vector<Candidate> candidates;
+  
+    for (size_t i = 0; i < cell.numWall() - 1; ++i) {
+      for (size_t j = i + 1; j < cell.numWall(); ++j) {
+	Wall *wall1 = cell.wall(i);
+	Wall *wall2 = cell.wall(j);
+	size_t wall1Index = i;
+	size_t wall2Index = j;
+      
+	// 			std::cerr << "i = " << wall1->index() << " : j = " << wall2->index() << std::endl;
+	//  			std::cerr << "o = (" << ox << ", " << oy << ")" << std::endl;
+      
+	double x1x;
+	double x1y;
+	double x2x;
+	double x2y;
+      
+	double vx;
+	double vy;
+      
+	double x1px;
+	double x1py;
+	double x2px;
+	double x2py;
+      
+	double ux;
+	double uy;
+      
+	bool flippedVectors;
+      
+	do {
+	  flippedVectors = false;
+        
+	  x1x = vertexData[wall1->vertex1()->index()][0];
+	  x1y = vertexData[wall1->vertex1()->index()][1];
+	  x2x = vertexData[wall1->vertex2()->index()][0];
+	  x2y = vertexData[wall1->vertex2()->index()][1];
+	
+	  vx = x2x - x1x;
+	  vy = x2y - x1y;
+	
+	  if (vx * (oy - x1y) - vy * (ox - x1x) > 0) {
+	    //std::cerr << "Change v" << std::endl;
+	    double tmpx = x1x;
+	    double tmpy = x1y;
+	    x1x = x2x;
+	    x1y = x2y;
+	    x2x = tmpx;
+	    x2y = tmpy;
+	    vx = -vx;
+	    vy = -vy;
+	  }
+        
+        
+	  x1px = vertexData[wall2->vertex1()->index()][0];
+	  x1py = vertexData[wall2->vertex1()->index()][1];
+	  x2px = vertexData[wall2->vertex2()->index()][0];
+	  x2py = vertexData[wall2->vertex2()->index()][1];
+	
+	  ux = x2px - x1px;
+	  uy = x2py - x1py;
+	
+	  if (ux * (oy - x1py) - uy * (ox - x1px) < 0) {
+	    //  					std::cerr << "Change u" << std::endl;
+	    double tmpx = x1px;
+	    double tmpy = x1py;
+	    x1px = x2px;
+	    x1py = x2py;
+	    x2px = tmpx;
+	    x2py = tmpy;
+	    ux = -ux;
+	    uy = -uy;
+	  }
+        
+	  if (vx * uy - vy * ux > 0) {
+	    //  					std::cerr << "Flipped walls" << std::endl;
+	    Wall *tmp = wall1;
+	    wall1 = wall2;
+	    wall2 = tmp;
+	    size_t tmpIndex = wall1Index;
+	    wall1Index = wall2Index;
+	    wall2Index = tmpIndex;
+	    flippedVectors = true;
+	  }
+	} while (flippedVectors == true);
+      
+	double wx = ox - x1x;
+	double wy = oy - x1y;
+	double wpx = ox - x1px;
+	double wpy = oy - x1py;
+      
+	double dvx = wx - ((vx * wx + vy * wy) / (vx * vx + vy * vy)) * vx;
+	double dvy = wy - ((vx * wx + vy * wy) / (vx * vx + vy * vy)) * vy;
+	double dux = wpx - ((ux * wpx + uy * wpy) / (ux * ux + uy * uy)) * ux;
+	double duy = wpy - ((ux * wpx + uy * wpy) / (ux * ux + uy * uy)) * uy;
+      
+      
+	// 			std::cerr << " x1 = (" << x1x << ", " << x1y << ")" << std::endl;
+	// 			std::cerr << " x2 = (" << x2x << ", " << x2y << ")" << std::endl;
+	// 			std::cerr << " x1p = (" << x1px << ", " << x1py << ")" << std::endl;
+	// 			std::cerr << " x2p = (" << x2px << ", " << x2py << ")" << std::endl;
+      
+	// 			std::cerr << " v = (" << vx << ", " << vy << ")" << std::endl;
+	// 			std::cerr << " u = (" << ux << ", " << uy << ")" << std::endl;
+	// 			std::cerr << " w = (" << wx << ", " << wy << ")" << std::endl;
+	// 			std::cerr << " wp = (" << wpx << ", " << wpy << ")" << std::endl;
+	// 			std::cerr << " dv = (" << dvx << ", " << dvy << ")" << std::endl;
+	// 			std::cerr << " du = (" << dux << ", " << duy << ")" << std::endl;
+      
+      
+	double A = std::sqrt(dvx * dvx + dvy * dvy);
+	double B = std::sqrt(dux * dux + duy * duy);
+      
+	double sigma = std::acos((vx * ux + vy * uy) / 
+				 (std::sqrt(vx * vx + vy * vy) * std::sqrt(ux * ux + uy * uy)));
+      
+	double alpha = astar(sigma, A, B);
+	double beta = myMath::pi() + sigma - alpha;
+      
+	double t = (vx * wx + vy * wy) / (vx * vx + vy * vy);
+	double tp = t + (1.0 / std::sqrt(vx * vx + vy * vy)) * A * 
+	  std::sin(alpha - 0.50 * myMath::pi()) / std::sin(alpha);
+      
+	double s = (ux * wpx + uy * wpy) / (ux * ux + uy * uy);
+	double sp = s + (1.0 / std::sqrt(ux * ux + uy * uy)) * B * 
+	  std::sin(beta - 0.50 * myMath::pi()) / std::sin(beta);
+      
+	double px = x1x + tp * vx;
+	double py = x1y + tp * vy;
+      
+	double qx = x1px + sp * ux;
+	double qy = x1py + sp * uy;
+      
+	// 			std::cerr << " sigma = " << sigma << std::endl
+	// 				  << " alpha = " << alpha << std::endl
+	// 				  << " beta = " << beta << std::endl
+	// 				  << " A = " << A << std::endl
+	// 				  << " B = " << B << std::endl
+	// 				  << " px = " << px << std::endl
+	// 				  << " py = " << py << std::endl
+	// 				  << " qx = " << qx << std::endl
+	// 				  << " qy = " << qy << std::endl
+	// 				  << " tp = " << tp << std::endl
+	// 				  << " sp = " << sp << std::endl;
+      
+      
+	double distance = std::sqrt((qx - px) * (qx - px) + (qy - py) * (qy - py));
+      
+	//   			std::cerr << " distance = " << distance << std::endl;
+      
+	if (tp <= 0.0 || tp >= 1.0 || sp <= 0.0 || sp >= 1.0) {
+	  //   				std::cerr << "Discard" << std::endl;
+	  continue;
+	} else {
+	  //  				std::cerr << "Keep" << std::endl;
+	  Candidate candidate;
+	  candidate.distance = distance;
+	  candidate.px = px;
+	  candidate.py = py;
+	  candidate.qx = qx;
+	  candidate.qy = qy;
+	  candidate.wall1 = wall1Index;
+	  candidate.wall2 = wall2Index;
+        
+	  candidates.push_back(candidate);
+	}
+      }
+    }	
+  
+    return candidates;
+  }
+
+  double STAViaShortestPath::astar(double sigma, double A, double B)
+  {
+    double a = 0;
+    double b = myMath::pi();
+    double e = b - a;
+    double u = f(a, sigma, A, B);
+    double v = f(b, sigma, A, B);
+    double c;
+  
+    if (sign(u) == sign(v)) {
+      return 0;
+    }
+  
+    for (size_t k = 0; k < 10; ++k) {
+      e = 0.5 * e;
+      c = a + e;
+      double w = f(c, sigma, A, B);
+    
+      if (sign(w) != sign(u)) {
+	b = c;
+	v = w;
+      } else {
+	a = c;
+	u = w;
+      }
+    }
+    return c;
+  }
+
+  double STAViaShortestPath::f(double a, double sigma, double A, double B)
+  {
+    double tmp = - A * std::cos(a) / (std::sin(a) * std::sin(a));
+    tmp += B * std::cos(myMath::pi() + sigma - a) / (std::sin(sigma - a) * std::sin(sigma - a));
+    return tmp;
+  }
+
+  int STAViaShortestPath::sign(double a)
+  {
+    return (a >= 0) ? +1 : -1;
+  }
+  
   FlagResetShortestPath::FlagResetShortestPath(std::vector<double> &paraValue, 
            std::vector< std::vector<size_t> > &indValue)
   {
