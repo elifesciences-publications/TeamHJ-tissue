@@ -831,8 +831,90 @@ class ThresholdSwitch : public BaseReaction {
   ///
   /// @param indValue vector of vectors with variable indices
   ///
+
+/// In the model file, the reaction is specified as:
+/// @verbatim
+/// ThresholdSwitch 2 2 1 1   # number of parameters is set to two (threshold and switch_type)
+/// threshold		 		  # threshold above which a variable is reset to zero.  
+/// switch_type		 		  # the switchtype parameter takes the values 0 and 1 for defining the reversible and irreversible switch, respectively.  
+/// index_var   	 		  # index of the index variable upstream the switch.
+/// index_var_out  			  # list of updated indices - for the moment it can be just one index - where the output of the switch is written. 
+/// @endverbatim
+
+/// @note This function makes a downstream species reversibly or irreversibly  
+/// switch from 0 to 1, upon being above a certain threshold of an upstream variable.
+
   /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
   ThresholdSwitch(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > &indValue );
+		
+  ///
+  /// @brief This class does not use derivatives for updates.
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  void derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex );
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(double h, double t, ...)
+  ///
+	void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+};
+
+
+
+
+
+class ThresholdReset : public BaseReaction {
+  
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which checks and sets the parameters and
+  /// variable indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+
+/// In the model file, the reaction is specified as:
+/// @verbatim
+/// ThresholdReset 2 2 1 1   # number of parameters is set to two (threshold and switch_type)
+/// threshold		 		  # threshold above which a variable is reset to zero.  
+/// switch_type		 		  # the switchtype parameter takes the values 0 and 1 for defining the reversible and irreversible switch, respectively.  
+/// index_var   	 		  # index of the index variable upstream the switch.
+/// index_var_out  			  # list of updated indices - for the moment it can be just one index - where the output of the switch is written. 
+/// @endverbatim
+
+/// @note This function makes a downstream species reversibly or irreversibly  
+/// switch from 1 to 0, upon being above a certain threshold of an upstream variable.
+
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ThresholdReset(std::vector<double> &paraValue, 
 			     std::vector< std::vector<size_t> > &indValue );
 		
   ///
@@ -869,8 +951,6 @@ class ThresholdSwitch : public BaseReaction {
 	      DataMatrix &vertexData,
 	      double h);
 };
-
-
 
 
 #endif //ADHOCREACTION_H

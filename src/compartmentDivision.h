@@ -458,6 +458,7 @@ namespace Division {
   /// @brief Divides a cell when volume above a threshold, with New wall created at shortest
   ///  path that divides the volume (not!) in equal parts. Using centerTriangulation and doubleLength 
   /// formats are optional and can be done by setting the coresponding flags. 
+  /// 
   ///
   /// @verbatim
   ///
@@ -537,6 +538,90 @@ namespace Division {
     int sign(double a);
   };
   
+
+  /// @brief UNDER CONSTRUCTION, DO NOT USE YET!!!  Divides a cell when certain conditions are fulfilled, with New wall created at shortest
+  ///  path that divides the volume (not!) in equal parts. Using centerTriangulation and doubleLength 
+  ///  formats are optional and can be done by setting the coresponding flags. 
+  /// 
+  ///
+  /// @verbatim
+  ///
+  /// Division::ShortestPath 4 2 0/1 1 
+  /// V_{threshold} 
+  /// L^{wall}_{frac} (relative of new wall)
+  /// L^{wall}_{threshold} (disallowed closeness)
+  /// centerCom flag(0:random, 1:COM)
+  ///
+  /// I1 (optional volume related index to be updated)
+  ///
+  /// cell time index(optional)
+  ///
+  /// @endverbatim
+  ///
+  /// or
+  ///
+  /// @verbatim
+  ///
+  /// Division::ShortestPath 6 3 0/1 1 2 
+  /// V_{threshold} 
+  /// L^{wall}_{frac} (relative of new wall)
+  /// L^{wall}_{threshold} (disallowed closeness)
+  /// centerCom flag(0:random, 1:COM)
+  /// centerTriangulation flag (0/1)
+  /// double length flag (0/1)
+  ///
+  /// I1 (optional volume related index to be updated)
+  ///
+  /// cell time index(optional)
+  ///
+  /// com index 
+  /// restinglengthIndex
+  ///
+  /// @endverbatim
+
+    class FlagResetShortestPath : public BaseCompartmentChange
+  {
+  public:
+    struct Candidate {
+      double distance;
+      size_t wall1;
+      size_t wall2;
+      double px, py;
+      double qx, qy;
+    };
+    
+    FlagResetShortestPath(std::vector<double> &paraValue, 
+       std::vector< std::vector<size_t> > &indValue);
+    
+    int flag(Tissue *T, size_t i,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs);
+    void update(Tissue* T, size_t i,
+    DataMatrix &cellData,
+    DataMatrix &wallData,
+    DataMatrix &vertexData,
+    DataMatrix &cellDerivs,
+    DataMatrix &wallDerivs,
+    DataMatrix &vertexDerivs);  
+    
+    std::vector<FlagResetShortestPath::Candidate> 
+      getCandidates(Tissue* T, size_t i,
+        DataMatrix &cellData,
+        DataMatrix &wallData,
+        DataMatrix &vertexData,
+        DataMatrix &cellDerivs,
+        DataMatrix &wallDerivs,
+        DataMatrix &vertexDerivs);
+    
+    double astar(double sigma, double A, double B);
+    double f(double a, double sigma, double A, double B);
+    int sign(double a);
+  };
+
   class ShortestPathGiantCells : public BaseCompartmentChange
   {
   public:
@@ -580,6 +665,7 @@ namespace Division {
     double f(double a, double sigma, double A, double B);
     int sign(double a);
   };
+
   
   class Random : public BaseCompartmentChange
   {
@@ -674,7 +760,7 @@ namespace Division {
   };
 
 
-
+  /// @brief UNDER CONSTRUCTION, DO NOT USE YET!!!
 
     class FlagResetViaLongestWall : public BaseCompartmentChange {
     
