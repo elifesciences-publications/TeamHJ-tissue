@@ -537,7 +537,104 @@ namespace Division {
     double f(double a, double sigma, double A, double B);
     int sign(double a);
   };
-  
+
+  ///
+  /// @brief Divides a cell when volume above a sizer/timer/adder (STA) rule, with new wall created at shortest
+  ///  path through center-of-mass (or with random fluctuation outside of com).
+  ///
+  /// This division rule use a sizer/timer/adder rule for deciding when to divide, by dividing when
+  ///
+  /// @f[ V_{Division} > (2-p_{0}) + p_{0} V_{Birth} @f]
+  ///
+  /// i.e. relating the division volume to the size of the birth (size after previous division) of the cell.
+  /// The parameter f sets the rule to:
+  /// p0 = 2 -> timer
+  /// p0 = 0 -> sizer (scaled to division at volume 2)
+  /// p0 = 1 -> adder
+  ///
+  /// At division the division plane is chosen as the shortest path through the center of mass of the cell.
+  /// The com can be replaced with a random point close to the com (setting flag in p3).
+  /// There is a restriction to not be too close to a vertex (p2). 
+  /// A parameter will set the resting length of the new wall (p1).
+  ///
+  /// In addition, formats are optional and can be done by setting the coresponding flags. 
+  ///
+  /// @verbatim
+  /// Division::ShortestPath 4 2 0/1 1 
+  /// cellDivisionRule (p0)
+  /// L^{wall}_{frac} (relative of new wall)
+  /// L^{wall}_{threshold} (disallowed closeness)
+  /// centerCom flag(0:random, 1:COM)
+  ///
+  /// I1 (optional volume related index to be updated)
+  ///
+  /// cell time index(optional)
+  ///
+  /// @endverbatim
+  ///
+  /// or
+  ///
+  /// @verbatim
+  ///
+  /// Division::ShortestPath 6 3 0/1 1 2 
+  /// V_{threshold} 
+  /// L^{wall}_{frac} (relative of new wall)
+  /// L^{wall}_{threshold} (disallowed closeness)
+  /// centerCom flag(0:random, 1:COM)
+  /// centerTriangulation flag (0/1)
+  /// double length flag (0/1)
+  ///
+  /// I1 (optional volume related index to be updated)
+  ///
+  /// cell time index(optional)
+  ///
+  /// com index 
+  /// restinglengthIndex
+  ///
+  /// @endverbatim  
+  class STAViaShortestPath : public BaseCompartmentChange
+  {
+  public:
+    struct Candidate {
+      double distance;
+      size_t wall1;
+      size_t wall2;
+      double px, py;
+      double qx, qy;
+    };
+    
+    ShortestPath(std::vector<double> &paraValue, 
+			 std::vector< std::vector<size_t> > &indValue);
+    
+    int flag(Tissue *T, size_t i,
+	     DataMatrix &cellData,
+	     DataMatrix &wallData,
+	     DataMatrix &vertexData,
+	     DataMatrix &cellDerivs,
+	     DataMatrix &wallDerivs,
+	     DataMatrix &vertexDerivs);
+    void update(Tissue* T, size_t i,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs);  
+    
+    std::vector<ShortestPath::Candidate> 
+      getCandidates(Tissue* T, size_t i,
+		    DataMatrix &cellData,
+		    DataMatrix &wallData,
+		    DataMatrix &vertexData,
+		    DataMatrix &cellDerivs,
+		    DataMatrix &wallDerivs,
+		    DataMatrix &vertexDerivs);
+    
+    double astar(double sigma, double A, double B);
+    double f(double a, double sigma, double A, double B);
+    int sign(double a);
+  };
+
 
   /// @brief UNDER CONSTRUCTION, DO NOT USE YET!!!  Divides a cell when certain conditions are fulfilled, with New wall created at shortest
   ///  path that divides the volume (not!) in equal parts. Using centerTriangulation and doubleLength 

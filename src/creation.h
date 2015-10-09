@@ -350,9 +350,6 @@ class CreationSpatialCoordinate: public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
-
-
-
 ///
 /// @brief In the cells with given indices a molecule is produced/created with constant rate.
 ///
