@@ -491,6 +491,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new AndGate(paraValue,indValue); 
   else if(idValue=="AndNotGate")
     return new AndNotGate(paraValue,indValue); 
+    else if(idValue=="AndGateAdder")
+    return new AndGateAdder(paraValue,indValue); 
   else if(idValue=="ThresholdReset")
     return new ThresholdReset(paraValue,indValue); 
 

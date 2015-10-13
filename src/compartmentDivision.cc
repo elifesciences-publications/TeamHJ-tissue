@@ -4512,6 +4512,8 @@ namespace Division {
       {cellData[i][10]=0.0; //resetting variable to 0 when dividing
        cellData[i][11]=0.0; //resetting variable to 0 when dividing
        cellData[i][12]=0.0; //resetting variable to 0 when dividing
+       if (cellData[i][14]>0.1)
+           cellData[i][14]-=1; //subtract 1 when dividing
 
       T->divideCell(&cell, winner.wall1, winner.wall2, 
         p, q, cellData, wallData, vertexData,

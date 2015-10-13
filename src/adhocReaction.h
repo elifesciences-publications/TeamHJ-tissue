@@ -1017,6 +1017,72 @@ class AndNotGate : public BaseReaction {
 };
 
 
+
+class AndGateAdder : public BaseReaction {
+  
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which checks and sets the parameters and
+  /// variable indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+
+/// In the model file, the reaction is specified as:
+/// @verbatim
+/// AndGate 0 2 2 1   	  # number of parameters is set to one (switch_type)
+/// index_var1   	 		  # index of the fist variable upstream the gate.
+/// index_var2   	 		  # index of the second variable upstream the gate.
+/// index_var_out  			  # updated index where the output of the gate is written. 
+/// @endverbatim
+
+/// @note This logical gate function makes a downstream species add +1  
+/// if the two input variables are 1.
+
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  AndGateAdder(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > &indValue );
+		
+  ///
+  /// @brief This class does not use derivatives for updates.
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  void derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex );
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(double h, double t, ...)
+  ///
+	void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+};
+
+
 class ThresholdReset : public BaseReaction {
   
  public:
