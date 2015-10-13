@@ -4166,9 +4166,7 @@ namespace Division {
        DataMatrix &cellDerivs,
        DataMatrix &wallDerivs,
        DataMatrix &vertexDerivs)
-  { // to modify
-//    if (cellData[i][10]>5 && cellData[i][7]==0)
-          if (cellData[i][11]==1 && cellData[i][7]==0)
+  { if (cellData[i][variableIndex(3,0)]==1)
       {
   return 1;
       } 
@@ -4511,7 +4509,10 @@ namespace Division {
       }
     }
     else
-      {//cellData[i][10]=0.0; //resetting variable to 0 when dividing
+      {cellData[i][10]=0.0; //resetting variable to 0 when dividing
+       cellData[i][11]=0.0; //resetting variable to 0 when dividing
+       cellData[i][12]=0.0; //resetting variable to 0 when dividing
+
       T->divideCell(&cell, winner.wall1, winner.wall2, 
         p, q, cellData, wallData, vertexData,
         cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), 
