@@ -2500,8 +2500,7 @@ update(Tissue &T,
   for (size_t cellI = 0; cellI < numCells; ++cellI) {  
 
     if (cellData[cellI][cIndex_input1]==1 || cellData[cellI][cIndex_input2]>0)
-        {cellData[cellI][cIndex_output]+=1;
-          std::cerr<<"hello\n";}
+        {cellData[cellI][cIndex_output]+=1;}
 
 }
 }
@@ -2584,7 +2583,7 @@ update(Tissue &T,
 
     if (cellData[cellI][cIndex_input]==1)
         {cellData[cellI][cIndex_output]+=1.0;
-          std::cerr<<"yes\n";}
+          }
 
 }
 }
