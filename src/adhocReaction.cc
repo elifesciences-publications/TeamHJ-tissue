@@ -2262,21 +2262,21 @@ update(Tissue &T,
 }
 
 
-AndGateAdder::AndGateAdder(std::vector<double> &paraValue, 
+AndGateCount::AndGateCount(std::vector<double> &paraValue, 
                                                        std::vector< std::vector<size_t> > &indValue ) 
 {
   //
   // Do some checks on the parameters and variable indeces
   //
   if( paraValue.size()!=0 ) {
-    std::cerr << "No parameters are used in AndGateAdder" << std::endl;
+    std::cerr << "No parameters are used in AndGateCount" << std::endl;
     exit(0);
   }
   if( indValue.size()!=2 || indValue[0].size()!=2 || indValue[1].size()!=1 ) {
-    std::cerr << "AndGateAdder::AndGateAdder() "
+    std::cerr << "AndGateCount::AndGateCount() "
               << "Two levels of variable indices are used, "
               << "One for the input variables, which are two indices "
-              << ", and one for the output variables" 
+              << ", and one for the output variable" 
               << std::endl;
     exit(0);
   }
@@ -2289,7 +2289,7 @@ AndGateAdder::AndGateAdder(std::vector<double> &paraValue,
 
 }
 
-void AndGateAdder::
+void AndGateCount::
 derivs(Tissue &T,
        DataMatrix &cellData,
        DataMatrix &wallData,
@@ -2302,7 +2302,7 @@ derivs(Tissue &T,
 }
 
   
-void AndGateAdder::
+void AndGateCount::
 derivsWithAbs(Tissue &T,
      DataMatrix &cellData,
      DataMatrix &wallData,
@@ -2318,7 +2318,7 @@ derivsWithAbs(Tissue &T,
 }
 
 
-void AndGateAdder::
+void AndGateCount::
 update(Tissue &T,
        DataMatrix &cellData,
        DataMatrix &wallData,
@@ -2338,6 +2338,252 @@ update(Tissue &T,
 
     if (cellData[cellI][cIndex_input1]==1 && cellData[cellI][cIndex_input2]==1)
         {cellData[cellI][cIndex_output]+=1;}
+
+}
+}
+
+
+
+OrGateCount::OrGateCount(std::vector<double> &paraValue, 
+                                                       std::vector< std::vector<size_t> > &indValue ) 
+{
+  //
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=0 ) {
+    std::cerr << "No parameters are used in OrGateCount" << std::endl;
+    exit(0);
+  }
+  if( indValue.size()!=2 || indValue[0].size()!=2 || indValue[1].size()!=1 ) {
+    std::cerr << "OrGateCount::OrGateCount() "
+              << "Two levels of variable indices are used, "
+              << "One for the input variables, which are two indices "
+              << ", and one for the output variable" 
+              << std::endl;
+    exit(0);
+  }
+  //
+  // Set the variable values
+  //
+  setId("add");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+
+}
+
+void OrGateCount::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  // Nothing to be done for the derivative function.
+}
+
+  
+void OrGateCount::
+derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex)
+{
+  // Nothing to be done for the derivative function.
+}
+
+
+void OrGateCount::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h) 
+{
+
+    size_t numCells = T.numCell();
+  
+  size_t cIndex_input1 = variableIndex(0,0);
+  size_t cIndex_input2 = variableIndex(0,1);
+  size_t cIndex_output = variableIndex(1,0);
+
+
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+
+    if (cellData[cellI][cIndex_input1]==1 || cellData[cellI][cIndex_input2]==1)
+        {cellData[cellI][cIndex_output]+=1;}
+
+}
+}
+
+
+OrSpecialGateCount::OrSpecialGateCount(std::vector<double> &paraValue, 
+                                                       std::vector< std::vector<size_t> > &indValue ) 
+{
+  //
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=0 ) {
+    std::cerr << "No parameters are used in OrSpecialGateCount" << std::endl;
+    exit(0);
+  }
+  if( indValue.size()!=2 || indValue[0].size()!=2 || indValue[1].size()!=1 ) {
+    std::cerr << "OrSpecialGateCount::OrSpecialGateCount() "
+              << "Two levels of variable indices are used, "
+              << "One for the input variables, which are two indices "
+              << ", and one for the output variable" 
+              << std::endl;
+    exit(0);
+  }
+  //
+  // Set the variable values
+  //
+  setId("add");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+
+}
+
+void OrSpecialGateCount::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  // Nothing to be done for the derivative function.
+}
+
+  
+void OrSpecialGateCount::
+derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex)
+{
+  // Nothing to be done for the derivative function.
+}
+
+
+void OrSpecialGateCount::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h) 
+{
+
+    size_t numCells = T.numCell();
+  
+  size_t cIndex_input1 = variableIndex(0,0);
+  size_t cIndex_input2 = variableIndex(0,1);
+  size_t cIndex_output = variableIndex(1,0);
+
+
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+
+    if (cellData[cellI][cIndex_input1]==1 || cellData[cellI][cIndex_input2]>0)
+        {cellData[cellI][cIndex_output]+=1;}
+
+}
+}
+
+
+
+FlagCount::FlagCount(std::vector<double> &paraValue,
+  std::vector< std::vector<size_t> > &indValue ) 
+{
+  //
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=0 ) {
+    std::cerr << "No parameters are used in FlagCount" << std::endl;
+    exit(0);
+  }
+  if( indValue.size()!=2 || indValue[0].size()!=1 || indValue[1].size()!=1 ) {
+    std::cerr << "FlagCount::FlagCount() "
+              << "Two levels of variable indices are used, "
+              << "One for the input variable, "
+              << ", and one for the output variable" 
+              << std::endl;
+    exit(0);
+  }
+  //
+  // Set the variable values
+  //
+  setId("add");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+
+}
+
+
+void FlagCount::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  // Nothing to be done for the derivative function.
+}
+
+  
+void FlagCount::
+derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex)
+{
+  // Nothing to be done for the derivative function.
+}
+
+
+void FlagCount::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h) 
+{
+
+    size_t numCells = T.numCell();
+  
+  size_t cIndex_input = variableIndex(0,0);
+  size_t cIndex_output = variableIndex(1,0);
+
+
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+
+    if (cellData[cellI][cIndex_input]==1)
+        {cellData[cellI][cIndex_output]+=1.0;
+          std::cerr<<"yes\n";}
 
 }
 }
