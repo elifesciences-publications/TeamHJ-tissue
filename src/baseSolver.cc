@@ -1632,6 +1632,12 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
       }
     }
   }
+//T.printInit(std::cout);
+
+  else if (printFlag_==106) {// Init style
+    printInit(os);
+  }
+
  
 
   else

@@ -2262,6 +2262,91 @@ update(Tissue &T,
 }
 
 
+
+AndSpecialGate::AndSpecialGate(std::vector<double> &paraValue, 
+                                                       std::vector< std::vector<size_t> > &indValue ) 
+{
+  //
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=0 ) {
+    std::cerr << "AndSpecialGate::AndSpecialGate()  does not use any parameters." << std::endl;
+    exit(0);
+  }
+  if( indValue.size()!=2 || indValue[0].size()!=3 || indValue[1].size()!=1 ) {
+    std::cerr << "AndSpecialGate::AndSpecialGate() "
+              << "Two levels of variable indices are used, "
+              << "One for the input variables, which are three indices "
+              << ", and one for the output variables" 
+              << std::endl;
+    exit(0);
+  }
+  //
+  // Set the variable values
+  //
+  setId("add");
+  setParameter(paraValue); 
+  setVariableIndex(indValue);
+  //
+}
+
+void AndSpecialGate::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  // Nothing to be done for the derivative function.
+}
+
+  
+void AndSpecialGate::
+derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex)
+{
+  // Nothing to be done for the derivative function.
+}
+
+
+void AndSpecialGate::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h) 
+{
+
+    size_t numCells = T.numCell();
+  
+  size_t cIndex_input1 = variableIndex(0,0);
+  size_t cIndex_input2 = variableIndex(0,1);
+  size_t cIndex_input3 = variableIndex(0,2);
+  size_t cIndex_output = variableIndex(1,0);
+
+  size_t cond=0;
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+    if (cellData[cellI][cIndex_input2]==1 || cellData[cellI][cIndex_input2]==0){cond=1;}
+    
+    if (cellData[cellI][cIndex_input1]==1 && cond==1 && cellData[cellI][cIndex_input3]==0)
+        {cellData[cellI][cIndex_output]=1;}
+
+
+  }
+}
+
+
 AndGateCount::AndGateCount(std::vector<double> &paraValue, 
                                                        std::vector< std::vector<size_t> > &indValue ) 
 {
