@@ -976,6 +976,170 @@ void BaseSolver::print(std::ostream &os)
     PVD_file::writeTwoWall(*T_,cellFile,wallFile,tCount);}
   }
 
+
+    else if( printFlag_==30 ) { // Same as flag 28, but generating an extra file in a gnuplot format for the last time point.
+    // Generating the output in gnuplot format. 
+
+    //Print the cells, first connected vertecis and then variables
+    std::ofstream of;
+
+    if (tCount==0) {
+      of.open("tissue.gdata");
+    }
+    else {
+      of.open("tissue.gdata",std::ios_base::app | std::ios_base::out);
+    }
+
+    size_t Nc = cellData_.size();
+    //os << Nc << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      of << "0 " << i << " " << t_ << " ";
+      for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+      of << cellData_[i][k] << " ";
+      of << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+   << T_->cell(i).numWall() << std::endl;
+    }         
+    of << std::endl;
+
+    // Generating the output in gnuplot format, last time point. 
+
+    std::ofstream of0;
+
+    if (tCount==0) {
+      of0.open("tissue.gfindata");
+    }
+    else {
+      of0.open("tissue.gfindata",std::ios_base::app | std::ios_base::out);
+    }
+
+    if (tCount==numPrint_){
+    size_t Nc = cellData_.size();
+    //os << Nc << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      of0 << "0 " << i << " " << t_ << " ";
+      for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+      of0 << cellData_[i][k] << " ";
+      of0 << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+   << T_->cell(i).numWall() << std::endl;
+    }         
+    of0 << std::endl;}
+    
+
+
+    std::ofstream of1;
+    if (tCount==0) {
+      of1.open("tissue.displayfindata");
+    }
+    else {
+      of1.open("tissue.displayfindata",std::ios_base::app | std::ios_base::out);
+    }
+   // std::cerr<<tCount<<'\n';
+    if (tCount==numPrint_){
+
+// writing in the displayTissueMT format, ie, like flag 0
+
+    of1 << 1 << "\n";
+    size_t Nv = vertexData_.size(); 
+    //Print the vertex positions
+    size_t dimension = T_->vertex(0).numPosition(); // was vertexData_[0].size();
+    of1 << Nv << " " << dimension << std::endl;
+    for( size_t i=0 ; i<Nv ; ++i ) {
+      for( size_t d=0 ; d<dimension ; ++d )
+  of1 << vertexData_[i][d] << " ";
+      of1 << std::endl;
+    }
+    //os << std::endl;
+    //Print the cells, first connected vertecis and then variables
+    size_t numPrintCellVar = T_->cell(0).numVariable();
+    size_t numPrintVar=numPrintCellVar+2; // was cellData_[0].size()+3;   
+    of1 << Nc << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      size_t Ncv = T_->cell(i).numVertex(); 
+      of1 << Ncv << " ";
+      for( size_t k=0 ; k<Ncv ; ++k )
+  of1 << T_->cell(i).vertex(k)->index() << " ";
+      
+      for (size_t k=0; k<numPrintCellVar; ++k) { // was for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+  of1 << cellData_[i][k] << " ";
+      }
+      //os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+      //<< T_->cell(i).numWall() << std::endl;
+      of1 << T_->cell(i).calculateVolume(vertexData_) << " ";
+      of1 << T_->cell(i).numWall() << std::endl;
+    }   
+    // Print wall variables, first the two connected vertices and then the variables
+    numPrintVar=T_->wall(0).numVariable()+5; // was wallData_[0].size()+4;
+    size_t Nw = wallData_.size();
+    of1 << Nw << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nw ; ++i ) {
+      //os << "2 ";
+      of1 << T_->wall(i).vertex1()->index() << " " 
+   << T_->wall(i).vertex2()->index() << " ";
+      for( size_t k=0 ; k<wallData_[i].size() ; ++k )
+  of1 << wallData_[i][k] << " ";
+      double distance = T_->wall(i).lengthFromVertexPosition(vertexData_);
+      of1 << i << " " << distance
+   << " " << distance-wallData_[i][0] << " " << (distance-wallData_[i][0])/wallData_[i][0]
+   << std::endl;
+    }   
+    of1 << std::endl;}
+
+
+
+
+// writing in the displayTissueMT format, ie, like flag 0
+    if( tCount==0 )
+      os << numPrint_ << "\n";
+    size_t Nv = vertexData_.size(); 
+    if( !Nv ) {
+      os << "0 0" << std::endl << "0 0" << std::endl;
+      return;
+    }
+    //Print the vertex positions
+    size_t dimension = T_->vertex(0).numPosition(); // was vertexData_[0].size();
+    os << Nv << " " << dimension << std::endl;
+    for( size_t i=0 ; i<Nv ; ++i ) {
+      for( size_t d=0 ; d<dimension ; ++d )
+  os << vertexData_[i][d] << " ";
+      os << std::endl;
+    }
+    //os << std::endl;
+    //Print the cells, first connected vertecis and then variables
+    size_t numPrintCellVar = T_->cell(0).numVariable();
+    size_t numPrintVar=numPrintCellVar+2; // was cellData_[0].size()+3;   
+    os << Nc << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      size_t Ncv = T_->cell(i).numVertex(); 
+      os << Ncv << " ";
+      for( size_t k=0 ; k<Ncv ; ++k )
+  os << T_->cell(i).vertex(k)->index() << " ";
+      
+      for (size_t k=0; k<numPrintCellVar; ++k) { // was for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+  os << cellData_[i][k] << " ";
+      }
+      //os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+      //<< T_->cell(i).numWall() << std::endl;
+      os << T_->cell(i).calculateVolume(vertexData_) << " ";
+      os << T_->cell(i).numWall() << std::endl;
+    }   
+    // Print wall variables, first the two connected vertices and then the variables
+    numPrintVar=T_->wall(0).numVariable()+5; // was wallData_[0].size()+4;
+    size_t Nw = wallData_.size();
+    os << Nw << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nw ; ++i ) {
+      //os << "2 ";
+      os << T_->wall(i).vertex1()->index() << " " 
+   << T_->wall(i).vertex2()->index() << " ";
+      for( size_t k=0 ; k<wallData_[i].size() ; ++k )
+  os << wallData_[i][k] << " ";
+      double distance = T_->wall(i).lengthFromVertexPosition(vertexData_);
+      os << i << " " << distance
+   << " " << distance-wallData_[i][0] << " " << (distance-wallData_[i][0])/wallData_[i][0]
+   << std::endl;
+    }   
+    os << std::endl;
+
+  }
   //
   // Print vertex and cell variables
   //
