@@ -716,7 +716,7 @@ void BaseSolver::print(std::ostream &os)
   }
 
 
-    else if( printFlag_==27 ) { // Same as flag 25, but without printing the wall variables in the output file with gnuplot format. This flag is printing the vtk paired wall and gnuplot outputs (corresponding to flags 2 and 5, respectively). The gnuplot output is written in a file called tissue.gdata.
+    else if( printFlag_==27 ) { //  This flag is printing displaytissue and gnuplot outputs (corresponding to flags 0 and 5, respectively). The gnuplot output does not print the wall variables, and is written in a file called tissue.gdata.  
     
     // Generating the output in gnuplot format. 
 
@@ -799,7 +799,7 @@ void BaseSolver::print(std::ostream &os)
 
 
 
-    else if( printFlag_==28 ) { // Same as flag 27, but generating an extra file in a displaytissue format for the last time point
+    else if( printFlag_==28 ) { // Same as flag 27, but generating an extra file in a displaytissue format for the last time point.
     // Generating the output in gnuplot format. 
 
     //Print the cells, first connected vertecis and then variables
@@ -936,6 +936,44 @@ void BaseSolver::print(std::ostream &os)
     }   
     os << std::endl;
 
+  }
+
+ else if( printFlag_==29 ) { // Same as flag 26, but printing the vtk format at the last time point.  but without printing the wall variables in the output file with gnuplot format. This flag is printing the vtk paired wall and gnuplot outputs (corresponding to flags 2 and 5, respectively). The gnuplot output is written in a file called tissue.gdata.
+    
+    // Generating the output in gnuplot format. 
+
+    //Print the cells, first connected vertecis and then variables
+    std::ofstream of;
+
+    if (tCount==0) {
+      of.open("tissue.gdata");
+    }
+    else {
+      of.open("tissue.gdata",std::ios_base::app | std::ios_base::out);
+    }
+
+    size_t Nc = cellData_.size();
+    //os << Nc << " " << numPrintVar << std::endl;
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      of << "0 " << i << " " << t_ << " ";
+      for( size_t k=0 ; k<cellData_[i].size() ; ++k )
+      of << cellData_[i][k] << " ";
+      of << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
+   << T_->cell(i).numWall() << std::endl;
+    }         
+    of << std::endl;
+
+  // Generating the vtk paired wall outputs. 
+    
+    std::string pvdFile = "tmp/tissue.pvd";
+    std::string cellFile = "tmp/VTK_cells.vtu";
+    std::string wallFile = "tmp/VTK_walls.vtu";
+    static size_t numCellVar = T_->cell(0).numVariable();
+    setTissueVariables(numCellVar);
+
+    if (tCount==numPrint_){
+    PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,1);
+    PVD_file::writeTwoWall(*T_,cellFile,wallFile,tCount);}
   }
 
   //

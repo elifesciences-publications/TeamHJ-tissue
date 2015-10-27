@@ -2334,12 +2334,15 @@ update(Tissue &T,
   size_t cIndex_input3 = variableIndex(0,2);
   size_t cIndex_output = variableIndex(1,0);
 
-  size_t cond=0;
+  //size_t cond=0;
   //For each cell
   for (size_t cellI = 0; cellI < numCells; ++cellI) {  
-    if (cellData[cellI][cIndex_input2]==1 || cellData[cellI][cIndex_input2]==0){cond=1;}
-    
-    if (cellData[cellI][cIndex_input1]==1 && cond==1 && cellData[cellI][cIndex_input3]==0)
+    cellData[cellI][cIndex_output]=0;
+   // if (cellData[cellI][cIndex_input2]==1 || cellData[cellI][cIndex_input2]==0){cond=1;}
+   // if (cellData[cellI][cIndex_input2]==0){cond=1;}
+   //    if (cellData[cellI][cIndex_input1]==1 && cond==1 && cellData[cellI][cIndex_input3]==0)
+
+    if (cellData[cellI][cIndex_input1]==1 && cellData[cellI][cIndex_input2]==0 && cellData[cellI][cIndex_input3]==0)
         {cellData[cellI][cIndex_output]=1;}
 
 

@@ -1044,7 +1044,7 @@ class AndSpecialGate : public BaseReaction {
 /// @note This logical gate function makes a downstream species   
 /// switch from 0 to 1 if the folowing conditions are met: 
  	// the first input variable is 1 
- 	// the second input variable is 1 or 0 
+ 	// the second input variable is 0 
  	// the third input variable is 0.
 
   /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
@@ -1300,8 +1300,7 @@ class FlagCount : public BaseReaction {
 /// In the model file, the reaction is specified as:
 /// @verbatim
 /// FlagCount 0 2 1 1	  	  # number of parameters is set to one (switch_type)
-/// index_var1   	 		  # index of the fist variable upstream the gate.
-/// index_var2   	 		  # index of the second variable upstream the gate.
+/// index_var   	 		  # index of the variable upstream the gate.
 /// index_var_out  			  # updated index where the output of the gate is written. 
 /// @endverbatim
 
