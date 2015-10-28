@@ -2658,8 +2658,7 @@ update(Tissue &T,
 
     size_t numCells = T.numCell();
   
-  size_t cIndex_input = variableIndex(0,0);
-  size_t cIndex_output = variableIndex(1,0);
+  size_t cIndex_output = variableIndex(0,0);
 
 
   //For each cell
