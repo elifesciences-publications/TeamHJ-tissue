@@ -2594,6 +2594,83 @@ update(Tissue &T,
 }
 
 
+Count::Count(std::vector<double> &paraValue,
+  std::vector< std::vector<size_t> > &indValue ) 
+{
+  //
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=0 ) {
+    std::cerr << "No parameters are used in Count" << std::endl;
+    exit(0);
+  }
+  if( indValue.size()!=1 || indValue[0].size()!=1 ) {
+    std::cerr << "Count::Count() "
+              << "One level of variable index is used "
+              << std::endl;
+    exit(0);
+  }
+  //
+  // Set the variable values
+  //
+  setId("add");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+}
+
+
+void Count::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  // Nothing to be done for the derivative function.
+}
+
+  
+void Count::
+derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex)
+{
+  // Nothing to be done for the derivative function.
+}
+
+
+void Count::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h) 
+{
+
+    size_t numCells = T.numCell();
+  
+  size_t cIndex_input = variableIndex(0,0);
+  size_t cIndex_output = variableIndex(1,0);
+
+
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+
+   cellData[cellI][cIndex_output]+=1.0;
+          
+
+}
+}
+
 
 FlagCount::FlagCount(std::vector<double> &paraValue,
   std::vector< std::vector<size_t> > &indValue ) 

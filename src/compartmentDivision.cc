@@ -4512,6 +4512,8 @@ namespace Division {
       {cellData[i][8]=0.0; //resetting variable to 0 when dividing
        cellData[i][9]=0.0; //resetting variable to 0 when dividing
        cellData[i][10]=0.0; //resetting variable to 0 when dividing
+       cellData[i][15]=0.0; //resetting variable to 0 when dividing
+
        if (cellData[i][13]>0.1)
            cellData[i][13]-=1; //subtract 1 when dividing
 

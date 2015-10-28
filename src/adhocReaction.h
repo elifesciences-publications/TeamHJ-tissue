@@ -1283,6 +1283,69 @@ class OrSpecialGateCount : public BaseReaction {
 };
 
 
+class Count : public BaseReaction {
+  
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which checks and sets the parameters and
+  /// variable indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+
+/// In the model file, the reaction is specified as:
+/// @verbatim
+/// Count 0 1 1 	  	      # number of parameters is set to zero
+/// index_var_out  			  # updated index where the output of the gate is written. 
+/// @endverbatim
+
+/// @note This function makes a downstream species add +1. 
+/// 
+
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  Count(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > &indValue );
+		
+  ///
+  /// @brief This class does not use derivatives for updates.
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  void derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex );
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(double h, double t, ...)
+  ///
+	void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+};
+
+
 class FlagCount : public BaseReaction {
   
  public:
@@ -1299,7 +1362,7 @@ class FlagCount : public BaseReaction {
 
 /// In the model file, the reaction is specified as:
 /// @verbatim
-/// FlagCount 0 2 1 1	  	  # number of parameters is set to one (switch_type)
+/// FlagCount 0 2 1 1	  	  # number of parameters is set to zero
 /// index_var   	 		  # index of the variable upstream the gate.
 /// index_var_out  			  # updated index where the output of the gate is written. 
 /// @endverbatim

@@ -499,6 +499,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new OrGateCount(paraValue,indValue); 
   else if(idValue=="OrSpecialGateCount")
     return new OrSpecialGateCount(paraValue,indValue); 
+  else if(idValue=="Count")
+    return new Count(paraValue,indValue);
   else if(idValue=="FlagCount")
     return new FlagCount(paraValue,indValue);
   else if(idValue=="ThresholdReset")
