@@ -822,7 +822,7 @@ class ThresholdSwitch : public BaseReaction {
   
  public:
   ///
-  /// @brief Main constructor
+  /// @brief Switches an output variable from 0 to 1 if an input variable is above a threshold. 
   ///
   /// This is the main constructor which checks and sets the parameters and
   /// variable indices that defines the reaction.
@@ -836,7 +836,7 @@ class ThresholdSwitch : public BaseReaction {
 /// @verbatim
 /// ThresholdSwitch 2 2 1 1   # number of parameters is set to two (threshold and switch_type)
 /// threshold		 		  # threshold above which a variable is reset to zero.  
-/// switch_type		 		  # the switchtype parameter takes the values 0 and 1 for defining the reversible and irreversible switch, respectively.  
+/// switch_type		 		  # the switch_type parameter takes the values 0 and 1 for defining the reversible and irreversible switch, respectively.  
 /// index_var   	 		  # index of the index variable upstream the switch.
 /// index_var_out  			  # list of updated indices - for the moment it can be just one index - where the output of the switch is written. 
 /// @endverbatim
@@ -900,7 +900,7 @@ class AndGate : public BaseReaction {
 
 /// In the model file, the reaction is specified as:
 /// @verbatim
-/// AndGate 1 2 2 1   	  # number of parameters is set to one (switch_type)
+/// AndGate 1 2 2 1   	 	 # number of parameters is set to one (gate_type)
 /// gate_type		 		  # the gate_type parameter takes the values 0 and 1 for defining the reversible and irreversible gate, respectively.  
 /// index_var1   	 		  # index of the fist variable upstream the gate.
 /// index_var2   	 		  # index of the second variable upstream the gate.
@@ -967,7 +967,7 @@ class AndNotGate : public BaseReaction {
 
 /// In the model file, the reaction is specified as:
 /// @verbatim
-/// AndNotGate 1 2 2 1   	  # number of parameters is set to one (switch_type)
+/// AndNotGate 1 2 2 1   	  # number of parameters is set to one (gate_type)
 /// gate_type		 		  # the gate_type parameter takes the values 0 and 1 for defining the reversible and irreversible gate, respectively.  
 /// index_var1   	 		  # index of the fist variable upstream the gate.
 /// index_var2   	 		  # index of the second variable upstream the gate.
@@ -1034,7 +1034,7 @@ class AndSpecialGate : public BaseReaction {
 
 /// In the model file, the reaction is specified as:
 /// @verbatim
-/// AndSpecialGate 0 2 3 1   	  # number of parameters is set to one (switch_type)
+/// AndSpecialGate 0 2 3 1    # number of parameters is set to zero
 /// index_var1   	 		  # index of the fist variable upstream the gate.
 /// index_var2   	 		  # index of the second variable upstream the gate.
 /// index_var3   	 		  # index of the third variable upstream the gate.
@@ -1103,7 +1103,7 @@ class AndGateCount : public BaseReaction {
 
 /// In the model file, the reaction is specified as:
 /// @verbatim
-/// AndGateCount 0 2 2 1   	  # number of parameters is set to one (switch_type)
+/// AndGateCount 0 2 2 1   	  # number of parameters is set to zero
 /// index_var1   	 		  # index of the fist variable upstream the gate.
 /// index_var2   	 		  # index of the second variable upstream the gate.
 /// index_var_out  			  # updated index where the output of the gate is written. 
