@@ -2844,3 +2844,280 @@ update(Tissue &T,
 }
 
 
+
+
+ThresholdNoisyReset::ThresholdNoisyReset(std::vector<double> &paraValue, 
+                                                       std::vector< std::vector<size_t> > &indValue ) 
+{
+  //
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=2 ) {
+    std::cerr << "ThresholdNoisyReset::ThresholdNoisyReset()  parameter used "
+        << "Threshold" << std::endl;
+    exit(0);
+  }
+  if( indValue.size()!=2 || indValue[0].size()!=1 || indValue[1].size()!=1 ) {
+    std::cerr << "ThresholdNoisyReset::ThresholdNoisyReset() "
+              << "Two levels of variable indices are used, "
+              << "one for the threshold variable (single index)"
+              << ", and one for a list of variables to change" 
+              << std::endl;
+    exit(0);
+  }
+  //
+  // Set the variable values
+  //
+  setId("add");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  //
+  // Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "const";
+  tmp[1] = "switchtype";
+  setParameterId( tmp );
+}
+
+void ThresholdNoisyReset::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  // Nothing to be done for the derivative function.
+}
+
+  
+void ThresholdNoisyReset::
+derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex)
+{
+  // Nothing to be done for the derivative function.
+}
+
+
+void ThresholdNoisyReset::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h) 
+{
+
+    size_t numCells = T.numCell();
+  
+  size_t cIndex = variableIndex(0,0);
+  size_t c2Index = variableIndex(1,0);
+
+
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+
+    if (cellData[cellI][cIndex]>=parameter(0)  ) {
+          double rrr;
+          rrr= (myRandom::Rnd()-0.5);
+          cellData[cellI][c2Index]=rrr;
+      }
+
+}
+}
+
+
+
+
+ThresholdResetAndCount::ThresholdResetAndCount(std::vector<double> &paraValue, 
+                                                       std::vector< std::vector<size_t> > &indValue ) 
+{
+  //
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=2 ) {
+    std::cerr << "ThresholdResetAndCount::ThresholdResetAndCount()  parameter used "
+        << "Threshold" << std::endl;
+    exit(0);
+  }
+  if( indValue.size()!=2 || indValue[0].size()!=1 || indValue[1].size()!=2 ) {
+    std::cerr << "ThresholdResetAndCount::ThresholdResetAndCount() "
+              << "Two levels of variable indices are used, "
+              << "one for the threshold variable (single index)"
+              << ", and one for a list of variables to change" 
+              << std::endl;
+    exit(0);
+  }
+  //
+  // Set the variable values
+  //
+  setId("add");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  //
+  // Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "const";
+  tmp[1] = "switchtype";
+  setParameterId( tmp );
+}
+
+void ThresholdResetAndCount::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  // Nothing to be done for the derivative function.
+}
+
+  
+void ThresholdResetAndCount::
+derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex)
+{
+  // Nothing to be done for the derivative function.
+}
+
+
+void ThresholdResetAndCount::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h) 
+{
+
+    size_t numCells = T.numCell();
+  
+  size_t cIndex = variableIndex(0,0);
+  size_t c2Index = variableIndex(1,0);
+
+
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+
+    if (cellData[cellI][cIndex]>=parameter(0)  ) {
+          double rrr;
+          rrr= (myRandom::Rnd()-0.5);
+          cellData[cellI][c2Index]=rrr;cellData[cellI][13]=cellData[cellI][13]+1;
+      }
+
+
+}
+}
+
+
+
+FlagNoisyReset::FlagNoisyReset(std::vector<double> &paraValue, 
+                                                       std::vector< std::vector<size_t> > &indValue ) 
+{
+  //
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=2 ) {
+    std::cerr << "FlagNoisyReset::FlagNoisyReset()  parameter used "
+        << "Threshold" << std::endl;
+    exit(0);
+  }
+  if( indValue.size()!=2 || indValue[0].size()!=1 || indValue[1].size()!=1 ) {
+    std::cerr << "FlagNoisyReset::FlagNoisyReset() "
+              << "Two levels of variable indices are used, "
+              << "one for the threshold variable (single index)"
+              << ", and one for a list of variables to change" 
+              << std::endl;
+    exit(0);
+  }
+  //
+  // Set the variable values
+  //
+  setId("add");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  //
+  // Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "const";
+  tmp[1] = "switchtype";
+  setParameterId( tmp );
+}
+
+void FlagNoisyReset::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  // Nothing to be done for the derivative function.
+}
+
+  
+void FlagNoisyReset::
+derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex)
+{
+  // Nothing to be done for the derivative function.
+}
+
+
+void FlagNoisyReset::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h) 
+{
+
+    size_t numCells = T.numCell();
+  
+  size_t cIndex = variableIndex(0,0);
+  size_t c2Index = variableIndex(1,0);
+
+
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+
+    if (cellData[cellI][cIndex]==parameter(0)  ) {
+          double rrr;
+          rrr= (myRandom::Rnd()-0.5);
+          cellData[cellI][c2Index]=rrr;
+      }
+
+}
+}

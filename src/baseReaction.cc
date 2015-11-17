@@ -505,6 +505,12 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new FlagCount(paraValue,indValue);
   else if(idValue=="ThresholdReset")
     return new ThresholdReset(paraValue,indValue); 
+  else if(idValue=="ThresholdNoisyReset")
+    return new ThresholdNoisyReset(paraValue,indValue); 
+  else if(idValue=="ThresholdResetAndCount")
+    return new ThresholdResetAndCount(paraValue,indValue); 
+  else if(idValue=="FlagNoisyReset")
+    return new FlagNoisyReset(paraValue,indValue); 
 
   // cellTime.h
   else if (idValue=="CellTimeDerivative")
