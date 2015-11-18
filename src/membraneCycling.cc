@@ -61,13 +61,11 @@ derivs(Tissue &T,
   size_t pI = variableIndex(0,0);//pin
   size_t pwI = variableIndex(1,0);//pin (membrane/wall)
 
-
   assert( pI<cellData[0].size() &&
 	  pwI<wallData[0].size() );
 
  for (size_t i=0; i<numCells; ++i) {
-	  
-       
+
     //protein cycling
     size_t numWalls = T.cell(i).numWall();
     for (size_t k=0; k<numWalls; ++k) {

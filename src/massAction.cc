@@ -114,6 +114,118 @@ namespace MassAction {
     }
   }
 
+  GeneralEnzymatic::
+  GeneralEnzymatic(std::vector<double> &paraValue, 
+	  std::vector< std::vector<size_t> > &indValue ) 
+  {  
+    //
+    // Do some checks on the parameters and variable indeces
+    //
+    if( paraValue.size()!=1 ) {
+      std::cerr << "MassAction::General::General() "
+		<< "Uses only one parameter k_f" << std::endl;
+      exit(0);
+    }
+    if( indValue.size() !=3 ) {
+      std::cerr << "MassAction::General::General() "
+		<< "Three levels of variable indices are used." << std::endl
+		<< "One for reactants, one for products and one for enzymes." << std::endl;
+      exit(0);
+    }
+    if( indValue[0].size()<1 ) {
+      std::cerr << "MassAction::General::General() "
+		<< "If no reactants given, there will be no reaction..." << std::endl;
+      exit(0);
+    }
+    //
+    // Set the variable values
+    //
+    setId("MassAction::GeneralEnzymatic");
+    setParameter(paraValue);  
+    setVariableIndex(indValue);
+    //
+    // Set the parameter identities
+    //
+    std::vector<std::string> tmp( numParameter() );
+    tmp.resize( numParameter() );
+    tmp[0] = "k_f";
+    setParameterId( tmp );
+  }
+  
+  void GeneralEnzymatic::
+  derivs(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs ) 
+  {  
+    if( numVariableIndex(0) ) {
+      for( size_t cellIndex=0 ; cellIndex<cellData.size() ; cellIndex++ ) {
+	double rate = parameter(0);
+	for( size_t i=0 ; i< numVariableIndex(0) ; i++ )
+	  rate *= cellData[cellIndex][variableIndex(0,i)];
+
+	for( size_t i=0 ; i< numVariableIndex(2) ; i++ )
+	  rate *= cellData[cellIndex][variableIndex(2,i)];
+
+    
+	if (rate>0.0) {
+	  for( size_t i=0 ; i< numVariableIndex(0) ; ++i )
+	    cellDerivs[cellIndex][variableIndex(0,i)] -= rate;
+	  
+	  for( size_t i=0 ; i< numVariableIndex(1) ; ++i )
+	    cellDerivs[cellIndex][variableIndex(1,i)] += rate;
+	}
+      }
+    }
+    else { //No reaction defined...
+      return;
+    }
+  }
+
+  void GeneralEnzymatic::
+  derivsWithAbs(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs,
+		DataMatrix &sdydtCell,
+		DataMatrix &sdydtWall,
+		DataMatrix &sdydtVertex ) 
+  {  
+    if( numVariableIndex(0) ) {
+      for( size_t cellIndex=0 ; cellIndex<cellData.size() ; cellIndex++ ) {
+	double rate = parameter(0);
+	for( size_t i=0 ; i< numVariableIndex(0) ; i++ )
+	  rate *= cellData[cellIndex][variableIndex(0,i)];
+
+	for( size_t i=0 ; i< numVariableIndex(2) ; i++ )
+	  rate *= cellData[cellIndex][variableIndex(2,i)];
+
+	
+	if (rate>0.0) {
+	  for( size_t i=0 ; i< numVariableIndex(0) ; ++i ) {
+	    cellDerivs[cellIndex][variableIndex(0,i)] -= rate;
+	    sdydtCell[cellIndex][variableIndex(0,i)] += rate;
+	  }
+	  
+	  for( size_t i=0 ; i< numVariableIndex(1) ; ++i ) {
+	    cellDerivs[cellIndex][variableIndex(1,i)] += rate;
+	    sdydtCell[cellIndex][variableIndex(1,i)] += rate;
+	  }
+	}
+      }
+    }
+    else { //No reaction defined...
+      return;
+    }
+  }
+
+
   OneToTwo::
   OneToTwo(std::vector<double> &paraValue, 
 	   std::vector< std::vector<size_t> > 

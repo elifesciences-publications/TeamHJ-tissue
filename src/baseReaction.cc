@@ -549,6 +549,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   //massAction.h
   else if (idValue=="MassAction::General")
     return new MassAction::General(paraValue, indValue);
+  else if (idValue=="MassAction::GeneralEnzymatic")
+    return new MassAction::GeneralEnzymatic(paraValue, indValue);
   else if (idValue=="MassAction::OneToTwo")
     return new MassAction::OneToTwo(paraValue, indValue);
   else if (idValue=="MassAction::TwoToOne")

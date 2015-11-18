@@ -92,6 +92,82 @@ namespace MassAction {
 		       DataMatrix &sdydtVertex );
   };
 
+
+
+  ///
+  /// @brief A one way mass action reaction applied in all cells
+  ///
+  /// The reactant indices are in level zero, products in level one
+  /// and the enzymatic variables in level two in variableIndex.
+  /// One parameter (rate constant) is needed.
+  ///
+  /// Reactants [R] and products [P] stored in variableIndexLevel 0/1 are
+  /// updated while the enzymes [E] in variableIndexLevel 2 are not updated.
+  /// The parameter is k_f in 
+  ///
+  /// @f[ \frac{d[P]}{dt} = k_f * \prod [R] [E] @f]
+  /// @f[ \frac{d[R]}{dt} = - k_f \prod [R] [E] @f]
+  ///
+  /// In a model file the reaction is defined as:
+  ///
+  /// @verbatim
+  /// MassAction::General 1 3 N_R N_P N_E
+  /// k_f
+  /// R_1 ... R_{N_R}
+  /// P_1 ... P_{N_P}
+  /// E_1 ... E_{N_E}
+  /// @endverbatim
+  ///
+  class GeneralEnzymatic : public BaseReaction {
+    
+  public:
+    
+    ///
+    /// @brief Main constructor
+    ///
+    /// This is the main constructor which sets the parameters and variable
+    /// indices that defines the reaction.
+    ///
+    /// @param paraValue vector with parameters
+    ///
+    /// @param indValue vector of vectors with variable indices
+    ///
+    /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+    ///
+    GeneralEnzymatic(std::vector<double> &paraValue, 
+	   std::vector< std::vector<size_t> > &indValue );
+    
+    ///
+    /// @brief Derivative function for this reaction class
+    ///
+    /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+    ///
+    void derivs(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
+    ///
+    /// @brief Derivative function for this reaction class calculating the absolute value for noise solvers
+    ///
+    /// @see BaseReaction::derivsWithAbs(Compartment &compartment,size_t species,...)
+    ///
+    void derivsWithAbs(Tissue &T,
+		       DataMatrix &cellData,
+		       DataMatrix &wallData,
+		       DataMatrix &vertexData,
+		       DataMatrix &cellDerivs,
+		       DataMatrix &wallDerivs,
+		       DataMatrix &vertexDerivs,
+		       DataMatrix &sdydtCell,
+		       DataMatrix &sdydtWall,
+		       DataMatrix &sdydtVertex );
+  };
+
+
+
 ///
 /// @brief A one way mass action reaction assume one reactants and two products.
 ///
