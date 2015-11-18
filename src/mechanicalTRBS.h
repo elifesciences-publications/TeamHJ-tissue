@@ -448,6 +448,149 @@ private:
   ///
   /// @see BaseReaction::initiate(Tissue &T,...)
   ///
+  void update(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData, 
+              double h); 
+  
+  void printState(Tissue *T,
+                  DataMatrix &cellData,
+                  DataMatrix &wallData,
+                  DataMatrix &vertexData, 
+                  std::ostream &os);
+    
+
+};
+
+
+///
+/// @brief Triangular spring model for plates (2D walls) assuming
+/// triangulation with a central point on the 2D wall/cell.
+///
+/// The update (in all dimensions) are given by
+///
+/// @f[ \frac{dx_i}{dt} = ... @f]
+///
+/// ...
+///
+/// The theory of the mechanical model comes from H. Delingette,
+/// Triangular springs for modelling non-linear membranes, IEEE Trans
+/// Vis Comput Graph 14, 329-41 (2008)
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// VertexFromTRLScenterTriangulationMT 11 2 11 1 
+/// 
+/// Y_matrix 
+/// Y_fiber 
+/// Poisson_Long
+/// Poisson_Trans
+/// MF_flag(0/1/2 or <0: if heterogeneity is considered, the value for this 
+///                     flag is the scale factor for heterogeneity) 
+/// neighborWeight 
+/// max_stress(if 0 absolute stress anisotropy is calculated)
+/// plane-strain/stress-flag 
+/// MT-angle 
+/// MT-feedback-flag 
+/// unused parameter 
+///
+/// L_ij-index 
+/// MT_cellIndex 
+/// strainAnisotropy-Index 
+/// stressAnisotropy-Index
+/// areaRatioIndex 
+/// isoEnergyIndex 
+/// anisoEnergyIndex 
+/// youngL-index/heterpogeneity_index 
+/// MTstressIndex 
+/// stressTensorIndex 
+/// normalVectorIndex
+///
+/// InternalVarStartIndex
+/// 
+/// or
+/// 
+/// VertexFromTRLScenterTriangulationMT 11 4 11 1 0/1/2/3 0/1/2
+///
+/// Y_matrix 
+/// Y_fiber 
+/// Poisson_Long  
+/// Poisson_Trans 
+/// MF_flag(0/1) 
+/// neighborWeight 
+/// unusedparameter 
+/// plane-strain/stress-flag 
+/// MT-angle 
+/// MT-feedback-flag
+/// unused parameter
+/// 
+/// L_ij-index 
+/// MT_cellIndex 
+/// strainAnisotropy-Index 
+/// stressAnisotropy-Index
+/// areaRatioIndex 
+/// isoEnergyIndex 
+/// anisoEnergyIndex 
+/// youngL-index 
+/// MTstressIndex 
+/// stressTensorIndex 
+/// normalVectorIndex
+///
+/// InternalVarStartIndex
+///
+/// optional indices for storing strain(0: no strain, 
+///                                     1: strain, 
+///                                     2: strain/perpendicular strain, 
+///                                     3: strain/perpendicular strain/2nd strain)
+/// optional indices for storing stress(0: no stress, 
+///                                     1: stress, 
+///                                     2: stress/2nd stress)
+/// @endverbatim
+/// In case of storing strain/stress direction/value, in 3(2) dimensions, 
+/// strain/stress values will be stored after (3) components of vectors.
+/// The value for perpendicular strain is maximal strain value.  
+
+class VertexFromTRLScenterTriangulationMT : public BaseReaction {
+private:
+  
+  
+  
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  VertexFromTRLScenterTriangulationMT(std::vector<double> &paraValue, 
+				    std::vector< std::vector<size_t> > 
+				    &indValue );  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  ///
+  /// @brief Reaction initiation applied before simulation starts
+  ///
+  /// @see BaseReaction::initiate(Tissue &T,...)
+  ///
   
 // void initiate(Tissue &T,
 // 		DataMatrix &cellData,
@@ -688,6 +831,94 @@ public:
 		DataMatrix &cellDerivs,
 		DataMatrix &wallDerivs,
 		DataMatrix &vertexDerivs );  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Tissue &T,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData, 
+              double h); 
+};
+
+
+
+
+///
+/// @brief mechanical TRBS model with pressure via energy minimization
+///
+/// @details
+/// ...
+/// 
+/// In a model file the reaction is defined as
+/// @verbatim
+///
+/// VertexFromTRBScenterTriangulationMTOpt
+/// 
+///  k_rate
+///  initial uniform fiber 
+///  velocity threshold
+///  init flag
+///  k_hill
+///  n_hill
+///
+///  anisotropy index.
+///  misses stress index
+///  cell area index
+///  Young Fiber index
+///  Young Longitudinal Fiber index
+///  velocity index
+///
+///
+/// @endverbatim
+///
+class VertexFromTRBScenterTriangulationMTOpt : public BaseReaction {
+private:
+  std::vector<std::vector<std::vector<double> > > stateVector;
+  double totalEnergy;
+  double mechIsEn, mechAnEn, PEn;
+public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  VertexFromTRBScenterTriangulationMTOpt(std::vector<double> &paraValue, 
+                                         std::vector< std::vector<size_t> > 
+                                         &indValue );  
+  ///
+  /// @brief Reaction initiation applied before simulation starts
+  ///
+  /// @see BaseReaction::initiate(Tissue &T,...)
+  ///
+  void initiate(Tissue &T,
+                DataMatrix &cellData,
+                DataMatrix &wallData,
+                DataMatrix &vertexData,
+                DataMatrix &cellDerivs,
+                DataMatrix &wallDerivs,
+                DataMatrix &vertexDerivs );  
   ///
   /// @brief Derivative function for this reaction class
   ///
