@@ -63,7 +63,7 @@ createCompartmentChange(std::vector<double> &paraValue,
   else if(idValue == "DivisionMainAxis")
     return new Division::MainAxis(paraValue,indValue); 
   if(idValue=="DivisionFlagResetViaLongestWall")
-    return new Division::FlagResetViaLongestWall(paraValue,indValue);
+    return new Division::FlagResetShortestPath(paraValue,indValue);
   //compartmentRemoval.h,compartmentRemoval.cc
   else if(idValue=="RemovalIndex")
     return new RemovalIndex(paraValue,indValue);

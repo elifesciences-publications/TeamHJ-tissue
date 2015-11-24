@@ -172,7 +172,7 @@ namespace myMath
     return iterations;
   }
   
-  signed int sign(const double argument)
+  int sign(const double argument)
   {
     return (argument >= 0) ? +1 : -1;
   }

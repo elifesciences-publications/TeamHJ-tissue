@@ -2784,8 +2784,6 @@ namespace Division {
     //T->checkConnectivity(1);	
   }
 
-
-
   ShortestPath::ShortestPath(std::vector<double> &paraValue, 
 			     std::vector< std::vector<size_t> > &indValue)
   {
@@ -2986,6 +2984,22 @@ namespace Division {
   
 
   
+    //  // Find intersection with another wall
+    //  //
+    //  size_t w3I=divCell->numWall();
+    //  //double minDist,w3s;
+    // std::vector<size_t> w3Tmp;
+    //  std::vector<double> w3tTmp;
+    //  int flag=0,vertexFlag=0;
+    //  for( size_t k=0 ; k<divCell->numWall() ; ++k ) {
+    //    if( k!=wI ) {
+    //      size_t v1w3Itmp = divCell->wall(k)->vertex1()->index();
+    //      size_t v2w3Itmp = divCell->wall(k)->vertex2()->index();
+    //      std::vector<double> w3(dimension),w0(dimension);
+    //      for( size_t d=0 ; d<dimension ; ++d ) {
+    //        w3[d] = vertexData[v2w3Itmp][d]-vertexData[v1w3Itmp][d];
+    //        w0[d] = v1Pos[d]-vertexData[v1w3Itmp][d];
+
     std::vector<Candidate> candidates = 
       getCandidates(T, i, cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs);
   
@@ -2993,7 +3007,7 @@ namespace Division {
       {
 	return;
       }
-  
+    
     Candidate winner = { std::numeric_limits<double>::max(), 0, 0, 0, 0, 0, 0 };
     for (size_t i = 0; i < candidates.size(); ++i) {
       if (candidates[i].distance < winner.distance) {
@@ -3184,9 +3198,6 @@ namespace Division {
 		    parameter(2));
   
     assert (numWallTmp + 3 == T->numWall());
-  
-    //Change length of new wall between the divided daugther cells
-    wallData[numWallTmp][0] *= parameter(1);
   
 
     //  std::cerr<<"  after::  "<<std::endl;
@@ -3420,7 +3431,7 @@ namespace Division {
     double v = f(b, sigma, A, B);
     double c;
   
-    if (sign(u) == sign(v)) {
+    if (myMath::sign(u) == myMath::sign(v)) {
       return 0;
     }
   
@@ -3429,7 +3440,7 @@ namespace Division {
       c = a + e;
       double w = f(c, sigma, A, B);
     
-      if (sign(w) != sign(u)) {
+      if (myMath::sign(w) != myMath::sign(u)) {
 	b = c;
 	v = w;
       } else {
@@ -3445,11 +3456,6 @@ namespace Division {
     double tmp = - A * std::cos(a) / (std::sin(a) * std::sin(a));
     tmp += B * std::cos(myMath::pi() + sigma - a) / (std::sin(sigma - a) * std::sin(sigma - a));
     return tmp;
-  }
-
-  int ShortestPath::sign(double a)
-  {
-    return (a >= 0) ? +1 : -1;
   }
 
   STAViaShortestPath::STAViaShortestPath(std::vector<double> &paraValue, 
@@ -3642,16 +3648,8 @@ namespace Division {
       //  std::cerr<<"cell centroid "
       //           <<centerTmp[0]<<" "
       //           <<centerTmp[1]<<" "
-      //           <<centerTmp[2]<<std::endl;
-
-    
-  
-  
-    }
-  
-  
-
-  
+      //           <<centerTmp[2]<<std::endl;  
+    }  
     std::vector<Candidate> candidates = 
       getCandidates(T, i, cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs);
   
@@ -4086,7 +4084,7 @@ namespace Division {
     double v = f(b, sigma, A, B);
     double c;
   
-    if (sign(u) == sign(v)) {
+    if (myMath::sign(u) == myMath::sign(v)) {
       return 0;
     }
   
@@ -4095,7 +4093,7 @@ namespace Division {
       c = a + e;
       double w = f(c, sigma, A, B);
     
-      if (sign(w) != sign(u)) {
+      if (myMath::sign(w) != myMath::sign(u)) {
 	b = c;
 	v = w;
       } else {
@@ -4113,11 +4111,6 @@ namespace Division {
     return tmp;
   }
 
-  int STAViaShortestPath::sign(double a)
-  {
-    return (a >= 0) ? +1 : -1;
-  }
-  
   FlagResetShortestPath::FlagResetShortestPath(std::vector<double> &paraValue, 
            std::vector< std::vector<size_t> > &indValue)
   {
@@ -4312,26 +4305,22 @@ namespace Division {
     
   
   
-    }
-  
-  
-
-  
+    }  
     std::vector<Candidate> candidates = 
       getCandidates(T, i, cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs);
-  
+    
     if (candidates.size() == 0)
       {
-  return;
+	return;
       }
-  
+    
     Candidate winner = { std::numeric_limits<double>::max(), 0, 0, 0, 0, 0, 0 };
     for (size_t i = 0; i < candidates.size(); ++i) {
       if (candidates[i].distance < winner.distance) {
-  winner = candidates[i];
+	winner = candidates[i];
       }
     }
-  
+    
     // std::cerr << "Winner: " << std::endl
     //           << " distance = " << winner.distance << std::endl
     //           << " p = (" << winner.px << ", " << winner.py << ")" << std::endl
@@ -4764,24 +4753,22 @@ namespace Division {
     double v = f(b, sigma, A, B);
     double c;
   
-    if (sign(u) == sign(v)) {
+    if (myMath::sign(u) == myMath::sign(v)) {
       return 0;
     }
-  
     for (size_t k = 0; k < 10; ++k) {
       e = 0.5 * e;
       c = a + e;
-      double w = f(c, sigma, A, B);
-    
-      if (sign(w) != sign(u)) {
-  b = c;
-  v = w;
+      double w = f(c, sigma, A, B);   
+      if (myMath::sign(w) != myMath::sign(u)) {
+	b = c;
+	v = w;
       } else {
-  a = c;
-  u = w;
+	a = c;
+	u = w;
       }
+      return c;
     }
-    return c;
   }
 
   double FlagResetShortestPath::f(double a, double sigma, double A, double B)
@@ -4791,147 +4778,137 @@ namespace Division {
     return tmp;
   }
 
-  int FlagResetShortestPath::sign(double a)
-  {
-    return (a >= 0) ? +1 : -1;
-  }
 
+ Random::Random(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
+ {
+   if (paraValue.size() != 3) {
+     std::cerr << "DivisionRandom::DivisionRandom() "
+	       << "Three parameters are used V_threshold, Lwall_fraction, Lwall_threshold." << std::endl;
+     exit(EXIT_FAILURE);
+   }
+   
+   if (indValue.size() != 1) {
+     std::cerr << "Division::Random::Random() "
+	       << "First level: Variable indices for volume dependent cell "
+	       << "variables are used.\n";
+     exit(EXIT_FAILURE);
+   }
+   
+   setId("Division::Random");
+   setNumChange(1);
+   setParameter(paraValue);  
+   setVariableIndex(indValue);
+   
+   std::vector<std::string> tmp(numParameter());
+   tmp.resize (numParameter());
+   tmp[0] = "V_threshold";
+   tmp[1] = "Lwall_threshold";
+   setParameterId(tmp);
+ }
 
-
-
-
-
-
-  Random::Random(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
-  {
-    if (paraValue.size() != 3) {
-      std::cerr << "DivisionRandom::DivisionRandom() "
-		<< "Three parameters are used V_threshold, Lwall_fraction, Lwall_threshold." << std::endl;
-      exit(EXIT_FAILURE);
-    }
-	
-    if (indValue.size() != 1) {
-      std::cerr << "DivisionRandom::DivisionRandom() "
-		<< "First level: Variable indices for volume dependent cell "
-		<< "variables are used.\n";
-      exit(EXIT_FAILURE);
-    }
-	
-    setId("DivisionRandom");
-    setNumChange(1);
-    setParameter(paraValue);  
-    setVariableIndex(indValue);
-	
-    std::vector<std::string> tmp(numParameter());
-    tmp.resize (numParameter());
-    tmp[0] = "V_threshold";
-    tmp[1] = "Lwall_threshold";
-    setParameterId(tmp);
-  }
-
-  int Random::flag(Tissue *T, size_t i,
-		   DataMatrix &cellData,
-		   DataMatrix &wallData,
-		   DataMatrix &vertexData,
-		   DataMatrix &cellDerivs,
-		   DataMatrix &wallDerivs,
-		   DataMatrix &vertexDerivs)
-  {
-    if (T->cell(i).calculateVolume(vertexData) > parameter(0)) {
-      std::cerr << "Cell " << i << " marked for division with volume " 
-		<< T->cell(i).volume() << std::endl;
-      return 1;
-    } 
-    return 0;
-  }
-
-  void Random::update(Tissue* T, size_t i,
-		      DataMatrix &cellData,
-		      DataMatrix &wallData,
-		      DataMatrix &vertexData,
-		      DataMatrix &cellDerivs,
-		      DataMatrix &wallDerivs,
-		      DataMatrix &vertexDerivs)
-  {
-    Cell cell = T->cell(i);
-
-    assert(vertexData[0].size() == 2); // Make sure dimension == 2
-
-    size_t wall1Index = random(cell.numWall());
-    size_t wall2Index;
-
-    while (true) {
-      wall2Index = random(cell.numWall());
-		
-      if (wall1Index != wall2Index) {
-	break;
-      }
-    }
-
-    std::vector<double> p(2);
-
-    // Find first vertex.
-    {
-      Wall *wall = cell.wall(wall1Index);
-
-      Vertex *vertex1 = wall->vertex1();
-      Vertex *vertex2 = wall->vertex2();
-
-      double r = 0.0;
-	
-      while (r < 0.01 || r > 0.99) {
-	r = myRandom::Rnd();
-      }
-
-      p[0] = vertexData[vertex1->index()][0] + r * (vertexData[vertex2->index()][0] - vertexData[vertex1->index()][0]);
-      p[1] = vertexData[vertex1->index()][1] + r * (vertexData[vertex2->index()][1] - vertexData[vertex1->index()][1]);
-    }
-
-    // Find second vertex.
-    std::vector<double> q(2);
-
-    {
-      Wall *wall = cell.wall(wall2Index);
-
-      Vertex *vertex1 = wall->vertex1();
-      Vertex *vertex2 = wall->vertex2();
-
-      double r = 0.0;
-		
-      while (r < 0.01 || r > 0.99) {
-	r = myRandom::Rnd();
-      }
-
-      q[0] = vertexData[vertex1->index()][0] + r * (vertexData[vertex2->index()][0] - vertexData[vertex1->index()][0]);
-      q[1] = vertexData[vertex1->index()][1] + r * (vertexData[vertex2->index()][1] - vertexData[vertex1->index()][1]);
-    }
-
-    T->divideCell(&cell, wall1Index, wall2Index, p, q, cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), parameter(2));
-
-    // Change length of new wall between the divided daugther cells.
-    wallData[T->numWall()-1][0] *= parameter(1);
-  }
-
-  int Random::random(int n)
-  {
-    double r = myRandom::Rnd();
-
-    int result = (int) floor(n * r);
-
-    if (result == n) {
-      return result - 1;
-    } else {
-      return result;
-    }
-  }
-
-  MainAxis::MainAxis(std::vector<double> &paraValue, 
-		     std::vector< std::vector<size_t> > &indValue)
-  {
-    //Do some checks on the parameters and variable indeces
-    //////////////////////////////////////////////////////////////////////
-    if (paraValue.size() != 4) {
-      std::cerr << "DivisionMainAxis::DivisionMainAxis() "
+ int Random::flag(Tissue *T, size_t i,
+		  DataMatrix &cellData,
+		  DataMatrix &wallData,
+		  DataMatrix &vertexData,
+		  DataMatrix &cellDerivs,
+		  DataMatrix &wallDerivs,
+		  DataMatrix &vertexDerivs)
+ {
+   if (T->cell(i).calculateVolume(vertexData) > parameter(0)) {
+     std::cerr << "Cell " << i << " marked for division with volume " 
+	       << T->cell(i).volume() << std::endl;
+     return 1;
+   } 
+   return 0;
+ }
+ 
+ void Random::update(Tissue* T, size_t i,
+		     DataMatrix &cellData,
+		     DataMatrix &wallData,
+		     DataMatrix &vertexData,
+		     DataMatrix &cellDerivs,
+		     DataMatrix &wallDerivs,
+		     DataMatrix &vertexDerivs)
+ {
+   Cell cell = T->cell(i);
+   
+   assert(vertexData[0].size() == 2); // Make sure dimension == 2
+   
+   size_t wall1Index = random(cell.numWall());
+   size_t wall2Index;
+   
+   while (true) {
+     wall2Index = random(cell.numWall());
+     
+     if (wall1Index != wall2Index) {
+       break;
+     }
+   }
+   
+   std::vector<double> p(2);
+   
+   // Find first vertex.
+   {
+     Wall *wall = cell.wall(wall1Index);
+     
+     Vertex *vertex1 = wall->vertex1();
+     Vertex *vertex2 = wall->vertex2();
+     
+     double r = 0.0;
+     
+     while (r < 0.01 || r > 0.99) {
+       r = myRandom::Rnd();
+     }
+     
+     p[0] = vertexData[vertex1->index()][0] + r * (vertexData[vertex2->index()][0] - vertexData[vertex1->index()][0]);
+     p[1] = vertexData[vertex1->index()][1] + r * (vertexData[vertex2->index()][1] - vertexData[vertex1->index()][1]);
+   }
+   
+   // Find second vertex.
+   std::vector<double> q(2);
+   
+   {
+     Wall *wall = cell.wall(wall2Index);
+     
+     Vertex *vertex1 = wall->vertex1();
+     Vertex *vertex2 = wall->vertex2();
+     
+     double r = 0.0;
+     
+     while (r < 0.01 || r > 0.99) {
+       r = myRandom::Rnd();
+     }
+     
+     q[0] = vertexData[vertex1->index()][0] + r * (vertexData[vertex2->index()][0] - vertexData[vertex1->index()][0]);
+     q[1] = vertexData[vertex1->index()][1] + r * (vertexData[vertex2->index()][1] - vertexData[vertex1->index()][1]);
+   }
+   
+   T->divideCell(&cell, wall1Index, wall2Index, p, q, cellData, wallData, vertexData, cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), parameter(2));
+   
+   // Change length of new wall between the divided daugther cells.
+   wallData[T->numWall()-1][0] *= parameter(1);
+ }
+ 
+ int Random::random(int n)
+ {
+   double r = myRandom::Rnd();
+   
+   int result = (int) floor(n * r);
+   
+   if (result == n) {
+     return result - 1;
+   } else {
+     return result;
+   }
+ }
+ 
+ MainAxis::MainAxis(std::vector<double> &paraValue, 
+		    std::vector< std::vector<size_t> > &indValue)
+ {
+   //Do some checks on the parameters and variable indeces
+   //////////////////////////////////////////////////////////////////////
+   if (paraValue.size() != 4) {
+     std::cerr << "DivisionMainAxis::DivisionMainAxis() "
 		<< "Four parameters are used V_threshold, Lwall_fraction, Lwall_threshold, and direction flag (0 = perpendicular to main axis, 1 = parallel to main axis)\n";
       exit(EXIT_FAILURE);
     }
@@ -5722,7 +5699,7 @@ namespace Division {
     double v = f(b, sigma, A, B);
     double c;
 
-    if (sign(u) == sign(v)) {
+    if (myMath::sign(u) == myMath::sign(v)) {
       return 0;
     }
 
@@ -5731,7 +5708,7 @@ namespace Division {
       c = a + e;
       double w = f(c, sigma, A, B);
 
-      if (sign(w) != sign(u)) {
+      if (myMath::sign(w) != myMath::sign(u)) {
 	b = c;
 	v = w;
       } else {
@@ -5748,13 +5725,6 @@ namespace Division {
     tmp += B * std::cos(myMath::pi() + sigma - a) / (std::sin(sigma - a) * std::sin(sigma - a));
     return tmp;
   }
-
-  int ShortestPathGiantCells::sign(double a)
-  {
-    return (a >= 0) ? +1 : -1;
-  }
-
-
 
   FlagResetViaLongestWall::
   FlagResetViaLongestWall(std::vector<double> &paraValue, 
