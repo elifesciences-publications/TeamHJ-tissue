@@ -964,14 +964,13 @@ void BaseSolver::print(std::ostream &os)
     of << std::endl;
 
   // Generating the vtk paired wall outputs. 
-    
     std::string pvdFile = "tmp/tissue.pvd";
     std::string cellFile = "tmp/VTK_cells.vtu";
     std::string wallFile = "tmp/VTK_walls.vtu";
     static size_t numCellVar = T_->cell(0).numVariable();
     setTissueVariables(numCellVar);
 
-    if (tCount==numPrint_){
+    if (tCount==numPrint_-1){
     PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,1);
     PVD_file::writeTwoWall(*T_,cellFile,wallFile,tCount);}
   }

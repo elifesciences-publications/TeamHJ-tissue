@@ -552,7 +552,7 @@ void RemovalWholeCellOutsideRadiusEpidermis::update(Tissue *T, size_t i, DataMat
 	DataMatrix &wallDeriv,
 	DataMatrix &vertexDeriv)
 {
-	T->removeEpidermalCells(cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv, parameter(1), false);
+	T->removeEpidermalCells(cellData, wallData, vertexData, cellDeriv, wallDeriv, vertexDeriv, parameter(1), true);
 }
 
 
