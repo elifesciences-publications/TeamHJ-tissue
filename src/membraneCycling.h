@@ -20,9 +20,6 @@
 ///
 namespace MembraneCycling {
 
-
-
-
 ///
 /// @brief A function describing the constant exocytosis and endocytosis of PIN (or another protein) from the cytosol to the cell membrane at a constant rate. 
 ///
@@ -57,11 +54,6 @@ class Constant : public BaseReaction {
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
 };
-
-
-
-
-
 
 
 ///
@@ -509,9 +501,6 @@ class PINFeedbackLinear : public BaseReaction {
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
 };
-
-
-
 
 
 

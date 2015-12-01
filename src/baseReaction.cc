@@ -303,6 +303,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new DegradationTwoGeometric(paraValue,indValue); 
   else if(idValue=="DegradationHill")
     return new DegradationHill(paraValue,indValue); 
+  else if(idValue=="DegradationOneWall")
+    return new DegradationOneWall(paraValue,indValue); 
   //grn.h,grn.cc
   else if(idValue=="Hill")
     return new Hill(paraValue,indValue); 

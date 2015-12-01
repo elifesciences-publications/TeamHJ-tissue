@@ -252,3 +252,84 @@ derivs(Tissue &T,
     cellDerivs[cellI][cIndex] -= cellVolume* k_d * cellData[cellI][xIndex] * cellData[cellI][cIndex]; 
   }
 }
+
+
+DegradationOneWall::
+DegradationOneWall(std::vector<double> &paraValue, 
+	     std::vector< std::vector<size_t> > 
+	     &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=1 ) {
+    std::cerr << "DegradationOneWall::"
+	      << "DegradationOneWall() "
+	      << "Uses one parameter k_cw (constant degradation rate)." << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+    std::cerr << "DegradationOneWall::"
+	      << "DegradationOneWall() "
+	      << "Index for wall variable to be updated (degraded) given." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("DegradationOneWall");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "k_cw";
+  setParameterId( tmp );
+}
+
+void DegradationOneWall::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+
+
+  size_t numWalls = T.numWall();
+  size_t wIndex = variableIndex(0,0);
+  double k_cw = parameter(0);
+  for (size_t k=0; k<numWalls; ++k) {
+    wallDerivs[k][wIndex] -= k_cw * wallData[k][wIndex];
+    //std::cerr << k << "\t" << wIndex << "\t" << wallDerivs[k][wIndex] << "\n";
+  }
+
+
+
+}
+
+
+void DegradationOneWall::
+derivsWithAbs(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &wallData,
+        DataMatrix &vertexData,
+        DataMatrix &cellDerivs,
+        DataMatrix &wallDerivs,
+        DataMatrix &vertexDerivs,
+        DataMatrix &sdydtCell,
+        DataMatrix &sdydtWall,
+        DataMatrix &sdydtVertex ) 
+{
+
+
+  size_t numWalls = T.numWall();
+  size_t wIndex = variableIndex(0,0);
+  double k_cw = parameter(0);
+  for (size_t k=0; k<numWalls; ++k) {
+    double value = k_cw * wallData[k][wIndex];
+    wallDerivs[k][wIndex] -= value;
+    sdydtWall[k][wIndex] += value;
+  }
+
+}

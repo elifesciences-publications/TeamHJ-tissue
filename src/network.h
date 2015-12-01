@@ -83,7 +83,7 @@ class AuxinModelSimple1 : public BaseReaction {
 };
 
 ///
-/// @brief A 'linear polarization from wall signal'-based auxin transport model
+/// @brief A linear polarization from wall signal'-based auxin transport model
 ///
 /// @details A complete auxin transport model based on PIN polarization from a linear
 /// feedback from a wall variable (X). PIN and auxin are updated
