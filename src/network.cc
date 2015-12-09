@@ -167,7 +167,7 @@ AuxinModel1(std::vector<double> &paraValue,
 	      << "dX_i/dt = p8*A_i - p9*X_i" << std::endl << std::endl 
 	      << "dM_i/dt = p10*Theta_L1 - p11*M_i" << std::endl << std::endl 
 	      << "P_in = P_i*X_n/(p_3+Sum_{k,neigh}X_k)" << std::endl << std::endl;
-    std::cerr << "Also geometrical factors are part of the transport terms.";
+    std::cerr << "Also geometrical factors are part of the transport terms (see Documentation).";
     exit(EXIT_FAILURE);
   }
   if( (indValue.size() != 1 && indValue.size() !=2) || indValue[0].size() != 4 ||
@@ -278,6 +278,161 @@ derivs(Tissue &T,
 	
 	if( sum != 0.0 ) {
 	  polRate = cellData[i][pI] * cellData[neighIndex][xI] / sum;
+	}
+	else {
+	  polRate = 1.;
+	}
+	if (numVariableIndexLevel()==2) {//store PIN value for membrane (in wall pair data)
+	  wallData[T.cell(i).wall(n)->index()][variableIndex(1,0)+pinIndexAdd] = polRate;
+	}
+	//pin[i][n+1] = polRate;
+	double wallArea = T.cell(i).wall(n)->lengthFromVertexPosition(vertexData);
+	double cellVol = T.cell(i).calculateVolume(vertexData);
+	double flux =wallArea*(parameter(4)*polRate+parameter(5))*cellData[i][aI];
+	cellDerivs[i][aI] -= flux/cellVol;
+	double cellVolNeigh = T.cell(neighIndex).calculateVolume(vertexData);
+	cellDerivs[neighIndex][aI] += flux/cellVolNeigh;
+      }
+    }
+  }
+}
+
+AuxinModel1S::
+AuxinModel1S(std::vector<double> &paraValue, 
+	    std::vector< std::vector<size_t> > 
+	    &indValue ) {
+  
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=13 ) {
+    std::cerr << "AuxinModel1S::"
+	      << "AuxinModel1S() "
+	      << "Twelve parameters used:" << std::endl << std::endl;
+    std::cerr << "dA_i/dt = p0*M_i + p1 - p2*A_i +p6*Sum_{neigh} (A_n-A_i) +" << std::endl 
+ 	      << "p5*Sum_{neigh} (P_ni*A_n-P_in*A_i)" << std::endl << std::endl 
+	      << "dP_i/dt = p7 - p8*P_i" << std::endl << std::endl 
+	      << "dX_i/dt = p9*A_i - p10*X_i" << std::endl << std::endl 
+	      << "dM_i/dt = p11*Theta_L1 - p12*M_i" << std::endl << std::endl 
+	      << "P_in = P_i*[(1-p3) + p3 X_n]/(p_3+Sum_{k,neigh} [(1-p3) + p3 X_k])"
+	      << std::endl << std::endl;
+    std::cerr << "Also geometrical factors are part of the transport terms (see Documentation).";
+    exit(EXIT_FAILURE);
+  }
+  if( paraValue[3]<0 || paraValue[3]>1) {
+    std::cerr << "AuxinModel1S::"
+	      << "AuxinModel1S() "
+	      << "Parameter p3 (c_p) needs to be in [0,1]." << std::endl << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if( (indValue.size() != 1 && indValue.size() !=2) || indValue[0].size() != 4 ||
+      (indValue.size()==2 &&indValue[1].size() != 1) ) {
+    std::cerr << "AuxinModel1S::"
+	      << "AuxinModel1S() "
+	      << "Four variable indices are used (auxin,pin,X,M) in first level."
+	      << std::endl << "Optionally a wall index is given for saving (pair of) PIN"
+	      << " at membranes." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  //Set the variable values
+  //
+  setId("AuxinModel1S");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "p_auxin(M)";
+  tmp[1] = "p_auxin";
+  tmp[2] = "d_auxin";
+  tmp[3] = "c_p";
+  tmp[4] = "f_pol";
+  tmp[5] = "T_auxin";
+  tmp[6] = "D_auxin";
+  tmp[7] = "p_pin";
+  tmp[8] = "d_pin";
+  tmp[9] = "p_X";
+  tmp[10] = "d_X";
+  tmp[11] = "p_M^(L1)";
+  tmp[12] = "d_M";
+  
+  setParameterId( tmp );
+}
+
+void AuxinModel1S::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);
+  size_t pI = variableIndex(0,1);
+  size_t xI = variableIndex(0,2);
+  size_t mI = variableIndex(0,3);
+  assert( aI<cellData[0].size() &&
+	  pI<cellData[0].size() &&
+	  xI<cellData[0].size() &&
+	  mI<cellData[0].size() );
+  
+  if (numVariableIndexLevel()==2) {
+    assert(variableIndex(1,0)<wallData[0].size());
+  }
+  
+  for( size_t i=0 ; i<numCells ; ++i ) {
+    
+    //Production and degradation
+    cellDerivs[i][aI] += parameter(0)*cellData[i][mI] + parameter(1) - 
+      parameter(2)*cellData[i][aI];
+    
+    cellDerivs[i][pI] += parameter(7) - parameter(8)*cellData[i][pI];
+    
+    cellDerivs[i][xI] += parameter(9)*cellData[i][aI] 
+      - parameter(10)*cellData[i][xI];
+    
+    cellDerivs[i][mI] -= parameter(12)*cellData[i][mI];
+    if( T.cell(i).isNeighbor(T.background()) )
+      cellDerivs[i][mI] += parameter(11);
+    
+    //Transport
+    size_t numWalls=T.cell(i).numWall();
+    //Polarization coefficient normalization constant
+    double sum=0.0;
+    size_t numActualWalls=0;
+    //pin[i].resize( numWalls+1 );
+    for( size_t n=0 ; n<numWalls ; ++n ) {
+      if( T.cell(i).wall(n)->cell1() != T.background() &&
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	numActualWalls++;
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  sum += (1-parameter(3)) + parameter(3)*cellData[ T.cell(i).wall(n)->cell2()->index() ][ xI ];
+	else
+	  sum += (1-parameter(3)) + parameter(3)*cellData[ T.cell(i).wall(n)->cell1()->index() ][ xI ];
+      }
+    }
+    //sum /= numActualWalls;//For adjusting for different num neigh
+    sum += parameter(4);
+    
+    for( size_t n=0 ; n<numWalls ; ++n ) {
+      //if( !T.cell(i).isNeighbor(T.background()) ) { 
+      if( T.cell(i).wall(n)->cell1() != T.background() &&
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	size_t neighIndex;
+	size_t pinIndexAdd=0; 
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  neighIndex = T.cell(i).wall(n)->cell2()->index();				
+	else {
+	  neighIndex = T.cell(i).wall(n)->cell1()->index();				
+	  pinIndexAdd=1;
+	}
+	double polRate=0.0;
+	
+	if( sum != 0.0 ) {
+	  polRate = cellData[i][pI] * ( (1-parameter(3)) + parameter(3)*cellData[neighIndex][xI] ) / sum;
 	}
 	else {
 	  polRate = 1.;

@@ -340,7 +340,9 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if(idValue=="AuxinModelSimple1")
     return new AuxinModelSimple1(paraValue,indValue); 
   else if(idValue=="AuxinModel1")
-    return new AuxinModel1(paraValue,indValue); 
+    return new AuxinModel1S(paraValue,indValue); 
+  else if(idValue=="AuxinModel1")
+    return new AuxinModel1S(paraValue,indValue); 
   else if(idValue=="AuxinModelStress")
     return new AuxinModelStress(paraValue,indValue); 
   else if(idValue=="AuxinModelSimpleStress")

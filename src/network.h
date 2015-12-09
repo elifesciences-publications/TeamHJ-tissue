@@ -96,7 +96,7 @@ class AuxinModelSimple1 : public BaseReaction {
 ///
 /// and for transport reactions the contribution to a cell is
 ///
-/// @f[ \frac{1}{V_i}\frac{dA_i}{dt} = p_4 \sum_{n}^{neigh} a_{in}(P_{ni} A_n - P_{in} A_i) + p_5 \sum_{n}^{neigh} a_{in}(A_n-A_i) @f] 
+/// @f[ \frac{dA_i}{dt} = \frac{1}{V_i} [p_4 \sum_{n}^{neigh} a_{in}(P_{ni} A_n - P_{in} A_i) + p_5 \sum_{n}^{neigh} a_{in}(A_n-A_i) ]@f] 
 ///  
 /// @f[ \frac{dP_i}{dt} = p_6 - p_7 P_i @f] 
 ///  
@@ -110,13 +110,13 @@ class AuxinModelSimple1 : public BaseReaction {
 ///
 /// In a model file the reaction is defined as:
 /// @verbatim
-/// AuxinModelSimple1 12 1 4
+/// AuxinModel1 12 1 4
 /// p_0 ... p_11
 /// A_index P_index X_index M_index
 /// @endverbatim
 /// or alternatively
 /// @verbatim
-/// AuxinModelSimple1 12 2 4 1
+/// AuxinModel1 12 2 4 1
 /// p_0 ... p_11
 /// A_index P_index X_index M_index
 /// P_wall (save index pair)
@@ -129,6 +129,65 @@ class AuxinModel1 : public BaseReaction {
  public:
   
   AuxinModel1(std::vector<double> &paraValue, 
+		    std::vector< std::vector<size_t> > 
+		    &indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+///
+/// @brief A linear polarization cell-based auxin transport model including
+/// geometrical factors for auxin transport 
+///
+/// A complete pattern generating auxin model based on only cellular
+/// compartments, where geometrical factors are included for auxin transport (i.e. cell volumes and wall areas).
+/// The four molecules A(uxin), P(IN), X(auxin induced
+/// molecule), and M(epidermally [boundary] expressed molecule)
+/// are updated according to:
+///  
+/// @f[ \frac{dA_i}{dt} = p_0 M_i + p_1 - p_2 A_i @f]
+///
+/// and for transport reactions the contribution to a cell is
+///
+/// @f[ \frac{dA_i}{dt} = \frac{1}{V_i} [p_5 \sum_{n}^{neigh} a_{in}(P_{ni} A_n - P_{in} A_i) + p_6 \sum_{n}^{neigh} a_{in}(A_n-A_i)] @f] 
+///  
+/// @f[ \frac{dP_i}{dt} = p_7 - p_8 P_i @f] 
+///  
+/// @f[ \frac{dX_i}{dt} = p_9 A_i - p_{10} X_i @f]
+///  
+/// @f[ \frac{dM_i}{dt} = p_{11} \theta_{L1} - p_{12} M_i @f]
+///  
+/// @f[ P_{in} = \frac{P_i [(1-p_3) + p_3 X_n]}{(p_4 + \sum_{k}^{neigh} [(1-p_3) + p_3 X_k])} @f]
+///
+/// where @f$a_{ij}@f$ is the area between the neighboring cells and @f$V_i@f$ is the cell volume.
+///
+/// In a model file the reaction is defined as:
+/// @verbatim
+/// AuxinModel1S 12 1 4
+/// p_0 ... p_11
+/// A_index P_index X_index M_index
+/// @endverbatim
+/// or alternatively
+/// @verbatim
+/// AuxinModel1S 12 2 4 1
+/// p_0 ... p_11
+/// A_index P_index X_index M_index
+/// P_wall (save index pair)
+/// @endverbatim
+///
+/// @see AuxinModel1 - same model without the symmetric PIN1-membrane term
+///
+class AuxinModel1S : public BaseReaction {
+  
+ public:
+  
+  AuxinModel1S(std::vector<double> &paraValue, 
 		    std::vector< std::vector<size_t> > 
 		    &indValue );
   
