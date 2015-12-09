@@ -443,7 +443,7 @@ derivs(Tissue &T,
 	//pin[i][n+1] = polRate;
 	double wallArea = T.cell(i).wall(n)->lengthFromVertexPosition(vertexData);
 	double cellVol = T.cell(i).calculateVolume(vertexData);
-	double flux =wallArea*(parameter(4)*polRate+parameter(5))*cellData[i][aI];
+	double flux =wallArea*(parameter(5)*polRate+parameter(6))*cellData[i][aI];
 	cellDerivs[i][aI] -= flux/cellVol;
 	double cellVolNeigh = T.cell(neighIndex).calculateVolume(vertexData);
 	cellDerivs[neighIndex][aI] += flux/cellVolNeigh;
