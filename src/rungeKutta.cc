@@ -49,6 +49,8 @@ void RK5Adaptive::simulate(size_t verbose)
   //
   // Check that sizes of permanent data is ok
   //
+
+
   if( cellData_.size() && cellData_.size() != cellDerivs_.size() ) {
 		std::cerr << "RK5Adaptive::simulate()"
 							<< " cellDerivs_ resized." << std::endl;
@@ -84,6 +86,7 @@ void RK5Adaptive::simulate(size_t verbose)
 	      << " vertexDerivs_ resized after reaction initiation." << std::endl;
     vertexDerivs_.resize(vertexData_.size(),vertexDerivs_[0]);
   }
+
   T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, 
 			wallDerivs_, vertexDerivs_);
   

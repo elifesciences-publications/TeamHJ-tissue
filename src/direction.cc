@@ -93,8 +93,10 @@ void Direction::initiate(Tissue &T,
 			 DataMatrix &wallDerivs,
 			 DataMatrix &vertexDerivs )
 {
-  directionUpdate()->initiate(T,cellData,wallData,vertexData,cellDerivs,
-			      wallDerivs,vertexDerivs);
+
+  if( directionUpdate() != 0) // nullpointer = no directions have been defined?
+    directionUpdate()->initiate(T,cellData,wallData,vertexData,cellDerivs,
+				wallDerivs,vertexDerivs);
 }
 
 //!Calls directionUpdate for update of the direction (during simulation)
@@ -106,8 +108,9 @@ void Direction::update(Tissue &T,double step,
 		       DataMatrix &wallDerivs,
 		       DataMatrix &vertexDerivs )
 {
-  directionUpdate()->update(T,step,cellData,wallData,vertexData,cellDerivs,
-			    wallDerivs,vertexDerivs);
+  if( directionUpdate() != 0)  // nullpointer = no directions have been defined?
+    directionUpdate()->update(T,step,cellData,wallData,vertexData,cellDerivs,
+			      wallDerivs,vertexDerivs);
 }
 
 //!Calls directionDivision for direction division rule
@@ -119,6 +122,7 @@ void Direction::divide(Tissue &T,size_t cellI,
 		       DataMatrix &wallDerivs,
 											 DataMatrix &vertexDerivs ) 
 {
-	directionDivision()->update(T,cellI,cellData,wallData,vertexData,
+  if( directionUpdate() != 0) // nullpointer = no directions have been defined?
+    directionDivision()->update(T,cellI,cellData,wallData,vertexData,
 				    cellDerivs,wallDerivs,vertexDerivs);
 }
