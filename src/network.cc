@@ -307,7 +307,7 @@ AuxinModel1S(std::vector<double> &paraValue,
   if( paraValue.size()!=13 ) {
     std::cerr << "AuxinModel1S::"
 	      << "AuxinModel1S() "
-	      << "Twelve parameters used:" << std::endl << std::endl;
+	      << "Thirteen parameters used:" << std::endl << std::endl;
     std::cerr << "dA_i/dt = p0*M_i + p1 - p2*A_i +p6*Sum_{neigh} (A_n-A_i) +" << std::endl 
  	      << "p5*Sum_{neigh} (P_ni*A_n-P_in*A_i)" << std::endl << std::endl 
 	      << "dP_i/dt = p7 - p8*P_i" << std::endl << std::endl 

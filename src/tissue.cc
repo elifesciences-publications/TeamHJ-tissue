@@ -437,25 +437,27 @@ void Tissue::readInit(std::istream &IN,int verbose) {
 
 void Tissue::readInit( const char *initFile, int verbose ) {
 
-  std::ifstream IN(initFile);
+  std::istream *IN = myFiles::openFile(initFile);
+  //std::ifstream IN(initFile);
   if( !IN ) {
     std::cerr << "Tissue::readInit(char*) - "
 	      << "Cannot open file " << initFile << std::endl; exit(-1);}
   if( verbose )
     std::cerr << "Tissue::readInit(char*) - calling readInit(IN)" << std::endl;
-  readInit(IN,verbose);
+  readInit((std::istream &) *IN,verbose);
 }
 
 void Tissue::readInit( std::string initFile, int verbose ) {
 
   const char* iFile = initFile.c_str();
-  std::ifstream IN(iFile);
+  std::istream *IN = myFiles::openFile(iFile);
+  //std::ifstream IN(iFile);
   if( !IN ) {
     std::cerr << "Tissue::readInit(string) - "
 	      << "Cannot open file " << initFile << std::endl; exit(-1);}
   if( verbose )
     std::cerr << "Tissue::readInit(string) - calling readInit(IN)" << std::endl;
-  readInit(IN,verbose);
+  readInit((std::istream &) *IN,verbose);
 }
 
 void Tissue::readInitCenterTri(const char *initFile,int verbose) {
