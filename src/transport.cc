@@ -239,6 +239,85 @@ derivs(Tissue &T,
   }
 }
 
+Diffusion2d::
+Diffusion2d(std::vector<double> &paraValue, 
+            std::vector< std::vector<size_t> > 
+            &indValue ) {
+
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size() !=1 ) {
+    std::cerr << "Diffusion2d::"
+	      << "Diffusion2d() "
+	      << "One parameter (diffusion constant) used: p_0" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 1) {
+    std::cerr << "Diffusion2d::"
+	      << "Diffusion2d() "
+	      << "One level of one variable indices used" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  //Set the variable values
+  //
+  setId("Diffusion2d");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "p_0";
+
+  setParameterId( tmp );
+}
+
+void Diffusion2d::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  size_t numCells = T.numCell();
+  size_t aI = variableIndex(0,0);
+  size_t dimension=vertexData[0].size();
+  assert( aI<cellData[0].size());
+  
+  for( size_t i=0 ; i<numCells ; ++i ) {
+    
+    size_t numWalls=T.cell(i).numWall();
+    
+    for( size_t n=0 ; n<numWalls ; ++n ) {
+      if( T.cell(i).wall(n)->cell1() != T.background() &&
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	size_t neighIndex;
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  neighIndex = T.cell(i).wall(n)->cell2()->index();				
+	else {
+	  neighIndex = T.cell(i).wall(n)->cell1()->index();				
+	}
+        
+        size_t v1=T.cell(i).wall(n)->vertex1()-> index();
+        size_t v2=T.cell(i).wall(n)->vertex2()-> index();
+        double contactLength=0;
+        for(size_t d=0;d<dimension; ++d)
+          contactLength+=(vertexData[v1][d]-vertexData[v2][d])*(vertexData[v1][d]-vertexData[v2][d]);
+        contactLength=std::sqrt(contactLength);
+	double cellVolume = T.cell(i).calculateVolume(vertexData);
+        cellDerivs[i][aI] -= 
+          parameter(0)*contactLength*(cellData[i][aI] - cellData[neighIndex][aI])/cellVolume;
+	cellVolume = T.cell(neighIndex).calculateVolume(vertexData);
+        cellDerivs[neighIndex][aI] += 
+          parameter(0)*contactLength*(cellData[i][aI] - cellData[neighIndex][aI])/cellVolume;
+      }
+    }
+  }
+}
+
 
 
  ActiveTransportCellEfflux::
