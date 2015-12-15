@@ -61,7 +61,7 @@ class Constant : public BaseReaction {
 
 ///
 /// @brief A function describing the exocytosis and endocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
-/// dependent on the amount of auxin in the wall compartment.
+/// dependent on the amount of auxin (or another molecule) in the wall compartment, being the effect of auxin a promoter of the trafficking. 
 ///
 /// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis rate, p1 endocytosis rate.
 /// PIN  molecules are updated according to:
@@ -95,7 +95,41 @@ class LocalWallFeedbackNonLinear : public BaseReaction {
 };
 
 
+///
+/// @brief A function describing the exocytosis and endocytosis of PIN (or another protein) from the cell membrane to the cytosol at a  rate
+/// dependent on the amount of auxin (or another molecule) in the wall compartment, which here has an inhibitory effect. 
+///
+/// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis rate, p1 endocytosis rate.
+/// PIN  molecules are updated according to:
+/// @f[ \frac{dP_i}{dt} = \sum_{j}- p_0 P_i \frac{1}{X_{ij}^{p_3}+{p_2}^{p_3}}+ p_1 P_{ij} \frac{1}{X_{ij}^{p_3}+{p_2}^{p_3}} @f] 
+///  
+/// @f[ \frac{dP_{ij}}{dt} =  p_0 P_i \frac{1}{X_{ij}^{p_3}+{p_2}^{p_3}}- p_1 P_{ij} \frac{1}{X_{ij}^{p_3}+{p_2}^{p_3}} @f]  @f]
+///
+/// In the model file the reaction is given by:
+/// @verbatim
+/// MembraneCyclingAll::LocalWallFeedbackNonLinearInhibition 4 2 1 2
+/// p_0 ..p_2 p3
+/// ci_PIN 
+/// wi_X  Wi_PIN 
+/// @endverbatim
+///
 
+class LocalWallFeedbackNonLinearInhibition : public BaseReaction {
+  
+ public:
+  
+ LocalWallFeedbackNonLinearInhibition(std::vector<double> &paraValue, 
+		std::vector< std::vector<size_t> > 
+		&indValue );
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
 
 }
 

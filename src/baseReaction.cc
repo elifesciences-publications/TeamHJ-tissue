@@ -551,7 +551,9 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new MembraneCyclingAll::Constant(paraValue, indValue);
   else if (idValue=="MembraneCyclingAll::LocalWallFeedbackNonLinear")
     return new MembraneCyclingAll::LocalWallFeedbackNonLinear(paraValue, indValue);
-
+  else if (idValue=="MembraneCyclingAll::LocalWallFeedbackNonLinearInhibition")
+    return new MembraneCyclingAll::LocalWallFeedbackNonLinearInhibition(paraValue, indValue);
+ 
   //massAction.h
   else if (idValue=="MassAction::General")
     return new MassAction::General(paraValue, indValue);
