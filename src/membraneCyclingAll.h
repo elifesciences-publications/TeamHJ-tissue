@@ -101,9 +101,9 @@ class LocalWallFeedbackNonLinear : public BaseReaction {
 ///
 /// It uses two compartments for each wall and a single for the cells. p0 gives exocytosis rate, p1 endocytosis rate.
 /// PIN  molecules are updated according to:
-/// @f[ \frac{dP_i}{dt} = \sum_{j}- p_0 P_i \frac{1}{X_{ij}^{p_3}+{p_2}^{p_3}}+ p_1 P_{ij} \frac{1}{X_{ij}^{p_3}+{p_2}^{p_3}} @f] 
+/// @f[ \frac{dP_i}{dt} = \sum_{j}- p_0 P_i \frac{1}{1+X_{ij}^{p_3}/{p_2}^{p_3}}+ p_1 P_{ij} \frac{1}{1+X_{ij}^{p_3}/{p_2}^{p_3}} @f] 
 ///  
-/// @f[ \frac{dP_{ij}}{dt} =  p_0 P_i \frac{1}{X_{ij}^{p_3}+{p_2}^{p_3}}- p_1 P_{ij} \frac{1}{X_{ij}^{p_3}+{p_2}^{p_3}} @f]  @f]
+/// @f[ \frac{dP_{ij}}{dt} =  p_0 P_i \frac{1}{1+X_{ij}^{p_3}/{p_2}^{p_3}}- p_1 P_{ij} \frac{1}{1+X_{ij}^{p_3}/{p_2}^{p_3}} @f]  @f]
 ///
 /// In the model file the reaction is given by:
 /// @verbatim

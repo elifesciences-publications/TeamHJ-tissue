@@ -249,7 +249,7 @@ derivs(Tissue &T,
       if( T.cell(i).wall(k)->cell1()->index() == i ) {
   //PIN cycling
   double fac = parameter(0)*cellData[i][pI]/(std::pow(wallData[j][xwI],parameter(3))+std::pow(parameter(2),parameter(3)))
-                    -parameter(1)*wallData[j][pwI]/(std::pow(wallData[j][xwI],parameter(3))+std::pow(parameter(2),parameter(3))) ;
+                    -parameter(1)*wallData[j][pwI]/(1.0+std::pow(wallData[j][xwI],parameter(3))/std::pow(parameter(2),parameter(3))) ;
   wallDerivs[j][pwI] += fac;
   cellDerivs[i][pI] -= fac;
       }
@@ -257,7 +257,7 @@ derivs(Tissue &T,
       else if( T.cell(i).wall(k)->cell2()->index() == i ) {
   //PIN cycling
   double fac = parameter(0)*cellData[i][pI]/(std::pow(wallData[j][xwI+1],parameter(3))+std::pow(parameter(2),parameter(3)))
-                    -parameter(1)*wallData[j][pwI+1]/(std::pow(wallData[j][xwI+1],parameter(3))+std::pow(parameter(2),parameter(3)));
+                    -parameter(1)*wallData[j][pwI+1]/(1.0+std::pow(wallData[j][xwI],parameter(3))/std::pow(parameter(2),parameter(3)));
   wallDerivs[j][pwI+1] += fac;
   cellDerivs[i][pI] -= fac;
       }
