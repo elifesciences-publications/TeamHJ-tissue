@@ -65,6 +65,11 @@ $ORGANISM/bin/simulator example.model example.init example.rk5 > example.data
 
 which generates the system output in the file example.data.
 
+\section Dependencies
+
+The tissue code utilises the open source BOOST library
+(http://www.boost.org).
+
 \section Compilation
 
 The code can be compiled by using \e make. A \e Makefile file can be
