@@ -464,8 +464,7 @@ derivs(Tissue &T,
   
 {
   for (size_t cellI=0; cellI<T.numCell(); ++cellI) { 
-
-  
+    
     Cell* cell1 = &(T.cell(cellI));
     size_t numWalls = cell1->numWall();
     
@@ -480,21 +479,14 @@ derivs(Tissue &T,
     // Neighbor contributions (direct)
     for (size_t k=0; k<numWalls; ++k){
       Cell* cell2 = cell1->cellNeighbor(k);
-      if(cell2!=T.background()){
-        
+      if(cell2!=T.background()){	
         u -= parameter(3)
-          *cellData[
-                    cell2->index()                
-                    ][variableIndex(2,0)];
+          *cellData[cell2->index()][variableIndex(2,0)];
       }
-    } 
-    
+    }     
     // Apply sigmoid and tau parameter
     cellDerivs[cellI][variableIndex(0,0)] += sigmoid(u)/parameter(1);
-    
-    
   }
- 
 }
 
 

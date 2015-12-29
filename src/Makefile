@@ -19,10 +19,17 @@
 SHELL = /bin/sh
 #Compilers and flags
 CXX = g++
+CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi -std=c++11
+LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi -std=c++11
+#CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic   -std=c++11 -stdlib=libc++ -I/sw/include/
+#LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic 
 #CXXFLAGS = -g -Wall -pedantic -ansi
 #LDFLAGS = -g -Wall -pedantic -ansi 
-CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -std=c++11 -I/sw/include/ -I/opt/local/include/
-LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic
+#
+# uncomment two rows below for MAC OS X
+#
+#CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -std=c++11 -I/sw/include/ -I/opt/local/include/
+#LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic
 
 #Sourcefiles etc.
 SIM_SRC = simulator/simulator.cc
