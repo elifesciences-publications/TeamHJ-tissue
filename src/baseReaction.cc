@@ -333,11 +333,10 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if(idValue=="ActiveTransportCellEffluxMM")
     return new ActiveTransportCellEffluxMM(paraValue,indValue);
   else if(idValue=="ActiveTransportWall")
-    return new ActiveTransportWall(paraValue,indValue);
-
+    return new ActiveTransportWall(paraValue?.nxcx bb  ],indValue);
 
   //network.h,network.cc
-  else if(idValue=="AuxinModelSimple1")
+ else if(idValue=="AuxinModelSimple1")
     return new AuxinModelSimple1(paraValue,indValue); 
   else if(idValue=="AuxinModel1")
     return new AuxinModel1(paraValue,indValue); 
