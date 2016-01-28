@@ -286,6 +286,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new CreationSpatialRing(paraValue,indValue); 
   else if(idValue=="CreationSpatialCoordinate")
     return new CreationSpatialCoordinate(paraValue,indValue); 
+  else if(idValue=="CreationSpatialPlane")
+    return new CreationSpatialPlane(paraValue,indValue); 
   else if(idValue=="CreationFromList")
     return new CreationFromList(paraValue,indValue); 
   else if(idValue=="CreationOneGeometric")

@@ -129,6 +129,60 @@ class DegradationTwo : public BaseReaction {
 };
 
 ///
+/// @brief In each cell a molecule is degraded with a rate dependent on its own conc and N other variables
+///
+/// The variable update is for each cell given by 
+///
+/// @f[ \frac{dc}{dt} = - k_c X_0 ... X_n c@f]
+///
+/// where @f$ k_c @f$ is a constant parameter, @f$ c @f$ is the (molecular) cell variable/concentration
+/// to be updated and the @f$ X_i @f$ are @f$ N=(n+1) @f$ variables on which the degradation rate also depends on
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// degradationN 1 2 1 N
+/// k_c
+/// c_index
+/// X_0 .. X_n
+/// @endverbatim
+///
+class DegradationN : public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  DegradationN(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+};
+
+
+///
 /// @brief Implements a degradation proportional to its own concentration and
 /// a Hill function of another alternatively a Hill function of its own concentration.
 ///

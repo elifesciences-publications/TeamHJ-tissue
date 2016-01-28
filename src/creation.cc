@@ -457,6 +457,87 @@ derivs(Tissue &T,
   }
 }
 
+CreationSpatialPlane::
+CreationSpatialPlane(std::vector<double> &paraValue, 
+	     std::vector< std::vector<size_t> > 
+	     &indValue ) 
+{  
+
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=3 ) {
+    std::cerr << "CreationSpatialPlane::CreationSpatialPlane() "
+	      << "Uses four parameters V_max X(K_Hill) and X_sign\n";
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 1 || indValue[1].size() != 1 ) {
+    std::cerr << "CreationSpatialPlane::"
+	      << "CreationSpatialPlane() "
+	      << "Two levels of indices used: index for variable to be updated given as first index, index for the spatial coordinate to use given as the second index" << std::endl;
+    exit(0);
+  }
+  // Sign should be -/+1
+  if( paraValue[2] != -1 && paraValue[2] != 1 ) {
+    std::cerr << "CreationSpatialCoordinate::CreationSpatialCoordinate() "
+	      << "X_sign should be +/-1 to set production inside/outside X"
+	      << std::endl;
+    exit(0);
+  }
+	
+  // Set the variable values
+  setId("creationSpatialCoordinate");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "V_max";
+  tmp[1] = "X (K_Hill)";
+  tmp[2] = "n_Hill";
+  setParameterId( tmp );
+}
+
+void CreationSpatialPlane::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  //Do the update for each cell
+  size_t numCells = T.numCell();
+
+  size_t cIndex = variableIndex(0,0);
+  size_t xIndex = variableIndex(1,0);
+
+  double X = parameter(1);
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {
+
+    //Calculate cell center from vertices positions
+    std::vector<double> cellCenter;
+    cellCenter = T.cell(cellI).positionFromVertex(vertexData);
+    assert( cellCenter.size() == vertexData[0].size() );
+	
+
+    double x_coord = cellCenter[xIndex];
+    
+    double deriv_add=0;
+
+    if (parameter(2)<0.0)
+      deriv_add = ((x_coord <= X) ? parameter(0) : 0);
+    else
+      deriv_add = ((x_coord >= X) ? parameter(0) : 0);
+
+    cellDerivs[cellI][cIndex] += deriv_add;
+
+
+  }
+}
+
+
 
 
 

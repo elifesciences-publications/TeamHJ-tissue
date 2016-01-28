@@ -144,6 +144,66 @@ derivs(Tissue &T,
   }
 }
 
+DegradationN::
+DegradationN(std::vector<double> &paraValue, 
+	       std::vector< std::vector<size_t> > 
+	       &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=1 ) {
+    std::cerr << "DegradationN::"
+	      << "DegradationN() "
+	      << "Uses one parameter k_d (degradation rate)." << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 1) {
+    std::cerr << "DegradationN::"
+	      << "DegradationN() "
+	      << "Index for variable to be updated given in first row and "
+	      << "indices for degradation-dependent variables in 2nd." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("DegradationN");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "k_d";
+  setParameterId( tmp );
+}
+
+void DegradationN::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  //Do the update for each cell
+  size_t numCells = T.numCell();
+
+  size_t cIndex = variableIndex(0,0);
+  double k_d = parameter(0);
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {      
+
+    double product = k_d;
+    for( size_t i=0 ; i<numVariableIndex(1) ; i++ ) { // for each rate-limiting variable
+      product *= cellData[cellI][variableIndex(1,i)]; // multiply rate with its concentration
+    }
+
+    cellDerivs[cellI][cIndex] -= product*cellData[cellI][cIndex]; 
+  }
+}
+
+
 DegradationHill::DegradationHill(std::vector<double> &paraValue, 
 				 std::vector< std::vector<size_t> > 
 				 &indValue ) 

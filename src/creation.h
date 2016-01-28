@@ -350,6 +350,67 @@ class CreationSpatialCoordinate: public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
+
+///
+/// @brief In each cell a molecule is produced/created if it is on one side of
+/// a plane
+///
+/// The variable update is for each cell given by ( SIGN= -1, production for
+/// lower values of the coordinate)
+///
+/// @f[ \frac{dc}{dt} = V if x <= X, otherwise 0 @f]
+///
+/// or (SIGN = +1, production at larger coordinate values),
+///
+/// @f[ \frac{dc}{dt} = V if x >= X, otherwise 0 @f]
+///
+/// where @f$ V, X,SIGN@f$ are constant parameters, @f$ c @f$ is the variable to
+/// be updated and @f$ x @f$ is the cell coordinate used to set the rate-dependent
+/// production.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// creationSpatialPlane 4 2 1 1
+/// V X SIGN
+/// c_index
+/// x_index
+/// @endverbatim
+///
+class CreationSpatialPlane: public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  CreationSpatialPlane(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+
 ///
 /// @brief In the cells with given indices a molecule is produced/created with constant rate.
 ///
