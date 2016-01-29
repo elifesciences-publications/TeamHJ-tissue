@@ -243,6 +243,75 @@ class DegradationHill : public BaseReaction {
 };
 
 
+///
+/// @brief Implements a degradation proportional to its own concentration and
+/// a Hill function that depends on the concentrations of N other molecules.
+///
+/// @details This reaction is a Michaelis-Menten inspired formalism for degradation with
+/// where the equation is given by
+///
+/// @f[ \frac{dy_{ij}}{dt} = - p0 \frac{y_{ik}^{p_2}}{p_1^{p_2}+y_{ik}^{p_2}}...
+/// \frac{p_{1'}^{p_{2'}}}{p_{1'}^{p_{2'}}+y_{ik'}^{p_{2'}}} y_{ij} @f] 
+///
+/// where p_0 is the degradation rate (@f$d@f$), and @f$p_1@f$ is the Hill
+/// constant (@f$K_{half}@f$), and @f$p_2@f$ is the Hill coefficient (n). The
+/// k index is given in the first level of varIndex and corresponds to the
+/// activators (increasing the degradation rate), and the k' in the second level
+/// which corresponds to the repressors (decreasing the degradation rate). In both
+/// layers each index corresponds to a pair of parameters
+/// (K,n) that are preceded by the @f$d@f$ parameter.
+/// Note that the degradation rate is also once multiplied with the concentration of
+/// the affected variable (see equation above).
+///
+/// In a model file the reaction is, with @f$N@f$ being the number of activators,
+/// @f$M@f$ being the number of repressors, and @f$n_p = 1+2(N+M)@f$ is the number of parameters
+///
+/// @verbatim
+/// degradationHillN n_p 2 N M
+/// d                         # degradation rate
+/// K_A0 n_A0 .. K_AN n_AN    # K_half and n parameters for the activators
+/// K_R0 n_R0 .. K_RM n_RM    # K_half and n parameters for the repressors
+/// c                         # index of degraded molecule
+/// k_0 .. k_N                # indices of activators
+/// k'_0 .. k'_M              # indices of repressors
+/// @endverbatim
+///
+class DegradationHillN : public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  DegradationHillN(std::vector<double> &paraValue, 
+		  std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+};
+
+
+
 
 
 ///

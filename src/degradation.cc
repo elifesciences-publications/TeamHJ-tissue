@@ -256,6 +256,93 @@ derivs(Tissue &T,
   }
 }
 
+DegradationHillN::DegradationHillN(std::vector<double> &paraValue, 
+				 std::vector< std::vector<size_t> > 
+				 &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+
+
+  if( indValue.size() != 3 || indValue[0].size() != 1 ) {
+    std::cerr << "DegradationHillN::DegradationHillN() "
+	      << "Three levels of variable indices are used, "
+	      << "the first for the updated molecule, 2nd for activators and 3rd for repressors"
+	      << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if( 1 + 2*(indValue[1].size()+indValue[2].size()) != paraValue.size() ) {
+    std::cerr << "Hill::Hill() "
+	      << "Number of parameters does not agree with number of "
+	      << "activators/repressors.\n"
+	      << indValue[1].size() << " activators, " 
+	      << indValue[2].size() << " repressors, and "
+	      << paraValue.size() << " parameters\n"
+ 	      << "One plus pairs of parameters (V_max,K_half1,n_Hill1,"
+ 	      << "K2,n2,...) must be given.\n";
+    exit(EXIT_FAILURE);
+  }
+  
+  // Set the variable values
+  setId("DegradationHill");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "d_max";
+  size_t count=1;
+  for (size_t i=0; i<indValue[1].size(); ++i) {
+    tmp[count++] = "K_A";
+    tmp[count++] = "n_A";
+  }
+  for (size_t i=0; i<indValue[2].size(); ++i) {
+    tmp[count++] = "K_R";
+    tmp[count++] = "n_R";
+  }
+  setParameterId( tmp );
+}
+
+void DegradationHillN::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs )
+{  
+
+  // Do the update for each cell
+  size_t numCells = T.numCell();
+  size_t cIndex = variableIndex(0,0);
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {      
+  //
+    double contribution=parameter(0);
+    size_t parameterIndex=1;
+    // Activator contributions
+    for( size_t i=0 ; i<numVariableIndex(1) ; i++ ) {
+      double c = std::pow(cellData[cellI][variableIndex(1,i)], 
+      	   parameter(parameterIndex+1));
+      contribution *= c
+      / ( std::pow(parameter(parameterIndex),parameter(parameterIndex+1)) + c );
+      parameterIndex+=2;
+    }
+    // Repressor contributions
+   for( size_t i=0 ; i<numVariableIndex(2) ; i++ ) {
+     double c = std::pow(parameter(parameterIndex),parameter(parameterIndex+1));
+     contribution *= c /
+       ( c + std::pow(cellData[cellI][variableIndex(2,i)],
+		      parameter(parameterIndex+1)) );
+     parameterIndex+=2;
+   }   
+   cellDerivs[cellI][cIndex] -= contribution*cellData[cellI][cIndex]; 
+  }
+}
+
+
 
 
 DegradationTwoGeometric::

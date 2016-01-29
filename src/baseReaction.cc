@@ -301,10 +301,14 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new DegradationOne(paraValue,indValue); 
   else if(idValue=="DegradationTwo")
     return new DegradationTwo(paraValue,indValue); 
+  else if(idValue=="DegradationN")
+    return new DegradationN(paraValue,indValue); 
   else if(idValue=="DegradationTwoGeometric")
     return new DegradationTwoGeometric(paraValue,indValue); 
   else if(idValue=="DegradationHill")
     return new DegradationHill(paraValue,indValue); 
+  else if(idValue=="DegradationHillN")
+    return new DegradationHillN(paraValue,indValue); 
   else if(idValue=="DegradationOneWall")
     return new DegradationOneWall(paraValue,indValue); 
   //grn.h,grn.cc
