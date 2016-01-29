@@ -245,9 +245,9 @@ class DegradationHill : public BaseReaction {
 
 ///
 /// @brief Implements a degradation proportional to its own concentration and
-/// a Hill function that depends on the concentrations of N other molecules.
+/// a Hill function that depends on the concentration of N other molecules.
 ///
-/// @details This reaction is a Michaelis-Menten inspired formalism for degradation with
+/// @details This reaction is a Michaelis-Menten inspired formalism for degradation
 /// where the equation is given by
 ///
 /// @f[ \frac{dy_{ij}}{dt} = - p0 \frac{y_{ik}^{p_2}}{p_1^{p_2}+y_{ik}^{p_2}}...
@@ -267,7 +267,7 @@ class DegradationHill : public BaseReaction {
 /// @f$M@f$ being the number of repressors, and @f$n_p = 1+2(N+M)@f$ is the number of parameters
 ///
 /// @verbatim
-/// degradationHillN n_p 2 N M
+/// degradationHillN n_p 3 1 N M
 /// d                         # degradation rate
 /// K_A0 n_A0 .. K_AN n_AN    # K_half and n parameters for the activators
 /// K_R0 n_R0 .. K_RM n_RM    # K_half and n parameters for the repressors
