@@ -28,8 +28,8 @@ LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi -std=c++11
 #
 # uncomment two rows below for MAC OS X
 #
-#CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -std=c++11 -I/sw/include/ -I/opt/local/include/
-#LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic
+CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -std=c++11 -I/sw/include/ -I/opt/local/include/
+LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic
 
 #Sourcefiles etc.
 SIM_SRC = simulator/simulator.cc
