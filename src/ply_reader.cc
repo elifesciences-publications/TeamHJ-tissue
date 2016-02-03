@@ -66,10 +66,11 @@ void PLY_reader::read ( PLY_file const&f, Tissue &t )
 //----------------------------------------------------------------------------
 C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > PLY_reader::element_definition_callback ( const std::string& element_name, std::size_t count )
 {
-//     std::cout <<"parsing element: " << element_name << "\n";
+     std::cerr <<"parsing element: " << element_name << "\n";
     if ( element_name == "vertex" )
     {
-        m_tissue->setNumVertex ( count );
+      std::cerr << count " vertices." << std::endl; 
+      m_tissue->setNumVertex ( count );
         return C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > (
                    C11NSPACE::bind ( &PLY_reader::vertex_begin, this ),
                    C11NSPACE::bind ( &PLY_reader::vertex_end, this )
@@ -77,7 +78,8 @@ C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > PL
     }
     else if ( element_name == "face" )
     {
-        m_tissue->setNumCell ( count );
+      std::cerr << count " faces." << std::endl; 
+      m_tissue->setNumCell ( count );
         return C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > (
                    C11NSPACE::bind ( &PLY_reader::face_begin, this ),
                    C11NSPACE::bind ( &PLY_reader::face_end, this )
@@ -85,7 +87,8 @@ C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > PL
     }
     else if ( element_name == "edge" )
     {
-        m_tissue->setNumWall ( count );
+      std::cerr << count " edges." << std::endl; 
+      m_tissue->setNumWall ( count );
         return C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > (
                    C11NSPACE::bind ( &PLY_reader::edge_begin, this ),
                    C11NSPACE::bind ( &PLY_reader::edge_end, this )
