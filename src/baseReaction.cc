@@ -508,6 +508,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new AndNotGate(paraValue,indValue); 
   else if(idValue=="AndSpecialGate")
     return new AndSpecialGate(paraValue,indValue); 
+  else if(idValue=="AndSpecialGate2")
+    return new AndSpecialGate2(paraValue,indValue); 
   else if(idValue=="AndGateCount")
     return new AndGateCount(paraValue,indValue); 
     else if(idValue=="OrGateCount")
@@ -526,6 +528,10 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new ThresholdResetAndCount(paraValue,indValue); 
   else if(idValue=="FlagNoisyReset")
     return new FlagNoisyReset(paraValue,indValue); 
+  else if(idValue=="ThresholdAndFlagNoisyReset")
+    return new ThresholdAndFlagNoisyReset(paraValue,indValue); 
+  else if(idValue=="FlagAddValue")
+    return new FlagAddValue(paraValue,indValue); 
 
   // cellTime.h
   else if (idValue=="CellTimeDerivative")

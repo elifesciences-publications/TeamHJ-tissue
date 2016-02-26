@@ -1091,6 +1091,78 @@ class AndSpecialGate : public BaseReaction {
 };
 
 
+class AndSpecialGate2 : public BaseReaction {
+  
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which checks and sets the parameters and
+  /// variable indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+
+/// In the model file, the reaction is specified as:
+/// @verbatim
+/// AndSpecialGate2 0 2 3 1    # number of parameters is set to zero
+/// index_var1   	 		  # index of the fist variable upstream the gate.
+/// index_var2   	 		  # index of the second variable upstream the gate.
+/// index_var3   	 		  # index of the third variable upstream the gate.
+/// index_var_out  			  # updated index where the output of the gate is written. 
+/// @endverbatim
+
+/// @note This logical gate function makes a downstream species   
+/// switch from 0 to 1 if the folowing conditions are met: 
+ 	// the first input variable is 1 
+ 	// the second input variable is 1 
+ 	// the third input variable is 0.
+
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+
+  AndSpecialGate2(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > &indValue );
+		
+  ///
+  /// @brief This class does not use derivatives for updates.
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  void derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex );
+
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(double h, double t, ...)
+  ///
+
+	void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+};
+
+
 class AndGateCount : public BaseReaction {
   
  public:
@@ -1629,7 +1701,7 @@ class FlagNoisyReset : public BaseReaction {
 /// In the model file, the reaction is specified as:
 /// @verbatim
 /// FlagNoisyReset 2 2 1 1   # number of parameters is set to two (threshold and switch_type)
-/// threshold		 		  # threshold above which a variable is reset to zero.  
+/// flag_value		 		  # value of the flag that will make the output variable is resetting to zero with noise.  
 /// switch_type		 		  # the switchtype parameter takes the values 0 and 1 for defining the reversible and irreversible switch, respectively.  
 /// index_var   	 		  # index of the index variable upstream the switch.
 /// index_var_out  			  # list of updated indices - for the moment it can be just one index - where the output of the switch is written. 
@@ -1677,5 +1749,139 @@ class FlagNoisyReset : public BaseReaction {
 	      double h);
 };
 
+
+
+class ThresholdAndFlagNoisyReset : public BaseReaction {
+  
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which checks and sets the parameters and
+  /// variable indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+
+/// In the model file, the reaction is specified as:
+/// @verbatim
+/// ThresholdAndFlagNoisyReset 2 2 1 1   # number of parameters is set to two (flag_value and threshold)
+/// threshold		 		  # threshold above which a variable is reset to zero.  
+/// flag_value		 		  # value of the flag that will make the output variable is resetting to zero with noise.   	
+/// index_var_in1   	 		  # index threshold variable upstream the switch.
+/// index_var_in2   	 		  # index flag variable upstream the switch.
+/// index_var_out  			  # list of updated indices - for the moment it can be just one index - where the output of the switch is written. 
+/// @endverbatim
+
+/// @note This function makes a downstream species be reset to 0 with noise,  
+/// when being above a certain threshold of an upstream variable and 
+/// another flag variable has a certain flag_value
+
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ThresholdAndFlagNoisyReset(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > &indValue );
+		
+  ///
+  /// @brief This class does not use derivatives for updates.
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+  
+  void derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex );
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(double h, double t, ...)
+  ///
+	void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+};
+
+
+
+class FlagAddValue : public BaseReaction {
+  
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which checks and sets the parameters and
+  /// variable indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+
+/// In the model file, the reaction is specified as:
+/// @verbatim
+/// FlagAddValue 1 2 1 1 	  	      # number of parameters is set to zero
+/// add_value  			      # number that will be added 
+/// index_var_in  			  # index of the flag variable. 
+/// index_var_out  			  # updated index where the output of the gate is written. 
+/// @endverbatim
+
+/// @note This function makes a downstream species add an add_value in a certain flag variable is 1. 
+/// 
+
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  FlagAddValue(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > &indValue );
+		
+  ///
+  /// @brief This class does not use derivatives for updates.
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  void derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex );
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(double h, double t, ...)
+  ///
+	void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+};
 
 #endif //ADHOCREACTION_H

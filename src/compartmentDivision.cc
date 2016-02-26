@@ -4499,15 +4499,20 @@ namespace Division {
     }
     else
       { //double rrr;
-
-       cellData[i][9]=0.0; //resetting variable to 0 when dividing
+      double model0=1.0;
+      //model0=1.0;
+      if (model0==1.0)
+       {cellData[i][9]=0.0; //resetting variable to 0 when dividing
        cellData[i][10]=0.0; //resetting variable to 0 when dividing
        cellData[i][14]=0.0; //resetting variable to 0 when dividing
       //rrr= (myRandom::Rnd()-0.5)/2.0;
-      cellData[i][8]=0; //resetting variable to 0 when dividing
+      cellData[i][8]=0;     //resetting variable to 0 when dividing
+       }
+      else
+       {
+       cellData[i][14]=0.0; //resetting variable to 0 when dividing
+       }
 
-       if (cellData[i][13]>0.1)
-           cellData[i][13]-=1; //subtract 1 when dividing
 
       T->divideCell(&cell, winner.wall1, winner.wall2, 
         p, q, cellData, wallData, vertexData,
