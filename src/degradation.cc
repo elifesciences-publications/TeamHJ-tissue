@@ -480,3 +480,90 @@ derivsWithAbs(Tissue &T,
   }
 
 }
+
+DegradationOneBoundary::
+DegradationOneBoundary(std::vector<double> &paraValue, 
+	     std::vector< std::vector<size_t> > 
+	     &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=1 ) {
+    std::cerr << "DegradationOneBoundary::"
+	      << "DegradationOneBoundary() "
+	      << "Uses one parameter k_d (constant degradation rate)." << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+    std::cerr << "DegradationOneBoundary::"
+	      << "DegradationOneBoundary() "
+	      << "Index for variable to be updated (degraded) given." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("DegradationOneBoundary");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "k_d";
+  setParameterId( tmp );
+}
+
+void DegradationOneBoundary::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  //Do the update for each cell
+  size_t numCells = T.numCell();
+  
+  size_t cIndex = variableIndex(0,0);
+  double k_d = parameter(0);
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {      
+
+    if( T.cell(cellI).isNeighbor(T.background()) ){
+      double value = k_d*cellData[cellI][cIndex];
+      cellDerivs[cellI][cIndex]  -= value;
+    }
+  }
+}
+
+
+void DegradationOneBoundary::
+derivsWithAbs(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &wallData,
+        DataMatrix &vertexData,
+        DataMatrix &cellDerivs,
+        DataMatrix &wallDerivs,
+        DataMatrix &vertexDerivs,
+        DataMatrix &sdydtCell,
+        DataMatrix &sdydtWall,
+        DataMatrix &sdydtVertex ) 
+{
+  //Do the update for each cell
+  size_t numCells = T.numCell();
+  
+  size_t cIndex = variableIndex(0,0);
+  double k_c = parameter(0);
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) { 
+
+    if( T.cell(cellI).isNeighbor(T.background()) ){
+      double value = k_c*cellData[cellI][cIndex];
+      cellDerivs[cellI][cIndex]  -= value;
+      sdydtCell[cellI][cIndex]  += value;
+    }
+  }
+}
+
+
