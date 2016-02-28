@@ -3391,3 +3391,84 @@ update(Tissue &T,
 
 }
 }
+
+
+
+CopyVariable::CopyVariable(std::vector<double> &paraValue,
+  std::vector< std::vector<size_t> > &indValue ) 
+{
+  //
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=0 ) {
+    std::cerr << "CopyVariable::CopyVariable  "
+        << "has no parameters. \n";
+    exit(0);
+  }
+  if( indValue.size()!=2 || indValue[0].size()!=1 || indValue[1].size()!=1 ) {
+    std::cerr << "CopyVariable::CopyVariable() "
+              << "Two levels of variable indices are used, "
+              << "One for the input variable, "
+              << ", and one for the output variable" 
+              << std::endl;
+    exit(0);
+  }
+  //
+  // Set the variable values
+  //
+  setId("add");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+
+}
+
+
+void CopyVariable::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  // Nothing to be done for the derivative function.
+}
+
+  
+void CopyVariable::
+derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex)
+{
+  // Nothing to be done for the derivative function.
+}
+
+
+void CopyVariable::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h) 
+{
+
+    size_t numCells = T.numCell();
+  
+  size_t cIndex_input = variableIndex(0,0);
+  size_t cIndex_output = variableIndex(1,0);
+
+
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+    cellData[cellI][cIndex_output]=cellData[cellI][cIndex_input];
+}
+
+}

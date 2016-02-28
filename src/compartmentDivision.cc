@@ -4534,10 +4534,26 @@ namespace Division {
       int numcell=(T -> numCell());
       //std::cerr<<"numcells "<<numcell<<"\n"<<std::endl;
       
-      cellData[i][18]=numcell+1;
-      cellData[(T -> numCell())-1][18]=numcell+2;
-      cellData[i][19]=i;
-      cellData[(T -> numCell())-1][19]=i;
+      int maxcellnum=numcell;
+
+      for(size_t kk=0; kk< numcell; ++kk)
+        {
+          if (maxcellnum<cellData[kk][17])
+            {maxcellnum=cellData[kk][17];}
+          if (maxcellnum<cellData[kk][17])
+            {maxcellnum=cellData[kk][18];}
+      }
+
+      //inheriting the mother cell index from the lineage indexing before it is updated
+      cellData[i][19]=cellData[i][18];
+      cellData[(T -> numCell())-1][19]=cellData[i][18];
+
+      cellData[i][18]=maxcellnum+1;
+      cellData[(T -> numCell())-1][18]=maxcellnum+2;
+
+      //inheriting the mother cell index 
+      cellData[i][19]=cellData[i][18];
+      cellData[(T -> numCell())-1][19]=cellData[i][18];
 
     }
   

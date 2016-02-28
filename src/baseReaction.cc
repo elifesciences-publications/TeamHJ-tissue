@@ -532,6 +532,9 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new ThresholdAndFlagNoisyReset(paraValue,indValue); 
   else if(idValue=="FlagAddValue")
     return new FlagAddValue(paraValue,indValue); 
+  else if(idValue=="CopyVariable")
+    return new CopyVariable(paraValue,indValue); 
+  
 
   // cellTime.h
   else if (idValue=="CellTimeDerivative")
