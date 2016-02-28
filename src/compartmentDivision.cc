@@ -4513,11 +4513,31 @@ namespace Division {
        cellData[i][14]=0.0; //resetting variable to 0 when dividing
        }
 
+      //std::cerr<<"dividing "<<i<<"\n"<<std::endl;
+      //std::cerr<<cellData[i][5]<<"\n"<<std::endl;
+      //std::cerr<<"Former size"<<cellData.size()<<i<<"\n"<<std::endl;
+      //std::cerr<<cellData[i].size()<<"\n"<<std::endl;
+      //int numcelli=(T -> numCell());
+      //std::cerr<<"numcells "<<numcelli<<"\n"<<std::endl;
 
       T->divideCell(&cell, winner.wall1, winner.wall2, 
         p, q, cellData, wallData, vertexData,
         cellDerivs, wallDerivs, vertexDerivs, variableIndex(0), 
         parameter(2));
+
+      //std::cerr<<"divided "<<i<<"\n"<<std::endl;
+      //std::cerr<<cellData[i][5]<<"\n"<<std::endl;
+      //std::cerr<<"Latter size"<<cellData.size()<<i<<"\n"<<std::endl;
+
+      //std::cerr<<"divided conc "<<cellData[(T -> numCell())-1][5]<<"\n"<<std::endl;
+     // std::cerr<<"X divided conc "<<cellData[(T -> numCell())-2][5]<<"\n"<<std::endl;
+      int numcell=(T -> numCell());
+      //std::cerr<<"numcells "<<numcell<<"\n"<<std::endl;
+      
+      cellData[i][18]=numcell+1;
+      cellData[(T -> numCell())-1][18]=numcell+2;
+      cellData[i][19]=i;
+      cellData[(T -> numCell())-1][19]=i;
 
     }
   
