@@ -4540,20 +4540,16 @@ namespace Division {
         {
           if (maxcellnum<cellData[kk][17])
             {maxcellnum=cellData[kk][17];}
-          if (maxcellnum<cellData[kk][17])
+          if (maxcellnum<cellData[kk][18])
             {maxcellnum=cellData[kk][18];}
       }
 
       //inheriting the mother cell index from the lineage indexing before it is updated
       cellData[i][19]=cellData[i][18];
       cellData[(T -> numCell())-1][19]=cellData[i][18];
-
+      // lineage indexing
       cellData[i][18]=maxcellnum+1;
       cellData[(T -> numCell())-1][18]=maxcellnum+2;
-
-      //inheriting the mother cell index 
-      cellData[i][19]=cellData[i][18];
-      cellData[(T -> numCell())-1][19]=cellData[i][18];
 
     }
   
