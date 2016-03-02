@@ -25,8 +25,10 @@ void HeunIto::readParameterFile(std::ifstream &IN)
   IN >> printFlag_; // output format
   IN >> numPrint_;  // number of time points printed to output
   
-  IN >> h_;   // time step
-  IN >> vol_; // effective volume
+  IN >> h_;        // time step
+  IN >> vol_;      // effective volume
+  IN >> volFlag_;  //setting for knowing how to calculate volume of individual cells
+
 }
 
 void HeunIto::simulate(size_t verbose) 
@@ -217,10 +219,24 @@ void HeunIto::heunito(DataMatrix &sdydtCell,
   DataMatrix randCell( sdydtCell.size() ),randWall( sdydtWall.size() ),randVertex( sdydtVertex.size() );
 
   for(size_t i=0 ; i<sdydtCell.size() ; ++i ) {
+    
+    // get cell volume
+    double volume = 1.0;
+    if (volFlag_==1) {
+      volume = T_->cell(i).calculateVolume(vertexData_);//y_[i][volumeIndex];
+    }
+    else if (volFlag_ > 1) {
+      std::cerr << "HeunIto::heunito() Wrong volume flag given, only 0 "
+    << "(no cell volume dependence"
+    << " or 1 (volume calculated or read from variable) allowed." << std::endl;
+      std::cerr << "See Compartment.getVolume()." << std::endl;
+      exit(EXIT_FAILURE);
+    }
+
     randCell[i].resize( sdydtCell[i].size() );
     for( size_t j=0 ; j<sdydtCell[i].size() ; ++j ) {      
       randCell[i][j] = myRandom::Grand();
-      stCell[i][j] = sqrt(sdydtCell[i][j]*h_/vol_);
+      stCell[i][j] = sqrt(sdydtCell[i][j]*h_/(vol_*volume));
       y1Cell[i][j] = cellData_[i][j]+h_*cellDerivs_[i][j]+stCell[i][j]*randCell[i][j];
       if(y1Cell[i][j]<0.0) // Setting and absortive barrier at 0
          y1Cell[i][j]=0.0; 

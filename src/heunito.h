@@ -21,7 +21,8 @@ class HeunIto : public BaseSolver {
   
   double h_;
   double vol_;
-  
+  int volFlag_;
+
  public:
   ///
   /// @brief Main constructor
@@ -39,7 +40,7 @@ class HeunIto : public BaseSolver {
   /// HeunIto
   /// T_start T_end 
   /// printFlag printNum 
-  /// h vol
+  /// h vol volFlag
   /// </pre> 
   ///
   /// where HeunIto is the identity string used by BaseSolver::getSolver
@@ -47,8 +48,13 @@ class HeunIto : public BaseSolver {
   /// (T_end) is the start (end) time for the simulation, printFlag is an
   /// integer which sets the output format (read by BaseSolver::print()),
   /// printNum is the number of equally spread time points to be printed. h
-  /// is the step size for each HeunIto step and vol is the effective volume.
-  ///
+  /// is the step size for each HeunIto step. vol is the effective volume.
+  /// volFlag determines how volumes (areas for the moment) of single cells are
+  /// taken into account; volFlag=0 assumes all cells same size, being 
+  /// constant throughout the simulation, while volFlag=1 uses a volume 
+  /// variable. Note that volFlag=1 option has just been implemented for the cytosolic
+  /// concentrations. 
+
   /// Comments can be included in the parameter file by starting the line with
   /// an #. Caveat: No check on the validity of the read data is applied.
   ///
