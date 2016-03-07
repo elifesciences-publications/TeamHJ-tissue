@@ -497,4 +497,71 @@ class DegradationOneBoundary : public BaseReaction {
 };
 
 
+///
+/// @brief In the cells with given indices a molecule is degraded with a constant rate (dependent on its own conc)
+///
+/// The variable update is for each cell given by 
+///
+/// @f[ \frac{dc}{dt} = - k_c c@f]
+///
+/// where @f$ k_c @f$ is a constant parameter and @f$ c @f$ is the (mulecular) cell variable/concentration
+/// to be updated.
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// degradationOneFromList 1 2 1 N
+/// k_c
+/// c_index
+/// cell_index_0 .. cell_index_N
+/// @endverbatim
+///
+class DegradationOneFromList : public BaseReaction {
+
+ private:
+  size_t numCellI;
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  DegradationOneFromList(std::vector<double> &paraValue, 
+	      std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+
+      void derivsWithAbs(Tissue &T,
+         DataMatrix &cellData,
+         DataMatrix &wallData,
+         DataMatrix &vertexData,
+         DataMatrix &cellDerivs,
+         DataMatrix &wallDerivs,
+         DataMatrix &vertexDerivs,
+         DataMatrix &sdydtCell,
+         DataMatrix &sdydtWall,
+         DataMatrix &sdydtVertex );
+};
+
 #endif

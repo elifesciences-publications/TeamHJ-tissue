@@ -566,4 +566,82 @@ derivsWithAbs(Tissue &T,
   }
 }
 
+DegradationOneFromList::
+DegradationOneFromList(std::vector<double> &paraValue, 
+	     std::vector< std::vector<size_t> > 
+	     &indValue ) 
+{  
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=1 ) {
+    std::cerr << "DegradationOneFromList::"
+	      << "DegradationOneFromList() "
+	      << "Uses one parameter k_d (constant degradation rate)." << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 1 || indValue[1].size() < 1) {
+    std::cerr << "DegradationOneFromList::"
+	      << "DegradationOneFromList() "
+	      << "Two rows of indices needed." << std::endl
+	      << "Index for variable to be updated (degraded) given in first row." << std::endl
+	      << "Cell indices for cells to be updated (degraded) given in second row." << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("DegradationOneFromList");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "k_d";
+  setParameterId( tmp );
 
+  numCellI = indValue[1].size();
+}
+
+void DegradationOneFromList::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) {
+  
+  size_t cIndex = variableIndex(0,0);
+  double k_d = parameter(0);
+  //For each cell in list of cell indices
+  for (size_t cellI = 0; cellI < numCellI; ++cellI) {      
+    cellDerivs[variableIndex(1,cellI)][cIndex] -= k_d * cellData[variableIndex(1,cellI)][cIndex];
+  }
+}
+
+
+void DegradationOneFromList::
+derivsWithAbs(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &wallData,
+        DataMatrix &vertexData,
+        DataMatrix &cellDerivs,
+        DataMatrix &wallDerivs,
+        DataMatrix &vertexDerivs,
+        DataMatrix &sdydtCell,
+        DataMatrix &sdydtWall,
+        DataMatrix &sdydtVertex ) 
+{
+  //Do the update for each cell
+  size_t numCells = T.numCell();
+  
+  size_t cIndex = variableIndex(0,0);
+  double k_c = parameter(0);
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+      double value = k_c * cellData[cellI][cIndex];
+    
+    cellDerivs[cellI][cIndex]  -= value;
+    sdydtCell[cellI][cIndex]  += value;
+  }
+}

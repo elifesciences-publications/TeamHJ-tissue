@@ -313,6 +313,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new DegradationOneWall(paraValue,indValue); 
   else if(idValue=="DegradationOneBoundary")
     return new DegradationOneBoundary(paraValue,indValue); 
+  else if(idValue=="DegradationOneFromList")
+    return new DegradationOneFromList(paraValue,indValue); 
   //grn.h,grn.cc
   else if(idValue=="Hill")
     return new Hill(paraValue,indValue); 
