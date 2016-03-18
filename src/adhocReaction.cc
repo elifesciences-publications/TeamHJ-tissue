@@ -2684,6 +2684,96 @@ update(Tissue &T,
 }
 
 
+
+
+
+AndThresholdsGate::AndThresholdsGate(std::vector<double> &paraValue, 
+                                                       std::vector< std::vector<size_t> > &indValue ) 
+{
+  //
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=2 ) {
+    std::cerr << "AndThresholdsGate::AndThresholdsGate() 2 parameter used "
+        << "which are the two thresholds." << std::endl;
+    exit(0);
+  }
+  if( indValue.size()!=2 || indValue[0].size()!=2 || indValue[1].size()!=1 ) {
+    std::cerr << "AndThresholdsGate::AndThresholdsGate() "
+              << "Two levels of variable indices are used, "
+              << "One for the input variables, which are two indices "
+              << ", and one for the output variables" 
+              << std::endl;
+    exit(0);
+  }
+  //
+  // Set the variable values
+  //
+  setId("add");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  //
+  // Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "gatetype";
+  setParameterId( tmp );
+}
+
+void AndThresholdsGate::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  // Nothing to be done for the derivative function.
+}
+
+  
+void AndThresholdsGate::
+derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex)
+{
+  // Nothing to be done for the derivative function.
+}
+
+
+void AndThresholdsGate::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h) 
+{
+
+    size_t numCells = T.numCell();
+  
+  size_t cIndex_input1 = variableIndex(0,0);
+  size_t cIndex_input2 = variableIndex(0,1);
+  size_t cIndex_output = variableIndex(1,0);
+
+
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+
+    if (cellData[cellI][cIndex_input1]>parameter(0) && cellData[cellI][cIndex_input2]>parameter(1))
+        {cellData[cellI][cIndex_output]=1;}
+
+}
+}
+
 Count::Count(std::vector<double> &paraValue,
   std::vector< std::vector<size_t> > &indValue ) 
 {
@@ -2759,6 +2849,9 @@ update(Tissue &T,
 
 }
 }
+
+
+
 
 
 FlagCount::FlagCount(std::vector<double> &paraValue,
