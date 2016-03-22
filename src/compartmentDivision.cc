@@ -4502,11 +4502,13 @@ namespace Division {
       double model0=1.0;
       //model0=1.0;
       if (model0==1.0)
-       {cellData[i][9]=0.0; //resetting variable to 0 when dividing
+       {
+
+       cellData[i][8]=0;     //resetting variable to 0 when dividing
+       cellData[i][9]=0.0; //resetting variable to 0 when dividing
        cellData[i][10]=0.0; //resetting variable to 0 when dividing
-       cellData[i][14]=0.0; //resetting variable to 0 when dividing
+       //cellData[i][14]=0.0; //resetting variable to 0 when dividing
       //rrr= (myRandom::Rnd()-0.5)/2.0;
-      cellData[i][8]=0;     //resetting variable to 0 when dividing
        }
       else
        {
@@ -5812,14 +5814,13 @@ namespace Division {
        DataMatrix &vertexDerivs ) {
     
     //if( cellData[i][11]==1 && cellData[i][10]>5 && cellData[i][7]==0) {
-   if(cellData[i][10]>5 && cellData[i][7]==0) {
+   //if(cellData[i][10]>5 && cellData[i][7]==0) {
    //if(cellData[i][11]==1 && cellData[i][7]==0) {
-
-      std::cerr << "Cell " << i << " marked for division with volume " 
-    << T->cell(i).volume() << std::endl;
+  if(cellData[i][variableIndex(0,0)]==1) {
+      std::cerr << "Cell " << i << " marked for division" << std::endl;
       return 1;
     } 
-    return 0;
+      return 0;
   }
   
   void FlagResetViaLongestWall::
@@ -5836,8 +5837,11 @@ namespace Division {
     assert( divCell->numWall() > 1 );
     assert( dimension==2 || dimension==3 ); 
 
-    cellData[i][10]=0.0; //resetting variable to 0 when dividing
+    cellData[i][8]=0;     //resetting variable to 0 when dividing
+    cellData[i][9]=0.0;   //resetting variable to 0 when dividing
+    cellData[i][10]=0.0;  //resetting variable to 0 when dividing
 
+    
     //
     // Find longest wall
     // 
