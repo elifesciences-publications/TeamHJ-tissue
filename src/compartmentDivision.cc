@@ -4498,17 +4498,15 @@ namespace Division {
       }
     }
     else
-      { //double rrr;
+      { //if numParameter()==6 && parameter(4)==1 is not fulfilled
       double model0=1.0;
-      //model0=1.0;
       if (model0==1.0)
        {
 
-       cellData[i][8]=0;     //resetting variable to 0 when dividing
-       cellData[i][9]=0.0; //resetting variable to 0 when dividing
-       cellData[i][10]=0.0; //resetting variable to 0 when dividing
-       //cellData[i][14]=0.0; //resetting variable to 0 when dividing
-      //rrr= (myRandom::Rnd()-0.5)/2.0;
+       cellData[i][8]=0;        //resetting variable to 0 when dividing
+       cellData[i][9]=0.0;      //resetting variable to 0 when dividing
+       cellData[i][10]=0.0;     //resetting variable to 0 when dividing
+
        }
       else
        {

@@ -752,7 +752,49 @@ namespace Division {
 
 
   /// @brief UNDER CONSTRUCTION, DO NOT USE YET!!!
+  /// Adapted from Division::ShortestPath
+
+  ///  Divides a cell when a certain flag has value 1, with New wall created at shortest
+  ///  path that divides the volume (not!) in equal parts. Using centerTriangulation and doubleLength 
+  ///  formats are optional and can be done by setting the coresponding flags. 
+  /// 
   ///
+  /// @verbatim
+  ///
+  /// FlagResetShortestPath 4 3 0/1 1 1 
+  /// V_{threshold} 
+  /// L^{wall}_{frac} (relative of new wall)
+  /// L^{wall}_{threshold} (disallowed closeness)
+  /// centerCom flag(0:random, 1:COM)
+  ///
+  /// I1 (optional volume related index to be updated)
+  ///
+  /// cell time index(optional)
+  ///
+  /// @endverbatim
+  ///
+  /// or
+  ///
+  /// @verbatim
+  /// Division::FlagResetShortestPath 6 4 0 0 2 1 # 6 pars, 4 types of indices
+  /// (ShortestPath was 6 3 0/1 1 2, pending to check if hence FlagResetShortestPath should be 6 4 0/1 1 2) 
+  /// V_{threshold} 
+  /// L^{wall}_{frac} (relative of new wall)
+  /// L^{wall}_{threshold} (disallowed closeness)
+  /// centerCom flag(0:random, 1:COM)
+  /// centerTriangulation flag (0/1)
+  /// double length flag (0/1)
+  ///
+  /// I1 (optional volume related index to be updated)
+  ///
+  /// cell time index(optional)
+  ///
+  /// com index 
+  /// restinglengthIndex
+  /// flagindex
+  ///
+  /// @endverbatim
+
   class FlagResetShortestPath : public BaseCompartmentChange {
     
   public:
