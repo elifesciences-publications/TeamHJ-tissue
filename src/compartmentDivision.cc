@@ -4498,20 +4498,17 @@ namespace Division {
       }
     }
     else
-      { //if numParameter()==6 && parameter(4)==1 is not fulfilled
-      double model0=1.0;
-      if (model0==1.0)
-       {
+      { 
+      //if numParameter()==6 && parameter(4)==1 is not fulfilled
 
-       cellData[i][8]=0;        //resetting variable to 0 when dividing
-       cellData[i][9]=0.0;      //resetting variable to 0 when dividing
-       cellData[i][10]=0.0;     //resetting variable to 0 when dividing
+       //cellData[i][10]=0.0;     //resetting variable to 0 when dividing
+      // double rrr;
+      // rrr= (myRandom::Rnd()-0.5);
+      // std::cout << rrr<<'\n';
+      // cellData[i][8]=rrr;
 
-       }
-      else
-       {
-       cellData[i][14]=0.0; //resetting variable to 0 when dividing
-       }
+      cellData[i][variableIndex(3,0)]=0;        //resetting flag to 0 when dividing
+       //cellData[i][9]=0.0;      //resetting variable to 0 when dividing
 
       //std::cerr<<"dividing "<<i<<"\n"<<std::endl;
       //std::cerr<<cellData[i][5]<<"\n"<<std::endl;

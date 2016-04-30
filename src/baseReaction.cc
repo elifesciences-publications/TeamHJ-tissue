@@ -512,6 +512,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new AndSpecialGate(paraValue,indValue); 
   else if(idValue=="AndSpecialGate2")
     return new AndSpecialGate2(paraValue,indValue); 
+    else if(idValue=="AndSpecialGate3")
+    return new AndSpecialGate3(paraValue,indValue); 
   else if(idValue=="AndGateCount")
     return new AndGateCount(paraValue,indValue); 
     else if(idValue=="OrGateCount")

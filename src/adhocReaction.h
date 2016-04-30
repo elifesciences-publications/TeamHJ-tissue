@@ -1163,6 +1163,79 @@ class AndSpecialGate2 : public BaseReaction {
 };
 
 
+class AndSpecialGate3 : public BaseReaction {
+  
+ public:
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which checks and sets the parameters and
+  /// variable indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+
+/// In the model file, the reaction is specified as:
+/// @verbatim
+/// AndSpecialGate3 1 2 3 1    # number of parameters is set to zero
+/// thresh      	 		  # threshold variable
+/// index_var1   	 		  # index of the fist variable upstream the gate.
+/// index_var2   	 		  # index of the second variable upstream the gate.
+/// index_var3   	 		  # index of the third variable upstream the gate.
+/// index_var_out  			  # updated index where the output of the gate is written. 
+/// @endverbatim
+
+/// @note This logical gate function makes a downstream species   
+/// switch from 0 to 1 if the folowing conditions are met: 
+ 	// the first input variable is higher than a threshold
+ 	// the second input variable is 1 
+ 	// the third input variable is 0.
+
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+
+  AndSpecialGate3(std::vector<double> &paraValue, 
+			     std::vector< std::vector<size_t> > &indValue );
+		
+  ///
+  /// @brief This class does not use derivatives for updates.
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+
+  void derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex );
+
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(double h, double t, ...)
+  ///
+
+	void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+};
+
+
 class AndGateCount : public BaseReaction {
   
  public:

@@ -2359,7 +2359,7 @@ AndSpecialGate2::AndSpecialGate2(std::vector<double> &paraValue,
   // Do some checks on the parameters and variable indeces
   //
   if( paraValue.size()!=0 ) {
-    std::cerr << "AndSpecialGate::AndSpecialGate()  does not use any parameters." << std::endl;
+    std::cerr << "AndSpecialGate2::AndSpecialGate2()  does not use any parameters." << std::endl;
     exit(0);
   }
   if( indValue.size()!=2 || indValue[0].size()!=3 || indValue[1].size()!=1 ) {
@@ -2427,18 +2427,127 @@ update(Tissue &T,
   //size_t cond=0;
   //For each cell
   for (size_t cellI = 0; cellI < numCells; ++cellI) {  
-    cellData[cellI][cIndex_output]=0;
+
    // if (cellData[cellI][cIndex_input2]==1 || cellData[cellI][cIndex_input2]==0){cond=1;}
    // if (cellData[cellI][cIndex_input2]==0){cond=1;}
    //    if (cellData[cellI][cIndex_input1]==1 && cond==1 && cellData[cellI][cIndex_input3]==0)
 
     if (cellData[cellI][cIndex_input1]==1 && cellData[cellI][cIndex_input2]==1 && cellData[cellI][cIndex_input3]==0)
         {cellData[cellI][cIndex_output]=1;}
+   //   else
+  //      {cellData[cellI][cIndex_output]=0;}
 
+    //if (cellData[cellI][cIndex_input1]==1 && cellData[cellI][cIndex_input2]==1)
+        //{if(cellData[cellI][cIndex_input3]==0)
+         // {cellData[cellI][cIndex_output]=1;}
+        //else
+         // {cellData[cellI][cIndex_output]=0;}
+        //}
+       // else
+      //  {cellData[cellI][cIndex_output]=0;}
 
   }
 }
 
+
+
+
+AndSpecialGate3::AndSpecialGate3(std::vector<double> &paraValue, 
+                                                       std::vector< std::vector<size_t> > &indValue ) 
+{
+  //
+  // Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=1 ) {
+    std::cerr << "AndSpecialGate3::AndSpecialGate3()  needs one parameter." << std::endl;
+    exit(0);
+  }
+  if( indValue.size()!=2 || indValue[0].size()!=3 || indValue[1].size()!=1 ) {
+    std::cerr << "AndSpecialGate3::AndSpecialGate3() "
+              << "Two levels of variable indices are used, "
+              << "One for the input variables, which are three indices "
+              << ", and one for the output variables" 
+              << std::endl;
+    exit(0);
+  }
+  //
+  // Set the variable values
+  //
+  setId("add");
+  setParameter(paraValue); 
+  setVariableIndex(indValue);
+  //
+}
+
+
+void AndSpecialGate3::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  // Nothing to be done for the derivative function.
+}
+
+  
+void AndSpecialGate3::
+derivsWithAbs(Tissue &T,
+     DataMatrix &cellData,
+     DataMatrix &wallData,
+     DataMatrix &vertexData,
+     DataMatrix &cellDerivs,
+     DataMatrix &wallDerivs,
+     DataMatrix &vertexDerivs,
+     DataMatrix &sdydtCell,
+     DataMatrix &sdydtWall,
+     DataMatrix &sdydtVertex)
+{
+  // Nothing to be done for the derivative function.
+}
+
+
+void AndSpecialGate3::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h) 
+{
+
+    size_t numCells = T.numCell();
+  
+  size_t cIndex_input1 = variableIndex(0,0);
+  size_t cIndex_input2 = variableIndex(0,1);
+  size_t cIndex_input3 = variableIndex(0,2);
+  size_t cIndex_output = variableIndex(1,0);
+
+  //size_t cond=0;
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {  
+
+   // if (cellData[cellI][cIndex_input2]==1 || cellData[cellI][cIndex_input2]==0){cond=1;}
+   // if (cellData[cellI][cIndex_input2]==0){cond=1;}
+   //    if (cellData[cellI][cIndex_input1]==1 && cond==1 && cellData[cellI][cIndex_input3]==0)
+
+    if (cellData[cellI][cIndex_input1]>parameter(0) && cellData[cellI][cIndex_input2]==1 && cellData[cellI][cIndex_input3]==0)
+        {cellData[cellI][cIndex_output]=1;}
+   //   else
+  //      {cellData[cellI][cIndex_output]=0;}
+
+    //if (cellData[cellI][cIndex_input1]==1 && cellData[cellI][cIndex_input2]==1)
+        //{if(cellData[cellI][cIndex_input3]==0)
+         // {cellData[cellI][cIndex_output]=1;}
+        //else
+         // {cellData[cellI][cIndex_output]=0;}
+        //}
+       // else
+      //  {cellData[cellI][cIndex_output]=0;}
+
+  }
+}
 
 AndGateCount::AndGateCount(std::vector<double> &paraValue, 
                                                        std::vector< std::vector<size_t> > &indValue ) 
@@ -3394,7 +3503,7 @@ update(Tissue &T,
 
     if ( cellData[cellI][cIndex_input1]>parameter(0) && cellData[cellI][cIndex_input2]==parameter(1)) {
           double rrr;
-          rrr= (myRandom::Rnd()-0.5);
+          rrr= (myRandom::Rnd()-0.5)/2.0;
           cellData[cellI][cIndex_output]=rrr;
       }
 
