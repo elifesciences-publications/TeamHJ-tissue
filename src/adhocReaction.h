@@ -1710,13 +1710,13 @@ class ThresholdNoisyReset : public BaseReaction {
 /// @verbatim
 /// ThresholdNoisyReset 2 2 1 1   # number of parameters is set to two (threshold and switch_type)
 /// threshold		 		  # threshold above which a variable is reset to zero.  
-/// switch_type		 		  # the switchtype parameter takes the values 0 and 1 for defining the reversible and irreversible switch, respectively.  
+/// noise_amplitude		      # noise amplitude for the resetting  
 /// index_var   	 		  # index of the index variable upstream the switch.
 /// index_var_out  			  # list of updated indices - for the moment it can be just one index - where the output of the switch is written. 
 /// @endverbatim
 
-/// @note This function makes a downstream species reversibly or irreversibly  
-/// switch from 1 to 0, upon being above a certain threshold of an upstream variable.
+/// @note This function makes a downstream species irreversibly  
+/// switch from 1 to 0 (reset) with a bit of noise, upon being above a certain threshold of an upstream variable.
 
   /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
   ThresholdNoisyReset(std::vector<double> &paraValue, 
@@ -1908,9 +1908,10 @@ class ThresholdAndFlagNoisyReset : public BaseReaction {
 
 /// In the model file, the reaction is specified as:
 /// @verbatim
-/// ThresholdAndFlagNoisyReset 2 2 1 1   # number of parameters is set to two (flag_value and threshold)
+/// ThresholdAndFlagNoisyReset 3 2 1 1   # number of parameters is set to two (flag_value and threshold)
 /// threshold		 		  # threshold above which a variable is reset to zero.  
-/// flag_value		 		  # value of the flag that will make the output variable is resetting to zero with noise.   	
+/// flag_value		 		  # value of the flag that will make the output variable is resetting to zero with noise. 
+/// noise_amplitude		      # noise amplitude for the resetting    	
 /// index_var_in1   	 		  # index threshold variable upstream the switch.
 /// index_var_in2   	 		  # index flag variable upstream the switch.
 /// index_var_out  			  # list of updated indices - for the moment it can be just one index - where the output of the switch is written. 

@@ -4116,7 +4116,7 @@ namespace Division {
   {
     if ( paraValue.size() != 4 &&  paraValue.size() != 6 ) {
       std::cerr << "DivisionFlagResetShortestPath::DivisionFlagResetShortestPath() "
-    << "Four or six parameters are used V_threshold, Lwall_fraction, "
+    << "Four or six parameters are used noise amplitude for variable resetting, Lwall_fraction, "
     << "Lwall_threshold, and COM (1 = COM, 0 = Random) "
     << "If six parameters are used, two additional parameters are for " 
     << "centerTriangulation(1) and double resting length (1: double, 0:single). "
@@ -4504,7 +4504,6 @@ namespace Division {
        //cellData[i][10]=0.0;     //resetting variable to 0 when dividing
       // double rrr;
       // rrr= (myRandom::Rnd()-0.5);
-      // std::cout << rrr<<'\n';
       // cellData[i][8]=rrr;
 
       cellData[i][variableIndex(3,0)]=0;        //resetting flag to 0 when dividing
@@ -4533,20 +4532,28 @@ namespace Division {
       
       int maxcellnum=numcell;
 
-      for(size_t kk=0; kk< numcell; ++kk)
+      for(size_t kk=0; kk<numcell; ++kk)
         {
           if (maxcellnum<cellData[kk][17])
             {maxcellnum=cellData[kk][17];}
           if (maxcellnum<cellData[kk][18])
             {maxcellnum=cellData[kk][18];}
       }
-
       //inheriting the mother cell index from the lineage indexing before it is updated
       cellData[i][19]=cellData[i][18];
       cellData[(T -> numCell())-1][19]=cellData[i][18];
       // lineage indexing
       cellData[i][18]=maxcellnum+1;
       cellData[(T -> numCell())-1][18]=maxcellnum+2;
+      // resetting 
+      double rr1;
+      rr1= (myRandom::Rnd()-0.5)*parameter(0);
+      cellData[i][8]=rr1; //resetting the clock for one of the cells
+
+      double rr2;
+      rr2= (myRandom::Rnd()-0.5)*parameter(0);
+      cellData[(T -> numCell())-1][8]=rr2;
+      //std::cerr <<"hello"<<" "<<rr1<<" "<<rr2<<'\n';
 
     }
   
@@ -4812,6 +4819,8 @@ namespace Division {
     return tmp;
   }
 
+
+  // Here FlagResetShortestPath finishes
 
  Random::Random(std::vector<double> &paraValue, std::vector< std::vector<size_t> > &indValue)
  {

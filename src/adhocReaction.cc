@@ -3331,8 +3331,8 @@ FlagNoisyReset::FlagNoisyReset(std::vector<double> &paraValue,
   // Do some checks on the parameters and variable indeces
   //
   if( paraValue.size()!=2 ) {
-    std::cerr << "FlagNoisyReset::FlagNoisyReset()  parameter used "
-        << "Threshold" << std::endl;
+    std::cerr << "FlagNoisyReset::FlagNoisyReset() 2 parameters used "
+        << "Threshold and  noise intensity. " << std::endl;
     exit(0);
   }
   if( indValue.size()!=2 || indValue[0].size()!=1 || indValue[1].size()!=1 ) {
@@ -3407,7 +3407,7 @@ update(Tissue &T,
 
     if (cellData[cellI][cIndex]==parameter(0)) {
           double rrr;
-          rrr= (myRandom::Rnd()-0.5);
+          rrr= (myRandom::Rnd()-0.5)*parameter(1);
           cellData[cellI][c2Index]=rrr;
       }
 
@@ -3422,9 +3422,9 @@ ThresholdAndFlagNoisyReset::ThresholdAndFlagNoisyReset(std::vector<double> &para
   //
   // Do some checks on the parameters and variable indeces
   //
-  if( paraValue.size()!=2 ) {
-    std::cerr << "ThresholdAndFlagNoisyReset::ThresholdAndFlagNoisyReset()  parameter used "
-        << "Threshold" << std::endl;
+  if( paraValue.size()!=3 ) {
+    std::cerr << "ThresholdAndFlagNoisyReset::ThresholdAndFlagNoisyReset()  requires 3 parameters"
+        << "Threshold, flag value, and noise amplitude for resetting" << std::endl;
     exit(0);
   }
 
@@ -3503,7 +3503,7 @@ update(Tissue &T,
 
     if ( cellData[cellI][cIndex_input1]>parameter(0) && cellData[cellI][cIndex_input2]==parameter(1)) {
           double rrr;
-          rrr= (myRandom::Rnd()-0.5)/2.0;
+          rrr= (myRandom::Rnd()-0.5)*parameter(2);
           cellData[cellI][cIndex_output]=rrr;
       }
 
