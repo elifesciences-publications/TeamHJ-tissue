@@ -239,6 +239,104 @@ derivs(Tissue &T,
   }
 }
 
+DiffusionConductiveSimple::
+DiffusionConductiveSimple(std::vector<double> &paraValue, 
+		  std::vector< std::vector<size_t> > 
+		  &indValue ) {
+
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size() !=5 ) {
+    std::cerr << "DiffusionConductiveSimple::"
+	      << "DiffusionConductiveSimple() "
+	      << "Five parameters used (see documentation)" << std::endl
+	      << "p_0 - diffusion constant (multiplied with conductivity)" << std::endl
+	      << "p_1 - conductivity update rate" << std::endl
+	      << "p_2 - flux feedback power" << std::endl
+	      << "p_3 - control parameter (gamma)" << std::endl
+	      << "p_4 - conductivity \'degradation\' rate." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if( indValue.size() != 2 || indValue[0].size() != 1 || indValue[1].size() != 1 ) {
+    std::cerr << "DiffusionConductiveSimple::"
+	      << "DiffusionConductiveSimple() "
+	      << "Two levels of variable indices used, "
+	      << "first for diffusive cell variable, "
+	      << "second for wall conductivity variable" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  //Set the variable values
+  //
+  setId("DiffusionConductiveSimple");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "p_0";
+  tmp[1] = "p_1";
+  tmp[2] = "p_2";
+  tmp[3] = "p_3";
+  tmp[4] = "p_4";
+
+  setParameterId( tmp );
+}
+
+void DiffusionConductiveSimple::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  // Cell variable updates
+  //
+  size_t numCells = T.numCell();
+  size_t cI = variableIndex(0,0);
+  size_t CI = variableIndex(1,0);
+  assert( cI<cellData[0].size() && CI<wallData[0].size());
+  
+  for( size_t i=0 ; i<numCells ; ++i ) {
+    
+    size_t numWalls=T.cell(i).numWall();
+    
+    for( size_t n=0 ; n<numWalls ; ++n ) {
+      if( T.cell(i).wall(n)->cell1() != T.background() &&
+	  T.cell(i).wall(n)->cell2() != T.background() ) { 
+	size_t wallI = T.cell(i).wall(n)->index();
+	size_t neighIndex;
+	if( T.cell(i).wall(n)->cell1()->index()==i )
+	  neighIndex = T.cell(i).wall(n)->cell2()->index();				
+	else {
+	  neighIndex = T.cell(i).wall(n)->cell1()->index();				
+	}
+	if( i<neighIndex) {
+	  double conductance = wallData[wallI][CI];
+	  double flux = parameter(0)*conductance*
+	    (cellData[i][cI] - cellData[neighIndex][cI]);
+	  cellDerivs[i][cI] -= flux;
+	  cellDerivs[neighIndex][cI] += flux;
+	  // Update wall variables (conductance)
+	  if (conductance>0.0) {
+	    flux = std::fabs(flux);
+	    wallDerivs[wallI][CI] += parameter(1) *
+	      (
+	       (std::pow(flux,parameter(2))/std::pow(conductance,parameter(3)+1))
+	       - parameter(4) ) * conductance;
+	    //std::cerr << wallI << " " << CI << " "
+	    //	      << wallData[wallI][CI] << " "
+	    //	      << wallDerivs[wallI][CI] << std::endl;
+	  }
+	}
+      }
+    }
+  }
+}
+
 Diffusion2d::
 Diffusion2d(std::vector<double> &paraValue, 
             std::vector< std::vector<size_t> > 

@@ -3464,24 +3464,26 @@ namespace Division {
     if ( paraValue.size() != 4 &&  paraValue.size() != 6 ) {
       std::cerr << "DivisionSTAViaShortestPath::DivisionSTAViaShortestPath() "
 		<< "Four or six parameters are used V_threshold, Lwall_fraction, "
-		<< "Lwall_threshold, and COM (1 = COM, 0 = Random) "
+		<< "Lwall_threshold, and COM (1 = COM, 0 = Random) " << std::endl
 		<< "If six parameters are used, two additional parameters are for " 
-		<< "centerTriangulation(1) and double resting length (1: double, 0:single). "
+		<< "centerTriangulationFlag (=1, or not=0) and double resting length (1: double, 0:single). "
 		<<std::endl;
       std::exit(EXIT_FAILURE);
     }
-  
-    if ((indValue.size() == 2 && indValue[1].size() != 1) || 
+
+    if ((paraValue.size()==4 && indValue.size() != 2 ) ||
+	(paraValue.size()==6 && indValue.size() != 3 ) ||
+	(indValue[1].size() != 1 || indValue[1].size() != 2 ) || 
 	(indValue.size() == 3 && indValue[2].size() != 2)) {
       std::cerr << "DivisionSTAViaShortestPath::DivisionSTAViaShortestPath() "
 		<< "First level: Variable indices for volume dependent cell variables are used.\n"
-		<< "Second level (optional): Cell time index."
-		<< "Third level (if centerTriangulated): first:Com index, second: wall length index"
+		<< "Second level: [Next division volume] and [Cell time index] (optional)."
+		<< "Third level (optional, if centerTriangulated): [Com index] [wall length index]"
 		<<std::endl;
       exit(EXIT_FAILURE);
     }
   
-    setId("DivisionSTAViaShortestPath");
+    setId("Division::STAViaShortestPath");
     setNumChange(1);
     setParameter(paraValue);  
     setVariableIndex(indValue);
@@ -3507,7 +3509,7 @@ namespace Division {
 			 DataMatrix &wallDerivs,
 			 DataMatrix &vertexDerivs)
   {
-    if (T->cell(i).calculateVolume(vertexData) > parameter(0))
+    if (T->cell(i).calculateVolume(vertexData) > cellData[i][variableIndex(1,0)] )
       {
 	return 1;
       } 
@@ -3814,9 +3816,9 @@ namespace Division {
     //   std::cerr<<cellData[cell.index()][k]<<"  ";
     // std::cerr<<std::endl;
 
-    if (numVariableIndexLevel() == 2)
+    if (numVariableIndexLevel() == 2 && numVariableIndex(1)==2 )
       {
-	const size_t timeIndex = variableIndex(1, 0);
+	const size_t timeIndex = variableIndex(1, 1);
       
 	const double age = cellData[cell.index()][timeIndex];
       
@@ -3851,7 +3853,8 @@ namespace Division {
   
     //Change length of new wall between the divided daugther cells
     wallData[numWallTmp][0] *= parameter(1);
-  
+
+    //Calculate new division sizes
 
     //  std::cerr<<"  after::  "<<std::endl;
     //  for(size_t k=0; k< cellData[cell.index()].size(); ++k)

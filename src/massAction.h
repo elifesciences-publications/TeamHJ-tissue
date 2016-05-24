@@ -76,7 +76,8 @@ namespace MassAction {
 		DataMatrix &wallDerivs,
 		DataMatrix &vertexDerivs );
     ///
-    /// @brief Derivative function for this reaction class calculating the absolute value for noise solvers
+    /// @brief Derivative function for this reaction class calculating the absolute
+    /// value for noise solvers
     ///
     /// @see BaseReaction::derivsWithAbs(Compartment &compartment,size_t species,...)
     ///

@@ -338,6 +338,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new MembraneDiffusionSimple2(paraValue,indValue); 
   else if(idValue=="DiffusionSimple")
     return new DiffusionSimple(paraValue,indValue);
+  else if(idValue=="DiffusionConductiveSimple")
+    return new DiffusionConductiveSimple(paraValue,indValue);
   else if(idValue=="Diffusion2D")
     return new DiffusionSimple(paraValue,indValue);
   else if(idValue=="ActiveTransportCellEfflux")
@@ -486,6 +488,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new CalculatePCAPlane(paraValue,indValue); 
   else if(idValue=="InitiateWallLength")
     return new InitiateWallLength(paraValue,indValue); 
+  else if(idValue=="InitiateWallVariableConstant")
+    return new InitiateWallVariableConstant(paraValue,indValue); 
   else if(idValue=="InitiateWallMesh")
     return new InitiateWallMesh(paraValue,indValue); 
   else if(idValue=="StrainTest")

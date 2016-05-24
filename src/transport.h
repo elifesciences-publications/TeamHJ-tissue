@@ -135,8 +135,59 @@ class DiffusionSimple : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
-
-
+///
+/// @brief A cell-to-cell diffusion reaction dependent on conductivity variables in the walls
+///
+/// A reaction for passive diffusion of molecules between neighboring cells, where also conductivities between
+/// the cells are taken into account and updated individually depending on the flux (no direction). The model
+/// is inspired by the model presented in Hu and Cai (2013) Phys Rev Lett 111:138701.
+///
+/// Note that cell volume and other topological properties are not taken into account.
+/// The  is described by the equation
+///  
+/// @f[ \frac{dc_{i}}{dt} = - p_0 \sum_j C_{ij} ( c_{i} - c_{j}) @f] 
+/// @f[ \frac{dC_{ij}}{dt} = p_1 ( \frac{Q_{ij}^{p_2}}{C_{ij}^{p_3+1}} - p_4) C_{ij}) @f]
+///
+/// where
+///
+/// @f[ Q_{ij} = C_{ij} (c_{i} - c_{j}) @f]
+///  
+/// p_0 is the diffusion rate, $c_i$ is the cell concentration and $c_j$ is the concentration in a neighboring cell.
+/// $C_{ij}$ is the conductivity in the wall (between the two cells), $p_1$ is the update rate of the conductivity,
+/// $p_2$ is the 'flux' feedback control (=2 in Hu and Cai (2013)), $p_3$ is the control parameter from Hu and Cai (2013)
+/// [named gamma and phase transition at gamma=1/2]. $p_4$ is a 'degradation' parameter. 
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// DiffusionConductiveSimple 5 2 1 1
+/// p_0 p_1 p_2 p_3 p_4
+/// c_index (cell variable)
+/// C_index (wall variable)
+/// @endverbatim
+///
+/// @note The Simple in the name reflects the fact that no geometric factors are included.
+///
+class DiffusionConductiveSimple : public BaseReaction {
+  
+ public:
+  
+  DiffusionConductiveSimple(std::vector<double> &paraValue, 
+			    std::vector< std::vector<size_t> > 
+			    &indValue );
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
 
 ///
 /// @brief A cell-to-cell diffusion reaction
@@ -209,8 +260,6 @@ public:
 ///
 ///
 ///
- 
-
 class ActiveTransportCellEfflux  : public BaseReaction {
   
  public:
@@ -219,6 +268,11 @@ class ActiveTransportCellEfflux  : public BaseReaction {
 			  std::vector< std::vector<size_t> > 
 			  &indValue );
   
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
   void derivs(Tissue &T,
 	      DataMatrix &cellData,
 	      DataMatrix &wallData,

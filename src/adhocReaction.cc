@@ -1133,6 +1133,69 @@ derivs(Tissue &T,
 {
 }
 
+InitiateWallVariableConstant::
+InitiateWallVariableConstant(std::vector<double> &paraValue, 
+		   std::vector< std::vector<size_t> > 
+		   &indValue ) 
+{
+  //
+  //Do some checks on the parameters and variable indeces
+  //
+  if( paraValue.size()!=1 ) {
+    std::cerr << "InitiateWallVariableConstant::InitiateWallVariableConstant() "
+	      << "Uses one parameter, the value. " << std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 1 ) {
+    std::cerr << "InitiateWallVariableConstant::"
+	      << "InitiateWallVariableConstant() "
+	      << "One variable index at first level used, the variable to be initiated"
+	      << std::endl;
+    exit(0);
+  }
+  //
+  //Set the variable values
+  //
+  setId("InitiateWallVariableConstant");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  //
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "initValue";
+  setParameterId( tmp );
+}
+
+void InitiateWallVariableConstant::
+initiate(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs )
+	
+{
+  size_t dimension = vertexData[0].size();
+  size_t numWall = T.numWall();
+  
+  for (size_t i=0; i<numWall; ++i) {
+    wallData[i][variableIndex(0,0)] = parameter(0);
+  }
+}
+
+void InitiateWallVariableConstant::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+}
+
 InitiateWallMesh::
 InitiateWallMesh(std::vector<double> &paraValue, 
 		 std::vector< std::vector<size_t> > 

@@ -21,8 +21,8 @@ SHELL = /bin/sh
 CXX = g++
 CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi -std=c++11
 LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic -ansi -std=c++11
-#CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic   -std=c++11 -stdlib=libc++ -I/sw/include/
-#LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic 
+CXXFLAGS = -g -O3 -DNDEBUG -Wall -pedantic   -std=c++11 -stdlib=libc++ -I/sw/include/
+LDFLAGS = -g -O3 -DNDEBUG -Wall -pedantic 
 #CXXFLAGS = -g -Wall -pedantic -ansi
 #LDFLAGS = -g -Wall -pedantic -ansi 
 #

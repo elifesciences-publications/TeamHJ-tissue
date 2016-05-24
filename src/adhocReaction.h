@@ -486,6 +486,43 @@ public:
 };
 
 ///
+/// @brief Initiate a wall variable to a constant value for all walls
+///
+/// @details Initiate a wall variable to a constant value for all walls
+/// In the model file the reaction is defined as:
+/// @verbatim
+/// InitiateWallVariableConstant 1 1 1
+/// factor
+/// c_wallindex
+/// @endverbatim 
+/// 
+class InitiateWallVariableConstant : public BaseReaction {
+  
+public:
+  
+  InitiateWallVariableConstant(std::vector<double> &paraValue, 
+			       std::vector< std::vector<size_t> > 
+			       &indValue );
+  
+  void initiate(Tissue &T,
+		DataMatrix &cellData,
+		DataMatrix &wallData,
+		DataMatrix &vertexData,
+		DataMatrix &cellDerivs,
+		DataMatrix &wallDerivs,
+		DataMatrix &vertexDerivs );
+	
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+};
+
+///
 /// @brief Adds additional vertices to all walls
 ///
 /// @details Wall 'meshing' is applied by inserting additional vertices for all walls.
