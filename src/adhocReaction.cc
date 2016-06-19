@@ -3209,7 +3209,7 @@ ThresholdNoisyReset::ThresholdNoisyReset(std::vector<double> &paraValue,
   //
   if( paraValue.size()!=2 ) {
     std::cerr << "ThresholdNoisyReset::ThresholdNoisyReset()  parameter used "
-        << "Threshold" << std::endl;
+        << "Threshold and noise amplitude" << std::endl;
     exit(0);
   }
   if( indValue.size()!=2 || indValue[0].size()!=1 || indValue[1].size()!=1 ) {
@@ -3232,7 +3232,7 @@ ThresholdNoisyReset::ThresholdNoisyReset(std::vector<double> &paraValue,
   std::vector<std::string> tmp( numParameter() );
   tmp.resize( numParameter() );
   tmp[0] = "const";
-  tmp[1] = "switchtype";
+  tmp[1] = "amplitude";
   setParameterId( tmp );
 }
 
@@ -3284,7 +3284,9 @@ update(Tissue &T,
 
     if (cellData[cellI][cIndex]>=parameter(0)  ) {
           double rrr;
-          rrr= (myRandom::Rnd()-0.5);
+          //rrr= (myRandom::Rnd()-0.5);
+          rrr= (myRandom::Rnd())*parameter(1);
+
           cellData[cellI][c2Index]=rrr;
       }
 
