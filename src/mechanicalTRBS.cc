@@ -7669,10 +7669,10 @@ printState(Tissue *T,
   static size_t index=0;
 
   std::stringstream name;
-  name << "tmp/VTKL1Top" << index  <<".vtu";
+  name << "vtk/VTKL1Top" << index  <<".vtu";
   std::ofstream myfile;
   myfile.open (name.str());
-  //  myfile.open ("tmp/VTK_IntWalls.vtu");//("VTK_IntWalls%06d.vtu",index);
+  //  myfile.open ("vtk/VTK_IntWalls.vtu");//("VTK_IntWalls%06d.vtu",index);
   size_t pointCounter=0; 
   size_t cellCounter=0; 
 
@@ -7798,7 +7798,7 @@ printState(Tissue *T,
 //////////////////////L2t/////////////////////////////////
 
   name.str("");
-  name << "tmp/VTKL2Top" << index  <<".vtu";
+  name << "vtk/VTKL2Top" << index  <<".vtu";
   myfile.open (name.str());
   
   pointCounter=0; 
@@ -7921,7 +7921,7 @@ printState(Tissue *T,
 
 //////////////////////L3t////////////////////////////////
   name.str("");
-  name << "tmp/VTKL3Top" << index  <<".vtu";
+  name << "vtk/VTKL3Top" << index  <<".vtu";
   myfile.open (name.str());
 
   pointCounter=0; 
@@ -8046,7 +8046,7 @@ printState(Tissue *T,
 
 //////////////////////L1s/////////////////////////////////
   name.str("");
-  name << "tmp/VTKL1Side" << index  <<".vtu";
+  name << "vtk/VTKL1Side" << index  <<".vtu";
   myfile.open (name.str());
 
 
@@ -8169,7 +8169,7 @@ printState(Tissue *T,
 
 //////////////////////L2s/////////////////////////////////
   name.str("");
-  name << "tmp/VTKL2Side" << index  <<".vtu";
+  name << "vtk/VTKL2Side" << index  <<".vtu";
   myfile.open (name.str());
 
 
@@ -8292,7 +8292,7 @@ printState(Tissue *T,
 
 //////////////////////L3s/////////////////////////////////
   name.str("");
-  name << "tmp/VTKL3Side" << index  <<".vtu";
+  name << "vtk/VTKL3Side" << index  <<".vtu";
   myfile.open (name.str());
 
   pointCounter=0; 
@@ -8414,7 +8414,7 @@ printState(Tissue *T,
 
 //////////////////////L1b/////////////////////////////////
   name.str("");
-  name << "tmp/VTKL1Bottom" << index  <<".vtu";
+  name << "vtk/VTKL1Bottom" << index  <<".vtu";
   myfile.open (name.str());
 
 
@@ -8537,7 +8537,7 @@ printState(Tissue *T,
 
 //////////////////////L2b/////////////////////////////////
   name.str("");
-  name << "tmp/VTKL2Bottom" << index  <<".vtu";
+  name << "vtk/VTKL2Bottom" << index  <<".vtu";
   myfile.open (name.str());
 
   pointCounter=0; 
@@ -8659,7 +8659,7 @@ printState(Tissue *T,
 
 //////////////////////L3b/////////////////////////////////
   name.str("");
-  name << "tmp/VTKL3Bottom" << index  <<".vtu";
+  name << "vtk/VTKL3Bottom" << index  <<".vtu";
   myfile.open (name.str());
 
   pointCounter=0; 

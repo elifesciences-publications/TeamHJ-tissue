@@ -6,6 +6,7 @@
 
 namespace myFiles {
   std::istream *openFile(const std::string &fileName);
+  void createDir(const char path);
 }
 
 #endif /* MYFILES_H */

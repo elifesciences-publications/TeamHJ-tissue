@@ -44,11 +44,11 @@ int main(int argc,char *argv[]) {
 //     t.readInit ( filename.c_str(),1 );
 //     PLY_file ply_f ( filename );
 //     std::cout << "creating filenames\n";
-//     std::string pvdFile = "tmp/tissue.pvd";
+//     std::string pvdFile = "vtk/tissue.pvd";
 //     std::vector<std::string> files;
-//     files.push_back("tmp/VTK_cells.vtu");
-//     files.push_back("tmp/VTK_inner_walls.vtu");
-//     files.push_back("tmp/VTK_outer_walls.vtu");
+//     files.push_back("vtk/VTK_cells.vtu");
+//     files.push_back("vtk/VTK_inner_walls.vtu");
+//     files.push_back("vtk/VTK_outer_walls.vtu");
 //     
 //     std::cout << "writing...\n";
 //     PVD_file::writeFullPvd ( pvdFile, files,1 );

@@ -271,9 +271,9 @@ void BaseSolver::print(std::ostream &os)
   // Print in vtu format assuming a single wall component for variables
   //
   else if( printFlag_==1 ) {
-    std::string pvdFile = "tmp/tissue.pvd";
-    std::string cellFile = "tmp/VTK_cells.vtu";
-    std::string wallFile = "tmp/VTK_walls.vtu";
+    std::string pvdFile = "vtk/tissue.pvd";
+    std::string cellFile = "vtk/VTK_cells.vtu";
+    std::string wallFile = "vtk/VTK_walls.vtu";
     static size_t numCellVar = T_->cell(0).numVariable();
     setTissueVariables(numCellVar);
     if( tCount==0 ) {
@@ -285,9 +285,9 @@ void BaseSolver::print(std::ostream &os)
   // Print in vtu format assuming two wall components for wall variables (except for length)
   //
   else if( printFlag_==2 ) {
-    std::string pvdFile = "tmp/tissue.pvd";
-    std::string cellFile = "tmp/VTK_cells.vtu";
-    std::string wallFile = "tmp/VTK_walls.vtu";
+    std::string pvdFile = "vtk/tissue.pvd";
+    std::string cellFile = "vtk/VTK_cells.vtu";
+    std::string wallFile = "vtk/VTK_walls.vtu";
     static size_t numCellVar = T_->cell(0).numVariable();
     setTissueVariables(numCellVar);
     if( tCount==0 ) {
@@ -401,7 +401,7 @@ void BaseSolver::print(std::ostream &os)
   else if ( printFlag_==6 ) {
     std::ostringstream ssCount;
     ssCount << tCount;
-    std::string fname = "tmp/output_" + ssCount.str() + ".ply";
+    std::string fname = "vtk/output_" + ssCount.str() + ".ply";
     PLY_file plyFile(fname);
     plyFile << *T_;
   }
@@ -409,7 +409,7 @@ void BaseSolver::print(std::ostream &os)
   else if ( printFlag_==7 ) {
     std::ostringstream ssCount;
     ssCount << tCount;
-    std::string fname = "tmp/output_" + ssCount.str() + ".ply";
+    std::string fname = "vtk/output_" + ssCount.str() + ".ply";
     PLY_file plyFile(fname);
     plyFile.center_triangulation_output() = true;
     plyFile << *T_;
@@ -570,11 +570,11 @@ void BaseSolver::print(std::ostream &os)
     //printing inner and outer walls separately in vtk format
     else if ( printFlag_==9 )
     {
-        std::string pvdFile = "tmp/tissue.pvd";
+        std::string pvdFile = "vtk/tissue.pvd";
         std::vector<std::string> files;
-        files.push_back ( "tmp/VTK_cells.vtu" );
-        files.push_back ( "tmp/VTK_inner_walls.vtu" );
-        files.push_back ( "tmp/VTK_outer_walls.vtu" );
+        files.push_back ( "vtk/VTK_cells.vtu" );
+        files.push_back ( "vtk/VTK_inner_walls.vtu" );
+        files.push_back ( "vtk/VTK_outer_walls.vtu" );
 
         static size_t numCellVar = T_->cell ( 0 ).numVariable();
         setTissueVariables ( numCellVar );
@@ -626,9 +626,9 @@ void BaseSolver::print(std::ostream &os)
 
   // Generating the vtk paired wall outputs. 
 
-    std::string pvdFile = "tmp/tissue.pvd";
-    std::string cellFile = "tmp/VTK_cells.vtu";
-    std::string wallFile = "tmp/VTK_walls.vtu";
+    std::string pvdFile = "vtk/tissue.pvd";
+    std::string cellFile = "vtk/VTK_cells.vtu";
+    std::string wallFile = "vtk/VTK_walls.vtu";
     static size_t numCellVar = T_->cell(0).numVariable();
     setTissueVariables(numCellVar);
     if( tCount==0 ) {
@@ -704,9 +704,9 @@ void BaseSolver::print(std::ostream &os)
 
   // Generating the vtk paired wall outputs. 
 
-    std::string pvdFile = "tmp/tissue.pvd";
-    std::string cellFile = "tmp/VTK_cells.vtu";
-    std::string wallFile = "tmp/VTK_walls.vtu";
+    std::string pvdFile = "vtk/tissue.pvd";
+    std::string cellFile = "vtk/VTK_cells.vtu";
+    std::string wallFile = "vtk/VTK_walls.vtu";
     static size_t numCellVar = T_->cell(0).numVariable();
     setTissueVariables(numCellVar);
     if( tCount==0 ) {
@@ -964,9 +964,9 @@ void BaseSolver::print(std::ostream &os)
     of << std::endl;
 
   // Generating the vtk paired wall outputs. 
-    std::string pvdFile = "tmp/tissue.pvd";
-    std::string cellFile = "tmp/VTK_cells.vtu";
-    std::string wallFile = "tmp/VTK_walls.vtu";
+    std::string pvdFile = "vtk/tissue.pvd";
+    std::string cellFile = "vtk/VTK_cells.vtu";
+    std::string wallFile = "vtk/VTK_walls.vtu";
     static size_t numCellVar = T_->cell(0).numVariable();
     setTissueVariables(numCellVar);
 
@@ -1215,9 +1215,9 @@ void BaseSolver::print(std::ostream &os)
 
   // Generating the vtk paired wall outputs for the first time point. 
     
-    std::string pvdFile = "tmp/tissue.pvd";
-    std::string cellFile = "tmp/VTK_cells.vtu";
-    std::string wallFile = "tmp/VTK_walls.vtu";
+    std::string pvdFile = "vtk/tissue.pvd";
+    std::string cellFile = "vtk/VTK_cells.vtu";
+    std::string wallFile = "vtk/VTK_walls.vtu";
     static size_t numCellVar = T_->cell(0).numVariable();
     setTissueVariables(numCellVar);
 
@@ -1491,9 +1491,9 @@ void BaseSolver::print(std::ostream &os)
  }   
 
  else if( printFlag_==59 ) {// Print in vtu format and some other data
-   std::string pvdFile = "tmp/tissue.pvd";
-   std::string cellFile = "tmp/VTK_cells.vtu";
-   std::string wallFile = "tmp/VTK_walls.vtu";
+   std::string pvdFile = "vtk/tissue.pvd";
+   std::string cellFile = "vtk/VTK_cells.vtu";
+   std::string wallFile = "vtk/VTK_walls.vtu";
    static size_t numCellVar = T_->cell(0).numVariable();
    setTissueVariables(numCellVar);
    if( tCount==0 ) {
@@ -1526,9 +1526,9 @@ void BaseSolver::print(std::ostream &os)
 
   
  else if( printFlag_==61 ) {// Print in vtu format and angle distribution at the end PLoS/fig3
-   std::string pvdFile = "tmp/tissue.pvd";
-   std::string cellFile = "tmp/VTK_cells.vtu";
-   std::string wallFile = "tmp/VTK_walls.vtu";
+   std::string pvdFile = "vtk/tissue.pvd";
+   std::string cellFile = "vtk/VTK_cells.vtu";
+   std::string wallFile = "vtk/VTK_walls.vtu";
    static size_t numCellVar = T_->cell(0).numVariable();
    setTissueVariables(numCellVar);
    if( tCount==0 ) {
@@ -1585,9 +1585,9 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
   }
 
  else if( printFlag_==65 ) {// Print in vtu format and angle distribution at the end other data for Dorota data
-   std::string pvdFile = "tmp/tissue.pvd";
-   std::string cellFile = "tmp/VTK_cells.vtu";
-   std::string wallFile = "tmp/VTK_walls.vtu";
+   std::string pvdFile = "vtk/tissue.pvd";
+   std::string cellFile = "vtk/VTK_cells.vtu";
+   std::string wallFile = "vtk/VTK_walls.vtu";
    static size_t numCellVar = T_->cell(0).numVariable();
    setTissueVariables(numCellVar);
    if( tCount==0 ) {
@@ -1615,9 +1615,9 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
  }
   
  else if( printFlag_==66 ) {// Print in vtu format and strain data  at the end PLoS/fig2F
-   std::string pvdFile = "tmp/tissue.pvd";
-   std::string cellFile = "tmp/VTK_cells.vtu";
-   std::string wallFile = "tmp/VTK_walls.vtu";
+   std::string pvdFile = "vtk/tissue.pvd";
+   std::string cellFile = "vtk/VTK_cells.vtu";
+   std::string wallFile = "vtk/VTK_walls.vtu";
    static size_t numCellVar = T_->cell(0).numVariable();
    setTissueVariables(numCellVar);
    if( tCount==0 ) {
@@ -1633,9 +1633,9 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
  }
 
  else if( printFlag_==67 ) {// Print in vtu format and resting length
-   std::string pvdFile = "tmp/tissue.pvd";
-   std::string cellFile = "tmp/VTK_cells.vtu";
-   std::string wallFile = "tmp/VTK_walls.vtu";
+   std::string pvdFile = "vtk/tissue.pvd";
+   std::string cellFile = "vtk/VTK_cells.vtu";
+   std::string wallFile = "vtk/VTK_walls.vtu";
    static size_t numCellVar = T_->cell(0).numVariable();
    setTissueVariables(numCellVar);
    if( tCount==0 ) {
@@ -1845,9 +1845,9 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
 		<< reactionIndex << " in reaction list, no printing." << std::endl;     
     }
     else T_->reaction(reactionIndex)->printState(T_,cellData_,wallData_,vertexData_);
-    std::string pvdFile = "tmp/tissue.pvd";
-    std::string cellFile = "tmp/VTK_cells.vtu";
-    std::string wallFile = "tmp/VTK_walls.vtu";
+    std::string pvdFile = "vtk/tissue.pvd";
+    std::string cellFile = "vtk/VTK_cells.vtu";
+    std::string wallFile = "vtk/VTK_walls.vtu";
     static size_t numCellVar = T_->cell(0).numVariable();
     setTissueVariables(numCellVar);
     if( tCount==0 ) {
@@ -1857,9 +1857,9 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
   }
 
   else if( printFlag_==102 ) {//(adhoc) Print in vtu format and edges to study strain and growth
-    std::string pvdFile = "tmp/tissue.pvd";
-    std::string cellFile = "tmp/VTK_cells.vtu";
-    std::string wallFile = "tmp/VTK_walls.vtu";
+    std::string pvdFile = "vtk/tissue.pvd";
+    std::string cellFile = "vtk/VTK_cells.vtu";
+    std::string wallFile = "vtk/VTK_walls.vtu";
     static size_t numCellVar = T_->cell(0).numVariable();
     setTissueVariables(numCellVar);
     if( tCount==0 ) {
