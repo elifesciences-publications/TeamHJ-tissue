@@ -4502,22 +4502,8 @@ namespace Division {
     }
     else
       { 
-      //if numParameter()==6 && parameter(4)==1 is not fulfilled
-
-       //cellData[i][10]=0.0;     //resetting variable to 0 when dividing
-      // double rrr;
-      // rrr= (myRandom::Rnd()-0.5);
-      // cellData[i][8]=rrr;
-
       cellData[i][variableIndex(3,0)]=0;        //resetting flag to 0 when dividing
-       //cellData[i][9]=0.0;      //resetting variable to 0 when dividing
 
-      //std::cerr<<"dividing "<<i<<"\n"<<std::endl;
-      //std::cerr<<cellData[i][5]<<"\n"<<std::endl;
-      //std::cerr<<"Former size"<<cellData.size()<<i<<"\n"<<std::endl;
-      //std::cerr<<cellData[i].size()<<"\n"<<std::endl;
-      //int numcelli=(T -> numCell());
-      //std::cerr<<"numcells "<<numcelli<<"\n"<<std::endl;
 
       T->divideCell(&cell, winner.wall1, winner.wall2, 
         p, q, cellData, wallData, vertexData,
@@ -4542,21 +4528,26 @@ namespace Division {
           if (maxcellnum<cellData[kk][18])
             {maxcellnum=cellData[kk][18];}
       }
+
+      // Code for ATML1 project
+
       //inheriting the mother cell index from the lineage indexing before it is updated
       cellData[i][19]=cellData[i][18];
       cellData[(T -> numCell())-1][19]=cellData[i][18];
       // lineage indexing
       cellData[i][18]=maxcellnum+1;
       cellData[(T -> numCell())-1][18]=maxcellnum+2;
-      // resetting 
+      // Adding noise between daughter cells
       double rr1;
-      rr1= (myRandom::Rnd()-0.5)*parameter(0);
+      //rr1= (myRandom::Rnd()-0.5)*parameter(0);
+      rr1= (myRandom::Rnd())*parameter(0);
       cellData[i][8]=rr1; //resetting the clock for one of the cells
 
       double rr2;
-      rr2= (myRandom::Rnd()-0.5)*parameter(0);
+      //rr2= (myRandom::Rnd()-0.5)*parameter(0);
+      rr2= (myRandom::Rnd())*parameter(0);
+
       cellData[(T -> numCell())-1][8]=rr2;
-      //std::cerr <<"hello"<<" "<<rr1<<" "<<rr2<<'\n';
 
     }
   
@@ -5843,7 +5834,8 @@ namespace Division {
     size_t dimension = vertexData[0].size();
     assert( divCell->numWall() > 1 );
     assert( dimension==2 || dimension==3 ); 
-
+    
+    // Code for the ATML1 project
     cellData[i][8]=0;     //resetting variable to 0 when dividing
     cellData[i][9]=0.0;   //resetting variable to 0 when dividing
     cellData[i][10]=0.0;  //resetting variable to 0 when dividing
