@@ -1486,7 +1486,7 @@ class AndThresholdsGate : public BaseReaction {
 
 /// In the model file, the reaction is specified as:
 /// @verbatim
-/// AndThresholdsGate 2 2 2 1   	 	 # number of parameters is set to one (gate_type)
+/// AndThresholdsGate 2 2 2 1  # number of parameters, types of indexs, and number of the different types of indexs. 
 /// thresh_var1   	 		  # threshold of the fist variable upstream the gate.
 /// thresh_var2   	 		  # threshold of the second variable upstream the gate.
 /// index_var1   	 		  # index of the fist variable upstream the gate.
@@ -1495,7 +1495,7 @@ class AndThresholdsGate : public BaseReaction {
 /// @endverbatim
 
 /// @note This logical gate function makes a downstream species  irreversibly  
-/// switch from 0 to 1 if the two input variables are larger than specific thresholds.
+/// switch from 0 to 1 if the two input variables are larger than their respective thresholds.
 
   /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
   AndThresholdsGate(std::vector<double> &paraValue, 

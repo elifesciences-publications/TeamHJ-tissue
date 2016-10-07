@@ -2491,23 +2491,10 @@ update(Tissue &T,
   //For each cell
   for (size_t cellI = 0; cellI < numCells; ++cellI) {  
 
-   // if (cellData[cellI][cIndex_input2]==1 || cellData[cellI][cIndex_input2]==0){cond=1;}
-   // if (cellData[cellI][cIndex_input2]==0){cond=1;}
-   //    if (cellData[cellI][cIndex_input1]==1 && cond==1 && cellData[cellI][cIndex_input3]==0)
 
     if (cellData[cellI][cIndex_input1]==1 && cellData[cellI][cIndex_input2]==1 && cellData[cellI][cIndex_input3]==0)
         {cellData[cellI][cIndex_output]=1;}
-   //   else
-  //      {cellData[cellI][cIndex_output]=0;}
 
-    //if (cellData[cellI][cIndex_input1]==1 && cellData[cellI][cIndex_input2]==1)
-        //{if(cellData[cellI][cIndex_input3]==0)
-         // {cellData[cellI][cIndex_output]=1;}
-        //else
-         // {cellData[cellI][cIndex_output]=0;}
-        //}
-       // else
-      //  {cellData[cellI][cIndex_output]=0;}
 
   }
 }

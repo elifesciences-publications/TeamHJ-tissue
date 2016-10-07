@@ -751,29 +751,16 @@ namespace Division {
   };
 
 
-  /// @brief UNDER CONSTRUCTION, DO NOT USE YET!!!
+  /// @brief Division rule that is being used for the ATML1 model, so it is not meant to be used for generic models.
   /// Adapted from Division::ShortestPath
 
   ///  Divides a cell when a certain flag has value 1, with New wall created at shortest
   ///  path that divides the volume (not!) in equal parts. Using centerTriangulation and doubleLength 
-  ///  formats are optional and can be done by setting the coresponding flags. 
-  /// 
-  ///
-  /// @verbatim
-  ///
-  /// FlagResetShortestPath 4 3 0/1 1 1 
-  /// V_{threshold} 
-  /// L^{wall}_{frac} (relative of new wall)
-  /// L^{wall}_{threshold} (disallowed closeness)
-  /// centerCom flag(0:random, 1:COM)
-  ///
-  /// I1 (optional volume related index to be updated)
-  ///
-  /// cell time index(optional)
-  ///
-  /// @endverbatim
-  ///
-  /// or
+  ///  formats are optional and can be done by setting the corresponding flags. 
+  ///  
+  ///  Other variables are reset, according to what needs to be done for the ATML1 model.
+
+
   ///
   /// @verbatim
   /// Division::FlagResetShortestPath 6 4 0 0 2 1 # 6 pars, 4 types of indices
@@ -792,6 +779,22 @@ namespace Division {
   /// com index 
   /// restinglengthIndex
   /// flagindex
+  /// @endverbatim
+  ///
+  /// or it might be possible to use (although it has not been tested)
+
+  /// @verbatim
+  ///
+  /// FlagResetShortestPath 4 3 0/1 1 1 
+  /// V_{threshold} 
+  /// L^{wall}_{frac} (relative of new wall)
+  /// L^{wall}_{threshold} (disallowed closeness)
+  /// centerCom flag(0:random, 1:COM)
+  ///
+  /// I1 (optional volume related index to be updated)
+  ///
+  /// cell time index(optional)
+  ///
   ///
   /// @endverbatim
 
