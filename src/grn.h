@@ -154,7 +154,86 @@ class HillGeneralOne : public BaseReaction {
 	      DataMatrix &cellDerivs,
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
+
+  void derivsWithAbs(Tissue &T,
+         DataMatrix &cellData,
+         DataMatrix &wallData,
+         DataMatrix &vertexData,
+         DataMatrix &cellDerivs,
+         DataMatrix &wallDerivs,
+         DataMatrix &vertexDerivs,
+         DataMatrix &sdydtCell,
+         DataMatrix &sdydtWall,
+         DataMatrix &sdydtVertex );
 };
+
+///
+/// @brief This class describes a simple Hill-type production where each bound/unbound state contributes
+/// and for two different inputs acting in an additive manner, as they were the same transcription factor
+///
+/// @details This reaction uses two inputs and describes a Hill production (activation or repression) by
+///
+/// @f[ \frac{dy_{ij}}{dt} =
+/// \frac{p_0 p_2^{p_3} + p_1 (y_{ik}+y_{ik'})^{p_3}}{p_2^{p_3}+(y_{ik}+y_{ik'})^{p_3}}@f]
+///
+/// where @f$ p_0 @f$ is the maximal unbound rate @f$ p_1 @f$ is the maximal bound rate
+/// (@f$V_{max}@f$ if the other V is set to zero), and @f$ p_2 @f$ is the Hill
+/// constant (@f$K_{half}@f$), and @f$ p_3 @f$ is the Hill coefficient. The
+/// two k and k' indices are given in the first level of varIndex.
+///
+/// In a model file the reaction looks like
+/// @verbatim
+/// hillGeneralOne_TwoInputs 4 2 1 2
+/// Vunbound Vbound K_H n_H
+/// j (produced_index)
+/// k (activator/repressor_index)
+/// k' (activator/repressor_index)
+/// @endverbatim
+///
+class HillGeneralOne_TwoInputs : public BaseReaction {
+  
+ public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  HillGeneralOne_TwoInputs(std::vector<double> &paraValue, 
+     std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &wallData,
+        DataMatrix &vertexData,
+        DataMatrix &cellDerivs,
+        DataMatrix &wallDerivs,
+        DataMatrix &vertexDerivs );
+
+  void derivsWithAbs(Tissue &T,
+         DataMatrix &cellData,
+         DataMatrix &wallData,
+         DataMatrix &vertexData,
+         DataMatrix &cellDerivs,
+         DataMatrix &wallDerivs,
+         DataMatrix &vertexDerivs,
+         DataMatrix &sdydtCell,
+         DataMatrix &sdydtWall,
+         DataMatrix &sdydtVertex );
+};
+
 
 ///
 /// @brief This class describes a Hill-type production where each bound/unbound state contributes

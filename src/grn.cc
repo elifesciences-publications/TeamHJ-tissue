@@ -199,6 +199,127 @@ derivs(Tissue &T,
   }
 }
 
+
+void HillGeneralOne::
+derivsWithAbs(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &wallData,
+        DataMatrix &vertexData,
+        DataMatrix &cellDerivs,
+        DataMatrix &wallDerivs,
+        DataMatrix &vertexDerivs,
+        DataMatrix &sdydtCell,
+        DataMatrix &sdydtWall,
+        DataMatrix &sdydtVertex) 
+{
+  double KPow = std::pow(parameter(2),parameter(3));   
+  size_t cIndex = variableIndex(0,0);
+  
+  // Do the update for each cell
+  size_t numCells = T.numCell();
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {      
+    double tfPow = std::pow(cellData[cellI][variableIndex(1,0)],parameter(3)); 
+
+    cellDerivs[cellI][cIndex] += (parameter(0)*KPow + parameter(1)*tfPow) /
+      (KPow+tfPow);
+    sdydtCell[cellI][cIndex]+=(parameter(0)*KPow + parameter(1)*tfPow) /
+      (KPow+tfPow);
+  }
+}
+
+
+
+HillGeneralOne_TwoInputs::HillGeneralOne_TwoInputs(std::vector<double> &paraValue, 
+             std::vector< std::vector<size_t> > 
+             &indValue ) 
+{
+  // Do some checks on the parameters and variable indeces
+  //
+  if (indValue.size() != 2 || indValue[0].size() != 1 || indValue[1].size() != 2) {
+    std::cerr << "HillGeneralOne_TwoInputs::HillGeneralOne_TwoInputs() "
+        << "The variable to be updated is used from first level and two variables"
+        << " index (two inputs acting as a single TF) are used from second." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (paraValue.size() != 4) {
+    std::cerr << "HillGeneralOne_TwoInputs::HillGeneralOne_TwoInputs() "
+        << "Uses four parameters (Vunbound, Vbound, K_H, n_H)."
+        << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  // Set the variable values
+  //
+  setId("HillGeneralOne_TwoInputs");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "V_unbound";
+  tmp[1] = "V_bound";
+  tmp[2] = "K_half";
+  tmp[3] = "n_Hill";
+  setParameterId( tmp );
+}
+
+void HillGeneralOne_TwoInputs::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs )
+{
+  double KPow = std::pow(parameter(2),parameter(3));   
+  size_t cIndex = variableIndex(0,0);
+  
+  // Do the update for each cell
+  size_t numCells = T.numCell();
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {      
+    double tfPow = std::pow(cellData[cellI][variableIndex(1,0)]+cellData[cellI][variableIndex(1,1)],parameter(3)); 
+
+    cellDerivs[cellI][cIndex] += (parameter(0)*KPow + parameter(1)*tfPow) /
+      (KPow+tfPow);
+  }
+}
+
+
+void HillGeneralOne_TwoInputs::
+derivsWithAbs(Tissue &T,
+        DataMatrix &cellData,
+        DataMatrix &wallData,
+        DataMatrix &vertexData,
+        DataMatrix &cellDerivs,
+        DataMatrix &wallDerivs,
+        DataMatrix &vertexDerivs,
+        DataMatrix &sdydtCell,
+        DataMatrix &sdydtWall,
+        DataMatrix &sdydtVertex) 
+{
+  double KPow = std::pow(parameter(2),parameter(3));   
+  size_t cIndex = variableIndex(0,0);
+  
+  // Do the update for each cell
+  size_t numCells = T.numCell();
+  //For each cell
+  for (size_t cellI = 0; cellI < numCells; ++cellI) {      
+    double tfPow = std::pow((cellData[cellI][variableIndex(1,0)]+cellData[cellI][variableIndex(1,0)]),parameter(3)); 
+
+    cellDerivs[cellI][cIndex] += (parameter(0)*KPow + parameter(1)*tfPow) /
+      (KPow+tfPow);
+    sdydtCell[cellI][cIndex]+=(parameter(0)*KPow + parameter(1)*tfPow) /
+      (KPow+tfPow);
+  }
+}
+
+
+
 HillGeneralTwo::
 HillGeneralTwo(std::vector<double> &paraValue, 
 	       std::vector< std::vector<size_t> > 

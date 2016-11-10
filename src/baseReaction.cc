@@ -320,6 +320,8 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new Hill(paraValue,indValue); 
   else if(idValue=="HillGeneralOne")
     return new HillGeneralOne(paraValue,indValue); 
+  else if(idValue=="HillGeneralOne_TwoInputs")
+    return new HillGeneralOne_TwoInputs(paraValue,indValue); 
   else if(idValue=="HillGeneralTwo")
     return new HillGeneralTwo(paraValue,indValue); 
   else if(idValue=="HillGeneralThree")
