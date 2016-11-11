@@ -309,7 +309,7 @@ derivsWithAbs(Tissue &T,
   size_t numCells = T.numCell();
   //For each cell
   for (size_t cellI = 0; cellI < numCells; ++cellI) {      
-    double tfPow = std::pow((cellData[cellI][variableIndex(1,0)]+cellData[cellI][variableIndex(1,0)]),parameter(3)); 
+    double tfPow = std::pow((cellData[cellI][variableIndex(1,0)]+cellData[cellI][variableIndex(1,1)]),parameter(3)); 
 
     cellDerivs[cellI][cIndex] += (parameter(0)*KPow + parameter(1)*tfPow) /
       (KPow+tfPow);
