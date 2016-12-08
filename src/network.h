@@ -169,8 +169,8 @@ class AuxinModel1 : public BaseReaction {
 ///
 /// In a model file the reaction is defined as:
 /// @verbatim
-/// AuxinModel1S 12 1 4
-/// p_0 ... p_11
+/// AuxinModel1S 12[13] 1 4
+/// p_0 ... p_11 [p_12]
 /// A_index P_index X_index M_index
 /// @endverbatim
 /// or alternatively
@@ -181,7 +181,11 @@ class AuxinModel1 : public BaseReaction {
 /// P_wall (save index pair)
 /// @endverbatim
 ///
-/// @see AuxinModel1 - same model without the symmetric PIN1-membrane term
+/// The last optional parameter is a flag setting reduced polarity at boundary if 1, i.e.
+/// the PIN in membrane is reduced with factor (Nwall-1)/Nwall to assume some PIN in the outer
+/// mwmbrane. If 0, no PIN will be assumed pointing outwards wards the boundary.
+///
+/// @see AuxinModel1 - same model without the symmetric PIN1-membrane term (except boundary flag)
 ///
 class AuxinModel1S : public BaseReaction {
   

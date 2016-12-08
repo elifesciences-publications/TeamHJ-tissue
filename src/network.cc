@@ -304,16 +304,19 @@ AuxinModel1S(std::vector<double> &paraValue,
   
   //Do some checks on the parameters and variable indeces
   //
-  if( paraValue.size()!=13 ) {
+  if( paraValue.size()!=13 && paraValue.size() != 14 ) {
     std::cerr << "AuxinModel1S::"
 	      << "AuxinModel1S() "
-	      << "Thirteen parameters used:" << std::endl << std::endl;
+	      << "Thirteen parameters (plus optional bc flag) is used:" << std::endl << std::endl;
     std::cerr << "dA_i/dt = p0*M_i + p1 - p2*A_i +p6*Sum_{neigh} (A_n-A_i) +" << std::endl 
  	      << "p5*Sum_{neigh} (P_ni*A_n-P_in*A_i)" << std::endl << std::endl 
 	      << "dP_i/dt = p7 - p8*P_i" << std::endl << std::endl 
 	      << "dX_i/dt = p9*A_i - p10*X_i" << std::endl << std::endl 
 	      << "dM_i/dt = p11*Theta_L1 - p12*M_i" << std::endl << std::endl 
 	      << "P_in = P_i*[(1-p3) + p3 X_n]/(p_3+Sum_{k,neigh} [(1-p3) + p3 X_k])"
+	      << std::endl << std::endl
+	      << "Optional boundary condition flag is set to 0 for no PIN owards boundary walls "
+	      << " and 1 to normalize PIN in boundary cells to be (N-1)/N, where N is number of walls."
 	      << std::endl << std::endl;
     std::cerr << "Also geometrical factors are part of the transport terms (see Documentation).";
     exit(EXIT_FAILURE);
@@ -323,6 +326,15 @@ AuxinModel1S(std::vector<double> &paraValue,
 	      << "AuxinModel1S() "
 	      << "Parameter p3 (c_p) needs to be in [0,1]." << std::endl << std::endl;
     exit(EXIT_FAILURE);
+  }
+  if (paraValue.size()==14 ) {
+    if (paraValue[13] != 0 && paraValue[13] != 1 ) {
+      std::cerr << "AuxinModel1S::"
+		<< "AuxinModel1S() "
+		<< "(Optional) parameter p13 needs to be 0 (no PIN towards boundary) or 1."
+		<< std::endl << std::endl;
+      exit(EXIT_FAILURE);
+    }
   }
   if( (indValue.size() != 1 && indValue.size() !=2) || indValue[0].size() != 4 ||
       (indValue.size()==2 &&indValue[1].size() != 1) ) {
@@ -378,6 +390,11 @@ derivs(Tissue &T,
 	  pI<cellData[0].size() &&
 	  xI<cellData[0].size() &&
 	  mI<cellData[0].size() );
+
+  size_t boundaryFlag=0;
+  if (numParameter()==14 && parameter(13)==1) {
+    boundaryFlag=1;
+  }
   
   if (numVariableIndexLevel()==2) {
     assert(variableIndex(1,0)<wallData[0].size());
@@ -416,7 +433,10 @@ derivs(Tissue &T,
     }
     //sum /= numActualWalls;//For adjusting for different num neigh
     sum += parameter(4);
-    
+    double bcFactor=1.0;
+    if (boundaryFlag) {
+      bcFactor = numActualWalls / numWalls;
+    }
     for( size_t n=0 ; n<numWalls ; ++n ) {
       //if( !T.cell(i).isNeighbor(T.background()) ) { 
       if( T.cell(i).wall(n)->cell1() != T.background() &&
@@ -432,11 +452,12 @@ derivs(Tissue &T,
 	double polRate=0.0;
 	
 	if( sum != 0.0 ) {
-	  polRate = cellData[i][pI] * ( (1-parameter(3)) + parameter(3)*cellData[neighIndex][xI] ) / sum;
+	  polRate = bcFactor*cellData[i][pI] * ( (1-parameter(3)) + parameter(3)*cellData[neighIndex][xI] ) / sum;
 	}
 	else {
 	  polRate = 1.;
 	}
+
 	if (numVariableIndexLevel()==2) {//store PIN value for membrane (in wall pair data)
 	  wallData[T.cell(i).wall(n)->index()][variableIndex(1,0)+pinIndexAdd] = polRate;
 	}
