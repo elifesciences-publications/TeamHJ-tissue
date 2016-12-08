@@ -754,9 +754,9 @@ AuxinModelSimple1Wall(std::vector<double> &paraValue,
   //Do some checks on the parameters and variable indeces
   //
   if( paraValue.size()!=7 ) {
-    std::cerr << "AuxinModelSimple1::"
-	      << "AuxinModelSimple1() "
-	      << "Twelve parameters used.\n\n";
+    std::cerr << "AuxinModelSimple1Wall::"
+	      << "AuxinModelSimple1Wall() "
+	      << "Seven parameters used.\n\n";
     std::cerr << "dA_i/dt = p0 - p1*A_i +p4*Sum_{neigh} (A_n-A_i) +\n" 
 	      << "p3*Sum_{neigh} (P_ni*A_n-P_in*A_i)\n\n" 
 	      << "dP_i/dt = p5 - p6*P_i\n\n"
