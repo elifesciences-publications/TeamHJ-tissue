@@ -398,6 +398,20 @@ derivs(Tissue &T,
 	else {
 	  neighIndex = T.cell(i).wall(n)->cell1()->index();				
 	}
+
+	// calculate distance between compartments
+
+	std::vector<double> neighpos = T.cell(neighIndex).positionFromVertex();
+	std::vector<double> cellpos  = T.cell(i).positionFromVertex();
+
+	double distance=0;
+
+        for(size_t d=0;d<dimension; ++d)
+	  distance += (neighpos[d] - cellpos[d])*(neighpos[d] - cellpos[d]);
+
+	distance = std::sqrt(distance);
+
+	//std::cerr << "distance = " << distance << "\n";
         
         size_t v1=T.cell(i).wall(n)->vertex1()-> index();
         size_t v2=T.cell(i).wall(n)->vertex2()-> index();
@@ -407,10 +421,10 @@ derivs(Tissue &T,
         contactLength=std::sqrt(contactLength);
 	double cellVolume = T.cell(i).calculateVolume(vertexData);
         cellDerivs[i][aI] -= 
-          parameter(0)*contactLength*(cellData[i][aI] - cellData[neighIndex][aI])/cellVolume;
+          parameter(0)*contactLength*(cellData[i][aI] - cellData[neighIndex][aI])/(cellVolume*distance);
 	cellVolume = T.cell(neighIndex).calculateVolume(vertexData);
         cellDerivs[neighIndex][aI] += 
-          parameter(0)*contactLength*(cellData[i][aI] - cellData[neighIndex][aI])/cellVolume;
+          parameter(0)*contactLength*(cellData[i][aI] - cellData[neighIndex][aI])/(cellVolume*distance);
       }
     }
   }

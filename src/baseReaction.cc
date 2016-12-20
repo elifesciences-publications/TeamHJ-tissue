@@ -343,7 +343,7 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
   else if(idValue=="DiffusionConductiveSimple")
     return new DiffusionConductiveSimple(paraValue,indValue);
   else if(idValue=="Diffusion2D")
-    return new DiffusionSimple(paraValue,indValue);
+    return new Diffusion2d(paraValue,indValue);
   else if(idValue=="ActiveTransportCellEfflux")
     return new ActiveTransportCellEfflux(paraValue,indValue);
   else if(idValue=="ActiveTransportCellEffluxMM")
