@@ -100,10 +100,13 @@ protected:
   /// 3) Standard output for openGL developed plotting of cell variables 
   /// 4) Standard output for openGL developed plotting of wall variables
   /// 5) Output that can be used for plotting in gnuplot.
-  ///
+  /// 6) PLY format
+  /// 7) PLY format assuming centraltriangulation
+  /// 10) As (2), and in addition a file is generated (tissue.idata) storing the states in init format.
+  /// The time points are divided by a line '#tCount = value' to find individual time points in file.
   /// In addition there are several methods for plotting also membrane data (e.g. PIN1),
-  /// as well as specific methods.
   /// @endverbatim 
+  /// as well as specific methods.
   ///
   /// @note Caveat: Not yet general, but will be...?
   ///
