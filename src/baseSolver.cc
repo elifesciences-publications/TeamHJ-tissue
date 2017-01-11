@@ -587,6 +587,34 @@ void BaseSolver::print(std::ostream &os)
     }
 
   //
+  // Print in vtu format assuming two wall components for wall variables (except for length) AND init format
+  //
+    else if( printFlag_==10 ) {
+      // VTK output
+      std::string pvdFile = "vtk/tissue.pvd";
+      std::string cellFile = "vtk/VTK_cells.vtu";
+      std::string wallFile = "vtk/VTK_walls.vtu";
+      static size_t numCellVar = T_->cell(0).numVariable();
+      setTissueVariables(numCellVar);
+      if( tCount==0 ) {
+        PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
+      }
+      PVD_file::writeTwoWall(*T_,cellFile,wallFile,tCount);
+
+    //Print in init format in file tissue.idata
+    std::ofstream of;
+
+    if (tCount==0) {
+      of.open("tissue.idata");
+    }
+    else {
+      of.open("tissue.idata",std::ios_base::app | std::ios_base::out);
+    }
+    of << "#tCount = " << tCount << std::endl;
+    printInit(of);    
+    }
+
+  //
   // Ad hoc and temporary print flags
   //
 
