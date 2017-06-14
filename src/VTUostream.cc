@@ -69,9 +69,13 @@ void VTUostream::write_cells ( Tissue const& t )
     else
         write_cell_geometry ( t, VTUostream::POLYGON );
     write_cell_data_header ( "Scalars=\"cell variable 4\" Vectors=\"cell vector\"" );
-    write_cell_data ( t );
+    //write_cell_data3V ( t );  //writes three cell vectors
+    write_cell_data ( t );  //writes one cell vectors
     write_cell_data_footer();
     write_piece_footer();
+
+
+
 }
 //-----------------------------------------------------------------------------
 void VTUostream::write_walls ( Tissue const& t )
@@ -339,7 +343,10 @@ void VTUostream::write_cells2 ( Tissue const& t )
     else
         write_cell_geometry2 ( t, VTUostream::POLYGON );
     write_cell_data_header ( "Scalars=\"cell variable 4\" Vectors=\"cell vector\"" );
-    write_cell_data ( t );
+  
+    //  write_cell_data ( t );
+    write_cell_data3V ( t );
+    
     write_cell_data_footer();
     write_piece_footer();
 }
@@ -652,7 +659,7 @@ void VTUostream::write_inner_walls ( Tissue const& t )
     std::vector<char> vertex_flag;
     std::vector<uint> index_map;
     size_t flag_pos = t.wall(0).numVariable()-1;
-    double FLAG_VAL = 0.0;
+        double FLAG_VAL = 0.0;
     size_t num_cell = prepare_marked_vertices ( t, vertex_flag, flag_pos, FLAG_VAL )*2;
     size_t num_verts = std::count ( vertex_flag.begin(), vertex_flag.end(), 1 );
 
@@ -666,6 +673,25 @@ void VTUostream::write_inner_walls ( Tissue const& t )
 }
 //-----------------------------------------------------------------------------
 void VTUostream::write_outer_walls ( Tissue const& t )
+{
+    std::vector<Point> disp_points;
+    std::vector<char> vertex_flag;
+    std::vector< std::map<size_t,size_t> > cvp_map;
+    std::vector<uint> index_map;
+    size_t flag_pos = t.wall(0).numVariable()-1;
+    double FLAG_VAL = 1.0;
+    
+    std::pair<size_t, size_t> num = prepare_wall_point_geometry3 ( t, disp_points,  vertex_flag,  cvp_map, flag_pos, FLAG_VAL );
+    write_piece_header ( disp_points.size() + num.first, num.second );
+    write_outer_wall_point_geometry3 ( t, disp_points,  vertex_flag,  index_map );
+    write_outer_wall_geometry3 ( t, index_map, cvp_map, num.first, flag_pos , FLAG_VAL );
+    write_wall_data_header ( "Scalars=\"wall variable 0\"" );
+    write_wall_data3 ( t, flag_pos, FLAG_VAL, false );
+    write_wall_data_footer();
+    write_piece_footer();
+}
+//-----------------------------------------------------------------------------
+void VTUostream::write_outer_line_walls ( Tissue const& t )
 {
     std::vector<Point> disp_points;
     std::vector<char> vertex_flag;
@@ -1093,6 +1119,76 @@ void VTUostream::write_cell_data ( Tissue const& t )
     *m_os << "\n"<< "</DataArray>\n";
     //write rest of the cell data
     for ( int i = 4; i < nvars; ++i )
+    {
+        *m_os << "<DataArray type=\"Float64\" Name=\"cell variable " << i << "\" format=\"ascii\">\n";
+        for ( cit = cells.begin(), cend = cells.end(); cit != cend; ++cit )
+        {
+            Cell &c = const_cast<Cell&> ( *cit );
+            *m_os << c.variable ( i ) << " ";
+        }
+        *m_os << "\n"
+              << "</DataArray>\n";
+    }
+}
+//----------------------------------------------------------for having 3 cell vectors
+void VTUostream::write_cell_data3V ( Tissue const& t )
+{
+    typedef std::vector<Cell>::const_iterator CellIter;
+    std::vector<Cell> const& cells = t.cell();
+
+    CellIter cit = cells.begin(), cend;
+    int nvars = cit->numVariable();
+    //write 3 cell vector data assuming 
+    // 0,1,2 cell variables are 1st vector components and 3 is a length
+    // 4,5,6 cell variables are 1st vector components and 7 is a length
+    // 8,9,10 cell variables are 1st vector components and 11 is a length
+    *m_os << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" Name=\"cell vector1\" format=\"ascii\">\n";
+    for ( cit = cells.begin(), cend = cells.end(); cit != cend; ++cit )
+    {
+        Cell &c = const_cast<Cell&> ( *cit );
+        *m_os << c.variable ( 0 ) << " " << c.variable ( 1 ) << " " << c.variable ( 2 ) << "\n";
+    }
+    *m_os << "</DataArray>\n";
+    *m_os << "<DataArray type=\"Float64\" Name=\"cell vector1 length\" format=\"ascii\">\n";
+    for ( cit = cells.begin(), cend = cells.end(); cit != cend; ++cit )
+    {
+        Cell &c = const_cast<Cell&> ( *cit );
+        *m_os << c.variable ( 3 ) << " ";
+    }
+    *m_os << "\n"<< "</DataArray>\n";
+
+    *m_os << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" Name=\"cell vector2\" format=\"ascii\">\n";
+    for ( cit = cells.begin(), cend = cells.end(); cit != cend; ++cit )
+    {
+        Cell &c = const_cast<Cell&> ( *cit );
+        *m_os << c.variable ( 4 ) << " " << c.variable ( 5 ) << " " << c.variable ( 6 ) << "\n";
+    }
+    *m_os << "</DataArray>\n";
+    *m_os << "<DataArray type=\"Float64\" Name=\"cell vector2 length\" format=\"ascii\">\n";
+    for ( cit = cells.begin(), cend = cells.end(); cit != cend; ++cit )
+    {
+        Cell &c = const_cast<Cell&> ( *cit );
+        *m_os << c.variable ( 7 ) << " ";
+    }
+    *m_os << "\n"<< "</DataArray>\n";
+
+    *m_os << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" Name=\"cell vector3\" format=\"ascii\">\n";
+    for ( cit = cells.begin(), cend = cells.end(); cit != cend; ++cit )
+    {
+        Cell &c = const_cast<Cell&> ( *cit );
+        *m_os << c.variable ( 8 ) << " " << c.variable ( 9 ) << " " << c.variable ( 10 ) << "\n";
+    }
+    *m_os << "</DataArray>\n";
+    *m_os << "<DataArray type=\"Float64\" Name=\"cell vector3 length\" format=\"ascii\">\n";
+    for ( cit = cells.begin(), cend = cells.end(); cit != cend; ++cit )
+    {
+        Cell &c = const_cast<Cell&> ( *cit );
+        *m_os << c.variable ( 11 ) << " ";
+    }
+    *m_os << "\n"<< "</DataArray>\n";
+
+    //write rest of the cell data
+    for ( int i = 12; i < nvars; ++i )
     {
         *m_os << "<DataArray type=\"Float64\" Name=\"cell variable " << i << "\" format=\"ascii\">\n";
         for ( cit = cells.begin(), cend = cells.end(); cit != cend; ++cit )

@@ -139,6 +139,8 @@ public:
   void write_inner_walls(Tissue const& t);
   /// @brief Write outer walls using 2D elements and assuming double wall between cells
   void write_outer_walls(Tissue const& t);
+  /// @brief Write outer walls using line segments
+  void write_outer_line_walls(Tissue const& t);
 protected:
   // cell and wall geometry for walls as line segments
   void write_cell_point_geometry(Tissue const& t);
@@ -169,6 +171,7 @@ protected:
   void write_cell_data_header(std::string s){ *m_os << "<CellData " << s << ">\n"; }
   void write_cell_data_footer(){ *m_os << "</CellData>\n"; }
   void write_cell_data(Tissue const& t);
+  void write_cell_data3V(Tissue const& t);
 
     void write_wall_data_header ( std::string s )
     {
