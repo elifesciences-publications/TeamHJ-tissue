@@ -46,11 +46,6 @@ class BaseCompartmentChange {
   
  public:
   
-  ///
-  /// @brief Factory creator, all creation should be mapped onto this one 
-  ///
-  /// Given the idValue a compartmentChange of the defined type is returned
-  /// (using new Class).
   static BaseCompartmentChange* createCompartmentChange(std::vector<double> &paraValue, 
 							std::vector< std::vector<size_t> > 
 							&indValue,
