@@ -25,8 +25,6 @@
 #include "sisterVertex.h"
 #include "membraneCycling.h"
 #include "membraneCyclingAll.h"
-
-
 #include"massAction.h"
 
 BaseReaction::~BaseReaction(){}
@@ -256,10 +254,14 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexFromTRBSMT(paraValue, indValue);
   else if (idValue == "VertexFromTRBScenterTriangulationMT")
     return new VertexFromTRBScenterTriangulationMT(paraValue, indValue);
+  else if (idValue == "VertexFromTRLScenterTriangulationMT")
+    return new VertexFromTRLScenterTriangulationMT(paraValue, indValue);  
   else if (idValue == "VertexFromTRBScenterTriangulationConcentrationHillMT")
    return new VertexFromTRBScenterTriangulationConcentrationHillMT(paraValue, indValue);
   else if (idValue == "FiberModel")
     return new FiberModel(paraValue, indValue);
+  else if (idValue == "VertexFromTRBScenterTriangulationMTOpt")
+    return new VertexFromTRBScenterTriangulationMTOpt(paraValue, indValue);
   else if (idValue == "FiberDeposition")
     return new FiberDeposition(paraValue, indValue);
 
@@ -480,6 +482,18 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new VertexNoUpdateBoundaryPtemplate(paraValue,indValue); 
   else if(idValue=="VertexNoUpdateBoundaryPtemplateStatic")
     return new VertexNoUpdateBoundaryPtemplateStatic(paraValue,indValue); 
+  else if(idValue=="VertexNoUpdateBoundaryPtemplateStatic3D")
+    return new VertexNoUpdateBoundaryPtemplateStatic3D(paraValue,indValue);
+  else if(idValue=="VertexNoUpdateBoundary3D")
+    return new VertexNoUpdateBoundary3D(paraValue,indValue);  
+  else if(idValue=="VertexFromConstStressBoundary")
+    return new VertexFromConstStressBoundary(paraValue,indValue);  
+  else if(idValue=="cellPolarity3D")
+    return new cellPolarity3D(paraValue,indValue); 
+  else if(idValue=="diffusion3D")
+    return new diffusion3D(paraValue,indValue); 
+  else if(idValue=="manipulate")
+    return new manipulate(paraValue,indValue); 
   else if(idValue=="VertexTranslateToMax")
     return new VertexTranslateToMax(paraValue,indValue); 
   else if(idValue=="CenterCOM")
@@ -504,8 +518,14 @@ BaseReaction::createReaction(std::vector<double> &paraValue,
     return new scaleTemplate(paraValue,indValue); 
   else if(idValue=="copyCellVector")
     return new copyCellVector(paraValue,indValue); 
+  else if(idValue=="limitZdis")
+    return new limitZdis(paraValue,indValue); 
+  else if(idValue=="randomizeMT")
+    return new randomizeMT(paraValue,indValue); 
   else if(idValue=="restrictVertexRadially")
     return new restrictVertexRadially(paraValue,indValue); 
+  else if(idValue=="CreationPrimordiaTime")
+    return new CreationPrimordiaTime(paraValue,indValue); 
   else if(idValue=="VertexFromRotationalForceLinear")
     return new VertexFromRotationalForceLinear(paraValue,indValue); 
   else if(idValue=="ThresholdSwitch")
