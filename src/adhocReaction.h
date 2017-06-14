@@ -1,7 +1,7 @@
 //
 // Filename     : adhocReaction.h
 // Description  : Classes describing some ad hoc updates
-// Author(s)    : Henrik Jonsson (henrik@thep.lu.se)
+// Author(s)    : Henrik Jonsson (henrik.jonsson@slcu.cam.ac.uk)
 // Created      : September 2007
 // Revision     : $Id:$
 //
@@ -81,8 +81,6 @@ class VertexNoUpdateFromIndex : public BaseReaction {
 	      DataMatrix &vertexDerivs );
 };
 
-
-
 ///
 /// @brief Sets positional derivatives to zero for vertices with listed indices
 ///
@@ -120,7 +118,6 @@ class VertexNoUpdateFromList : public BaseReaction {
 
   std::vector<size_t> updateVertices;
 };
-
 
 ///
 /// @brief randomizes the growth direction of tip cells(for two dim only)
@@ -161,9 +158,6 @@ class VertexRandTip : public BaseReaction {
 	      double h);
 
 };
-
-
-
 
 ///
 /// @brief Sets positional derivatives to zero for vertices at boundary so that boundary 
@@ -268,6 +262,289 @@ private:
   size_t numBoundaryVertices;
 };
 
+///  
+/// @brief Sets positional derivatives to zero for vertices at boundary so that boundary 
+/// vertices would be restricted from moving parallel to the initial template edges 
+/// the boundary is static. 
+///
+/// @details In the model file, the reaction is specified as:
+/// @verbatim
+/// for holding the boundary vertices in all directions:
+/// VertexNoUpdateBoundaryPtemplateStatic3D 0 1 1
+/// comIndex-cellVector
+/// 
+/// @endverbatim
+///
+class VertexNoUpdateBoundaryPtemplateStatic3D : public BaseReaction { // BB
+  
+public:
+  
+  VertexNoUpdateBoundaryPtemplateStatic3D(std::vector<double> &paraValue, 
+                                        std::vector< std::vector<size_t> > 
+                                        &indValue );
+  void initiate(Tissue &T,
+                DataMatrix &cellData,
+                DataMatrix &wallData,
+                DataMatrix &vertexData,
+                DataMatrix &cellDerivs,
+                DataMatrix &wallDerivs,
+                DataMatrix &vertexDerivs);
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+private:
+  //  std::vector<size_t> bottomVertices;
+  //  std::vector<size_t> sideVertices;
+ 
+  std::vector< std::vector<double> > bottomNormals;
+  std::vector< std::vector<double> > sideNormals;
+  size_t numBottomCells;
+  size_t numSideCells;
+};
+
+///  
+/// @brief Sets positional derivatives to zero for vertices at boundary so that boundary 
+/// vertices would be restricted from moving parallel to the initial template edges 
+/// the boundary is static. 
+///
+/// @details In the model file, the reaction is specified as:
+/// @verbatim
+/// for holding the boundary vertices in all directions:
+/// VertexNoUpdateBoundary3D 0 1 2
+/// comIndex-cellVector
+/// neighborIndex
+/// 
+/// @endverbatim
+///
+class VertexNoUpdateBoundary3D : public BaseReaction { // BB
+  
+public:
+  
+  VertexNoUpdateBoundary3D(std::vector<double> &paraValue, 
+                                        std::vector< std::vector<size_t> > 
+                                        &indValue );
+  void initiate(Tissue &T,
+                DataMatrix &cellData,
+                DataMatrix &wallData,
+                DataMatrix &vertexData,
+                DataMatrix &cellDerivs,
+                DataMatrix &wallDerivs,
+                DataMatrix &vertexDerivs);
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+private:
+   
+  std::vector< double > bottomVertices, sideVertices;
+  
+};
+
+///  
+/// @brief Sets positional derivatives to zero for vertices at boundary so that boundary 
+/// vertices would be restricted from moving parallel to the initial template edges 
+/// the boundary is static. 
+///
+/// @details In the model file, the reaction is specified as:
+/// @verbatim
+/// for holding the boundary vertices in all directions:
+/// VertexFromConstStressBoundary 8 0 
+/// stress x
+/// stress y
+/// dx
+/// dy
+/// boundary right  x 
+/// boundary left   x 
+/// boundary top    y
+/// boundary bottom y
+/// 
+/// @endverbatim
+///
+class VertexFromConstStressBoundary : public BaseReaction { // BB
+  
+public:
+  
+  VertexFromConstStressBoundary(std::vector<double> &paraValue, 
+                                        std::vector< std::vector<size_t> > 
+                                        &indValue );
+  void initiate(Tissue &T,
+                DataMatrix &cellData,
+                DataMatrix &wallData,
+                DataMatrix &vertexData,
+                DataMatrix &cellDerivs,
+                DataMatrix &wallDerivs,
+                DataMatrix &vertexDerivs);
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+private:
+  
+  std::vector< std::vector<double> > rightVertices, leftVertices, topVertices, bottomVertices;
+  size_t numOldVertices;
+  double totaltime;
+};
+
+///  
+/// @brief for ad-hoc manipulation of the templates
+///
+/// @details In the model file, the reaction is specified as:
+/// @verbatim
+/// for holding the boundary vertices in all directions:
+///
+/// manipulate 0 0 
+/// 
+/// @endverbatim
+///
+class manipulate : public BaseReaction { // BB
+  
+public:
+  
+  manipulate(std::vector<double> &paraValue, 
+             std::vector< std::vector<size_t> > 
+             &indValue );
+  
+  void initiate(Tissue &T,
+                DataMatrix &cellData,
+                DataMatrix &wallData,
+                DataMatrix &vertexData,
+                DataMatrix &cellDerivs,
+                DataMatrix &wallDerivs,
+                DataMatrix &vertexDerivs);
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+
+};
+
+///  
+/// @brief Calculates cell polarity vector based on a vector and a measure for each 
+/// cell wall and places it in the cell center. The vector field could be printed 
+/// via a seperate vtk file using its own printState function.
+///
+/// @details In the model file, the reaction is specified as:
+/// @verbatim
+/// for holding the boundary vertices in all directions:
+/// cellPolarity3D 0 2 2 2
+///
+/// CELL_IDENTITY_INDEX
+/// comIndex
+///
+/// polarity_vector_index
+/// polarity_measure_INDEX
+/// 
+/// @endverbatim
+///
+class cellPolarity3D : public BaseReaction { // BB
+  
+public:
+  
+  cellPolarity3D(std::vector<double> &paraValue, 
+                 std::vector< std::vector<size_t> > 
+                 &indValue );
+  void initiate(Tissue &T,
+                DataMatrix &cellData,
+                DataMatrix &wallData,
+                DataMatrix &vertexData,
+                DataMatrix &cellDerivs,
+                DataMatrix &wallDerivs,
+                DataMatrix &vertexDerivs);
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
+  void printState(Tissue *T,
+                  DataMatrix &cellData,
+                  DataMatrix &wallData,
+                  DataMatrix &vertexData, 
+                  std::ostream &os); 
+    private:
+   
+  std::vector< std::vector<double> > cellFaces;
+  std::vector< std::vector<double> > cellCentPol;
+  
+};
+
+///  
+/// @brief Diffusion in 3 dimensional templates assuming the same volume of the cells (for now ad-hoc) 
+///
+/// @details In the model file, the reaction is specified as:
+/// @verbatim
+/// 
+/// diffusion3D 1 1 3
+/// diff-constant
+/// 
+/// conc_index
+/// neighborWall_index
+/// 3Dcell_index
+/// 
+/// @endverbatim
+///
+class diffusion3D : public BaseReaction { // BB
+  
+public:
+  
+  diffusion3D(std::vector<double> &paraValue, 
+                                        std::vector< std::vector<size_t> > 
+                                        &indValue );
+  void initiate(Tissue &T,
+                DataMatrix &cellData,
+                DataMatrix &wallData,
+                DataMatrix &vertexData,
+                DataMatrix &cellDerivs,
+                DataMatrix &wallDerivs,
+                DataMatrix &vertexDerivs);
+  
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+private:
+   
+  std::vector< std::vector<double> > Cells3d; //holds the wall_indices and neighbohrhood info
+  std::vector< std::vector<double> > faceArea; //holds the area of the faces
+};
+
 ///
 /// @brief Moves the complete tissue such that the maximal value in specified direction is constant
 ///
@@ -339,7 +616,6 @@ public:
 	      DataMatrix &cellDerivs,
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs);
-
 
   void derivsWithAbs(Tissue &T,
      DataMatrix &cellData,
@@ -742,6 +1018,97 @@ public:
 
 };
 
+///
+/// @brief scales the template by a factor via Initiate 
+/// copies vectors from one index to another in the cell vector
+/// ( 4 component after the indices will be copied)
+///
+/// @details In the model file the reaction is defined as:
+/// @verbatim
+/// limitZdis 0 1 2
+/// copy_from_index
+/// copy_to_index
+/// @endverbatim 
+/// 
+class limitZdis : public BaseReaction
+{
+public:
+  
+  limitZdis(std::vector<double> &paraValue, 
+            std::vector< std::vector<size_t> > 
+            &indValue );
+  
+  void initiate(Tissue &T,
+                DataMatrix &cellData,
+                DataMatrix &wallData,
+                DataMatrix &vertexData,
+                DataMatrix &cellDerivs,
+                DataMatrix &wallDerivs,
+                DataMatrix &vertexDerivs );
+  
+  void derivs(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData,
+              DataMatrix &cellDerivs,
+              DataMatrix &wallDerivs,
+              DataMatrix &vertexDerivs );
+  
+  void update(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData,
+              double h);
+  
+  private:
+   
+  std::vector< size_t > topVertices; //holds the vertex indices at the top
+  std::vector< size_t > bottomVertices; //holds the vertex indices at the bottom
+};
+
+///
+/// @brief scales the template by a factor via Initiate 
+/// randomizes the MT direction of the cells within the cell plane
+///
+/// @details In the model file the reaction is defined as:
+/// @verbatim
+/// randomizeMT 0 1 1
+/// MT_index
+/// @endverbatim 
+/// 
+class randomizeMT : public BaseReaction
+{
+public:
+  
+  randomizeMT(std::vector<double> &paraValue, 
+              std::vector< std::vector<size_t> > 
+              &indValue );
+  
+  void initiate(Tissue &T,
+                DataMatrix &cellData,
+                DataMatrix &wallData,
+                DataMatrix &vertexData,
+                DataMatrix &cellDerivs,
+                DataMatrix &wallDerivs,
+                DataMatrix &vertexDerivs );
+  
+  void derivs(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData,
+              DataMatrix &cellDerivs,
+              DataMatrix &wallDerivs,
+              DataMatrix &vertexDerivs );
+  
+  void update(Tissue &T,
+              DataMatrix &cellData,
+              DataMatrix &wallData,
+              DataMatrix &vertexData,
+              double h);
+
+  
+};
+
 class restrictVertexRadially : public BaseReaction
 {
 public:
@@ -765,6 +1132,77 @@ public:
 		DataMatrix &vertexData,
 		double h);
 
+
+};
+
+///
+/// @brief A molecule is produced/created with constant rate in the cells 
+/// located around CZ to creat phyllotactic pattern.
+///
+/// 
+///
+/// @f[ \frac{dc}{dt} = k_c/Area @f] if cell index is in the given list
+/// Area will be  one if constant concentration(instead of amount) is needed to be produced
+///
+/// In a model file the reaction is defined as
+///
+/// @verbatim
+/// creationPrimordiaTime 5 1 2 
+/// k_c # creation rate
+/// tp # time delay
+/// teta # delta teta
+/// z # vertical distance from max
+/// constant-amount-flag
+///
+/// c_index
+/// com_index
+/// @endverbatim
+///
+class CreationPrimordiaTime: public BaseReaction {
+  
+  
+private: 
+  std::vector<size_t> proCells;
+  
+public:
+  
+  ///
+  /// @brief Main constructor
+  ///
+  /// This is the main constructor which sets the parameters and variable
+  /// indices that defines the reaction.
+  ///
+  /// @param paraValue vector with parameters
+  ///
+  /// @param indValue vector of vectors with variable indices
+  ///
+  /// @see BaseReaction::createReaction(std::vector<double> &paraValue,...)
+  ///
+  CreationPrimordiaTime(std::vector<double> &paraValue, 
+                   std::vector< std::vector<size_t> > &indValue );
+  
+  ///
+  /// @brief Derivative function for this reaction class
+  ///
+  /// @see BaseReaction::derivs(Compartment &compartment,size_t species,...)
+  ///
+  void derivs(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      DataMatrix &cellDerivs,
+	      DataMatrix &wallDerivs,
+	      DataMatrix &vertexDerivs );
+  ///
+  /// @brief Update function for this reaction class
+  ///
+  /// @see BaseReaction::update(Tissue &T,...)
+  ///
+  void update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h);
 
 };
 
@@ -838,12 +1276,6 @@ public:
 	      DataMatrix &vertexData,
 	      double h);
 };
-
-
-
-
-
-
 
 class ThresholdSwitch : public BaseReaction {
   

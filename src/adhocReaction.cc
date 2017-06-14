@@ -10,6 +10,11 @@
 #include"tissue.h"
 #include"baseReaction.h"
 #include<cmath>
+#include<cstdlib>
+#include<ctime>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 VertexNoUpdateFromPosition::
 VertexNoUpdateFromPosition(std::vector<double> &paraValue, 
@@ -520,11 +525,6 @@ derivs(Tissue &T,
   
 }
 
-
-
-//--------------------------------------------
-
-
 VertexNoUpdateBoundaryPtemplateStatic::  // BB
 VertexNoUpdateBoundaryPtemplateStatic(std::vector<double> &paraValue, 
                                 std::vector< std::vector<size_t> > 
@@ -558,7 +558,6 @@ VertexNoUpdateBoundaryPtemplateStatic(std::vector<double> &paraValue,
   setParameterId( tmp );
 }
 
-
 void VertexNoUpdateBoundaryPtemplateStatic::
 initiate(Tissue &T,
 	 DataMatrix &cellData,
@@ -578,7 +577,8 @@ initiate(Tissue &T,
     if (T.vertex(vertexIndex).isBoundary(T.background())){          //if it is at the boundary
       boundaryVertices.push_back(vertexIndex);                      // place its index in a vector
       numBoundaryVertices ++;                                          // number of boundary vertices
-      size_t numVertexWalls=T.vertex(vertexIndex).numWall();        //take the number of walls connected to it       //std::cerr<<"boundary vertex "<< vertexIndex  <<" has "<< numVertexWalls << " walls"<< std::endl;
+      size_t numVertexWalls=T.vertex(vertexIndex).numWall();        //take the number of walls connected to it
+      //std::cerr<<"boundary vertex "<< vertexIndex  <<" has "<< numVertexWalls << " walls"<< std::endl;
       std::vector<double> cellNormal(3);
       boundaryNormal.push_back(cellNormal);                         // alocate space for the normal vector
       size_t numVertexWallBoundary=0;     // counter for number of boundary walls of the vertex
@@ -715,6 +715,1370 @@ derivs(Tissue &T,
     else std::cerr<<"strange normal length....................." <<std::endl;
   }
   
+}
+
+VertexNoUpdateBoundaryPtemplateStatic3D::  // BB
+VertexNoUpdateBoundaryPtemplateStatic3D(std::vector<double> &paraValue, 
+                                std::vector< std::vector<size_t> > 
+                                &indValue ) {
+  
+  //Do some checks on the parameters and variable indices
+  //
+  if (paraValue.size()) {
+    std::cerr << "VertexNoUpdateBoundaryPtemplateStatic3D::"
+	      << "VertexNoUpdateBoundaryPtemplateStatic3D() "
+	      << "Uses no parameters."
+	      << std::endl;
+    exit(0);
+  }
+  if (indValue.size()!=1 ) {
+    std::cerr << "VertexNoUpdateBoundaryPtemplateStatic3D::"
+	      << "VertexNoUpdateBoundaryPtemplateStatic3D() "
+              << "Start of Cell COM indices at first level "
+              << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexNoUpdateBoundaryPtemplateStatic3D");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  setParameterId( tmp );
+}
+
+void VertexNoUpdateBoundaryPtemplateStatic3D::
+initiate(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs)
+{
+  size_t comIndex = variableIndex(0,0);  
+  size_t numVertices = T.numVertex();
+  size_t numCells = T.numCell();
+  size_t dimension = vertexData[0].size();
+  size_t neighborIndex=27;
+  numBottomCells=0;
+  numSideCells=0;
+  std::vector<std::vector<double> >  cellNormalsBottom, cellNormalsSide;
+  for (size_t cellIndex=0; cellIndex<numCells; ++cellIndex){//check all the cells for the boundary 
+
+    if (cellData[cellIndex][neighborIndex]==-5){ //if it is at the side
+      numSideCells+=1;
+      size_t numCellVertices = T.cell(cellIndex).numVertex();
+      std::vector<double> normal(3);
+      std::vector<double> com(3);
+      com=T.cell(cellIndex).positionFromVertex(vertexData);
+      for (size_t verInd=0; verInd<numCellVertices; verInd++){
+        size_t verIndPlus=verInd+1;
+        if(verIndPlus==numCellVertices)
+          verIndPlus=0;
+        size_t verGInd=T.cell(cellIndex).vertex(verInd) -> index();
+        size_t verGIndPlus=T.cell(cellIndex).vertex(verIndPlus) -> index();
+        normal[0]+=
+          (vertexData[verGInd][1]-com[1])*(vertexData[verGIndPlus][2]-com[2])-
+          (vertexData[verGInd][2]-com[2])*(vertexData[verGIndPlus][1]-com[1]);
+        normal[1]+=
+          (vertexData[verGInd][2]-com[2])*(vertexData[verGIndPlus][0]-com[0])-
+          (vertexData[verGInd][0]-com[0])*(vertexData[verGIndPlus][2]-com[2]);
+        normal[2]+=
+          (vertexData[verGInd][0]-com[0])*(vertexData[verGIndPlus][1]-com[1])-
+          (vertexData[verGInd][1]-com[1])*(vertexData[verGIndPlus][0]-com[0]);
+
+      }
+      double tmp=std::sqrt(normal[0]*normal[0]+
+                           normal[1]*normal[1]+
+                           normal[2]*normal[2]);
+      
+      sideNormals.resize(numSideCells);
+      sideNormals[numSideCells-1].resize(4);
+      sideNormals[numSideCells-1][3]=cellIndex;
+      
+      sideNormals[numSideCells-1][0]=normal[0]/tmp;
+      sideNormals[numSideCells-1][1]=normal[1]/tmp;
+      sideNormals[numSideCells-1][2]=normal[2]/tmp;
+
+    }
+
+    if (cellData[cellIndex][neighborIndex]==-10){ //if it is at the bottom
+      numBottomCells+=1;
+      size_t numCellVertices = T.cell(cellIndex).numVertex();
+      std::vector<double> normal(3);
+      std::vector<double> com(3);
+      com=T.cell(cellIndex).positionFromVertex(vertexData);
+      for (size_t verInd=0; verInd<numCellVertices; verInd++){
+        size_t verIndPlus=verInd+1;
+        if(verIndPlus==numCellVertices)
+          verIndPlus=0;
+        size_t verGInd=T.cell(cellIndex).vertex(verInd) -> index();
+        size_t verGIndPlus=T.cell(cellIndex).vertex(verIndPlus) -> index();
+        normal[0]+=
+          (vertexData[verGInd][1]-com[1])*(vertexData[verGIndPlus][2]-com[2])-
+          (vertexData[verGInd][2]-com[2])*(vertexData[verGIndPlus][1]-com[1]);
+        normal[1]+=
+          (vertexData[verGInd][2]-com[2])*(vertexData[verGIndPlus][0]-com[0])-
+          (vertexData[verGInd][0]-com[0])*(vertexData[verGIndPlus][2]-com[2]);
+        normal[2]+=
+          (vertexData[verGInd][0]-com[0])*(vertexData[verGIndPlus][1]-com[1])-
+          (vertexData[verGInd][1]-com[1])*(vertexData[verGIndPlus][0]-com[0]);
+
+      }
+      double tmp=std::sqrt(normal[0]*normal[0]+
+                           normal[1]*normal[1]+
+                           normal[2]*normal[2]);
+      
+      bottomNormals.resize(numBottomCells);
+      bottomNormals[numBottomCells-1].resize(4);
+      bottomNormals[numBottomCells-1][3]=cellIndex;
+      
+      bottomNormals[numBottomCells-1][0]=normal[0]/tmp;
+      bottomNormals[numBottomCells-1][1]=normal[1]/tmp;
+      bottomNormals[numBottomCells-1][2]=normal[2]/tmp;
+
+    }
+  }  
+}
+
+void VertexNoUpdateBoundaryPtemplateStatic3D::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  size_t dimension = vertexData[0].size();
+  
+  for (size_t sideInd=0; sideInd<numSideCells; sideInd++){//for the side cells
+    size_t N=T.cell(sideNormals[sideInd][3]).numVertex();
+    for(size_t verInd=0; verInd<N; verInd++){
+      size_t verGInd=T.cell(sideNormals[sideInd][3]).vertex(verInd) -> index();
+      double temp=
+        vertexDerivs[verGInd][0]*sideNormals[sideInd][0]+
+        vertexDerivs[verGInd][1]*sideNormals[sideInd][1]+
+        vertexDerivs[verGInd][2]*sideNormals[sideInd][2];
+      std::vector<double> vecTemp(3);
+      vecTemp[0]=temp*sideNormals[sideInd][0];
+      vecTemp[1]=temp*sideNormals[sideInd][1];
+      vecTemp[2]=temp*sideNormals[sideInd][2];
+
+      vertexDerivs[verGInd][0]-=vecTemp[0];
+      vertexDerivs[verGInd][1]-=vecTemp[1];
+      vertexDerivs[verGInd][2]-=vecTemp[2];    
+    }
+  }
+  
+  for (size_t bottomInd=0; bottomInd<numBottomCells; bottomInd++){//for the bottom cells
+    size_t N=T.cell(bottomNormals[bottomInd][3]).numVertex();
+    for(size_t verInd=0; verInd<N; verInd++){
+      size_t verGInd=T.cell(bottomNormals[bottomInd][3]).vertex(verInd) -> index();
+      double temp=
+        vertexDerivs[verGInd][0]*bottomNormals[bottomInd][0]+
+        vertexDerivs[verGInd][1]*bottomNormals[bottomInd][1]+
+        vertexDerivs[verGInd][2]*bottomNormals[bottomInd][2];
+      std::vector<double> vecTemp(3);
+      vecTemp[0]=temp*bottomNormals[bottomInd][0];
+      vecTemp[1]=temp*bottomNormals[bottomInd][1];
+      vecTemp[2]=temp*bottomNormals[bottomInd][2];
+
+      vertexDerivs[verGInd][0]-=vecTemp[0];
+      vertexDerivs[verGInd][1]-=vecTemp[1];
+      vertexDerivs[verGInd][2]-=vecTemp[2];
+      
+    }  
+  }
+    
+}
+
+VertexNoUpdateBoundary3D::  // BB
+VertexNoUpdateBoundary3D(std::vector<double> &paraValue, 
+                                std::vector< std::vector<size_t> > 
+                                &indValue ) {
+  
+  //Do some checks on the parameters and variable indices
+  //
+  if (paraValue.size()) {
+    std::cerr << "VertexNoUpdateBoundary3D::"
+	      << "VertexNoUpdateBoundary3D() "
+	      << "Uses no parameters."
+	      << std::endl;
+    exit(0);
+  }
+  if (indValue.size()!=1 || indValue[0].size()!=2 ) {
+    std::cerr << "VertexNoUpdateBoundary3D::"
+	      << "VertexNoUpdateBoundary3D() "
+              << "Start of Cell COM indices and cell-neighborIndex at first level "
+              << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexNoUpdateBoundary3D");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  setParameterId( tmp );
+}
+
+void VertexNoUpdateBoundary3D::
+initiate(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs)
+{
+  size_t comIndex = variableIndex(0,0);  
+  size_t numVertices = T.numVertex();
+  size_t numCells = T.numCell();
+  size_t dimension = vertexData[0].size();
+  size_t neighborIndex=variableIndex(0,1);
+  
+  size_t numBottomCells=0;
+  size_t numSideCells=0;
+  std::vector< double > bottomCells, sideCells;
+ 
+  for (size_t cellIndex=0; cellIndex<numCells; ++cellIndex){//check all the cells for the boundary 
+    
+    if (cellData[cellIndex][neighborIndex]==-5){ //if it is at the side
+      numSideCells+=1;
+      sideCells.resize(numSideCells);
+      sideCells[numSideCells-1]=cellIndex;
+
+    }
+
+    if (cellData[cellIndex][neighborIndex]==-10){ //if it is at the bottom
+      numBottomCells+=1;
+      bottomCells.resize(numBottomCells);
+      bottomCells[numBottomCells-1]=cellIndex;
+      
+    }
+    
+  }
+  
+  size_t numBottomVertices=0;
+  size_t numSideVertices=0;
+  bool isInVector;
+
+  for (size_t cIndex=0; cIndex<numSideCells; ++cIndex){
+    size_t cellIndex=sideCells[cIndex];
+    size_t numCellVertices = T.cell(cellIndex).numVertex();  
+
+    for (size_t vIndex=0; vIndex<numCellVertices; ++vIndex){
+      isInVector=false;
+      for (size_t vI=0; vI<numSideVertices; ++vI)
+        if(T.cell(cellIndex).vertex(vIndex) -> index() == sideVertices[vI]){
+          isInVector=true;
+        }
+
+      if(!isInVector){
+        numSideVertices++;
+        sideVertices.push_back(T.cell(cellIndex).vertex(vIndex) -> index());
+      }
+    }
+  }
+
+  for (size_t cIndex=0; cIndex<numBottomCells; ++cIndex){
+    size_t cellIndex=bottomCells[cIndex];
+    size_t numCellVertices = T.cell(cellIndex).numVertex();  
+
+    for (size_t vIndex=0; vIndex<numCellVertices; ++vIndex){
+      isInVector=false;
+      for (size_t vI=0; vI<numBottomVertices; ++vI)
+        if(T.cell(cellIndex).vertex(vIndex) -> index() == bottomVertices[vI]){
+          isInVector=true;
+        }
+
+      if(!isInVector){
+        numBottomVertices++;
+        bottomVertices.push_back(T.cell(cellIndex).vertex(vIndex) -> index());
+      }
+    }
+  }
+
+  size_t N=T.numSisterVertex();
+    
+  std::vector<std::vector<double>> tmpsisters;
+  std::vector<std::vector<double>> sisters;
+  tmpsisters.resize(N);
+  for(size_t i=0; i<N; ++i){
+    tmpsisters[i].resize(3);
+    tmpsisters[i][0]=T.sisterVertex(i,0);
+    tmpsisters[i][1]=T.sisterVertex(i,1);
+    tmpsisters[i][2]=0;
+  }
+  
+  size_t counter=1;
+  for(size_t i=0; i<N; ++i)
+    if(tmpsisters[i][2]==0){
+      tmpsisters[i][2]=counter;
+      sisters.resize(counter);
+      sisters[counter-1].push_back(tmpsisters[i][0]);
+      sisters[counter-1].push_back(tmpsisters[i][1]);
+      for(size_t j=i+1; j<N; j++)
+        if(tmpsisters[j][2]==0){
+          size_t M=sisters[counter-1].size();
+          size_t ww=0;
+          for(size_t k=0; k<M; ++k){
+            if(tmpsisters[j][0]==sisters[counter-1][k])
+              ww+=1;
+            if(tmpsisters[j][1]==sisters[counter-1][k])
+              ww+=2;
+          }
+          if(ww==1)
+            sisters[counter-1].push_back(tmpsisters[j][1]);
+          if(ww==2)
+            sisters[counter-1].push_back(tmpsisters[j][0]);
+          if(ww!=0)
+            tmpsisters[j][2]=counter;
+        }
+      counter++;
+    }
+  
+  size_t NN = sisters.size();
+  for (size_t vI=0; vI<numSideVertices; ++vI){
+
+    for (size_t vs=0; vs<NN; ++vs)
+      for (size_t j=0; j<sisters[vs].size(); ++j)
+        if(sideVertices[vI]==sisters[vs][j]){
+
+          for (size_t js=0; js<sisters[vs].size(); ++js)
+            sideVertices.push_back(sisters[vs][js]);
+        }
+  }
+
+}
+
+void VertexNoUpdateBoundary3D::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  size_t dimension = vertexData[0].size();
+  size_t numSideVertices=sideVertices.size();
+  size_t numBottomVertices=bottomVertices.size();
+
+  // for (size_t sideInd=0; sideInd<numSideVertices; sideInd++){//for the side cells
+  //   vertexDerivs[sideVertices[sideInd]][0]=0;
+  //   vertexDerivs[sideVertices[sideInd]][1]=0;
+  //   vertexDerivs[sideVertices[sideInd]][2]=0;
+  // }
+  
+  for (size_t bottomInd=0; bottomInd<numBottomVertices; bottomInd++){//for the bottom cells
+    vertexDerivs[bottomVertices[bottomInd]][0]=0;
+    vertexDerivs[bottomVertices[bottomInd]][1]=0;
+    vertexDerivs[bottomVertices[bottomInd]][2]=0;
+  }
+     
+}
+
+VertexFromConstStressBoundary::  // BB
+VertexFromConstStressBoundary(std::vector<double> &paraValue, 
+                                std::vector< std::vector<size_t> > 
+                                &indValue ) {
+  
+  //Do some checks on the parameters and variable indices
+  //
+  if (paraValue.size()!=7) {
+    std::cerr << "VertexFromConstStressBoundary::"
+	      << "VertexFromConstStressBoundary() "
+	      << "Uses seven parameters for x-stress, y-stress, vertex sencitivity," 
+              << "and initial locations "
+              << "of right(x), left(x), top(y) and bottom(y) boundaries."
+	      << std::endl;
+    exit(0);
+  }
+  if (indValue.size()!=0) {
+    std::cerr << "VertexFromConstStressBoundary::"
+	      << "VertexFromConstStressBoundary() "
+              << "no index "
+              << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("VertexFromConstStressBoundary");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  
+  tmp[0] = "stress_x";
+  tmp[1] = "stress_y";
+  tmp[2] = "vertex_sencitivity";
+  tmp[3] = "right_x";
+  tmp[4] = "left_x";
+  tmp[5] = "top_y";
+  tmp[6] = "bottom_y";
+  setParameterId( tmp );
+}
+
+void VertexFromConstStressBoundary::
+initiate(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs)
+{
+
+  size_t numVertices = T.numVertex();
+  size_t dimension = vertexData[0].size();  
+  double epcilon=parameter(2);
+ 
+  double rx=parameter(3);
+  double lx=parameter(4);
+  double ty=parameter(5);
+  double by=parameter(6);
+  
+  numOldVertices=numVertices;  
+
+  rightVertices.resize(3);
+  leftVertices.resize(3);
+  topVertices.resize(3);
+  bottomVertices.resize(3);
+  
+  std::vector< std::vector<double> > tmprightVertices, tmpleftVertices, tmptopVertices, tmpbottomVertices;
+  tmprightVertices.resize(2);
+  tmpleftVertices.resize(2);
+  tmptopVertices.resize(2);
+  tmpbottomVertices.resize(2);
+  
+  for (size_t vIndex=0; vIndex<numVertices; ++vIndex){
+    if(vertexData[vIndex][0]>rx-epcilon && vertexData[vIndex][0]<rx+epcilon){
+      tmprightVertices[0].push_back(vIndex);
+      tmprightVertices[1].push_back(vertexData[vIndex][1]);
+    }
+    if(vertexData[vIndex][0]>lx-epcilon && vertexData[vIndex][0]<lx+epcilon){
+      tmpleftVertices[0].push_back(vIndex);
+      tmpleftVertices[1].push_back(vertexData[vIndex][1]);
+    }
+    if(vertexData[vIndex][1]>ty-epcilon && vertexData[vIndex][1]<ty+epcilon){
+      tmptopVertices[0].push_back(vIndex);
+      tmptopVertices[1].push_back(vertexData[vIndex][0]);
+    }
+    if(vertexData[vIndex][1]>by-epcilon && vertexData[vIndex][1]<by+epcilon){
+      tmpbottomVertices[0].push_back(vIndex);
+      tmpbottomVertices[1].push_back(vertexData[vIndex][0]);
+    }
+  }
+
+  // sorting
+  double tmp=0;
+   for(size_t i=0; i<tmprightVertices[0].size(); ++i)
+     for(size_t j=0; j<tmprightVertices[0].size()-1; ++j)
+       if(tmprightVertices[1][j]<tmprightVertices[1][j+1]){
+         tmp=tmprightVertices[1][j];
+         tmprightVertices[1][j]=tmprightVertices[1][j+1];
+         tmprightVertices[1][j+1]=tmp;
+         
+         tmp=tmprightVertices[0][j];
+         tmprightVertices[0][j]=tmprightVertices[0][j+1];
+         tmprightVertices[0][j+1]=tmp;
+       }
+   
+   for(size_t i=0; i<tmpleftVertices[0].size(); ++i)
+     for(size_t j=0; j<tmpleftVertices[0].size()-1; ++j)
+       if(tmpleftVertices[1][j]<tmpleftVertices[1][j+1]){
+         tmp=tmpleftVertices[1][j];
+         tmpleftVertices[1][j]=tmpleftVertices[1][j+1];
+         tmpleftVertices[1][j+1]=tmp;
+         
+         tmp=tmpleftVertices[0][j];
+         tmpleftVertices[0][j]=tmpleftVertices[0][j+1];
+         tmpleftVertices[0][j+1]=tmp;
+       }
+   
+   for(size_t i=0; i<tmptopVertices[0].size(); ++i)
+     for(size_t j=0; j<tmptopVertices[0].size()-1; ++j)
+       if(tmptopVertices[1][j]<tmptopVertices[1][j+1]){
+         tmp=tmptopVertices[1][j];
+         tmptopVertices[1][j]=tmptopVertices[1][j+1];
+         tmptopVertices[1][j+1]=tmp;
+         
+         tmp=tmptopVertices[0][j];
+         tmptopVertices[0][j]=tmptopVertices[0][j+1];
+         tmptopVertices[0][j+1]=tmp;
+       }
+   
+   for(size_t i=0; i<tmpbottomVertices[0].size(); ++i)
+     for(size_t j=0; j<tmpbottomVertices[0].size()-1; ++j)
+       if(tmpbottomVertices[1][j]<tmpbottomVertices[1][j+1]){
+         tmp=tmpbottomVertices[1][j];
+         tmpbottomVertices[1][j]=tmpbottomVertices[1][j+1];
+         tmpbottomVertices[1][j+1]=tmp;
+         
+         tmp=tmpbottomVertices[0][j];
+         tmpbottomVertices[0][j]=tmpbottomVertices[0][j+1];
+         tmpbottomVertices[0][j+1]=tmp;
+       }
+
+   for(size_t i=0; i<tmprightVertices[0].size(); ++i)
+     rightVertices[0].push_back(tmprightVertices[0][i]);
+
+   for(size_t i=0; i<tmpleftVertices[0].size(); ++i)
+     leftVertices[0].push_back(tmpleftVertices[0][i]);
+
+   for(size_t i=0; i<tmptopVertices[0].size(); ++i)
+     topVertices[0].push_back(tmptopVertices[0][i]);
+
+   for(size_t i=0; i<tmpbottomVertices[0].size(); ++i)
+     bottomVertices[0].push_back(tmpbottomVertices[0][i]);
+
+   rightVertices[1].push_back(0);
+   leftVertices[1].push_back(0);
+   topVertices[1].push_back(0);
+   bottomVertices[1].push_back(0);
+   
+   for(size_t i=1; i<tmprightVertices[0].size(); ++i)
+     rightVertices[1].push_back(tmprightVertices[1][i-1]-tmprightVertices[1][i]);
+   for(size_t i=1; i<tmpleftVertices[0].size(); ++i)
+     leftVertices[1].push_back(tmpleftVertices[1][i-1]-tmpleftVertices[1][i]);
+   for(size_t i=1; i<tmptopVertices[0].size(); ++i)
+     topVertices[1].push_back(tmptopVertices[1][i-1]-tmptopVertices[1][i]);
+   for(size_t i=1; i<tmpbottomVertices[0].size(); ++i)
+     bottomVertices[1].push_back(tmpbottomVertices[1][i-1]-tmpbottomVertices[1][i]);
+
+   for(size_t i=0; i<tmprightVertices[0].size()-1; ++i)
+     rightVertices[2].push_back(tmprightVertices[1][i]-tmprightVertices[1][i+1]);
+   for(size_t i=0; i<tmpleftVertices[0].size()-1; ++i)
+     leftVertices[2].push_back(tmpleftVertices[1][i]-tmpleftVertices[1][i+1]);
+   for(size_t i=0; i<tmptopVertices[0].size()-1; ++i)
+     topVertices[2].push_back(tmptopVertices[1][i]-tmptopVertices[1][i+1]);
+   for(size_t i=0; i<tmpbottomVertices[0].size()-1; ++i)
+     bottomVertices[2].push_back(tmpbottomVertices[1][i]-tmpbottomVertices[1][i+1]);
+   
+   rightVertices[2].push_back(0);
+   leftVertices[2].push_back(0);
+   topVertices[2].push_back(0);
+   bottomVertices[2].push_back(0);
+
+   // std::cerr<<std::endl;
+   // for(size_t i=0; i<tmprightVertices[0].size(); ++i)
+   //   std::cerr<<rightVertices[0][i]<<"  ";
+   // std::cerr<<std::endl;   
+   // for(size_t i=0; i<tmpleftVertices[0].size(); ++i)
+   //   std::cerr<<leftVertices[0][i]<<"  ";
+   // std::cerr<<std::endl;
+   // for(size_t i=0; i<tmptopVertices[0].size(); ++i)
+   //   std::cerr<<topVertices[0][i]<<"  ";
+   // std::cerr<<std::endl;
+   // for(size_t i=0; i<tmpbottomVertices[0].size(); ++i)
+   //   std::cerr<<bottomVertices[0][i]<<"  ";
+   // std::cerr<<std::endl;
+
+  // rightVertices[1].push_back(rx);
+  // rightVertices[1].push_back(0);
+  // leftVertices[1].push_back(lx);
+  // leftVertices[1].push_back(0);
+  // topVertices[1].push_back(ty);
+  // topVertices[1].push_back(0);
+  // bottomVertices[1].push_back(by);
+  // bottomVertices[1].push_back(0);
+}
+
+void VertexFromConstStressBoundary::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  //double sx=std::exp(0.022*parameter(0)*parameter(0))+1;  
+  double sx=parameter(0);  
+  double sy=parameter(1);  
+
+  // double l1=0, l2=0;
+  // // fix with the boundary
+  // for(size_t i=0; i<rightVertices[0].size(); ++i){
+  //   if(i==0)
+  //     l1=0;
+  //   else
+  //     l1=vertexData[rightVertices[0][i-1]][1]-vertexData[rightVertices[0][i]][1];
+  //   if(i==rightVertices[0].size()-1)
+  //     l2=0;
+  //   else
+  //     l2=vertexData[rightVertices[0][i]][1]-vertexData[rightVertices[0][i+1]][1];
+  //   vertexDerivs[rightVertices[0][i]][1]=(l1-rightVertices[1][i])-(l2-rightVertices[2][i]);
+  // }
+  // for(size_t i=0; i<leftVertices[0].size(); ++i){
+  //   if(i==0)
+  //     l1=0;
+  //   else
+  //     l1=vertexData[leftVertices[0][i-1]][1]-vertexData[leftVertices[0][i]][1];
+  //   if(i==leftVertices[0].size()-1)
+  //     l2=0;
+  //   else
+  //     l2=vertexData[leftVertices[0][i]][1]-vertexData[leftVertices[0][i+1]][1];
+  //   vertexDerivs[leftVertices[0][i]][1]=(l1-leftVertices[1][i])-(l2-leftVertices[2][i]);
+  // }
+
+  // for(size_t i=0; i<topVertices[0].size(); ++i){
+  //   if(i==0)
+  //     l1=0;
+  //   else
+  //     l1=vertexData[topVertices[0][i-1]][0]-vertexData[topVertices[0][i]][0];
+  //   if(i==topVertices[0].size()-1)
+  //     l2=0;
+  //   else
+  //     l2=vertexData[topVertices[0][i]][0]-vertexData[topVertices[0][i+1]][0];
+  //   vertexDerivs[topVertices[0][i]][0]=(l1-topVertices[1][i])-(l2-topVertices[2][i]);
+  // }
+  // for(size_t i=0; i<bottomVertices[0].size(); ++i){
+  //   if(i==0)
+  //     l1=0;
+  //   else
+  //     l1=vertexData[bottomVertices[0][i-1]][0]-vertexData[bottomVertices[0][i]][0];
+  //   if(i==bottomVertices[0].size()-1)
+  //     l2=0;
+  //   else
+  //     l2=vertexData[bottomVertices[0][i]][0]-vertexData[bottomVertices[0][i+1]][0];
+  //   vertexDerivs[bottomVertices[0][i]][0]=(l1-bottomVertices[1][i])-(l2-bottomVertices[2][i]);
+  // }
+
+  double deltaY=vertexData[topVertices[0][0]][1]-vertexData[bottomVertices[0][0]][1];
+  double deltaX=vertexData[rightVertices[0][0]][0]-vertexData[leftVertices[0][0]][0];
+  
+  double Fr= sx*deltaY;
+  double Fl=-sx*deltaY;
+  double Ft= sy*deltaX;
+  double Fb=-sy*deltaX;
+
+  for(size_t i=0; i<rightVertices[0].size(); ++i){
+    Fr+=vertexDerivs[rightVertices[0][i]][0];
+  }
+  for(size_t i=0; i<leftVertices[0].size(); ++i){
+    Fl+=vertexDerivs[leftVertices[0][i]][0];
+  }
+  for(size_t i=0; i<topVertices[0].size(); ++i){
+    Ft+=vertexDerivs[topVertices[0][i]][1];
+  }
+  for(size_t i=0; i<bottomVertices[0].size(); ++i){
+    Fb+=vertexDerivs[bottomVertices[0][i]][1];
+  }  
+  
+  //std::cout<<  Fr<<" "<< Fl<<" "<< Ft<<" "<< Fb<<" "<<std::endl;
+
+  Fr/= rightVertices[0].size();
+  Fl/=  leftVertices[0].size();
+  Ft/=   topVertices[0].size();
+  Fb/=bottomVertices[0].size();
+  
+  //if(totaltime<500){ for growthTec the time after which relax the template
+  if(true){
+    for(size_t i=0; i<rightVertices[0].size(); ++i){
+      vertexDerivs[rightVertices[0][i]][0]=Fr;
+    }
+    for(size_t i=0; i<leftVertices[0].size(); ++i){
+      vertexDerivs[leftVertices[0][i]][0]=Fl;
+    }
+    for(size_t i=0; i<topVertices[0].size(); ++i){
+      vertexDerivs[topVertices[0][i]][1]=Ft;
+    }
+    for(size_t i=0; i<bottomVertices[0].size(); ++i){
+      vertexDerivs[bottomVertices[0][i]][1]=Fb;
+    }
+        
+    // keeping on xy plane
+    for(size_t i=0; i<rightVertices[0].size(); ++i){
+      vertexDerivs[rightVertices[0][i]][2]=0 ;
+    }
+    for(size_t i=0; i<leftVertices[0].size(); ++i){
+      vertexDerivs[leftVertices[0][i]][2]=0 ;
+    }
+    for(size_t i=0; i<topVertices[0].size(); ++i){
+      vertexDerivs[topVertices[0][i]][2]=0 ;
+    }
+    for(size_t i=0; i<bottomVertices[0].size(); ++i){
+      vertexDerivs[bottomVertices[0][i]][2]=0 ;
+    }
+    
+  }
+  
+}
+
+void VertexFromConstStressBoundary::
+update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h)
+{
+  size_t numVertices = T.numVertex();
+  size_t dimension = vertexData[0].size();  
+  double epcilon=parameter(2);
+  static double tt=0;
+  tt+=h;
+  totaltime=tt;
+
+  double rx=vertexData[rightVertices[0][0]][0];
+  double lx=vertexData[leftVertices[0][0]][0];
+  double ty=vertexData[topVertices[0][0]][1];
+  double by=vertexData[bottomVertices[0][0]][1];
+  
+  // adding new vertices from division  
+  if(numVertices>numOldVertices){
+    for (size_t vIndex=numOldVertices; vIndex<numVertices; ++vIndex){
+      std::cerr<<"vertex added to the boundary";
+      if(vertexData[vIndex][0]>rx-epcilon && vertexData[vIndex][0]<rx+epcilon)
+        rightVertices[0].push_back(vIndex);
+      if(vertexData[vIndex][0]>lx-epcilon && vertexData[vIndex][0]<lx+epcilon)
+        leftVertices[0].push_back(vIndex);
+      if(vertexData[vIndex][1]>ty-epcilon && vertexData[vIndex][1]<ty+epcilon)
+        topVertices[0].push_back(vIndex);
+      if(vertexData[vIndex][1]>by-epcilon && vertexData[vIndex][1]<by+epcilon)
+        bottomVertices[0].push_back(vIndex);
+    }
+  }
+  
+  numOldVertices=numVertices;
+}
+
+manipulate::  // BB
+manipulate(std::vector<double> &paraValue, 
+           std::vector< std::vector<size_t> > 
+           &indValue ) {
+  
+  //Do some checks on the parameters and variable indices
+  //
+  if (paraValue.size()!=0) {
+    std::cerr << "manipulate::"
+	      << "manipulate() "
+	      << "Uses no parameter" 
+ 	      << std::endl;
+    exit(0);
+  }
+  if (indValue.size()!=0) {
+    std::cerr << "manipulate::"
+	      << "manipulate() "
+              << "no index "
+              << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("manipulate");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  setParameterId( tmp );
+}
+
+void manipulate::
+initiate(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  size_t numVertices = T.numVertex();
+  size_t numCells = T.numCell();
+  size_t numWalls = T.numWall();
+  
+  size_t dimension = vertexData[0].size();  
+  size_t centerIndex=35;
+  double xx=5;
+  double yy=5;
+
+  for (size_t i=0; i<numCells; ++i){
+    if(cellData[i][34]==0){
+      cellData[i][0]=1;
+      cellData[i][1]=0;
+      cellData[i][2]=0;
+      
+    }
+    if(cellData[i][34]==7){
+      cellData[i][0]=0;
+      cellData[i][1]=1;
+      cellData[i][2]=0;
+    }
+    if(cellData[i][34]!=0 && cellData[i][34]!=7 ){
+      cellData[i][0]=cellData[i][centerIndex]-xx;
+      cellData[i][1]=cellData[i][centerIndex+1]-yy;
+      cellData[i][2]=0;    
+      double tmp=std::sqrt(cellData[i][0]*cellData[i][0]+cellData[i][1]*cellData[i][1]);
+      cellData[i][0]/=tmp;
+      cellData[i][1]/=tmp;
+    }
+  }
+  // for (size_t i=0; i<numWalls; ++i)
+  //   std::cout<<wallData[i][0]<<std::endl;
+  
+
+  // for (size_t i=0; i<numVertices; ++i){
+
+  //     vertexData[i][1]*=0.3;
+  // }
+
+  // for (size_t i=0; i<numCells; ++i){
+  //   double Radius=std::sqrt((cellData[i][centerIndex]-xx)*(cellData[i][centerIndex]-xx)
+  //                           +(cellData[i][centerIndex+1]-yy)*(cellData[i][centerIndex+1]-yy));
+  //   if(Radius<.1)
+  //     cellData[i][40]=100;
+  // }
+  
+  // double l=0.1;
+  // double r=1;
+  // double c=3;
+
+  // for (size_t i=0; i<numCells; ++i){
+  //   cellData[i][0]=1;
+  //   cellData[i][1]=0;
+  //   cellData[i][2]=0;
+  //   cellData[i][3]=((r-l)/(2*c))*cellData[i][centerIndex]+((r+l)/2);
+
+  //   cellData[i][4]=0;
+  //   cellData[i][5]=1;
+  //   cellData[i][6]=0;
+  //   cellData[i][7]=((l-r)/(2*c))*cellData[i][centerIndex]+((r+l)/2);
+  // }
+}
+
+void manipulate::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+
+{}
+
+void manipulate::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h)
+{
+  size_t numVertices = T.numVertex();
+  size_t numCells = T.numCell();
+
+  size_t dimension = vertexData[0].size();  
+  size_t centerIndex=39;
+
+  // double epcilon=.1;
+  // double alpha=3.1415/2;
+
+  // // double A=0.4;
+  // double A=12;// fiber strength
+  
+  // size_t fiberIndex=21;
+  // size_t fiberLIndex=16;
+
+  // for (size_t i=0; i<numCells; ++i)
+  //   if(cellData[i][centerIndex]>0){
+  //     cellData[i][fiberIndex]=A*0.5*(1+std::cos(alpha*cellData[i][centerIndex+1]));
+  //     cellData[i][fiberLIndex]=cellData[i][fiberIndex]/2;
+  //   }
+  //   else{
+  //     cellData[i][fiberIndex]=A*0.5*(1-std::cos(alpha*cellData[i][centerIndex+1]));
+  //     cellData[i][fiberLIndex]=cellData[i][fiberIndex]/2;
+  //   }
+  
+  // for (size_t vIndex=0; vIndex<numVertices; ++vIndex)
+  //   if(std::abs(vertexData[vIndex][0])<epcilon){
+     
+  //     vertexData[vIndex][0]=A*std::cos(alpha*vertexData[vIndex][1]);
+  //   }
+}
+
+cellPolarity3D::  // BB
+cellPolarity3D(std::vector<double> &paraValue, 
+               std::vector< std::vector<size_t> > 
+               &indValue ) {
+  
+  //Do some checks on the parameters and variable indices
+  //
+  if (paraValue.size()) {
+    std::cerr << "cellPolarity3D::"
+	      << "cellPolarity3D() "
+	      << "Uses no parameters."
+	      << std::endl;
+    exit(0);
+  }
+  if (indValue.size()!=2 || indValue[0].size()!=2 || indValue[1].size()!=2 ) {
+    std::cerr << "cellPolarity3D::"
+	      << "cellPolarity3D() "
+              << "cell_identity_index and start of Cell COM index at first level "
+              << "polarity_vector_index and polarity_measure_index at second level "
+              << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("cellPolarity3D");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  setParameterId( tmp );
+}
+
+void cellPolarity3D::
+initiate(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs)
+{
+  size_t cellId = variableIndex(0,0);  
+    
+  //size_t numVertices = T.numVertex();
+  size_t numCells = T.numCell();
+  size_t dimension = vertexData[0].size();
+
+  size_t num3dCells=0;
+  for (size_t cellIndex=0; cellIndex<numCells; ++cellIndex)//find the number of 3d cells
+    if (cellData[cellIndex][cellId]>num3dCells)
+      num3dCells=cellData[cellIndex][cellId];  
+  
+  cellFaces.resize(num3dCells+1);
+  cellCentPol.resize(num3dCells+1);
+
+  for (size_t CellInd3d=0; CellInd3d<num3dCells+1; ++CellInd3d){
+    for (size_t cellIndex=0; cellIndex<numCells; ++cellIndex)
+      if (cellData[cellIndex][cellId]==CellInd3d) 
+        cellFaces[CellInd3d].push_back(cellIndex);
+    cellCentPol[CellInd3d].resize(6);
+  }
+  
+  // size_t numtemp=cellFaces.size();
+  // std::cerr<<"number of real cells "<<numtemp<<std::endl;
+  // for(size_t i=0; i< numtemp; ++i){
+  //   size_t N=cellFaces[i].size();
+  //   for(size_t j=0; j<N ; ++j)
+  //     std::cerr<<cellFaces[i][j]<<" ";
+  //   std::cerr<<std::endl;
+  // }
+}
+
+void cellPolarity3D::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  // nothing is needed here  
+}
+
+void cellPolarity3D::
+update(Tissue &T,
+	      DataMatrix &cellData,
+	      DataMatrix &wallData,
+	      DataMatrix &vertexData,
+	      double h)
+{
+  // polarity vector calculation
+  // very ad-hoc for marcus , summs the normal vectors of 
+  // cell walls scaled with misses stress of the wall. Not good in 
+  // general but works if the cell walls are almost symmetric-.
+  
+  size_t num3dCells=cellCentPol.size();
+  size_t comIndex = variableIndex(0,1);  
+  size_t wallId=28;
+  size_t Lid=29;
+  size_t polVecInd = variableIndex(1,0);  
+  //size_t polMesInd = 11;
+  size_t polMesInd = variableIndex(1,1);
+   
+  double area=0;
+  double totalarea=0;
+  std::vector<double> tmpCentPol(6);
+  for (size_t CellInd3d=0; CellInd3d<num3dCells; ++CellInd3d) {
+    
+    totalarea=0;
+    for (size_t i=0; i<6; ++i)
+      tmpCentPol[i]=0;
+    
+    if (cellData[cellFaces[CellInd3d][0]][Lid]==1){// if 3dCell is in L1
+      size_t numWalls=cellFaces[CellInd3d].size();
+      for (size_t wallIndex=0; wallIndex<numWalls; ++wallIndex)
+        if (cellData[cellFaces[CellInd3d][wallIndex]][wallId]==0) { // if the wall is anticlinal 
+          
+          area=T.cell(cellFaces[CellInd3d][wallIndex]).calculateVolume(vertexData);    
+          totalarea+=area;          
+
+          tmpCentPol[0]+=cellData[cellFaces[CellInd3d][wallIndex]][comIndex  ]*area;
+          tmpCentPol[1]+=cellData[cellFaces[CellInd3d][wallIndex]][comIndex+1]*area;
+          tmpCentPol[2]+=cellData[cellFaces[CellInd3d][wallIndex]][comIndex+2]*area;
+          double tmp=cellData[cellFaces[CellInd3d][wallIndex]][polMesInd]*area;
+         
+          tmpCentPol[3]+=tmp*cellData[cellFaces[CellInd3d][wallIndex]][polVecInd  ];
+          tmpCentPol[4]+=tmp*cellData[cellFaces[CellInd3d][wallIndex]][polVecInd+1];
+          tmpCentPol[5]+=tmp*cellData[cellFaces[CellInd3d][wallIndex]][polVecInd+2];
+        }
+    }
+    
+    if (cellData[cellFaces[CellInd3d][0]][Lid]==2 || 
+        cellData[cellFaces[CellInd3d][0]][Lid]==3){// if 3dCell is in L2 or L3
+      size_t numWalls=cellFaces[CellInd3d].size();
+      for (size_t wallIndex=0; wallIndex<numWalls; ++wallIndex) { // for all the cell walls 
+         
+          area=T.cell(cellFaces[CellInd3d][wallIndex]).calculateVolume(vertexData);    
+          totalarea+=area;          
+
+          tmpCentPol[0]+=cellData[cellFaces[CellInd3d][wallIndex]][comIndex  ]*area;
+          tmpCentPol[1]+=cellData[cellFaces[CellInd3d][wallIndex]][comIndex+1]*area;
+          tmpCentPol[2]+=cellData[cellFaces[CellInd3d][wallIndex]][comIndex+2]*area;
+          double tmp=cellData[cellFaces[CellInd3d][wallIndex]][polMesInd]*area;
+
+          tmpCentPol[3]+=tmp*cellData[cellFaces[CellInd3d][wallIndex]][polVecInd  ];
+          tmpCentPol[4]+=tmp*cellData[cellFaces[CellInd3d][wallIndex]][polVecInd+1];
+          tmpCentPol[5]+=tmp*cellData[cellFaces[CellInd3d][wallIndex]][polVecInd+2];
+        }
+    }
+    
+    if(totalarea != 0){
+      tmpCentPol[0]/=totalarea;
+      tmpCentPol[1]/=totalarea;
+      tmpCentPol[2]/=totalarea;
+    }
+    cellCentPol[CellInd3d]=tmpCentPol;
+    
+  }
+}
+
+// {
+//   // polarity vector calculation
+//   // very ad-hoc for marcus , summs the normal vectors of 
+//   // cell walls scaled with misses stress of the wall. Not good in 
+//   // general but works if the cell walls are almost symmetric-.
+
+//   size_t num3dCells=cellCentPol.size();
+//   size_t comIndex = variableIndex(0,1);  
+//   size_t wallId=28;
+//   size_t Lid=29;
+//   size_t polVecInd = variableIndex(1,0);  
+//   size_t polMesInd = variableIndex(1,1);
+
+//   size_t numSides;
+//   std::vector<double> tmpCentPol(6);
+//   for (size_t CellInd3d=0; CellInd3d<num3dCells; ++CellInd3d) {
+    
+//     numSides=0;
+//     for (size_t i=0; i<6; ++i)
+//       tmpCentPol[i]=0;
+    
+//     if (cellData[cellFaces[CellInd3d][0]][Lid]==1){// if 3dCell is in L1
+//       size_t numWalls=cellFaces[CellInd3d].size();
+//       for (size_t wallIndex=0; wallIndex<numWalls; ++wallIndex)
+//         if (cellData[cellFaces[CellInd3d][wallIndex]][wallId]==0) { // if the wall is anticlinal 
+//           numSides++;        
+//           tmpCentPol[0]+=cellData[cellFaces[CellInd3d][wallIndex]][comIndex  ];
+//           tmpCentPol[1]+=cellData[cellFaces[CellInd3d][wallIndex]][comIndex+1];
+//           tmpCentPol[2]+=cellData[cellFaces[CellInd3d][wallIndex]][comIndex+2];
+//           double tmp=cellData[cellFaces[CellInd3d][wallIndex]][polMesInd]*
+//             T.cell(cellFaces[CellInd3d][wallIndex]).calculateVolume(vertexData);
+//           tmpCentPol[3]+=tmp*cellData[cellFaces[CellInd3d][wallIndex]][polVecInd  ];
+//           tmpCentPol[4]+=tmp*cellData[cellFaces[CellInd3d][wallIndex]][polVecInd+1];
+//           tmpCentPol[5]+=tmp*cellData[cellFaces[CellInd3d][wallIndex]][polVecInd+2];
+//         }
+//     }
+    
+//     if (cellData[cellFaces[CellInd3d][0]][Lid]==2 || 
+//         cellData[cellFaces[CellInd3d][0]][Lid]==3){// if 3dCell is in L2 or L3
+//       size_t numWalls=cellFaces[CellInd3d].size();
+//       for (size_t wallIndex=0; wallIndex<numWalls; ++wallIndex) { // for all the cell walls 
+//           numSides++;        
+//           tmpCentPol[0]+=cellData[cellFaces[CellInd3d][wallIndex]][comIndex  ];
+//           tmpCentPol[1]+=cellData[cellFaces[CellInd3d][wallIndex]][comIndex+1];
+//           tmpCentPol[2]+=cellData[cellFaces[CellInd3d][wallIndex]][comIndex+2];
+//           double tmp=cellData[cellFaces[CellInd3d][wallIndex]][polMesInd]*
+//             T.cell(cellFaces[CellInd3d][wallIndex]).calculateVolume(vertexData);
+//           tmpCentPol[3]+=tmp*cellData[cellFaces[CellInd3d][wallIndex]][polVecInd  ];
+//           tmpCentPol[4]+=tmp*cellData[cellFaces[CellInd3d][wallIndex]][polVecInd+1];
+//           tmpCentPol[5]+=tmp*cellData[cellFaces[CellInd3d][wallIndex]][polVecInd+2];
+//         }
+//     }
+    
+//     if(numSides != 0){
+//       tmpCentPol[0]/=numSides;
+//       tmpCentPol[1]/=numSides;
+//       tmpCentPol[2]/=numSides;
+//     }
+//     cellCentPol[CellInd3d]=tmpCentPol;
+    
+//   }
+
+//   // size_t numtemp=cellCentPol.size();
+//   // std::cerr<<"centers and pol vec "<<numtemp<<std::endl;
+//   // for(size_t i=0; i< numtemp; ++i){
+//   //   size_t N=cellCentPol[i].size();
+//   //   for(size_t j=0; j<N ; ++j)
+//   //     std::cerr<<cellCentPol[i][j]<<" ";
+//   //   std::cerr<<std::endl;
+//   // }
+// }
+
+void cellPolarity3D::
+printState(Tissue *T,
+	   DataMatrix &cellData,
+	   DataMatrix &wallData,
+	   DataMatrix &vertexData, 
+	   std::ostream &os)
+{ // VTK style
+  
+  double RR=12; // pol vectors are shown inside this radius(to exclude boundary)
+  size_t numPoints = cellCentPol.size();
+  size_t dimension=3;
+  static size_t index=0;
+
+  std::stringstream name;
+  name << "tmp/VTKPolVec" << index  <<".vtu";
+  std::ofstream myfile;
+  myfile.open (name.str());
+
+  // VTK file header
+  myfile << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\">"<< std::endl
+         << "<UnstructuredGrid>"<< std::endl
+         << "<Piece  NumberOfPoints=\""<<numPoints<<"\" NumberOfCells=\"1\">"<< std::endl;
+
+  myfile << "<Points>"<< std::endl
+         << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">"  << std::endl;
+  for (size_t vIndex=0 ; vIndex<numPoints ; ++vIndex){
+    
+    for( size_t d=0 ; d<dimension ; d++ )
+      myfile << cellCentPol[vIndex][d] << " ";
+    myfile << std::endl;
+  }
+  myfile << "</DataArray>"<<std::endl
+         << "</Points>"<<std::endl;
+
+  myfile << "<Cells>"<<std::endl;
+
+  //connectivity
+  myfile << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">"<<std::endl;
+  for (size_t cIndex=0 ; cIndex<numPoints ; cIndex++)
+    myfile << cIndex <<" ";
+  
+  myfile << std::endl
+         << "</DataArray>"<<std::endl;
+  
+  //off-sets 
+  myfile << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">"<<std::endl;
+  myfile << numPoints ;
+  
+  myfile << std::endl
+         << "</DataArray>"<<std::endl;
+  
+  //types
+  myfile << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">"<<std::endl; 
+  myfile <<2;
+  myfile << std::endl
+         << "</DataArray>"<<std::endl;
+  
+  myfile << "</Cells>"<<std::endl;
+  myfile << "<PointData>"<<std::endl;
+  myfile << "<DataArray type=\"Float64\" Name=\"PolarityVector\" NumberOfComponents=\"3\" format=\"ascii\">"
+         <<std::endl;
+  for (size_t vIndex=0 ; vIndex<numPoints ; vIndex++){
+    double radius=std::sqrt(cellCentPol[vIndex][0]*cellCentPol[vIndex][0]+
+                            cellCentPol[vIndex][1]*cellCentPol[vIndex][1]
+                            );
+    if(radius<RR){
+      for( size_t d=0 ; d<dimension ; d++ )
+        myfile << cellCentPol[vIndex][d+3] << " ";
+      myfile << std::endl;
+    }   
+    else{
+      for( size_t d=0 ; d<dimension ; d++ )
+        myfile << 0 << " ";
+      myfile << std::endl;
+    }
+  }
+ 
+  myfile << "</DataArray>"<<std::endl
+         << "</PointData>"<<std::endl 
+	 << "</Piece>"<<std::endl
+	 << "</UnstructuredGrid>"<<std::endl
+	 << "</VTKFile>"<<std::endl;
+  myfile.close();
+
+  index++;
+}
+
+diffusion3D::  // BB
+diffusion3D(std::vector<double> &paraValue, 
+                                std::vector< std::vector<size_t> > 
+                                &indValue ) {
+  
+  //Do some checks on the parameters and variable indices
+  //
+  if (paraValue.size()!=1) {
+    std::cerr << "diffusion3D::"
+	      << "diffusion3D() "
+	      << "Uses one parameter, diffusion constant."
+	      << std::endl;
+    exit(0);
+  }
+  if (indValue.size()!=1 || indValue[0].size()!=3 ) {
+    std::cerr << "diffusion3D::"
+	      << "diffusion3D() "
+              << "needs 3 indices in one level, concentration_index, "
+	      << "neighbor_wall_index and 3Dcell_index at the first level "
+              << std::endl;
+    exit(0);
+  }
+  //Set the variable values
+  //
+  setId("diffusion3D");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  //Set the parameter identities
+  //
+  std::vector<std::string> tmp( numParameter() );
+  tmp.resize( numParameter() );
+  tmp[0] = "p_0";
+  setParameterId( tmp );
+}
+
+void diffusion3D::
+initiate(Tissue &T,
+	 DataMatrix &cellData,
+	 DataMatrix &wallData,
+	 DataMatrix &vertexData,
+	 DataMatrix &cellDerivs,
+	 DataMatrix &wallDerivs,
+	 DataMatrix &vertexDerivs)
+{
+  size_t concIndex = variableIndex(0,0);  
+  size_t neighIndex= variableIndex(0,1);  
+  size_t CellIndex3d = variableIndex(0,2);  
+
+  size_t numCells = T.numCell();
+  size_t num3dCells = 0;
+ 
+  // for (size_t cellInd=0; cellInd<numCells; ++cellInd)//change cell variable for 3dCell 432
+  //   if (cellData[cellInd][CellIndex3d]==432 ){
+  //     cellData[cellInd][31]=10;
+  //     cellData[cellInd][35]=10;
+  //   }
+
+  for (size_t cellInd=0; cellInd<numCells; ++cellInd){//change cell variable for 3dCell 432
+    if (cellData[cellInd][30]>=5){
+      cellData[cellInd][30]=10;
+    }
+    if (cellData[cellInd][30]<5 && cellData[cellInd][30]>=2.5){
+      cellData[cellInd][30]=5;
+    }
+    if (cellData[cellInd][30]<2.5 && cellData[cellInd][30]>1){
+      cellData[cellInd][30]=2;
+    }
+  }
+  
+  for (size_t cellInd=0; cellInd<numCells; ++cellInd)//check all the cells for number of 3d cells
+    if (cellData[cellInd][CellIndex3d]>num3dCells )
+      num3dCells=cellData[cellInd][CellIndex3d];
+  num3dCells++;
+  Cells3d.resize(num3dCells);
+  //Cells3d(3dCellInd, compInd)(num3Dcells,1+numWalls+1+numNeighbors) 
+  //[numwalls,wall(cell)Index1,...,wall(cell)IndexN,
+  // numNeghbors,,]
+
+  for (size_t i=0; i<num3dCells; ++i)// reserve first component for number of cell walls  
+    Cells3d[i].push_back(0);
+
+  for (size_t cellInd=0; cellInd<numCells; ++cellInd)//putting wall(cell) indices into the vector
+    Cells3d[cellData[cellInd][CellIndex3d]].push_back(cellInd);
+    
+  for (size_t i=0; i<num3dCells; ++i)// storing the cell wall indices  
+    Cells3d[i][0]=Cells3d[i].size()-1;
+
+   for (size_t i=0; i<num3dCells; ++i){
+    std::vector<size_t> tmpVec;
+
+    for (size_t j=1; j<Cells3d[i][0]+1; ++j){
+         
+      int walltmp=cellData[Cells3d[i][j]][neighIndex];
+      if(walltmp!=-2 && walltmp!=-5 &&      walltmp!=-7 &&      walltmp!=-10)
+	tmpVec.push_back(cellData[walltmp][CellIndex3d]);      
+      else
+        tmpVec.push_back(-1);// elements at the boundary with no neighbor        
+    }
+    
+    //std::sort(tmpVec.begin(), tmpVec.end() );
+    //tmpVec.erase( std::unique( tmpVec.begin(), tmpVec.end() ), tmpVec.end() );
+    Cells3d[i].push_back(tmpVec.size());    
+    
+    for (size_t k=0; k<tmpVec.size(); ++k)
+      Cells3d[i].push_back(tmpVec[k]);    
+   }
+  
+  faceArea.resize(num3dCells); 
+  for (size_t i=0; i<num3dCells; ++i){
+    for (size_t j=1; j<Cells3d[i][0]+1; ++j)
+      faceArea[i].push_back(T.cell(Cells3d[i][j]).calculateVolume(vertexData));
+  }
+  
+  for (size_t i=0; i<num3dCells; ++i){
+    std::cerr<<i<<"               ";
+    for (size_t j=0; j<Cells3d[i][0]; ++j)
+      std::cerr<<faceArea[i][j]<<" ";
+    std::cerr<<std::endl; 
+  }
+}
+
+void diffusion3D::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{
+  size_t num3Cells = Cells3d.size();
+  size_t aI = variableIndex(0,0);//conc index
+  assert( aI<cellData[0].size());
+  
+  for( size_t i=0 ; i<num3Cells ; ++i ) {
+    double cellDer=0;
+    for( size_t j=Cells3d[i][0]+2 ; j<Cells3d[i].size() ; ++j) {
+      size_t neighInd=Cells3d[i][j];
+      if(neighInd !=-1)
+        cellDer += parameter(0)*
+          ( cellData[Cells3d[neighInd][1]][aI] - cellData[Cells3d[i][1]][aI])*
+          faceArea[i][j-Cells3d[i][0]-2];
+    }
+    for( size_t j=1 ; j<Cells3d[i][0]+1 ; ++j) {
+      cellDerivs[Cells3d[i][j]][aI]+=cellDer;
+    }
+  }  
 }
 
 VertexTranslateToMax::
@@ -1488,15 +2852,6 @@ update(Tissue &T,
   }
 }
 
-
-
-
-
-
-
-
-
-
 MoveVerticesRandomlyCapCylinder::MoveVerticesRandomlyCapCylinder(std::vector<double> &paraValue, 
 							       std::vector< std::vector<size_t> > &indValue)
 {
@@ -1668,36 +3023,26 @@ void scaleTemplate::initiate(Tissue &T,
 					       DataMatrix &vertexDerivs)
 {
 
-
   size_t numVertices = T.numVertex();
   size_t numWall = T.numWall();
   double fac=parameter(0);
   
-  
-  
   // Move vertices
   for( size_t VertexIndex=0 ; VertexIndex<numVertices ; ++VertexIndex ) {
-
     // ad-hoc
     // if(vertexData[ VertexIndex][1]>=0)
     //   vertexData[ VertexIndex][1]=std::pow(vertexData[ VertexIndex][1],0.75);
        
     // if(vertexData[ VertexIndex][1]<0)
     //   vertexData[ VertexIndex][1]=-std::pow(-vertexData[ VertexIndex][1],0.75);
-
-
-
     vertexData[ VertexIndex][0]=fac*vertexData[ VertexIndex][0];
     vertexData[ VertexIndex][1]=fac*vertexData[ VertexIndex][1];
-    vertexData[ VertexIndex][2]=fac*vertexData[ VertexIndex][2];
-     
+    vertexData[ VertexIndex][2]=fac*vertexData[ VertexIndex][2];     
   } 
 
   for (size_t i=0; i<numWall; ++i) {
     wallData[i][0] = fac*wallData[i][0];
   }
-
-
   // for (size_t i=0; i<numWall; ++i) {
   //   double distance=0.0;
   //   size_t v1I=T.wall(i).vertex1()->index();
@@ -1707,14 +3052,7 @@ void scaleTemplate::initiate(Tissue &T,
   //   distance = std::sqrt(distance);
   //   wallData[i][0] = parameter(0)*distance;
   // } 
-  
-  
 }
-
-
-
-
-
 
 void scaleTemplate::derivs(Tissue &T,
 			   DataMatrix &cellData,
@@ -1724,23 +3062,16 @@ void scaleTemplate::derivs(Tissue &T,
 			   DataMatrix &wallDerivs,
 			   DataMatrix &vertexDerivs) 
 {
-   
-  
 }
-
-
 
 void scaleTemplate::update(Tissue &T,
 			   DataMatrix &cellData,
 			   DataMatrix &wallData,
 			   DataMatrix &vertexData,
 			   double h)
-{
-  
+{  
 }
 
-
-/////////////////////////////////////////////
 copyCellVector::copyCellVector(std::vector<double> &paraValue, 
                                std::vector< std::vector<size_t> > &indValue)
 {
@@ -1762,18 +3093,16 @@ copyCellVector::copyCellVector(std::vector<double> &paraValue,
   
   // std::vector<std::string> tmp(numParameter());
   // tmp[0] = "onlyInUpdateFlag";
-  // setParameterId(tmp);
-  
-  
+  // setParameterId(tmp);  
 }
 
 void copyCellVector::initiate(Tissue &T,
-					       DataMatrix &cellData,
-					       DataMatrix &wallData,
-					       DataMatrix &vertexData,
-					       DataMatrix &cellDerivs,
-					       DataMatrix &wallDerivs,
-					       DataMatrix &vertexDerivs)
+			      DataMatrix &cellData,
+			      DataMatrix &wallData,
+			      DataMatrix &vertexData,
+			      DataMatrix &cellDerivs,
+			      DataMatrix &wallDerivs,
+			      DataMatrix &vertexDerivs)
 {
   size_t numCells = T.numCell();
   // copy vectors
@@ -1783,7 +3112,6 @@ void copyCellVector::initiate(Tissue &T,
     cellData[cellInd][variableIndex(0,1)+2]=cellData[cellInd][variableIndex(0,0)+2];
     cellData[cellInd][variableIndex(0,1)+3]=cellData[cellInd][variableIndex(0,0)+3];
   } 
-  
 }
 
 void copyCellVector::derivs(Tissue &T,
@@ -1804,18 +3132,221 @@ void copyCellVector::update(Tissue &T,
 {
 }
 
+limitZdis::limitZdis(std::vector<double> &paraValue, 
+                     std::vector< std::vector<size_t> > &indValue)
+{
+  if (paraValue.size() != 0) {
+    std::cerr << "limitZdis::limitZdis() "
+	      << "Uses no parameter\n";
+    exit(0);
+  }
+  
+  if (indValue.size() != 1 || indValue[0].size() != 2) {
+    std::cerr << "limitZdis::limitZdis() "
+	      << "one index level with 2 indices.\n";
+    exit(0);
+  }
+	
+  setId("limitZdis");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // std::vector<std::string> tmp(numParameter());
+  // tmp[0] = "onlyInUpdateFlag";
+  // setParameterId(tmp);  
+}
 
+void limitZdis::initiate(Tissue &T,
+                         DataMatrix &cellData,
+                         DataMatrix &wallData,
+                         DataMatrix &vertexData,
+                         DataMatrix &cellDerivs,
+                         DataMatrix &wallDerivs,
+                         DataMatrix &vertexDerivs)
+{
+ size_t numCells = T.numCell();
+ for (size_t cellIndex= 0; cellIndex< numCells; ++cellIndex)
+   if(cellData[cellIndex][38]==-1 && (cellData[cellIndex][37]==-4 ||cellData[cellIndex][37]==0) ) // for hypocotyl
+     { size_t numWalls = T.cell(cellIndex).numWall();      
+       for (size_t wallindex=0; wallindex<numWalls; ++wallindex) { 
+         size_t vInd= T.cell(cellIndex).vertex(wallindex)->index();
+         if(vertexData[vInd][2]>-50)
+           topVertices.push_back(vInd);
+         if(vertexData[vInd][2]<-50)
+           bottomVertices.push_back(vInd);
+       }
+     }
+}
 
+void limitZdis::derivs(Tissue &T,
+                       DataMatrix &cellData,
+                       DataMatrix &wallData,
+                       DataMatrix &vertexData,
+                       DataMatrix &cellDerivs,
+                       DataMatrix &wallDerivs,
+                       DataMatrix &vertexDerivs) 
+{
+  size_t numTop=topVertices.size();
+  size_t numBottom=bottomVertices.size();
+  
+  double tmpZforce=0;
+  for (size_t i= 0; i< numTop; ++i)
+    tmpZforce+=vertexDerivs[topVertices[i]][2];
+  tmpZforce/=numTop;
+  for (size_t i= 0; i< numTop; ++i)
+    vertexDerivs[topVertices[i]][2]=tmpZforce;
+  
+  tmpZforce=0;
+  for (size_t i= 0; i< numBottom; ++i)
+    tmpZforce+=vertexDerivs[bottomVertices[i]][2];
+  tmpZforce/=numBottom;
+  for (size_t i= 0; i< numBottom; ++i)
+    vertexDerivs[bottomVertices[i]][2]=tmpZforce;
+}
 
+void limitZdis::update(Tissue &T,
+                       DataMatrix &cellData,
+                       DataMatrix &wallData,
+                       DataMatrix &vertexData,
+                       double h)
+{
+}
 
+randomizeMT::randomizeMT(std::vector<double> &paraValue, 
+                         std::vector< std::vector<size_t> > &indValue)
+{
+  if (paraValue.size() != 4) {
+    std::cerr << "randomizeMT::randomizeMT"
+	      << "Uses two parameters parameter(0) for MT(0/1) and parameter(1) "
+              << "for concentration(0/1) randomization in the range of [parameter(2), parameter(3)]"
+              <<std::endl;
+    exit(0);
+  }
+  
+  if (indValue.size() != 1 || indValue[0].size() != 2) {
+    std::cerr << "randomizeMT::randomizeMT()"
+	      << "one index level with 2 indices for MT and concentration.\n";
+    exit(0);
+  }
+	
+  setId("randomizeMT");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // std::vector<std::string> tmp(numParameter());
+  // tmp[0] = "onlyInUpdateFlag";
+  // setParameterId(tmp);  
+}
 
+void randomizeMT::initiate(Tissue &T,
+                           DataMatrix &cellData,
+                           DataMatrix &wallData,
+                           DataMatrix &vertexData,
+                           DataMatrix &cellDerivs,
+                           DataMatrix &wallDerivs,
+                           DataMatrix &vertexDerivs)
+{
+  size_t numCells = T.numCell();
+  double Min, Max;
+  Min=parameter(2);
+  Max=parameter(3);
+  size_t MTInd=variableIndex(0,0);
+  size_t conInd=variableIndex(0,1);
 
+  //std::srand (time(NULL));
 
+  for( size_t cellInd=0 ; cellInd<numCells ; ++cellInd ) {
+    double ttmp=Min+(Max-Min)*((double) rand() / (RAND_MAX));
+    if (parameter(1)==1)
+      cellData[cellInd][conInd]=ttmp;
+    // calculate the average normal vector to the cell plane
+    size_t numVer=T.cell(cellInd).numVertex();
+    std::vector<std::vector<double> > verticesPosition;
+    verticesPosition.resize(numVer);
+  
+    // storing the vertex positions
+    for(size_t k=0; k< numVer; ++k) {
+      verticesPosition[k].resize(3);
+      size_t Vind=T.cell(cellInd).vertex(k) -> index();
+      verticesPosition[k][0]=vertexData[Vind][0];
+      verticesPosition[k][1]=vertexData[Vind][1];
+      verticesPosition[k][2]=vertexData[Vind][2];
+    }    
+    // Finding the average normal vector to the cell plane
+    std::vector<double> normal(3);
+    normal[0]=0;
+    normal[1]=0;
+    normal[2]=0;
 
+    for (size_t k=1; k< numVer-1; ++k) {
+      std::vector<double> x0(3),x1(3),x2(3);
+      size_t ind1=T.cell(cellInd).vertex(0)   -> index();
+      size_t ind2=T.cell(cellInd).vertex(k)   -> index();
+      size_t ind3=T.cell(cellInd).vertex(k+1) -> index();
+      
+      //normal to the element
+      std::vector<double> temp(3);
+      temp[0]=(vertexData[ind2][1]-vertexData[ind1][1])*(vertexData[ind3][2]-vertexData[ind1][2])
+        -(vertexData[ind2][2]-vertexData[ind1][2])*(vertexData[ind3][1]-vertexData[ind1][1]);
+      temp[1]=(vertexData[ind2][2]-vertexData[ind1][2])*(vertexData[ind3][0]-vertexData[ind1][0])
+        -(vertexData[ind2][0]-vertexData[ind1][0])*(vertexData[ind3][2]-vertexData[ind1][2]);
+      temp[2]=(vertexData[ind2][0]-vertexData[ind1][0])*(vertexData[ind3][1]-vertexData[ind1][1])
+        -(vertexData[ind2][1]-vertexData[ind1][1])*(vertexData[ind3][0]-vertexData[ind1][0]);
+    
+      // it is area weighted because of the size of outer product
+      normal[0]+=temp[0];
+      normal[1]+=temp[1];
+      normal[2]+=temp[2];
+    }
+    double norm=std::sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
+    // normalizing the normal vector
+    normal[0]/=norm;
+    normal[1]/=norm;
+    normal[2]/=norm;
+  
+    // choose a rondom direction 
+    //double teta=(parameter(0)*3.1415/180)*(1-2*((double) rand() / (RAND_MAX)));
+    double randVec[3]={1-2*((double) rand() / (RAND_MAX)),
+                       1-2*((double) rand() / (RAND_MAX)),
+                       1-2*((double) rand() / (RAND_MAX))};
+    
+    double randMT[3];
+    //outer product between random direction and cell normal
+    randMT[0]=randVec[1]*normal[2]-randVec[2]*normal[1];
+    randMT[1]=randVec[2]*normal[0]-randVec[0]*normal[2];
+    randMT[2]=randVec[0]*normal[1]-randVec[1]*normal[0];
 
+    double tmp=std::sqrt(randMT[0]*randMT[0]+randMT[1]*randMT[1]+randMT[2]*randMT[2]);
+    randMT[0]/=tmp;
+    randMT[1]/=tmp;
+    randMT[2]/=tmp;
+    //insert the random direction to the MT index of the cell vector 
+    if(parameter(0)==1){
+      cellData[cellInd][variableIndex(0,0)  ]=randMT[0];
+      cellData[cellInd][variableIndex(0,0)+1]=randMT[1];
+      cellData[cellInd][variableIndex(0,0)+2]=randMT[2];
+      cellData[cellInd][variableIndex(0,0)+3]=1;
+    }  
+  } 
+}
 
+void randomizeMT::derivs(Tissue &T,
+                         DataMatrix &cellData,
+                         DataMatrix &wallData,
+                         DataMatrix &vertexData,
+                         DataMatrix &cellDerivs,
+                         DataMatrix &wallDerivs,
+                         DataMatrix &vertexDerivs) 
+{
+}
 
-
+void randomizeMT::update(Tissue &T,
+                         DataMatrix &cellData,
+                         DataMatrix &wallData,
+                         DataMatrix &vertexData,
+                         double h)
+{
+}
 
 restrictVertexRadially::restrictVertexRadially(std::vector<double> &paraValue, 
                                                std::vector< std::vector<size_t> > &indValue)
@@ -1831,13 +3362,10 @@ restrictVertexRadially::restrictVertexRadially(std::vector<double> &paraValue,
 	      << "no index.\n";
     exit(0);
   }
-	
   setId("restrictVertexRadially");
   setParameter(paraValue);  
-  setVariableIndex(indValue);
-    
+  setVariableIndex(indValue);  
 }
-
 
 void restrictVertexRadially::derivs(Tissue &T,
                                     DataMatrix &cellData,
@@ -1869,10 +3397,124 @@ void restrictVertexRadially::update(Tissue &T,
 {
 }
 
+CreationPrimordiaTime::
+CreationPrimordiaTime(std::vector<double> &paraValue, 
+	     std::vector< std::vector<size_t> > 
+	     &indValue ) 
+{  
 
+  // Do some checks on the parameters and variable indeces
+  if( paraValue.size()!=5 ) {
+    std::cerr << "CreationPrimordiaTime::CreationPrimordiaTime() "
+	      << "Uses five parameter(s) " 
+              << "k_c, the constant production rate," 
+              << "tp, time intervall for creating primordia,"
+              << "teta, angle between primordia, "
+              << "z, vertical distance from max for new primordium."
+              << "and a flag(equal to 1) if constant -amount- creation is needed"
+              <<std::endl;
+    exit(0);
+  }
+  if( indValue.size() != 1 || indValue[0].size() != 2  ) {
+    std::cerr << "CreationPrimordiaTime::"
+	      << "CreationPrimordiaTime() "
+	      << "one levels of indices used: index for variable to be updated given "
+              << "as first indexand COM index in the second level" 
+              << std::endl;
+    exit(0);
+  }
+  	
+  // Set the variable values
+  setId("CreationPrimordiaTime");
+  setParameter(paraValue);  
+  setVariableIndex(indValue);
+  
+  // Set the parameter identities
+  std::vector<std::string> tmp( numParameter() );
+  tmp[0] = "k_c";
+  tmp[1] = "delta_time";
+  tmp[2] = "delta_teta";
+  tmp[3] = "z_distanceTip";
+  tmp[4] = "production_flag";
+ 
+  setParameterId(tmp);
+}
 
+void CreationPrimordiaTime::
+derivs(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       DataMatrix &cellDerivs,
+       DataMatrix &wallDerivs,
+       DataMatrix &vertexDerivs ) 
+{  
+  //Do the update for each cell
+  size_t numCells = T.numCell();
+  size_t cIndex = variableIndex(0,0);
+  
+  if(parameter(4)==1)
+    //For the cells in the list
+    for (size_t cellI = 0; cellI < proCells.size(); ++cellI) 
+      cellDerivs[proCells[cellI]][cIndex] += parameter(0)/T.cell(cellI).calculateVolume(vertexData);
+  
+  if(parameter(4)==0)
+    for (size_t cellI = 0; cellI < proCells.size(); ++cellI) 
+      cellDerivs[proCells[cellI]][cIndex] += parameter(0);  
+}
 
+void CreationPrimordiaTime::
+update(Tissue &T,
+       DataMatrix &cellData,
+       DataMatrix &wallData,
+       DataMatrix &vertexData,
+       double h)
+{
 
+  size_t nCells=T.numCell();
+  size_t comInd=variableIndex(0,1);
+  static double timeT=0;
+  static size_t n=1;
+  double deltaz=20 ;
+  double R=40;
+ 
+  timeT+=h;
+  double tmp=0;       
+  if(timeT>n*parameter(1)) {
+    //make a primordium
+
+    // determining the tip as maximum z
+    double maxZ=cellData[0][comInd+2];
+    for(size_t i=1; i< nCells; ++i)
+      if(cellData[i][comInd+2]>maxZ)
+        maxZ=cellData[i][comInd+2]; 
+    
+    size_t pInd=0;
+    double distance=100000;
+    
+    for(size_t i=1; i< nCells; ++i)
+      if(cellData[i][comInd+2]<maxZ-parameter(3) &&  cellData[i][comInd+2]>maxZ-parameter(3)-deltaz ){
+        tmp=3.1415*fmod(n*parameter(2),360)/180;       
+        double tmpDistance=(cellData[i][comInd+2]-maxZ+parameter(3))*(cellData[i][comInd+2]-maxZ+parameter(3))
+          +(cellData[i][comInd+1]-R*std::sin(tmp))*(cellData[i][comInd+1]-R*std::sin(tmp))
+          +(cellData[i][comInd]-R*std::cos(tmp))*(cellData[i][comInd]-R*std::cos(tmp));
+        if(tmpDistance<distance){
+          pInd=i;
+          distance=tmpDistance;
+        }       
+      }
+   
+    if (pInd!=0)   
+      proCells.push_back(pInd);
+    
+    n++;
+    // std::cerr<<tmp*180/3.1415<<" "<<std::cos(tmp)<<" "<<std::sin(tmp)<<std::endl;
+    // std::cerr<<"end primordium ";
+    // for(size_t i=0; i< proCells.size(); ++i)
+    //   std::cerr<<proCells[i]<<"  "; 
+    // std::cerr<<std::endl; 
+  }
+}
 
 VertexFromRotationalForceLinear::
 VertexFromRotationalForceLinear(std::vector<double> &paraValue, 
