@@ -62,7 +62,7 @@ namespace CenterTriangulation {
     size_t dimension=3; //Only implemented for 3D models
     assert (dimension==vertexData[0].size());
     size_t numVariable = T.cell(0).numVariable();
-    std::cerr<<" here..............."<<numVariable<<" "<<cellData[0].size()<<std::endl;
+    //std::cerr<<" here..............."<<numVariable<<" "<<cellData[0].size()<<std::endl;
     assert (numVariable==cellData[0].size());
 
     // Create the new variables
