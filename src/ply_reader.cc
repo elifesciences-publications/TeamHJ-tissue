@@ -40,20 +40,21 @@ void PLY_reader::read ( PLY_file const&f, Tissue &t )
 
     parser.element_definition_callback ( C11NSPACE::bind ( &PLY_reader::element_definition_callback, this, _1, _2 ) );
 
+    //std::cerr << "ply_reader::read test1.\n";
+    
     ply::ply_parser::scalar_property_definition_callbacks_type scalar_property_definition_callbacks;
     ply::at<ply::float32> ( scalar_property_definition_callbacks ) = C11NSPACE::bind ( &PLY_reader::scalar_property_definition_callback<ply::float32>, this, _1, _2 );
     ply::at<ply::uint32> ( scalar_property_definition_callbacks ) = C11NSPACE::bind ( &PLY_reader::scalar_property_definition_callback<ply::uint32>, this, _1, _2 );
     parser.scalar_property_definition_callbacks ( scalar_property_definition_callbacks );
-
     ply::ply_parser::list_property_definition_callbacks_type list_property_definition_callbacks;
     ply::at<ply::uint8, ply::uint32> ( list_property_definition_callbacks ) = C11NSPACE::bind ( &PLY_reader::list_property_definition_callback<ply::uint8, ply::uint32>, this, _1, _2 );
     ply::at<ply::uint8, ply::int32> ( list_property_definition_callbacks ) = C11NSPACE::bind ( &PLY_reader::list_property_definition_callback<ply::uint8, ply::int32>, this, _1, _2 );
     ply::at<ply::uint8, ply::float32> ( list_property_definition_callbacks ) = C11NSPACE::bind ( &PLY_reader::list_property_definition_callback<ply::uint8, ply::float32>, this, _1, _2 );
     ply::at<ply::uint32, ply::int32> ( list_property_definition_callbacks ) = C11NSPACE::bind ( &PLY_reader::list_property_definition_callback<ply::uint32, ply::int32>, this, _1, _2 );
     parser.list_property_definition_callbacks ( list_property_definition_callbacks );
-
+    //std::cerr << "ply_reader::read test3.\n";
     parser.parse ( filename );
-//     std::cout <<"parsed\n";
+    std::cerr <<"parsed\n";
     if ( !t.numWall() )
         infer_walls_from_cells ( t );
     else

@@ -60,18 +60,24 @@ bool ply::ply_parser::parse ( std::istream& istream )
             {
                 std::string format_string, version;
                 char space_format_format_string, space_format_string_version;
-                stringstream >> space_format_format_string >> std::ws >> format_string >> space_format_string_version >> std::ws >> version >> std::ws;
-                if ( !stringstream || !stringstream.eof() || !std::isspace ( space_format_format_string ) || !std::isspace ( space_format_string_version ) )
-                {
-                    if ( error_callback_ )
-                    {
-                        error_callback_ ( line_number_, "parse error" );
-                    }
-                    return false;
-                }
+                stringstream >> space_format_format_string >> std::ws >> format_string >>
+		  space_format_string_version >> std::ws >> version >> std::ws;
+		std::cerr << "test: format_string = " << format_string << " version = " << version << std::endl;
+                if ( !stringstream || !stringstream.eof() ||
+		     !std::isspace ( space_format_format_string ) ||
+		     !std::isspace ( space_format_string_version ) )
+		  {
+		    std::cerr << "test: format_string = " << format_string << " version = " << version << std::endl;
+                    //if ( error_callback_ )
+		    //{
+		    //  error_callback_ ( line_number_, "parse error1" );
+		    //}
+                    //return false;
+		  }
                 if ( format_string == "ascii" )
                 {
-                    format = ascii_format;
+		  std::cerr << "test: format ascii" << std::endl;
+		  format = ascii_format;
                 }
                 else if ( format_string == "binary_big_endian" )
                 {
