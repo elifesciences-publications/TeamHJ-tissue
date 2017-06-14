@@ -372,10 +372,8 @@ void BaseSolver::print(std::ostream &os)
   //
   // Print cell variables for gnuplot
   //
-
-
   else if( printFlag_==5 ) {
-    //Print the cells, first connected vertecis and then variables
+    //Print the cells, first connected vertecis and then the variables
     size_t Nc = cellData_.size();
     //os << Nc << " " << numPrintVar << std::endl;
     for( size_t i=0 ; i<Nc ; ++i ) {
@@ -396,8 +394,9 @@ void BaseSolver::print(std::ostream &os)
     }				
     os << std::endl;
   }
-
+  //
   //ply output
+  //
   else if ( printFlag_==6 ) {
     std::ostringstream ssCount;
     ssCount << tCount;
@@ -618,6 +617,29 @@ void BaseSolver::print(std::ostream &os)
   // Ad hoc and temporary print flags
   //
 
+  //
+  // for pavement cell representation tissue and only anticlinal walls
+  //
+  else if ( printFlag_==24 ) 
+    {
+      std::string pvdFile = "tmp/tissue.pvd";
+      std::vector<std::string> files;
+      files.push_back ( "tmp/VTK_cells.vtu" );
+      files.push_back ( "tmp/VTK_int_walls.vtu" );
+      files.push_back ( "tmp/VTK_anti_walls.vtu" );
+      
+      static size_t numCellVar = T_->cell ( 0 ).numVariable();
+      setTissueVariables ( numCellVar );
+      
+      if ( tCount==0 )
+        {
+          PVD_file::writeFullPvd ( pvdFile, files, numPrint_ );
+        }
+
+      PVD_file::writePave ( *T_, files[0], files[1], files[2], tCount );
+
+    }
+
   else if( printFlag_==25 ) { // This flag is printing the vtk paired wall and gnuplot outputs (corresponding to flags 2 and 5, respectively). The gnuplot output is written in a file called tissue.gdata.
     
     // Generating the output in gnuplot format. 
@@ -664,46 +686,6 @@ void BaseSolver::print(std::ostream &os)
     }
     PVD_file::writeTwoWall(*T_,cellFile,wallFile,tCount);
   }
-  //
-  // Print vertex and cell variables
-  //
-  else if( printFlag_==3 ) {
-    if( tCount==0 )
-      os << numPrint_ << "\n";
-    size_t Nv = vertexData_.size(); 
-    if( !Nv ) {
-      os << "0 0" << std::endl << "0 0" << std::endl;
-      return;
-    }
-    //Print the vertex positions
-    size_t dimension = T_->vertex(0).numPosition(); // was vertexData_[0].size();
-    os << Nv << " " << dimension << std::endl;
-    for( size_t i=0 ; i<Nv ; ++i ) {
-      for( size_t d=0 ; d<dimension ; ++d )
-      os << vertexData_[i][d] << " ";
-      os << std::endl;
-    }
-    //os << std::endl;
-    //Print the cells, first connected vertecis and then variables
-    size_t Nc = cellData_.size();
-    int numPrintVar=T_->cell(0).numVariable()+3; // was cellData_[0].size()+3;
-    os << Nc << " " << numPrintVar << std::endl;
-    for( size_t i=0 ; i<Nc ; ++i ) {
-      size_t Ncv = T_->cell(i).numVertex(); 
-      os << Ncv << " ";
-      for( size_t k=0 ; k<Ncv ; ++k )
-  os << T_->cell(i).vertex(k)->index() << " ";
-      
-      for( size_t k=0 ; k<cellData_[i].size() ; ++k )
-  os << cellData_[i][k] << " ";
-      os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
-   << T_->cell(i).numWall() << std::endl;
-    }   
-    os << std::endl;
-
-
-  }
-
 
   else if( printFlag_==26 ) { // Same as flag 25, but without printing the wall variables in the output file with gnuplot format. This flag is printing the vtk paired wall and gnuplot outputs (corresponding to flags 2 and 5, respectively). The gnuplot output is written in a file called tissue.gdata.
     
@@ -824,9 +806,6 @@ void BaseSolver::print(std::ostream &os)
 
   }
 
-
-
-
     else if( printFlag_==28 ) { // Same as flag 27, but generating an extra file in a displaytissue format for the last time point.
     // Generating the output in gnuplot format. 
 
@@ -909,10 +888,7 @@ void BaseSolver::print(std::ostream &os)
     }   
     of1 << std::endl;}
 
-
-
-
-// writing in the displayTissueMT format, ie, like flag 0
+    // writing in the displayTissueMT format, ie, like flag 0
     if( tCount==0 )
       os << numPrint_ << "\n";
     size_t Nv = vertexData_.size(); 
@@ -925,7 +901,7 @@ void BaseSolver::print(std::ostream &os)
     os << Nv << " " << dimension << std::endl;
     for( size_t i=0 ; i<Nv ; ++i ) {
       for( size_t d=0 ; d<dimension ; ++d )
-  os << vertexData_[i][d] << " ";
+	os << vertexData_[i][d] << " ";
       os << std::endl;
     }
     //os << std::endl;
@@ -937,10 +913,10 @@ void BaseSolver::print(std::ostream &os)
       size_t Ncv = T_->cell(i).numVertex(); 
       os << Ncv << " ";
       for( size_t k=0 ; k<Ncv ; ++k )
-  os << T_->cell(i).vertex(k)->index() << " ";
+	os << T_->cell(i).vertex(k)->index() << " ";
       
       for (size_t k=0; k<numPrintCellVar; ++k) { // was for( size_t k=0 ; k<cellData_[i].size() ; ++k )
-  os << cellData_[i][k] << " ";
+	os << cellData_[i][k] << " ";
       }
       //os << i << " " << T_->cell(i).calculateVolume(vertexData_) << " " 
       //<< T_->cell(i).numWall() << std::endl;
@@ -1063,7 +1039,7 @@ void BaseSolver::print(std::ostream &os)
    // std::cerr<<tCount<<'\n';
     if (tCount==numPrint_){
 
-// writing in the displayTissueMT format, ie, like flag 0
+      // writing in the displayTissueMT format, ie, like flag 0
 
     of1 << 1 << "\n";
     size_t Nv = vertexData_.size(); 
@@ -1114,7 +1090,7 @@ void BaseSolver::print(std::ostream &os)
 
 
 
-// writing in the displayTissueMT format, ie, like flag 0
+    // writing in the displayTissueMT format, ie, like flag 0
     if( tCount==0 )
       os << numPrint_ << "\n";
     size_t Nv = vertexData_.size(); 
@@ -1385,53 +1361,37 @@ void BaseSolver::print(std::ostream &os)
 
 
   }
-
   //
-  // Ad hoc and temporary print flags
   //
-  
-    else if( printFlag_==48 ) {
+  else if( printFlag_==48 ) {
 
- size_t Nc = cellData_.size();
- size_t NcM = {Nc -1};
+    size_t Nc = cellData_.size();
+    size_t NcM = {Nc -1};
     //os << Nc << " " << numPrintVar << std::endl;
-
-  
-  
- for( size_t i=1 ; i<Nc-1 ; ++i ) 
-    os << cellData_[i][4] <<" ";
- 
- for( size_t i=Nc-1 ; i<Nc ; ++i ) 
-    os << cellData_[i][4] <<std::endl;
- }  
-
-
-
- //
-  // Ad hoc and temporary print flags
+    for( size_t i=1 ; i<Nc-1 ; ++i ) 
+      os << cellData_[i][4] <<" ";
+    for( size_t i=Nc-1 ; i<Nc ; ++i ) 
+      os << cellData_[i][4] <<std::endl;
+  }  
   //
-  
-    else if( printFlag_==49 ) {
-
- size_t Nc = cellData_.size();
- size_t NcM = {Nc -1};
-    //os << Nc << " " << numPrintVar << std::endl;
-
- for( size_t i=0 ; i<Nc ; ++i ) {
-      os << cellData_[i][4] << std::endl;}
-  
+  //
+  else if( printFlag_==49 ) {
+    size_t Nc = cellData_.size();
+    size_t NcM = {Nc -1};
+    //os << Nc << " " << numPrintVar << std::endl;    
+    for( size_t i=0 ; i<Nc ; ++i ) {
+      os << cellData_[i][4] << std::endl;
     }
-    
-  //
-  // Ad hoc and temporary print flags
-  //
-  
-    else if( printFlag_==50 ) {
-    
-    os << cellData_[0][4] << " " << cellData_[0][5] <<" " << cellData_[0][12] << std::endl;
-    
   }
   
+  //
+  //
+  //
+  else if( printFlag_==50 ) {    
+    os << cellData_[0][4] << " " << cellData_[0][5] <<" " << cellData_[0][12] << std::endl;    
+  }
+  //
+  //
   else if( printFlag_==51 ) {  // paper I fig2ai and fig2aii
     
     os << vertexData_[2][0] << " "              //    x deflection     
@@ -1471,11 +1431,9 @@ void BaseSolver::print(std::ostream &os)
   }
 
   else if( printFlag_==55 ) {
-    
     os << cellData_[0][13] << " " <<cellData_[0][14] << " " << cellData_[0][3] <<" "<< cellData_[0][7] <<" " << cellData_[0][12] << std::endl;
   }
-
-  
+ 
   else if( printFlag_==56 ) {  // energy landscape for a single element
     
     os << T_->reaction(5)->parameter(0)<< " "  //  forceX
@@ -1550,9 +1508,7 @@ void BaseSolver::print(std::ostream &os)
    // strain aniso, strain1, strain2, stress1, stress2.
    //os << T_->reaction(0)->parameter(0);
  }
-  
-
-  
+ 
  else if( printFlag_==61 ) {// Print in vtu format and angle distribution at the end PLoS/fig3
    std::string pvdFile = "vtk/tissue.pvd";
    std::string cellFile = "vtk/VTK_cells.vtu";
@@ -1689,7 +1645,51 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
    
  }
 
-  
+ else if( printFlag_==68 ) {// Print in vtu format and angle distribution at the end PLoS/fig3
+   std::string pvdFile = "tmp/tissue.pvd";
+   std::string cellFile = "tmp/VTK_cells.vtu";
+   std::string wallFile = "tmp/VTK_walls.vtu";
+   static size_t numCellVar = T_->cell(0).numVariable();
+   setTissueVariables(numCellVar);
+   if( tCount==0 ) {
+     PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
+   }
+   PVD_file::write(*T_,cellFile,wallFile,tCount);
+   
+   double avWallStress=0;
+   double varWallStress=0;
+   for (size_t wallind = 0 ; wallind < wallData_.size() ;wallind++) 
+     avWallStress+=wallData_[wallind][2];
+   avWallStress/=wallData_.size();
+   for (size_t wallind = 0 ; wallind < wallData_.size() ;wallind++) 
+     varWallStress+=(avWallStress-wallData_[wallind][2])*(avWallStress-wallData_[wallind][2]);
+   varWallStress/=wallData_.size();
+   varWallStress=std::sqrt(varWallStress);
+   
+   double avCellStress=0;
+   double varCellStress=0;
+   for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) 
+     avCellStress+=cellData_[cellind][27];
+   avCellStress/=cellData_.size();
+   for (size_t cellind = 0 ; cellind < cellData_.size() ;cellind++) 
+     varCellStress+=(avCellStress-cellData_[cellind][27])*(avCellStress-cellData_[cellind][27]);
+   varCellStress/=cellData_.size();
+   varCellStress=std::sqrt(varCellStress);
+   
+   os << avWallStress   <<" "        //   average wall stress     
+      << varWallStress  <<" "        //   standard deviation wall stress
+      << avCellStress  <<" "        //   average cell mises stress
+      << varCellStress <<std::endl; //   standard deviation cell stress 
+
+   // if(tCount==numPrint_-1){
+   //   for (size_t wallind = 0 ; wallind < wallData_.size() ;wallind++) {
+   //     os << wallData_[wallind][0] <<" "        //   wall resting length     
+   //        << (wallData_[wallind][1]-wallData_[wallind][0])/wallData_[wallind][0] <<std::endl; //   growth
+   
+   //   }
+   // }
+ }
+ 
   else if (printFlag_ == 96) {
     size_t dimensions = vertexData_[0].size();
     
@@ -1866,7 +1866,12 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
   // Very ad hoc assuming reaction having index 3 in model file (fourth reaction)
   //
   else if (printFlag_==101) {
-    size_t reactionIndex = 4;
+    size_t reactionIndex=0 ;
+    for (size_t rind=0 ; rind< 5 ; rind++)
+      if (T_->reaction(rind)->id() == "VertexFromExternalSpringFromPerpVertex"
+          || T_->reaction(rind)->id() == "VertexFromExternalSpringFromPerpVertexDynamic" ) {
+        reactionIndex=rind;
+      }
     if (T_->reaction(reactionIndex)->id() != "VertexFromExternalSpringFromPerpVertex"
 	&& T_->reaction(reactionIndex)->id() != "VertexFromExternalSpringFromPerpVertexDynamic" ) {
       std::cerr << "BaseSolver::print() with printFlag 101. Wrong name of reaction "
@@ -1932,11 +1937,6 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
       // }
   }
   
-  // cellData[cellIndex][lengthInternalIndex + wallindex]
-  // wallData[w2][wallLengthIndex]
-
-
-
  else if( printFlag_==103 ) {// Print cell and membrane values (e.g. for PIN) at same row
     size_t auxinIndexCell=4;
     size_t pinIndexCell=5;
@@ -2040,16 +2040,47 @@ else if( printFlag_==62 ) {  // for ploting angels of MT, stress and P-strain
       }
     }
   }
-//T.printInit(std::cout);
 
-  else if (printFlag_==106) {// Init style
-    printInit(os);
-  }
-
- 
-
-  else
-    std::cerr << "BaseSolver::print() Wrong printFlag value\n";
+ else if (printFlag_==106) {// for meristem 3D vtu printing seperate top,side,bottom; L1,L2,L3
+   size_t reactionIndex=0 ;
+   for (size_t rind=0 ; rind< 5 ; rind++)
+     if (T_->reaction(rind)->id() == "VertexFromTRBScenterTriangulationMT" ) {
+       reactionIndex=rind;
+     }
+   if (T_->reaction(reactionIndex)->id() != "VertexFromTRBScenterTriangulationMT") {
+     std::cerr << "BaseSolver::print() with printFlag 106. Wrong name of reaction "
+	       << reactionIndex << " in reaction list, no printing." << std::endl;     
+   }
+   else
+     T_->reaction(reactionIndex)->printState(T_,cellData_,wallData_,vertexData_);
+   
+   for (size_t rind=0 ; rind< 7 ; rind++)
+     if (T_->reaction(rind)->id() == "cellPolarity3D" ) {
+       reactionIndex=rind;
+     }
+   if (T_->reaction(reactionIndex)->id() != "cellPolarity3D") {
+     std::cerr << "BaseSolver::print() with printFlag 106. Wrong name of reaction "
+	       << reactionIndex << " in reaction list, no printing." << std::endl;     
+   }
+   else T_->reaction(reactionIndex)->printState(T_,cellData_,wallData_,vertexData_);
+   
+   std::string pvdFile = "vtk/tissue.pvd";
+   std::string cellFile = "vtk/VTK_cells.vtu";
+   std::string wallFile = "vtk/VTK_walls.vtu";
+   static size_t numCellVar = T_->cell(0).numVariable();
+   setTissueVariables(numCellVar);
+   if( tCount==0 ) {
+     PVD_file::writeFullPvd(pvdFile,cellFile,wallFile,numPrint_);
+   }
+   PVD_file::write(*T_,cellFile,wallFile,tCount);
+ }
+  
+ else if (printFlag_==107) {// Init style
+   printInit(os);
+ }
+  
+ else
+   std::cerr << "BaseSolver::print() Wrong printFlag value\n";
   tCount++;
 }
 
