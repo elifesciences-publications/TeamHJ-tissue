@@ -103,7 +103,11 @@ class UpdateMTDirection : public BaseReaction
 	void initiate(Tissue &T,
 		      DataMatrix &cellData,
 		      DataMatrix &wallData,
-		      DataMatrix &vertexData);
+		      DataMatrix &vertexData,
+		      DataMatrix &cellDerivs,
+		      DataMatrix &wallDerivs,
+		      DataMatrix &vertexDerivs );
+		      
 	void derivs(Tissue &T,
 		    DataMatrix &cellData,
 		    DataMatrix &wallData,
@@ -150,7 +154,11 @@ class UpdateMTDirectionEquilibrium : public BaseReaction
 	void initiate(Tissue &T,
 		      DataMatrix &cellData,
 		      DataMatrix &wallData,
-		      DataMatrix &vertexData);
+		      DataMatrix &vertexData,
+		      DataMatrix &cellDerivs,
+		      DataMatrix &wallDerivs,
+		      DataMatrix &vertexDerivs );
+	
 	void derivs(Tissue &T,
 		    DataMatrix &cellData,
 		    DataMatrix &wallData,
@@ -194,7 +202,11 @@ class UpdateMTDirectionConcenHill : public BaseReaction
 	void initiate(Tissue &T,
 		      DataMatrix &cellData,
 		      DataMatrix &wallData,
-		      DataMatrix &vertexData);
+		      DataMatrix &vertexData,
+		      DataMatrix &cellDerivs,
+		      DataMatrix &wallDerivs,
+		      DataMatrix &vertexDerivs );
+		      
 	void derivs(Tissue &T,
 		    DataMatrix &cellData,
 		    DataMatrix &wallData,

@@ -236,7 +236,10 @@ UpdateMTDirection::UpdateMTDirection(std::vector<double> &paraValue,
 void UpdateMTDirection::initiate(Tissue &T,
 				 DataMatrix &cellData,
 				 DataMatrix &wallData,
-				 DataMatrix &vertexData) 
+				 DataMatrix &vertexData,
+				 DataMatrix &cellDerivs,
+				 DataMatrix &wallDerivs,
+				 DataMatrix &vertexDerivs )				
 {
   size_t numCell=cellData.size();
   size_t dimension=vertexData[0].size();
@@ -281,7 +284,7 @@ void UpdateMTDirection::update(Tissue &T,
       cellData[i][outIndex+d] *= norm;
   }
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 UpdateMTDirectionEquilibrium::UpdateMTDirectionEquilibrium(std::vector<double> &paraValue,
 				     std::vector< std::vector<size_t> > &indValue)
 {
@@ -313,9 +316,12 @@ UpdateMTDirectionEquilibrium::UpdateMTDirectionEquilibrium(std::vector<double> &
 }
 
 void UpdateMTDirectionEquilibrium::initiate(Tissue &T,
-				 DataMatrix &cellData,
-				 DataMatrix &wallData,
-				 DataMatrix &vertexData) 
+					    DataMatrix &cellData,
+					    DataMatrix &wallData,
+					    DataMatrix &vertexData,
+					    DataMatrix &cellDerivs,
+					    DataMatrix &wallDerivs,
+					    DataMatrix &vertexDerivs )
 {
   size_t numCell=cellData.size();
   size_t dimension=vertexData[0].size();
@@ -418,7 +424,6 @@ void UpdateMTDirectionEquilibrium::update(Tissue &T,
 
   }
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 UpdateMTDirectionConcenHill::UpdateMTDirectionConcenHill(std::vector<double> &paraValue,
 				     std::vector< std::vector<size_t> > &indValue)
@@ -450,9 +455,12 @@ UpdateMTDirectionConcenHill::UpdateMTDirectionConcenHill(std::vector<double> &pa
 }
 
 void UpdateMTDirectionConcenHill::initiate(Tissue &T,
-				 DataMatrix &cellData,
-				 DataMatrix &wallData,
-				 DataMatrix &vertexData) 
+					   DataMatrix &cellData,
+					   DataMatrix &wallData,
+					   DataMatrix &vertexData,
+					   DataMatrix &cellDerivs,
+					   DataMatrix &wallDerivs,
+					   DataMatrix &vertexDerivs )  					   
 {
   // size_t numCell=cellData.size();
   // size_t dimension=vertexData[0].size();

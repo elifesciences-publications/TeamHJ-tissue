@@ -352,3 +352,31 @@ void PVD_file::writeInnerOuterWalls ( Tissue const& t, const std::string vtu_fil
     out.close();
 }
 //-----------------------------------------------------------------------------
+void PVD_file::writePave ( Tissue const& t, const std::string vtu_filename1, const std::string vtu_filename2, const std::string vtu_filename3, size_t count )
+{
+    std::vector<std::string> basenames ( 3 ), filenames ( 3 );
+    basenames[0] = vtu_filename1;
+    basenames[1] = vtu_filename2;
+    basenames[2] = vtu_filename3;
+    // Update vtu file name
+    vtuNameUpdate ( count, basenames, filenames );
+    
+
+   
+    std::ofstream co ( filenames[0].c_str() );
+    VTUostream out ( co );
+    //out.write_cells ( t ); // one cell vector
+    out.write_cells2 ( t ); // 3 cell vectors
+    out.close();
+    //write inner walls
+    std::ofstream iwo ( filenames[1].c_str() );
+    out.open ( iwo );
+
+    out.write_inner_walls ( t );
+    out.close();
+    //write outer walls
+    std::ofstream owo ( filenames[2].c_str() );
+    out.open ( owo );
+    out.write_outer_walls ( t );
+    out.close();
+}

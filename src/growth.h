@@ -85,9 +85,6 @@ namespace WallGrowth {
 	      DataMatrix &cellDerivs,
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
-
-
-
   };
     
   ///
@@ -161,7 +158,6 @@ namespace WallGrowth {
 		DataMatrix &wallDerivs,
 		DataMatrix &vertexDerivs );
 
-
       void derivsWithAbs(Tissue &T,
          DataMatrix &cellData,
          DataMatrix &wallData,
@@ -227,11 +223,7 @@ namespace WallGrowth {
                 DataMatrix &vertexData,
                 double h );
   };
-  
-    
-    
-    
-    
+      
     ///
     /// @brief Constant stress/strain-driven wall growth dependent on a
     /// distance to an maximal coordinate (e.g. tip)
@@ -649,14 +641,8 @@ namespace WallGrowth {
 		  DataMatrix &cellDerivs,
 		  DataMatrix &wallDerivs,
 		  DataMatrix &vertexDerivs );
-
-
     };
-
-
-
     
-
     ///
     /// @brief 
     ///
@@ -676,8 +662,6 @@ namespace WallGrowth {
     ///
     /// (strain value and direction calculated and updated from other (mechanical) reactions).
     ///
-    ///
-
     class StrainTRBS : public BaseReaction {
       
     public:
@@ -715,12 +699,8 @@ namespace WallGrowth {
 		  DataMatrix &vertexData,
                   double h );
     };
-
-  
-
-  }
- 
-}
+  } // namespace CenterTriangulation
+} // namespace WallGrowth
 
 ///
 /// @brief Growth via vertex movement radially outwards
@@ -834,7 +814,6 @@ public:
                 DataMatrix &vertexDerivs );
 };
 
-
 ///
 /// @brief Growth via vertex movement in the x-direction
 ///
@@ -895,8 +874,6 @@ public:
          DataMatrix &sdydtWall,
          DataMatrix &sdydtVertex );
 };
-
-
 
 ///
 /// @brief Growth via vertex movement in the y-direction
