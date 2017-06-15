@@ -143,7 +143,8 @@ namespace CenterTriangulation {
   class VertexFromCellPressureLinear : public BaseReaction {
   private:
     
-    double timeFactor_; 
+    double timeFactor_;
+    double totaltime; 
   public:
     
     ///
@@ -618,7 +619,7 @@ class VertexFromCellPlaneLinearCenterTriangulation : public BaseReaction
 {
 private:
   
-  double timeFactor_;
+  double timeFactor1, timeFactor2;
   
 public:
   VertexFromCellPlaneLinearCenterTriangulation(std::vector<double> &paraValue,

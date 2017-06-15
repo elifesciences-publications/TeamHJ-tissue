@@ -304,6 +304,8 @@ namespace CenterTriangulation {
 	 DataMatrix &cellDerivs,
 	 DataMatrix &wallDerivs,
 	 DataMatrix &vertexDerivs ) {
+
+ 
     
     //Do the update for each vertex via each wall in each cell
     size_t numCells = T.numCell();
@@ -344,6 +346,14 @@ namespace CenterTriangulation {
 	else {
 	  std::cerr << "CenterTriangulation::VertexFromCellPressureLinear::derivs() "
 		    << "Strange wall length." << std::endl;
+          std::cerr<<wallLength<<" "<<cellI<<std::endl;
+          
+          // for(size_t gg=0; gg<cellData.size(); ++gg){
+          //   for(size_t g=39; g<cellData[gg].size(); ++g)
+          //     std::cerr<<cellData[gg][g]<<"  ";
+          //   std::cerr<<std::endl;
+          //}
+          exit(0);
 	}
 	wallFactor= ( dx[0]*wallVector[0]
 		      +dx[1]*wallVector[1]
@@ -363,6 +373,7 @@ namespace CenterTriangulation {
 	else {
 	  std::cerr << "CenterTriangulation::VertexFromCellPressureLinear::derivs() "
 		    << "Force direction undetermined." << std::endl;
+         exit(0);
 	}
 	double factor = 0.5 * timeFactor_ * parameter(0);
 	if (parameter(1) == 1)
@@ -371,9 +382,13 @@ namespace CenterTriangulation {
 	    double cellVolume = tmpCell.calculateVolume(vertexData);
 	    factor /= std::fabs(cellVolume);         
 	  }
-	factor *= wallLength;    
+	factor *= wallLength;
+        
+        factor *= 1.5-cellData[cellI][11];
+            
+        //if(totaltime<100) for residual stress calculation
 	for( size_t d=0 ; d<dimension ; ++d ) {
-	  vertexDerivs[v1I][d] += factor * dx[d];
+          vertexDerivs[v1I][d] += factor * dx[d];
 	  vertexDerivs[v2I][d] += factor * dx[d];	
 	}
       }
@@ -386,14 +401,25 @@ namespace CenterTriangulation {
 	 DataMatrix &wallData,
 	 DataMatrix &vertexData,
 	 double h)
-  {
-    if (timeFactor_ < 1.0 ) {
-      timeFactor_ += h/parameter(numParameter()-1);
+  { static double tt=0;
+    tt+=h;
+    totaltime=tt;
+    if (totaltime<200 )
+    //if(true) 
+      {
+        
+        if (timeFactor_ < 1.0 ) {
+          timeFactor_ += h/parameter(numParameter()-1);
+        }
+        if (timeFactor_ >= 1.0)
+          timeFactor_=1.0;
+      }
+    else{
+      timeFactor_=0;
     }
-    if (timeFactor_ >= 1.0)
-      timeFactor_=1.0;
     //cellData[0][12]=timeFactor_*parameter(0);
   }
+  
 }// end namespace CenterTriangulation
   
 
@@ -2182,7 +2208,8 @@ VertexFromCellPlaneLinearCenterTriangulation(std::vector<double> &paraValue,
   tmp[1] = "areaFlag";
   tmp[2] = "deltaT";
  
-  timeFactor_=0.0;
+  timeFactor1=0.0;
+  timeFactor2=0.0;
   setParameterId(tmp);
 }
 
@@ -2206,8 +2233,15 @@ derivs(Tissue &T,
  size_t comIndex = variableIndex(0,0);
  size_t lengthInternalIndex = comIndex+dimension;
 
- for (size_t cellIndex= 0; cellIndex< numCells; ++cellIndex) 
-   //if(cellData[cellIndex][38]==-1)
+ for (size_t cellIndex= 0; cellIndex< numCells; ++cellIndex)
+
+   //if(cellData[cellIndex][27]!=-10)  // everywhere except l3 bottom
+   
+   //if(cellData[cellIndex][27]==-2) // only epidermis (L1 top)
+   
+   //if(cellData[cellIndex][28]==1 && cellData[cellIndex][29]==2) // only L2 top)
+   //if(cellData[cellIndex][38]==-1) // for hypocotyl
+   if(true)
    {  
      
      size_t numWalls = T.cell(cellIndex).numWall();
@@ -2297,9 +2331,10 @@ derivs(Tissue &T,
        double A=1.0/3;
        if (parameter(1)==1.0 || parameter(1)==2.0 )
 	 A = Area/2;
-       double coeff =timeFactor_*parameter(0) * A;
+ 
        //update the vertex derivatives
-       if (parameter(1)==0.0 || parameter(1)==1.0 ){                 
+       if (parameter(1)==0.0 || parameter(1)==1.0 ){
+         double coeff =timeFactor1*parameter(0) * A;                 
          // cellDerivs[cellIndex][comIndex  ] +=   coeff * normal[0];  
          // cellDerivs[cellIndex][comIndex+1] +=  coeff * normal[1];  
          // cellDerivs[cellIndex][comIndex+2] +=  coeff * normal[2];  
@@ -2311,7 +2346,7 @@ derivs(Tissue &T,
          vertexDerivs[v3][0] +=  coeff * normal[0];  
          vertexDerivs[v3][1] +=  coeff * normal[1];  
          vertexDerivs[v3][2] +=  coeff * normal[2];   
-
+         
 
          // vertexDerivs[v2][0] +=  2*coeff * normal[0];  
          // vertexDerivs[v2][1] +=  2*coeff * normal[1];  
@@ -2323,8 +2358,8 @@ derivs(Tissue &T,
        }
        
        if (parameter(1)==2.0 ){                 
-         
-         cellDerivs[cellIndex][comIndex+2] +=  coeff * normal[2];  
+         double coeff =timeFactor2*parameter(0) * A;                 
+         //cellDerivs[cellIndex][comIndex+2] +=  coeff * normal[2];  
          
          vertexDerivs[v2][2] +=  coeff * normal[2];  
          
@@ -2334,10 +2369,9 @@ derivs(Tissue &T,
 
       
 			
-     }// for over walls
-  }// for over cells
-
-  
+     }// over walls
+  }// over cells
+ 
 }
 
 
@@ -2348,13 +2382,28 @@ void VertexFromCellPlaneLinearCenterTriangulation::update(Tissue &T,
                                        DataMatrix &wallData,
                                        DataMatrix &vertexData,
                                        double h)
-{
-  if (timeFactor_ < 1.0 ) {
-    timeFactor_ += h/parameter(numParameter()-1);
-  }
-  if (timeFactor_ >1.0)
-    timeFactor_=1.0;
-  //cellData[0][12]=timeFactor_*parameter(0);
+{ static double deltat=0;
+  deltat +=h; 
+
+  if(parameter(1)==1)
+    {   
+      if (timeFactor1 < 1.0 ) 
+        timeFactor1 += h/parameter(numParameter()-1);
+      
+      if (timeFactor1 >1.0)
+        timeFactor1=1.0;
+    }
+  
+  //if(parameter(1)==2 && deltat>800)
+  if(parameter(1)==2 )
+    {
+      if (timeFactor2 < 1.0 ) 
+        timeFactor2 += h/parameter(numParameter()-1);
+      
+      if (timeFactor2 >1.0)
+        timeFactor2=1.0;
+      
+    }
 }
 
 
@@ -3449,7 +3498,7 @@ derivs(Tissue &T,
           normal[d] *= normFac;
       }
       double A= cell.calculateVolume(vertexData)*normal[2];
-      totalVolume += A*(((position[0][2]+position[1][2]+position[2][2])/3)-parameter(2));
+      //totalVolume += A*(((position[0][2]+position[1][2]+position[2][2])/3)-parameter(2));      
     }
     
 
@@ -3517,7 +3566,7 @@ derivs(Tissue &T,
           normal[d] *= normFac;
       }
       double A= cell.calculateVolume(vertexData)*normal[2];
-      totalVolume += A*(((position[0][2]+position[1][2]+position[2][2])/3)-parameter(2));
+      //totalVolume += A*(((position[0][2]+position[1][2]+position[2][2])/3)-parameter(2));
     }
     
     //  std:: cerr<<"total Volume:  "<<totalVolume<<std::endl;
@@ -3552,7 +3601,7 @@ derivs(Tissue &T,
           double vCoeff=coeff;
           //if (cell.vertex(k)->isBoundary(T.background()))
           //vCoeff *= 1.5;
-          for (size_t d=0; d<dimension; ++d) {
+          for (size_t d=0; d<3; ++d) {
             vertexDerivs[cell.vertex(k)->index()][d] += vCoeff * normal[d];
           }
       }	
@@ -3681,17 +3730,18 @@ derivs(Tissue &T,
     size_t i = variableIndex(0,k);
     assert(i<vertexData.size());
     
-    for (size_t d=0; d<vertexData[i].size(); ++d)
-      if( numParameter()>d )
-        vertexDerivs[i][d] += timeFactor_*parameter(d);
+    // for (size_t d=0; d<vertexData[i].size(); ++d)
+    //   if( numParameter()>d )
+    //     vertexDerivs[i][d] += timeFactor_*parameter(d);
     
-    //ad-hoc
-    // double tmp=std::abs(parameter(1));
-    // vertexDerivs[i][0] += timeFactor_*parameter(0)*(-tmp+1.5);
-    // vertexDerivs[i][1] += timeFactor_*parameter(1);
-    // vertexDerivs[i][2] += timeFactor_*parameter(2);
+    //ad-hoc for energy landscape
+
+    vertexDerivs[i][0] += timeFactor_*parameter(0)/(2-parameter(2));
+    vertexDerivs[i][1] += timeFactor_*parameter(1)*(1-parameter(2))/(2-parameter(2));;
+    vertexDerivs[i][2] += 0;
     
-    
+    //std::cerr<<timeFactor_*parameter(0)*(2-std::abs(parameter(1)))<<"  "
+    //         <<timeFactor_*parameter(1)<<std::endl;
   }
  
 }
@@ -4174,17 +4224,20 @@ derivs(Tissue &T,
       double tmp=std::sqrt( cellData[cellIndex][variableIndex(0,0)  ]*cellData[cellIndex][variableIndex(0,0)  ] +
                             cellData[cellIndex][variableIndex(0,0)+1]*cellData[cellIndex][variableIndex(0,0)+1] +
                             cellData[cellIndex][variableIndex(0,0)+2]*cellData[cellIndex][variableIndex(0,0)+2]   );
+      if(tmp>0){
       cellData[cellIndex][variableIndex(0,0)  ]=cellData[cellIndex][variableIndex(0,0)  ]/tmp;
       cellData[cellIndex][variableIndex(0,0)+1]=cellData[cellIndex][variableIndex(0,0)+1]/tmp;
       cellData[cellIndex][variableIndex(0,0)+2]=cellData[cellIndex][variableIndex(0,0)+2]/tmp;
-
+      }
+      
       tmp=std::sqrt( cellData[cellIndex][variableIndex(0,1)  ]*cellData[cellIndex][variableIndex(0,1)  ] +
                      cellData[cellIndex][variableIndex(0,1)+1]*cellData[cellIndex][variableIndex(0,1)+1] +
                      cellData[cellIndex][variableIndex(0,1)+2]*cellData[cellIndex][variableIndex(0,1)+2]   );
-      cellData[cellIndex][variableIndex(0,1)  ]=cellData[cellIndex][variableIndex(0,1)  ]/tmp;
-      cellData[cellIndex][variableIndex(0,1)+1]=cellData[cellIndex][variableIndex(0,1)+1]/tmp;
-      cellData[cellIndex][variableIndex(0,1)+2]=cellData[cellIndex][variableIndex(0,1)+2]/tmp;
-
+      if(tmp>0){      
+        cellData[cellIndex][variableIndex(0,1)  ]=cellData[cellIndex][variableIndex(0,1)  ]/tmp;
+        cellData[cellIndex][variableIndex(0,1)+1]=cellData[cellIndex][variableIndex(0,1)+1]/tmp;
+        cellData[cellIndex][variableIndex(0,1)+2]=cellData[cellIndex][variableIndex(0,1)+2]/tmp;
+      }
       teta=std::abs( cellData[cellIndex][variableIndex(0,0)  ]*cellData[cellIndex][variableIndex(0,1)  ] +
                      cellData[cellIndex][variableIndex(0,0)+1]*cellData[cellIndex][variableIndex(0,1)+1] +
                      cellData[cellIndex][variableIndex(0,0)+2]*cellData[cellIndex][variableIndex(0,1)+2]   );
@@ -4577,7 +4630,6 @@ maxVelocity::maxVelocity(std::vector<double> &paraValue,
   setParameterId( tmp );
   
 }
-
 
 
 void maxVelocity::
