@@ -54,7 +54,7 @@ void PLY_reader::read ( PLY_file const&f, Tissue &t )
     parser.list_property_definition_callbacks ( list_property_definition_callbacks );
     //std::cerr << "ply_reader::read test3.\n";
     parser.parse ( filename );
-    std::cerr <<"parsed\n";
+    //std::cerr <<"parsed\n";
     if ( !t.numWall() )
         infer_walls_from_cells ( t );
     else
@@ -67,37 +67,37 @@ void PLY_reader::read ( PLY_file const&f, Tissue &t )
 //----------------------------------------------------------------------------
 C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > PLY_reader::element_definition_callback ( const std::string& element_name, std::size_t count )
 {
-     std::cerr <<"parsing element: " << element_name << "\n";
-    if ( element_name == "vertex" )
+  //std::cerr <<"parsing element: " << element_name << "\n";
+  if ( element_name == "vertex" )
     {
-      std::cerr << count << " vertices." << std::endl; 
+      //std::cerr << count << " vertices." << std::endl; 
       m_tissue->setNumVertex ( count );
-        return C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > (
-                   C11NSPACE::bind ( &PLY_reader::vertex_begin, this ),
-                   C11NSPACE::bind ( &PLY_reader::vertex_end, this )
-               );
+      return C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > (
+											    C11NSPACE::bind ( &PLY_reader::vertex_begin, this ),
+											    C11NSPACE::bind ( &PLY_reader::vertex_end, this )
+											    );
     }
-    else if ( element_name == "face" )
+  else if ( element_name == "face" )
     {
-      std::cerr << count << " faces." << std::endl; 
+      //std::cerr << count << " faces." << std::endl; 
       m_tissue->setNumCell ( count );
-        return C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > (
-                   C11NSPACE::bind ( &PLY_reader::face_begin, this ),
-                   C11NSPACE::bind ( &PLY_reader::face_end, this )
-               );
+      return C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > (
+											    C11NSPACE::bind ( &PLY_reader::face_begin, this ),
+											    C11NSPACE::bind ( &PLY_reader::face_end, this )
+											    );
     }
-    else if ( element_name == "edge" )
+  else if ( element_name == "edge" )
     {
-      std::cerr << count << " edges." << std::endl; 
+      //std::cerr << count << " edges." << std::endl; 
       m_tissue->setNumWall ( count );
-        return C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > (
-                   C11NSPACE::bind ( &PLY_reader::edge_begin, this ),
-                   C11NSPACE::bind ( &PLY_reader::edge_end, this )
-               );
+      return C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > (
+											    C11NSPACE::bind ( &PLY_reader::edge_begin, this ),
+											    C11NSPACE::bind ( &PLY_reader::edge_end, this )
+											    );
     }
-    else
+  else
     {
-        return C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > ( 0, 0 );
+      return C11NSPACE::tuple<C11NSPACE::function<void() >, C11NSPACE::function<void() > > ( 0, 0 );
     }
 }
 //----------------------------------------------------------------------------
