@@ -3252,6 +3252,16 @@ void VertexFromExternalSpringFromPerpVertexDynamic::update(Tissue &T,
 		//std::cerr<<"broken sisters"<<std::endl;
 	      }
 	    }
+            else if(variableIndex(0,0)==9) {
+              if((wallData[ T.vertex(vertexIndex1).wall(0)->index()][3]==1 && 
+		  wallData[ T.vertex(vertexIndex1).wall(1)->index()][3]==1) 
+                 ||
+                 (wallData[ T.vertex(vertexIndex2).wall(0)->index()][3]==1 && 
+                  wallData[ T.vertex(vertexIndex2).wall(1)->index()][3]==1) ){
+		restinglength+=h*Kgrowth*restinglength ;
+                
+	      }
+	    }	    
 	    else {
 	      std::cerr << "VertexFromExternalSpringFromPerpVertexDynamic::update()"
 			<< std::endl << "Wrong growth rule index given!"
@@ -3277,50 +3287,161 @@ printState(Tissue *T,
 	   std::ostream &os)
 {
   static size_t index=0;
-  size_t counter=0; 
-  size_t dimension = vertexData[0].size();
-  size_t numCells = T->numCell();
-  for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
-    size_t numCellVertices= T->cell(cellIndex).numVertex();
-    for (size_t vertexCellIndex1=0 ; vertexCellIndex1< numCellVertices ; vertexCellIndex1++){
-      size_t vertexIndex1 = T->cell(cellIndex).vertex(vertexCellIndex1)->index();
-      for (size_t vertexCellIndex2=0 ; vertexCellIndex2< numCellVertices ; vertexCellIndex2++)
-	if (vertexCellIndex2!=vertexCellIndex1 && connections[cellIndex][vertexCellIndex1][vertexCellIndex2]!=0){
-	  double restingLength=connections[cellIndex][vertexCellIndex1][vertexCellIndex2];
-	  size_t vertexIndex2= T->cell(cellIndex).vertex(vertexCellIndex2)->index();
-	  double distance=0;
-	  for( size_t d=0 ; d<dimension ; d++ )
-	    distance += (vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d])*
-	      (vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d]);	  
-	  distance=std::sqrt(distance);
+  size_t vtkFlag=1; // Set this to 0 for gnuplot style
 
-	  //vertex1
-	  os << index << " " << counter << " ";
-	  for( size_t d=0 ; d<dimension ; d++ )
-	    os << vertexData[vertexIndex1][d] << " ";
-	  os << restingLength << " " << distance << " " 
-	     << parameter(3)*restingLength+parameter(7)*(distance-restingLength) << std::endl;
-	  //vertex2
-	  os << index << " " << counter << " ";
-	  for( size_t d=0 ; d<dimension ; d++ )
-	    os << vertexData[vertexIndex2][d] << " ";
-	  os << restingLength << " " << distance
-	     << parameter(3)*restingLength+parameter(7)*(distance-restingLength) << std::endl;
-	  os << std::endl;
-	  counter++;
-	}
+  if (vtkFlag) {
+    // VTK style
+    std::stringstream name;
+    name << "vtk/VTKintWalls" << index  <<".vtu";
+    std::ofstream myfile;
+    myfile.open (name.str());
+    
+    size_t counter=0; 
+    size_t dimension = vertexData[0].size();
+    size_t numCells = T->numCell();
+    for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
+      size_t numCellVertices= T->cell(cellIndex).numVertex();
+      for (size_t vertexCellIndex1=0 ; vertexCellIndex1< numCellVertices ; vertexCellIndex1++){
+	size_t vertexIndex1 = T->cell(cellIndex).vertex(vertexCellIndex1)->index();
+	for (size_t vertexCellIndex2=0 ; vertexCellIndex2< numCellVertices ; vertexCellIndex2++)
+	  if (vertexCellIndex2!=vertexCellIndex1 && connections[cellIndex][vertexCellIndex1][vertexCellIndex2]!=0){
+	    counter++;
+	  }
+      }
     }
-  }
+    // VTK file header
+    myfile << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\">"<< std::endl
+	   << "<UnstructuredGrid>"<< std::endl
+	   << "<Piece  NumberOfPoints=\""<<       2*counter<<"\" NumberOfCells=\""<<       counter<<"\">"<< std::endl
+	   << "<Points>"<< std::endl
+	   << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">"  << std::endl;
+    
+    std::vector<double> resting, current;
+    counter=0; 
+    for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
+      size_t numCellVertices= T->cell(cellIndex).numVertex();
+      for (size_t vertexCellIndex1=0 ; vertexCellIndex1< numCellVertices ; vertexCellIndex1++){
+	size_t vertexIndex1 = T->cell(cellIndex).vertex(vertexCellIndex1)->index();
+	for (size_t vertexCellIndex2=0 ; vertexCellIndex2< numCellVertices ; vertexCellIndex2++)
+	  if (vertexCellIndex2!=vertexCellIndex1 && connections[cellIndex][vertexCellIndex1][vertexCellIndex2]!=0){
+	    double restingLength=connections[cellIndex][vertexCellIndex1][vertexCellIndex2];
+	    size_t vertexIndex2= T->cell(cellIndex).vertex(vertexCellIndex2)->index();
+	    double distance=0;
+	    for( size_t d=0 ; d<dimension ; d++ )
+	      distance += (vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d])*
+		(vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d]);	  
+	    distance=std::sqrt(distance);
+	    
+	    //vertex1
+	    for( size_t d=0 ; d<dimension ; d++ )
+	      myfile << vertexData[vertexIndex1][d] << " ";
+	    myfile << std::endl;
+	    
+	    //vertex2
+	    for( size_t d=0 ; d<dimension ; d++ )
+	      myfile << vertexData[vertexIndex2][d] << " ";
+	    myfile << std::endl;
+	    
+	    resting.push_back(restingLength);
+	    current.push_back(distance);
+	    
+	    counter++;
+	  }
+      }
+    }
+    
+    //connectivity
+    myfile << "</DataArray>"<<std::endl
+	   << "</Points>"<<std::endl
+	   << "<Cells>"<<std::endl
+	   << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">"<<std::endl;
+    
+    for( size_t d=0 ; d<counter ; d++ )
+      myfile <<2*d<<" "<<2*d<<" "<<2*d+1<<" "<<2*d+1<<" ";
+    myfile << std::endl;
+        
+    //off-sets 
+    myfile << "</DataArray>"<<std::endl
+	   << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">"<<std::endl; 
+    for( size_t d=0 ; d<counter ; d++ )
+      myfile <<4*d+4<<" ";
+    myfile << std::endl;
+    
+    myfile << "</DataArray>"<<std::endl
+	   << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">"<<std::endl; 
+    for( size_t d=0 ; d<counter ; d++ )
+      myfile <<7<<" ";
+    myfile << std::endl;
+  
+    //wall length
+    myfile << "</DataArray>"<<std::endl
+	   << "</Cells>"<<std::endl
+	   << "<CellData Scalars=\"wall variable 0\">"<<std::endl
+	   << "<DataArray type=\"Float64\" Name=\"wall length\" format=\"ascii\">"<<std::endl;
+    for( size_t d=0 ; d<counter ; d++ )
+      myfile <<current[d]<<" ";
+    myfile << std::endl;
+    
+    //wall resting length
+    myfile << "</DataArray>"<<std::endl
+	   << "<DataArray type=\"Float64\" Name=\"wall resting length\" format=\"ascii\">"<<std::endl;
+    for( size_t d=0 ; d<counter ; d++ )
+      myfile <<resting[d]<<" ";
+    myfile << std::endl;
+    
+    //wall variable 1
+    myfile << "</DataArray>"<<std::endl
+	   << "<DataArray type=\"Float64\" Name=\"wall varible 1\" format=\"ascii\">"<<std::endl;
+    for( size_t d=0 ; d<counter ; d++ )
+      myfile <<0<<" ";
+    myfile << std::endl;
+    
+    myfile << "</DataArray>"<<std::endl
+	   << "</CellData>"<<std::endl
+	   << "</Piece>"<<std::endl
+	   << "</UnstructuredGrid>"<<std::endl
+	   << "</VTKFile>"<<std::endl;
+    
+    myfile.close();
+  } // end if( vtkFlag)
+  else { //gnuplot style
+    size_t counter=0; 
+    size_t dimension = vertexData[0].size();
+    size_t numCells = T->numCell();
+    for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
+      size_t numCellVertices= T->cell(cellIndex).numVertex();
+      for (size_t vertexCellIndex1=0 ; vertexCellIndex1< numCellVertices ; vertexCellIndex1++){
+	size_t vertexIndex1 = T->cell(cellIndex).vertex(vertexCellIndex1)->index();
+	for (size_t vertexCellIndex2=0 ; vertexCellIndex2< numCellVertices ; vertexCellIndex2++)
+	  if (vertexCellIndex2!=vertexCellIndex1 && connections[cellIndex][vertexCellIndex1][vertexCellIndex2]!=0){
+	    double restingLength=connections[cellIndex][vertexCellIndex1][vertexCellIndex2];
+	    size_t vertexIndex2= T->cell(cellIndex).vertex(vertexCellIndex2)->index();
+	    double distance=0;
+	    for( size_t d=0 ; d<dimension ; d++ )
+	      distance += (vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d])*
+		(vertexData[vertexIndex2][d]-vertexData[vertexIndex1][d]);	  
+	    distance=std::sqrt(distance);
+	    
+	    //vertex1
+	    os << index << " " << counter << " ";
+	    for( size_t d=0 ; d<dimension ; d++ )
+	      os << vertexData[vertexIndex1][d] << " ";
+	    os << restingLength << " " << distance << " " 
+	       << parameter(3)*restingLength+parameter(7)*(distance-restingLength) << std::endl;
+	    //vertex2
+	    os << index << " " << counter << " ";
+	    for( size_t d=0 ; d<dimension ; d++ )
+	      os << vertexData[vertexIndex2][d] << " ";
+	    os << restingLength << " " << distance
+	       << parameter(3)*restingLength+parameter(7)*(distance-restingLength) << std::endl;
+	    os << std::endl;
+	    counter++;
+	  }
+      }
+    }
+  } // end else (gnuplot style)
   index++;
 }
-
-
-
-
-
- 
-
- ////////////////////////////////////////////////////////////////
 
 cellcellRepulsion::
 cellcellRepulsion(std::vector<double> &paraValue, 
