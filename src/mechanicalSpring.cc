@@ -11,6 +11,9 @@
 #include "baseReaction.h"
 #include "mechanicalSpring.h"
 #include "tissue.h"
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 VertexFromWallSpring::
 VertexFromWallSpring(std::vector<double> &paraValue, 
@@ -151,7 +154,8 @@ derivs(Tissue &T,
     //double wl1,wl2;
 
     double coeff = parameter(0)*((1.0/wallLength)-(1.0/distance));
-    
+    // if(wallData[i][3]==1)
+    //   coeff = 0.1*parameter(0)*((1.0/wallLength)-(1.0/distance));
     if(numParameter()==4 && parameter(3)==1){ // double resting length
 
       wallLength=wallData[i][wallLengthIndex+1];
@@ -351,8 +355,6 @@ derivsWithAbs(Tissue &T,
   }
 }
 
-
-// mt new begin
 VertexFromWallSpringMTnew::
 VertexFromWallSpringMTnew(std::vector<double> &paraValue, 
 		     std::vector< std::vector<size_t> > 
@@ -401,9 +403,8 @@ VertexFromWallSpringMTnew(std::vector<double> &paraValue,
   }
 
   setParameterId( tmp );
-
-  
 }
+
 void VertexFromWallSpringMTnew::
 initiate(Tissue &T,
          DataMatrix &cellData,
@@ -424,10 +425,7 @@ initiate(Tissue &T,
     for( size_t i=0 ; i<numWalls ; ++i ) 
       wallData[i][wallLengthIndex+1]=wallData[i][wallLengthIndex];
   }
-
 }
-
-
 
 void VertexFromWallSpringMTnew::
 derivs(Tissue &T,
@@ -442,33 +440,38 @@ derivs(Tissue &T,
   size_t numWalls = T.numWall();
   size_t wallLengthIndex = variableIndex(0,0);
   size_t MTIndex = variableIndex(1,0);
+  size_t dimension = vertexData[0].size();
+
+  size_t forceSaveIndex = variableIndex(2,0);
   
-  //  size_t forceSaveIndex = variableIndex(2,0);  <<<<<<<<<<<<<<<<<<<< fix this
-
-  for( size_t i=0 ; i<numWalls ; ++i ) {
-    size_t v1 = T.wall(i).vertex1()->index();
-    size_t v2 = T.wall(i).vertex2()->index();
-    size_t c1,c2;
-
-    if(T.wall(i).cell1()!=T.background())
-      c1 = T.wall(i).cell1()->index();
-    else
-      c1 = T.wall(i).cell2()->index();
-    if(T.wall(i).cell2()!=T.background())
-      c2 = T.wall(i).cell2()->index();
-    else
-      c2 = T.wall(i).cell1()->index();
-
-    size_t dimension = vertexData[v1].size();
-    assert( vertexData[v2].size()==dimension );
-    //Calculate shared factors
-    std::vector<double> wallVector(3);
-
-    double distance=0.0;
-    for( size_t d=0 ; d<dimension ; d++ )
-      wallVector[d] = vertexData[v1][d]-vertexData[v2][d];
-
-    for( size_t d=0 ; d<dimension ; d++ )
+  for( size_t i=0 ; i<numWalls ; ++i ) 
+    //if(wallData[i][3]==1)
+    {
+      size_t v1 = T.wall(i).vertex1()->index();
+      size_t v2 = T.wall(i).vertex2()->index();
+      size_t c1,c2;
+      
+      if(T.wall(i).cell1()!=T.background())
+        c1 = T.wall(i).cell1()->index();
+      else
+        c1 = T.wall(i).cell2()->index();
+      if(T.wall(i).cell2()!=T.background())
+        c2 = T.wall(i).cell2()->index();
+      else
+        c2 = T.wall(i).cell1()->index();
+      
+      
+      assert( vertexData[v2].size()==dimension );
+      //Calculate shared factors
+      std::vector<double> wallVector(3);
+      
+      double distance=0.0;
+      for( size_t d=0 ; d<dimension ; d++ )
+        wallVector[d] = vertexData[v1][d]-vertexData[v2][d];
+      //if(vertexData[v1][0]<-10 && vertexData[v1][0]>-30 && vertexData[v1][1]<-40 && vertexData[v1][1]>-60)
+      //  std::cerr<<" wall "<<i<<std::endl;
+      
+      for( size_t d=0 ; d<dimension ; d++ )
       distance += (vertexData[v1][d]-vertexData[v2][d])*
 	(vertexData[v1][d]-vertexData[v2][d]);
     distance = std::sqrt(distance);
@@ -485,11 +488,28 @@ derivs(Tissue &T,
       cosTeta1+=wallVector[d]*cellData[c1][MTIndex+d];
       cosTeta2+=wallVector[d]*cellData[c2][MTIndex+d];
     }
+    // double xyLength=std::sqrt(wallVector[0]*wallVector[0]+wallVector[1]*wallVector[1]);
+    // for( size_t d=0 ; d<dimension ; d++ ){
+    //   cosTeta1+=xyLength;
+    //   cosTeta2+=xyLength;
+    // }
+
     cosTeta1=std::abs(cosTeta1);
     cosTeta2=std::abs(cosTeta2);
+    
     double stiffness=parameter(0)+parameter(2)*0.5*(cosTeta1+cosTeta2);
-    //std::cerr<<stiffness<<std::endl;
-      double wallLength=wallData[i][wallLengthIndex];
+    
+
+    // if(0.5*(cosTeta1+cosTeta2)>0.6){
+    //   stiffness=parameter(0)+parameter(2);
+     
+    // }
+    // else
+    //   stiffness=parameter(0);
+
+    wallData[i][3]=stiffness;
+
+    double wallLength=wallData[i][wallLengthIndex];
     //double wl1,wl2;
     
     double coeff = stiffness*((1.0/wallLength)-(1.0/distance));
@@ -497,14 +517,14 @@ derivs(Tissue &T,
     if(numParameter()==4 && parameter(3)==1){ // double resting length
 
       wallLength=wallData[i][wallLengthIndex+1];
-
-      double coeff = stiffness*((1.0/(wallLength))-(1.0/distance));
+      
+      coeff = stiffness*((1.0/(wallLength))-(1.0/distance));
     }
 
       
       
     if( distance <= 0.0 && wallLength <=0.0 ) {
-      //std::cerr << i << " - " << wallLength << " " << distance << std::endl;
+    
       coeff = 0.0;
     }
     if( distance>wallLength )
@@ -512,20 +532,28 @@ derivs(Tissue &T,
     
     //Save force in wall variable if appropriate
     if( numVariableIndexLevel()==3 ) 
-        wallData[i][variableIndex(2,0)] = coeff*distance;
+        wallData[i][forceSaveIndex] = coeff*distance;
     
     //Update both vertices for each dimension
-    for(size_t d=0 ; d<dimension ; d++ ) {
-      double div = (vertexData[v1][d]-vertexData[v2][d])*coeff;
-      vertexDerivs[v1][d] -= div;
-      vertexDerivs[v2][d] += div;
+
+    // double mid=(vertexData[v1][1]+vertexData[v2][1])/2;
+    // if((mid<1.3 && mid>0.7) || (mid>-1.3 && mid<-0.7))
+      
+    //   for(size_t d=0 ; d<dimension ; d++ ) {
+    //     double div = (vertexData[v1][d]-vertexData[v2][d])*coeff;
+    //     vertexDerivs[v1][d] -= 0.1*div;
+    //     vertexDerivs[v2][d] += 0.1*div;
+    //   }
+    // else 
+      
+      for(size_t d=0 ; d<dimension ; d++ ) {
+        double div = (vertexData[v1][d]-vertexData[v2][d])*coeff;
+        vertexDerivs[v1][d] -= div;
+        vertexDerivs[v2][d] += div;
+      }
+    
     }
-  }
-
 }
-// mt new end
-
-
 
 VertexFromWallBoundarySpring::
 VertexFromWallBoundarySpring(std::vector<double> &paraValue, 
