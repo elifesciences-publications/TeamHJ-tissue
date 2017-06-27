@@ -4779,7 +4779,7 @@ namespace Division {
     if (myMath::sign(u) == myMath::sign(v)) {
       return 0;
     }
-    for (size_t k = 0; k < 10; ++k) {//HJ: ? Why the loop, it returns at first instance
+    //for (size_t k = 0; k < 10; ++k) {//HJ: ? Why the loop, it returns at first instance
       e = 0.5 * e;
       c = a + e;
       double w = f(c, sigma, A, B);   
@@ -4792,7 +4792,7 @@ namespace Division {
 	u = w;
       }
       return c;
-    }
+      //}
   }
 
   double FlagResetShortestPath::f(double a, double sigma, double A, double B)
