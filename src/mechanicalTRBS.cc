@@ -2639,14 +2639,17 @@ derivs(Tissue &T,
   size_t dimension = 3;
   assert (dimension==vertexData[0].size());
   size_t numCells = T.numCell();
-  size_t numVertices = T.numVertex();
+  //HJ: removed due to unused variable warning
+  //size_t numVertices = T.numVertex();
   size_t wallLengthIndex = variableIndex(0,0);
   size_t comIndex = variableIndex(1,0);
   size_t lengthInternalIndex = comIndex+dimension;
 
-  double neighborweight=parameter(5);
-  double strainEpcilon =0.000001;
-  double stressEpcilon =0.000001;    
+  //HJ: removed due to unused variable warning
+  //double neighborweight=parameter(5);
+  //double strainEpcilon =0.000001;
+  //double stressEpcilon =0.000001;    
+
   // double TotalVolume=0;
   // double deltaVolume=0;
   // for(size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex){ // stimating volume for equilibrium 
@@ -2658,8 +2661,9 @@ derivs(Tissue &T,
   // cellData[0][25]=TotalVolume;
   // cellData[0][24]=deltaVolume;
  
-  size_t MTindex           =variableIndex(0,1);	 
-  size_t isoEnergyIndex    =variableIndex(0,5);	
+  //HJ: removed due to unused variable warning
+  //size_t MTindex           =variableIndex(0,1);	 
+  //size_t isoEnergyIndex    =variableIndex(0,5);	
   size_t anisoEnergyIndex  =variableIndex(0,6);	
   size_t youngLIndex       =variableIndex(0,7);	
    
@@ -3050,11 +3054,12 @@ derivs(Tissue &T,
 
     
 
-    double StrainCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};
-    double StressCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};
-    double normalGlob[3]={0,0,0};
-    double TotalCellRestingArea=0;
-    double TotalCellArea=0;
+    //HJ: removed due to unused variable warning
+    //double StrainCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+    //double StressCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+    //double normalGlob[3]={0,0,0};
+    //double TotalCellRestingArea=0;
+    //double TotalCellArea=0;
     double EnergyIso=0;     
     //double EnergyIsoFiber=0;            
     double EnergyAniso=0;
@@ -3234,10 +3239,11 @@ derivs(Tissue &T,
         };
       
       //Area of the element (using Heron's formula)                                      
-      double Area=std::sqrt( ( length[0]+length[1]+length[2])*
-                             (-length[0]+length[1]+length[2])*
-                             ( length[0]-length[1]+length[2])*
-                             ( length[0]+length[1]-length[2])  )*0.25;
+      //HJ: removed due to unused variable warning
+      //double Area=std::sqrt( ( length[0]+length[1]+length[2])*
+      //                     (-length[0]+length[1]+length[2])*
+      //                     ( length[0]-length[1]+length[2])*
+      //                     ( length[0]+length[1]-length[2])  )*0.25;
       
       
       
@@ -3263,10 +3269,10 @@ derivs(Tissue &T,
       // shape vector matrix = inverse of coordinate matrix ( only first two elements i.e. ShapeVector[3][2] )      
       
       
-      double ShapeVectorCurrent[3][3]={ {  0   ,       1/Qc      , 0 }, 
-                                        {-1/Qb , (Qa-Qb)/(Qb*Qc) , 1 },       
-                                        { 1/Qb ,     -Qa/(Qb*Qc) , 0 }  };
-    
+      //HJ: removed due to unused variable warning
+      //double ShapeVectorCurrent[3][3]={ {  0   ,       1/Qc      , 0 }, 
+      //                                {-1/Qb , (Qa-Qb)/(Qb*Qc) , 1 },       
+      //                                { 1/Qb ,     -Qa/(Qb*Qc) , 0 }  };
       
       // Local coordinates of the resting shape ( counterclockwise )
       // double RestingAngle1=std::acos(  (restingLength[0]*restingLength[0]
@@ -3580,26 +3586,29 @@ derivs(Tissue &T,
           }
         };
 
-      double B2[2][2]=// LeftCauchy^2
-        { { LeftCauchy[0][0]*LeftCauchy[0][0]+LeftCauchy[0][1]*LeftCauchy[1][0],
-            LeftCauchy[0][0]*LeftCauchy[0][1]+LeftCauchy[0][1]*LeftCauchy[1][1]
-          },
-          { LeftCauchy[1][0]*LeftCauchy[0][0]+LeftCauchy[1][1]*LeftCauchy[1][0],
-            LeftCauchy[1][0]*LeftCauchy[0][1]+LeftCauchy[1][1]*LeftCauchy[1][1]
-          }
-        };
+      //HJ: removed due to unused variable warning
+      //double B2[2][2]=// LeftCauchy^2
+      // { { LeftCauchy[0][0]*LeftCauchy[0][0]+LeftCauchy[0][1]*LeftCauchy[1][0],
+      //LeftCauchy[0][0]*LeftCauchy[0][1]+LeftCauchy[0][1]*LeftCauchy[1][1]
+      //  },
+      //  { LeftCauchy[1][0]*LeftCauchy[0][0]+LeftCauchy[1][1]*LeftCauchy[1][0],
+      //    LeftCauchy[1][0]*LeftCauchy[0][1]+LeftCauchy[1][1]*LeftCauchy[1][1]
+      //  }
+      //};
       
-      double areaFactor=restingArea/Area; // 1/detF
+      //HJ: removed due to unused variable warning
+      //double areaFactor=restingArea/Area; // 1/detF
       //double areaFactor=Area/restingArea; // detF
       
-      double Sigma[2][2]= // true stress tensor (isotropic term) 
-        { { areaFactor*((lambdaT*trE-mioT)*LeftCauchy[0][0]+(mioT)*B2[0][0]),
-            areaFactor*((lambdaT*trE-mioT)*LeftCauchy[0][1]+(mioT)*B2[0][1])
-          },      
-          { areaFactor*((lambdaT*trE-mioT)*LeftCauchy[1][0]+(mioT)*B2[1][0]),      
-            areaFactor*((lambdaT*trE-mioT)*LeftCauchy[1][1]+(mioT)*B2[1][1])
-          }
-        };
+      //HJ: removed due to unused variable warning
+      //double Sigma[2][2]= // true stress tensor (isotropic term) 
+      //{ { areaFactor*((lambdaT*trE-mioT)*LeftCauchy[0][0]+(mioT)*B2[0][0]),
+      //areaFactor*((lambdaT*trE-mioT)*LeftCauchy[0][1]+(mioT)*B2[0][1])
+      //  },      
+      //  { areaFactor*((lambdaT*trE-mioT)*LeftCauchy[1][0]+(mioT)*B2[1][0]),      
+      //    areaFactor*((lambdaT*trE-mioT)*LeftCauchy[1][1]+(mioT)*B2[1][1])
+      //  }
+      //};
       
 
       // ENERGY MODELS  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -3847,7 +3856,7 @@ update(Tissue &T,
   size_t dimension = 3;
   assert (dimension==vertexData[0].size());
   size_t numCells = T.numCell();
-  size_t numVertices = T.numVertex();
+  //size_t numVertices = T.numVertex();
   size_t wallLengthIndex = variableIndex(0,0);
   size_t comIndex = variableIndex(1,0);
   size_t lengthInternalIndex = comIndex+dimension;
@@ -4354,10 +4363,10 @@ update(Tissue &T,
       
       // shape vector matrix = inverse of coordinate matrix ( only first two elements i.e. ShapeVector[3][2] )      
       
-      
-      double ShapeVectorCurrent[3][3]={ {  0   ,       1/Qc      , 0 }, 
-                                        {-1/Qb , (Qa-Qb)/(Qb*Qc) , 1 },       
-                                        { 1/Qb ,     -Qa/(Qb*Qc) , 0 }  };
+      //HJ: removed due to unused variable warning
+      //double ShapeVectorCurrent[3][3]={ {  0   ,       1/Qc      , 0 }, 
+      //                                {-1/Qb , (Qa-Qb)/(Qb*Qc) , 1 },       
+      //                                { 1/Qb ,     -Qa/(Qb*Qc) , 0 }  };
     
       
       // Local coordinates of the resting shape ( counterclockwise )
@@ -4901,7 +4910,8 @@ update(Tissue &T,
       for (int r=0 ; r<3 ; r++)   
         normalGlob[r]/=temp;
    
-    double areaRatio=TotalCellArea/TotalCellRestingArea; 
+    //HJ: removed due to unused variable warning
+    //double areaRatio=TotalCellArea/TotalCellRestingArea; 
     
     strainZ=strainZ/TotalCellRestingArea; 
     // if( parameter(4)==5){
@@ -4946,8 +4956,6 @@ update(Tissue &T,
       
       
       // eigenvalue/eigenvectors of  stress tensor in global coordinate system. (Jacobi method)
-      
-      double pi=3.14159265;
       
       int I,J;    
       double pivot=1;
@@ -5166,7 +5174,6 @@ update(Tissue &T,
 
     double eigenVectorStrain[3][3]={{1,0,0},{0,1,0},{0,0,1}};
     double pivot=1;
-    double pi=3.1415927;
     int I,J;
     double tanRotAngle,Si,Co;
     
@@ -5674,8 +5681,6 @@ update(Tissue &T,
       
       
       // eigenvalue/eigenvectors of  stress tensor in global coordinate system. (Jacobi method)
-      
-      double pi=3.14159265;
       
       int I,J;    
       double pivot=1;
@@ -7185,7 +7190,7 @@ derivs(Tissue &T,
   size_t dimension = 3;
   assert (dimension==vertexData[0].size());
   size_t numCells = T.numCell();
-  size_t numVertices = T.numVertex();
+  //size_t numVertices = T.numVertex();
   size_t wallLengthIndex = variableIndex(0,0);
   size_t comIndex = variableIndex(1,0);
   size_t lengthInternalIndex = comIndex+dimension;
@@ -7211,10 +7216,12 @@ derivs(Tissue &T,
   double poissonT   = parameter(3);
   double TETA       = parameter(8);  
   
-  static double tTotal=0, tDiag=0;
-  static double tRest=0, tRest2=0, tRest3=0, tRest4=0;
+  //HJ: removed due to unused variable warning
+  //static double tTotal=0, tDiag=0;
+  static double tDiag=0;
+  static double tRest=0; //, tRest2=0, tRest3=0, tRest4=0;
 
-  clock_t cpuTime0 ,cpuTimef, cpuTime1 ,cpuTime2, cpuTime3 ,cpuTime4;
+  clock_t cpuTime0, cpuTime1 ,cpuTime2; //, cpuTimef, cpuTime3 ,cpuTime4;
   cpuTime0=clock();
 
   for (size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex) {
@@ -7409,11 +7416,10 @@ derivs(Tissue &T,
       
       // shape vector matrix = inverse of coordinate matrix ( only first two elements i.e. ShapeVector[3][2] )      
       
-      
-      double ShapeVectorCurrent[3][3]={ {  0   ,       1/Qc      , 0 }, 
-                                        {-1/Qb , (Qa-Qb)/(Qb*Qc) , 1 },       
-                                        { 1/Qb ,     -Qa/(Qb*Qc) , 0 }  };
-    
+      //HJ: removed due to unused variable warning      
+      //double ShapeVectorCurrent[3][3]={ {  0   ,       1/Qc      , 0 }, 
+      //                                {-1/Qb , (Qa-Qb)/(Qb*Qc) , 1 },       
+      //                                { 1/Qb ,     -Qa/(Qb*Qc) , 0 }  };
       
       // Local coordinates of the resting shape ( counterclockwise )
       // double RestingAngle1=std::acos(  (restingLength[0]*restingLength[0]
@@ -7634,8 +7640,8 @@ double StRot[2][2]=
         std::cerr<<std::endl<<" strain is wrong "<<StrainAlmansi[0][0]<<StrainAlmansi[0][0]
                  <<StrainAlmansi[0][0] << StrainAlmansi[0][0] <<"   Q "<<restingLength[0]<<" "<<restingLength[1]<<" "<<restingLength[2]<<"    P "<<Pa<<" "<<Pb<<" "<<Pc<<std::endl;
       
-      
-      double areaFactor=restingArea/Area; // 1/detF
+      //HJ: removed due to unused variable warning
+      //double areaFactor=restingArea/Area; // 1/detF
       
       StRot[1][0]*=-1;
       StRot[0][1]*=-1;
@@ -7971,9 +7977,6 @@ double StRot[2][2]=
       
       
       // eigenvalue/eigenvectors of  stress tensor in global coordinate system. (Jacobi method)
-      
-      double pi=3.14159265;
-      
       int I,J;    
       double pivot=1;
       double tanRotAngle,Si,Co;
@@ -8190,7 +8193,6 @@ double StRot[2][2]=
 
     double eigenVectorStrain[3][3]={{1,0,0},{0,1,0},{0,0,1}};
     double pivot=1;
-    double pi=3.1415927;
     int I,J;
     double tanRotAngle,Si,Co;
     
@@ -8558,9 +8560,6 @@ double StRot[2][2]=
       
       
       // eigenvalue/eigenvectors of  stress tensor in global coordinate system. (Jacobi method)
-      
-      double pi=3.14159265;
-      
       int I,J;    
       double pivot=1;
       double tanRotAngle,Si,Co;
@@ -10003,7 +10002,7 @@ void FiberModel::update(Tissue &T,
   double Nh=parameter(4);
   double youngMatrix=parameter(5);
   double youngFiber=parameter(6);
-  double poisson=parameter(7);
+  //double poisson=parameter(7);
 
   if (parameter(0)==0.0)
     return;
@@ -10155,7 +10154,7 @@ void FiberDeposition::update(Tissue &T,
   size_t velocityIndex=variableIndex(0,5);
 
   double k_rate=parameter(0);
-  double randCoef=parameter(1);
+  //double randCoef=parameter(1);
   double vThresh=parameter(2);
   double Kh=parameter(4);
   double Nh=parameter(5);
@@ -10439,13 +10438,13 @@ derivs(Tissue &T,
   
   
   size_t MTindex           =variableIndex(0,1);	 
-  size_t strainAnIndex     =variableIndex(0,2);	
-  size_t stressAnIndex     =variableIndex(0,3);	
-  size_t areaRatioIndex    =variableIndex(0,4);	
-  size_t isoEnergyIndex    =variableIndex(0,5);	
-  size_t anisoEnergyIndex  =variableIndex(0,6);	
+  //size_t strainAnIndex     =variableIndex(0,2);	
+  //size_t stressAnIndex     =variableIndex(0,3);	
+  //size_t areaRatioIndex    =variableIndex(0,4);	
+  //size_t isoEnergyIndex    =variableIndex(0,5);	
+  //size_t anisoEnergyIndex  =variableIndex(0,6);	
   size_t youngLIndex       =variableIndex(0,7);	
-  size_t normalVectorIndex =variableIndex(0,8); 
+  //size_t normalVectorIndex =variableIndex(0,8); 
 
   
 
@@ -10458,9 +10457,9 @@ derivs(Tissue &T,
   size_t anisoFlag  = parameter(5);  
   double anStep     = parameter(6);  
   double tetStep    = parameter(7);  
-  double temp0      = parameter(8);  
-  double tempRate   = parameter(9);  
-  double stepRate   = parameter(10);  
+  //double temp0      = parameter(8);  
+  //double tempRate   = parameter(9);  
+  //double stepRate   = parameter(10);  
 
 
   std::vector<double> Volumebase(3);
@@ -10542,17 +10541,17 @@ derivs(Tissue &T,
     lambdaT=youngT*poissonT/(1-poissonT*poissonT);
     mioT=youngT/(2*(1+poissonT));
     
-    
-    double StrainCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};
-    double StressCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};
-    double normalGlob[3]={0,0,0};
-    double TotalCellRestingArea=0;
-    double TotalCellArea=0;
+    //HJ: removed due to unused variable 
+    //double StrainCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+    //double StressCellGlobal[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+    //double normalGlob[3]={0,0,0};
+    //double TotalCellRestingArea=0;
+    //double TotalCellArea=0;
     double EnergyIso=0;     
     //double EnergyIsoFiber=0;            
     double EnergyAniso=0;
     double pressEnergy=0;
-    double strainZ=0;
+    //double strainZ=0;
 
     
     
@@ -10672,7 +10671,8 @@ derivs(Tissue &T,
              (restingLength[1]*restingLength[2]*2)    )
         };
       
-      double temp = 1.0/(restingArea*16);                                      
+      //HJ: removed due to unused variable
+      //double temp = 1.0/(restingArea*16);                                      
       double cotan[3]=
         { cosAngle[0]/std::sqrt(1-cosAngle[0]*cosAngle[0]),
           cosAngle[1]/std::sqrt(1-cosAngle[1]*cosAngle[1]),
@@ -10682,20 +10682,19 @@ derivs(Tissue &T,
       
       //the force is calculated based on Transverse coefficients
       //Longitudinal coefficients are considered in deltaF
+      //HJ: removed due to unused variable warning
       //Tensile Stiffness
-      
-      double tensileStiffness[3]=
-        { (2*cotan[2]*cotan[2]*(lambdaT+2*mioT)+2*mioT)*temp,
-          (2*cotan[0]*cotan[0]*(lambdaT+2*mioT)+2*mioT)*temp,
-          (2*cotan[1]*cotan[1]*(lambdaT+2*mioT)+2*mioT)*temp
-        };
-      
+      //double tensileStiffness[3]=
+      //{ (2*cotan[2]*cotan[2]*(lambdaT+2*mioT)+2*mioT)*temp,
+      //  (2*cotan[0]*cotan[0]*(lambdaT+2*mioT)+2*mioT)*temp,
+      //  (2*cotan[1]*cotan[1]*(lambdaT+2*mioT)+2*mioT)*temp
+      //};      
       //Angular Stiffness
-      double angularStiffness[3]=
-        { (2*cotan[1]*cotan[2]*(lambdaT+2*mioT)-2*mioT)*temp,
-          (2*cotan[0]*cotan[2]*(lambdaT+2*mioT)-2*mioT)*temp,
-          (2*cotan[0]*cotan[1]*(lambdaT+2*mioT)-2*mioT)*temp
-        };
+      //double angularStiffness[3]=
+      //{ (2*cotan[1]*cotan[2]*(lambdaT+2*mioT)-2*mioT)*temp,
+      //  (2*cotan[0]*cotan[2]*(lambdaT+2*mioT)-2*mioT)*temp,
+      //  (2*cotan[0]*cotan[1]*(lambdaT+2*mioT)-2*mioT)*temp
+      //};
       
       //Calculate biquadratic strains  
       double Delta[3]=
@@ -10705,14 +10704,12 @@ derivs(Tissue &T,
         };
       
       //Area of the element (using Heron's formula)                                      
-      double Area=std::sqrt( ( length[0]+length[1]+length[2])*
-                             (-length[0]+length[1]+length[2])*
-                             ( length[0]-length[1]+length[2])*
-                             ( length[0]+length[1]-length[2])  )*0.25;
-      
-      
-      
-      
+      //HJ: removed due to unused variable warning
+      //double Area=std::sqrt( ( length[0]+length[1]+length[2])*
+      //                     (-length[0]+length[1]+length[2])*
+      //                     ( length[0]-length[1]+length[2])*
+      //                     ( length[0]+length[1]-length[2])  )*0.25;
+            
       double CurrentAngle1=(length[0]*length[0]
                             +length[1]*length[1]
                             -length[2]*length[2])/
@@ -10902,14 +10899,15 @@ derivs(Tissue &T,
         DeformGrad[1][1]=DeformGrad[1][1]+positionLocal[i][1]*ShapeVectorResting[i][1];        
       } 
     
-      double LeftCauchy[2][2]= // B=FFt
-        { { DeformGrad[0][0]*DeformGrad[0][0]+DeformGrad[0][1]*DeformGrad[0][1],
-            DeformGrad[0][0]*DeformGrad[1][0]+DeformGrad[0][1]*DeformGrad[1][1]
-          },
-          { DeformGrad[1][0]*DeformGrad[0][0]+DeformGrad[1][1]*DeformGrad[0][1],
-            DeformGrad[1][0]*DeformGrad[1][0]+DeformGrad[1][1]*DeformGrad[1][1]
-          }
-        };
+      //HJ: removed due to unused variable warning
+      //double LeftCauchy[2][2]= // B=FFt
+	  //{ { DeformGrad[0][0]*DeformGrad[0][0]+DeformGrad[0][1]*DeformGrad[0][1],
+      //DeformGrad[0][0]*DeformGrad[1][0]+DeformGrad[0][1]*DeformGrad[1][1]
+      //  },
+      //  { DeformGrad[1][0]*DeformGrad[0][0]+DeformGrad[1][1]*DeformGrad[0][1],
+      //    DeformGrad[1][0]*DeformGrad[1][0]+DeformGrad[1][1]*DeformGrad[1][1]
+      //  }
+      //};
       
       double Egreen[2][2]= //E=0.5(C-I)
         { { 0.5*(DeformGrad[0][0]*DeformGrad[0][0]+DeformGrad[1][0]*DeformGrad[1][0]-1),
@@ -10967,7 +10965,8 @@ derivs(Tissue &T,
       isEn+=EnergyIso;
       pressEn+=pressEnergy;   
   }
-  double deltaE=TMPtotalEnergy-totalEnergy;
+  //HJ: removed due to unused variable warning
+  //double deltaE=TMPtotalEnergy-totalEnergy;
   //if(deltaE <= 0){
     //   temp0=temp0*tempRate;
     totalEnergy=TMPtotalEnergy;
