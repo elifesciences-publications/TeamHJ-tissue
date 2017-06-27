@@ -412,8 +412,9 @@ class VertexFromTRBSMT : public BaseReaction {
 class VertexFromTRBScenterTriangulationMT : public BaseReaction {
 private:
   
-  
-  
+  double timeC=0;
+  bool lengthout=false;
+
  public:
   ///
   /// @brief Main constructor
