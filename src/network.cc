@@ -3316,7 +3316,7 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);//auxin
   size_t pI = variableIndex(0,1);//pin
-  size_t awI = variableIndex(1,0);//auxin (wall)
+  //size_t awI = variableIndex(1,0);//auxin (wall)
   size_t pwI = variableIndex(1,1);//pin (membrane/wall)
 
 
@@ -3439,7 +3439,7 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);//auxin
   size_t pI = variableIndex(0,1);//pin
-  size_t awI = variableIndex(1,0);//auxin (wall)
+  //size_t awI = variableIndex(1,0);//auxin (wall)
   size_t pwI = variableIndex(1,1);//pin (membrane/wall)
 
 
@@ -3566,7 +3566,7 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);//auxin
   size_t pI = variableIndex(0,1);//pin
-  size_t awI = variableIndex(1,0);//auxin (wall)
+  //size_t awI = variableIndex(1,0);//auxin (wall)
   size_t pwI = variableIndex(1,1);//pin (membrane/wall)
 
 
@@ -3696,7 +3696,7 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);//auxin
   size_t pI = variableIndex(0,1);//pin
-  size_t awI = variableIndex(1,0);//auxin (wall)
+  //size_t awI = variableIndex(1,0);//auxin (wall)
   size_t pwI = variableIndex(1,1);//pin (membrane/wall)
  size_t mwI = variableIndex(1,2);//pin (membrane/wall)
 
@@ -4129,7 +4129,7 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);//auxin
   size_t pI = variableIndex(0,1);//pin
-  size_t awI = variableIndex(1,0);//auxin (wall)
+  //size_t awI = variableIndex(1,0);//auxin (wall)
   size_t pwI = variableIndex(1,1);//pin (membrane/wall)
   size_t mwI = variableIndex(1,2);//(membrane marker)
 
@@ -4278,7 +4278,7 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);//auxin
   size_t pI = variableIndex(0,1);//pin
-  size_t awI = variableIndex(1,0);//auxin (wall)
+  //size_t awI = variableIndex(1,0);//auxin (wall)
   size_t pwI = variableIndex(1,1);//pin (membrane/wall)
   size_t mwI = variableIndex(1,2);//(membrane marker)
 
@@ -4424,7 +4424,7 @@ derivs(Tissue &T,
     size_t numCells = T.numCell();
     size_t aI = variableIndex(0,0);//auxin
     size_t pI = variableIndex(0,1);//pin
-    size_t awI = variableIndex(1,0);//auxin (wall)
+    //size_t awI = variableIndex(1,0);//auxin (wall)
     size_t pwI = variableIndex(1,1);//pin (membrane/wall)
     size_t mwI = variableIndex(1,2);//(membrane marker)
     
@@ -4572,7 +4572,7 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);//auxin
   size_t pI = variableIndex(0,1);//pin
-  size_t awI = variableIndex(1,0);//auxin (wall)
+  //size_t awI = variableIndex(1,0);//auxin (wall)
   size_t pwI = variableIndex(1,1);//pin (membrane/wall)
   size_t mwI = variableIndex(1,2);//(membrane marker)
 
@@ -4595,32 +4595,26 @@ derivs(Tissue &T,
       size_t j = T.cell(i).wall(k)->index();
       if( T.cell(i).wall(k)->cell1()->index() == i  && wallData[j][mwI]==1) {
 	// cell-cell transport
-	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
-	
-	
+	//size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+		
 	//PIN cycling
-	double 	fac = parameter(8)*wallData[j][pwI]-parameter(9)*cellData[i][pI]*std::pow(parameter(10),parameter(11))/( std::pow(parameter(10),parameter(11)) + std::pow(cellData[i][aI],parameter(11)) );
+	double 	fac = parameter(8)*wallData[j][pwI] -
+	      parameter(9)*cellData[i][pI]*std::pow(parameter(10),parameter(11))/( std::pow(parameter(10),parameter(11)) + std::pow(cellData[i][aI],parameter(11)) );
 	wallDerivs[j][pwI] -= fac;
 	cellDerivs[i][pI] += fac;
-
-
       }
 
-if( T.cell(i).wall(k)->cell2()->index() == i  && wallData[j][mwI]==1) {
+      if( T.cell(i).wall(k)->cell2()->index() == i  && wallData[j][mwI]==1) {
 	// cell-cell transport
-	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+	//size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
 	
-double fac = parameter(8)*wallData[j][pwI+1]
+	double fac = parameter(8)*wallData[j][pwI+1]
 	  -parameter(9)*cellData[i][pI]*std::pow(parameter(10),parameter(11))/( std::pow(parameter(10),parameter(11)) + std::pow(cellData[i][aI],parameter(11)) ) ;
 
 	wallDerivs[j][pwI+1] -= fac;
 	cellDerivs[i][pI] += fac;
-
-
       }
-     
-  
-  else if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background()  && wallData[j][mwI]==0) {
+      else if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background()  && wallData[j][mwI]==0) {
 	// cell-cell transport
 	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
 	double fac = parameter(13)*cellData[i][aI];
@@ -4630,14 +4624,10 @@ double fac = parameter(8)*wallData[j][pwI+1]
         cellDerivs[i][pI] -= fac2;
 	cellDerivs[iNeighbor][aI] += fac;
 	cellDerivs[iNeighbor][pI] += fac2;
-
       }
     }
-  }
+ }
 }
-
-
-
 
 AuxinFluxModel::
 AuxinFluxModel(std::vector<double> &paraValue, 
@@ -4695,7 +4685,7 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);//auxin
   size_t pI = variableIndex(0,1);//pin
-  size_t awI = variableIndex(1,0);//auxin (wall)
+  //size_t awI = variableIndex(1,0);//auxin (wall)
   size_t pwI = variableIndex(1,1);//pin (membrane/wall)
 
 
@@ -5188,7 +5178,7 @@ derivs(Tissue &T,
   size_t numCells = T.numCell();
   size_t aI = variableIndex(0,0);//auxin
   size_t pI = variableIndex(0,1);//pin
-  size_t awI = variableIndex(1,0);//auxin (wall)
+  //size_t awI = variableIndex(1,0);//auxin (wall)
   size_t pwI = variableIndex(1,1);//pin (membrane/wall)
   size_t mwI = variableIndex(1,2);//(membrane marker)
 
