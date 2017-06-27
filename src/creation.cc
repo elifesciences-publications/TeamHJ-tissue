@@ -588,21 +588,12 @@ derivs(Tissue &T,
        DataMatrix &wallDerivs,
        DataMatrix &vertexDerivs ) 
 {  
-  //Do the update for each cell
-  size_t numCells = T.numCell();
-
-  size_t cIndex = variableIndex(0,0);
-  
-  
+  size_t cIndex = variableIndex(0,0);  
   //For the cells in the list
-  for (size_t cellI = 0; cellI < proCells; ++cellI) {
-   
-    cellDerivs[variableIndex(1,cellI)][cIndex] += parameter(0);
-    
+  for (size_t cellI = 0; cellI < proCells; ++cellI) {    
+    cellDerivs[variableIndex(1,cellI)][cIndex] += parameter(0);    
   }
 }
-
-
 
 CreationOneGeometric::
 CreationOneGeometric(std::vector<double> &paraValue, 
@@ -717,7 +708,6 @@ derivs(Tissue &T,
      
 }
 
-
 void CreationSinus::
 derivsWithAbs(Tissue &T,
         DataMatrix &cellData,
@@ -737,14 +727,13 @@ derivsWithAbs(Tissue &T,
   double k_c = parameter(0);
   //For each cell
   for (size_t cellI = 0; cellI < numCells; ++cellI) {  
-      double value = parameter(0)*
-    ( 1.0 + std::sin(6.28*(time_/parameter(1) + parameter(2) ) ) );
+    double value = k_c*
+      ( 1.0 + std::sin(6.28*(time_/parameter(1) + parameter(2) ) ) );
     
     cellDerivs[cellI][cIndex]  += value;
     sdydtCell[cellI][cIndex]  += value;
   }
 }
-
 
 void CreationSinus::
 update(Tissue &T,
