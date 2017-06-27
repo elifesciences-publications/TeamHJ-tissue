@@ -440,7 +440,7 @@ derivs(Tissue &T,
 {  
   size_t comIndex = variableIndex(0,0);  
   size_t numVertices = T.numVertex();
-  size_t numWalls = T.numWall();
+  //size_t numWalls = T.numWall();
   size_t dimension = vertexData[0].size();
   
   for (size_t vertexIndex=0; vertexIndex<numVertices; ++vertexIndex)//check all the vertices
@@ -759,10 +759,10 @@ initiate(Tissue &T,
 	 DataMatrix &wallDerivs,
 	 DataMatrix &vertexDerivs)
 {
-  size_t comIndex = variableIndex(0,0);  
-  size_t numVertices = T.numVertex();
   size_t numCells = T.numCell();
-  size_t dimension = vertexData[0].size();
+  //size_t comIndex = variableIndex(0,0);  
+  //size_t numVertices = T.numVertex();
+  //size_t dimension = vertexData[0].size();
   size_t neighborIndex=27;
   numBottomCells=0;
   numSideCells=0;
@@ -854,7 +854,7 @@ derivs(Tissue &T,
        DataMatrix &wallDerivs,
        DataMatrix &vertexDerivs ) 
 {
-  size_t dimension = vertexData[0].size();
+  //size_t dimension = vertexData[0].size();
   
   for (size_t sideInd=0; sideInd<numSideCells; sideInd++){//for the side cells
     size_t N=T.cell(sideNormals[sideInd][3]).numVertex();
@@ -939,10 +939,10 @@ initiate(Tissue &T,
 	 DataMatrix &wallDerivs,
 	 DataMatrix &vertexDerivs)
 {
-  size_t comIndex = variableIndex(0,0);  
-  size_t numVertices = T.numVertex();
   size_t numCells = T.numCell();
-  size_t dimension = vertexData[0].size();
+  //size_t comIndex = variableIndex(0,0);  
+  //size_t numVertices = T.numVertex();
+  //size_t dimension = vertexData[0].size();
   size_t neighborIndex=variableIndex(0,1);
   
   size_t numBottomCells=0;
@@ -1069,8 +1069,8 @@ derivs(Tissue &T,
        DataMatrix &wallDerivs,
        DataMatrix &vertexDerivs ) 
 {
-  size_t dimension = vertexData[0].size();
-  size_t numSideVertices=sideVertices.size();
+  //size_t dimension = vertexData[0].size();
+  //size_t numSideVertices=sideVertices.size();
   size_t numBottomVertices=bottomVertices.size();
 
   // for (size_t sideInd=0; sideInd<numSideVertices; sideInd++){//for the side cells
@@ -1141,7 +1141,7 @@ initiate(Tissue &T,
 {
 
   size_t numVertices = T.numVertex();
-  size_t dimension = vertexData[0].size();  
+  //size_t dimension = vertexData[0].size();  
   double epcilon=parameter(2);
  
   double rx=parameter(3);
@@ -1425,7 +1425,7 @@ update(Tissue &T,
 	      double h)
 {
   size_t numVertices = T.numVertex();
-  size_t dimension = vertexData[0].size();  
+  //size_t dimension = vertexData[0].size();  
   double epcilon=parameter(2);
   static double tt=0;
   tt+=h;
@@ -1496,11 +1496,10 @@ initiate(Tissue &T,
        DataMatrix &wallDerivs,
        DataMatrix &vertexDerivs ) 
 {
-  size_t numVertices = T.numVertex();
   size_t numCells = T.numCell();
-  size_t numWalls = T.numWall();
-  
-  size_t dimension = vertexData[0].size();  
+  //size_t numVertices = T.numVertex();
+  //size_t numWalls = T.numWall();  
+  //size_t dimension = vertexData[0].size();  
   size_t centerIndex=35;
   double xx=5;
   double yy=5;
@@ -1577,11 +1576,11 @@ update(Tissue &T,
        DataMatrix &vertexData,
        double h)
 {
-  size_t numVertices = T.numVertex();
-  size_t numCells = T.numCell();
-
-  size_t dimension = vertexData[0].size();  
-  size_t centerIndex=39;
+  //size_t numVertices = T.numVertex();
+  //size_t numCells = T.numCell();
+  //size_t dimension = vertexData[0].size();  
+  //HJ: removed due to unused variable warning
+  //size_t centerIndex=39;
 
   // double epcilon=.1;
   // double alpha=3.1415/2;
@@ -1656,7 +1655,7 @@ initiate(Tissue &T,
     
   //size_t numVertices = T.numVertex();
   size_t numCells = T.numCell();
-  size_t dimension = vertexData[0].size();
+  //size_t dimension = vertexData[0].size();
 
   size_t num3dCells=0;
   for (size_t cellIndex=0; cellIndex<numCells; ++cellIndex)//find the number of 3d cells
@@ -1976,7 +1975,7 @@ initiate(Tissue &T,
 	 DataMatrix &wallDerivs,
 	 DataMatrix &vertexDerivs)
 {
-  size_t concIndex = variableIndex(0,0);  
+  //size_t concIndex = variableIndex(0,0);  
   size_t neighIndex= variableIndex(0,1);  
   size_t CellIndex3d = variableIndex(0,2);  
 
@@ -2541,7 +2540,7 @@ initiate(Tissue &T,
 	 DataMatrix &vertexDerivs )
 	
 {
-  size_t dimension = vertexData[0].size();
+  //size_t dimension = vertexData[0].size();
   size_t numWall = T.numWall();
   
   for (size_t i=0; i<numWall; ++i) {
@@ -3250,7 +3249,7 @@ void randomizeMT::initiate(Tissue &T,
   double Min, Max;
   Min=parameter(2);
   Max=parameter(3);
-  size_t MTInd=variableIndex(0,0);
+  //size_t MTInd=variableIndex(0,0);
   size_t conInd=variableIndex(0,1);
 
   //std::srand (time(NULL));
@@ -3450,7 +3449,7 @@ derivs(Tissue &T,
        DataMatrix &vertexDerivs ) 
 {  
   //Do the update for each cell
-  size_t numCells = T.numCell();
+  //size_t numCells = T.numCell();
   size_t cIndex = variableIndex(0,0);
   
   if(parameter(4)==1)
