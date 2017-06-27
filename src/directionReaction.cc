@@ -371,8 +371,8 @@ void UpdateMTDirectionEquilibrium::update(Tissue &T,
   size_t inIndex=variableIndex(0,0);
   size_t outIndex=variableIndex(1,0);
   size_t velocityIndex=variableIndex(2,0);
-  size_t stressIndex=variableIndex(3,0);
-  size_t MTstressIndex=variableIndex(3,1);
+  //size_t stressIndex=variableIndex(3,0);
+  //size_t MTstressIndex=variableIndex(3,1);
 
   if (parameter(0)==0.0)
     return;
