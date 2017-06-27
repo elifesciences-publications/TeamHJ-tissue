@@ -406,7 +406,8 @@ void VTUostream::write_cell_point_geometry2 ( Tissue const& t )
     for ( cit = cells.begin(), cend = cells.end(); cit != cend; ++cit )
     {
         Cell &c = const_cast<Cell&> ( *cit );
-        typedef std::vector<Wall*>::const_iterator WallIter;
+	//HJ: removed due to unused variable warning
+        //typedef std::vector<Wall*>::const_iterator WallIter;
         //std::vector<Wall*> const& walls = c.wall();
 
         std::vector<double> cent ( 3 );
@@ -554,7 +555,7 @@ void VTUostream::write_wall_point_geometry2 ( Tissue const& t, std::vector<Verte
         }
     }
     typedef std::vector<Vertex*>::const_iterator VertexPIter;
-    VertexPIter vpit = verts.begin(), vpend = verts.end();
+    VertexPIter vpit = verts.begin(); //, vpend = verts.end();
     for ( cit = cells.begin(), cend = cells.end(); cit != cend; ++cit )
     {
         Cell &c = const_cast<Cell&> ( *cit );
@@ -582,7 +583,7 @@ void VTUostream::write_wall_geometry2 ( Tissue const& t, std::vector<Vertex*> co
           << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n";
     int count = 0, offset = t.numVertex();
     //construct quad walls by ordering vertices circularly: first 2 original verices of the wall then 2 displaced vertices
-    std::vector<Vertex*> ::const_iterator vit = verts.begin(), vend = verts.end(), vstart;
+    std::vector<Vertex*> ::const_iterator vit = verts.begin(), vstart; //, vend = verts.end();
     CellIter cit, cend;
     for ( cit = cells.begin(), cend = cells.end(); cit != cend; ++cit )
     {
@@ -972,7 +973,8 @@ void VTUostream::write_outer_wall_geometry3 ( Tissue const& t, std::vector<uint>
 //-----------------------------------------------------------------------------
 void VTUostream::write_inner_wall_point_geometry3 ( Tissue const& t, std::vector<char>& vertex_flag, std::vector<uint>& index_map, size_t counter )
 {
-    typedef std::vector<Cell>::const_iterator CellIter;
+  //HJ: removed due to unused variable warning
+  //typedef std::vector<Cell>::const_iterator CellIter;
     typedef std::vector<Vertex>::const_iterator VertexIter;
     std::vector<Vertex> const& vertices = t.vertex();
     index_map.resize ( t.numVertex(), 0 ); //index map of verices to ordering indices in the file
