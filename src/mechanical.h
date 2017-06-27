@@ -1185,15 +1185,10 @@ class TemplateVolumeChange : public BaseReaction
   ///
   void update(Tissue &T,
               DataMatrix &cellData,
-	      DataMatrix &vertexData,
               DataMatrix &wallData,
-              DataMatrix &vertexDerivs,
+	      DataMatrix &vertexData,
               double h);  
 };
-
-
-
-
 
 ///
 /// @brief Calculates abs(cos(...)) of angle between two 3d vectors
@@ -1214,9 +1209,9 @@ class CalculateAngleVectors : public BaseReaction
  private:
 
   DataMatrix vertexDataRest;
-  double VolumeChange;
-  double deltaVolumeChange;
-  double totalDerivative;
+  //double VolumeChange;
+  //double deltaVolumeChange;
+  //double totalDerivative;
  public:
 
  ///
@@ -1271,9 +1266,9 @@ class CalculateAngleVectorXYplane : public BaseReaction
  private:
 
   DataMatrix vertexDataRest;
-  double VolumeChange;
-  double deltaVolumeChange;
-  double totalDerivative;
+  //double VolumeChange;
+  //double deltaVolumeChange;
+  //double totalDerivative;
  public:
 
  ///
@@ -1327,9 +1322,9 @@ class AngleVector : public BaseReaction
  private:
 
   DataMatrix vertexDataRest;
-  double VolumeChange;
-  double deltaVolumeChange;
-  double totalDerivative;
+  //double VolumeChange;
+  //double deltaVolumeChange;
+  //double totalDerivative;
  public:
 
  ///
@@ -1359,8 +1354,6 @@ class AngleVector : public BaseReaction
 	      DataMatrix &cellDerivs,
 	      DataMatrix &wallDerivs,
 	      DataMatrix &vertexDerivs );
-
-  
 };
 
 ///
@@ -1439,9 +1432,9 @@ class maxVelocity : public BaseReaction
  private:
 
   DataMatrix vertexDataRest;
-  double VolumeChange;
-  double deltaVolumeChange;
-  double totalDerivative;
+  //double VolumeChange;
+  //double deltaVolumeChange;
+  //double totalDerivative;
  public:
 
  ///

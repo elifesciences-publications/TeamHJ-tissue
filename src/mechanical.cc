@@ -2231,7 +2231,7 @@ derivs(Tissue &T,
   
  size_t numCells = T.numCell();
  size_t comIndex = variableIndex(0,0);
- size_t lengthInternalIndex = comIndex+dimension;
+ //size_t lengthInternalIndex = comIndex+dimension;
 
  for (size_t cellIndex= 0; cellIndex< numCells; ++cellIndex)
 
@@ -3497,7 +3497,7 @@ derivs(Tissue &T,
         for (size_t d=0; d<dimension; ++d)
           normal[d] *= normFac;
       }
-      double A= cell.calculateVolume(vertexData)*normal[2];
+      //double A= cell.calculateVolume(vertexData)*normal[2];
       //totalVolume += A*(((position[0][2]+position[1][2]+position[2][2])/3)-parameter(2));      
     }
     
@@ -3537,7 +3537,7 @@ derivs(Tissue &T,
   }
   
   if (parameter(1) == 0 || parameter(1) ==1 ){
-    double totalVolume=0;  
+    //double totalVolume=0;  
     size_t numCell = cellData.size();
     assert (numCell==T.numCell());  
     for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) { 
@@ -3565,7 +3565,7 @@ derivs(Tissue &T,
         for (size_t d=0; d<dimension; ++d)
           normal[d] *= normFac;
       }
-      double A= cell.calculateVolume(vertexData)*normal[2];
+      //double A= cell.calculateVolume(vertexData)*normal[2];
       //totalVolume += A*(((position[0][2]+position[1][2]+position[2][2])/3)-parameter(2));
     }
     
@@ -3918,8 +3918,8 @@ derivs(Tissue &T,
     double d=position[0][2]-a*(position[0][0]-Xc)*(position[0][0]-Xc)-a*(position[0][1]-Yc)*(position[0][1]-Yc)-b;
     if( d < 0 ){
 
-      double m=2*a*(position[0][0]-Xc);
-      double n=2*a*(position[0][1]-Yc);
+      //double m=2*a*(position[0][0]-Xc);
+      //double n=2*a*(position[0][1]-Yc);
 
       // vertexDerivs[vertexIndex][0]+=-Kforce*(m/std::sqrt(1+m*m+n*n));
       // vertexDerivs[vertexIndex][1]+=-Kforce*(n/std::sqrt(1+m*m+n*n));
@@ -4150,7 +4150,6 @@ void TemplateVolumeChange:: update(Tissue &T,
                                    DataMatrix &cellData,
                                    DataMatrix &wallData,
                                    DataMatrix &vertexData,
-                                   DataMatrix &vertexDerivs,
                                    double h)
 { 
 }
