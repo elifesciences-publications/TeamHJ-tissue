@@ -151,7 +151,8 @@ derivs(Tissue &T,
       }
       double fac = parameter(0)*wallData[j][pwI+pwIadd];
       wallDerivs[j][pwI+pwIadd] -= 2.*fac;
-      std::cout << "x = " << parameter(0) << ' u' << wallData[j][pwI+pwIadd]<<"\n";
+      //std::cout << "x = " << parameter(0) << " u" << wallData[j][pwI+pwIadd]
+      //	<< std::endl;
       size_t kNext = (k+1)%numWalls;     
       size_t jNext = T.cell(i).wall(kNext)->index();   
       if( T.cell(i).wall(kNext)->cell1()->index() == i) {
@@ -661,36 +662,33 @@ derivs(Tissue &T,
     size_t numWalls = T.cell(i).numWall();
     for (size_t k=0; k<numWalls; ++k) {
       size_t j = T.cell(i).wall(k)->index();
-      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
-	size_t cellNeigh = T.cell(i).wall(k)->cell2()->index();
+      if( T.cell(i).wall(k)->cell1()->index() == i &&
+	  T.cell(i).wall(k)->cell2() != T.background() ) {
 	// cell-wall transport
 	double fac = (parameter(2)+parameter(3)*wallData[j][pwI]) * cellData[i][aI] 
 	  - (parameter(0) + parameter(1)*cellData[i][auxI]) * wallData[j][awI];
 	
-         wallDerivs[j][awI] += fac;
-         cellDerivs[i][aI] -= fac;
-	
-
-
+	wallDerivs[j][awI] += fac;
+	cellDerivs[i][aI] -= fac;
+       
         // wall-wall diffusion
 	fac = parameter(4)*wallData[j][awI];
 	wallDerivs[j][awI] -= fac;
 	wallDerivs[j][awI+1] += fac;
       }
-      else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
-	size_t cellNeigh = T.cell(i).wall(k)->cell1()->index();
+      else if( T.cell(i).wall(k)->cell2()->index() == i &&
+	       T.cell(i).wall(k)->cell1() != T.background() ) {
+	//size_t cellNeigh = T.cell(i).wall(k)->cell1()->index();
 	// cell-wall transport
 	double fac = (parameter(2)+parameter(3)*wallData[j][pwI+1]) * cellData[i][aI] 
 	  - (parameter(0) + parameter(1)*cellData[i][auxI]) * wallData[j][awI+1];
 		
 	wallDerivs[j][awI+1] += fac;
 	cellDerivs[i][aI] -= fac;
-	
 
-           // wall-wall diffusion
+	// wall-wall diffusion
 	wallDerivs[j][awI+1] -= parameter(4)*wallData[j][awI+1];
-	wallDerivs[j][awI] += parameter(4)*wallData[j][awI+1];
-
+	wallDerivs[j][awI] += parameter(4)*wallData[j][awI+1];	
       }
       //else {
       //std::cerr << "ActiveTransportWallEfflux::derivs() Cell-wall neighborhood wrong." 
