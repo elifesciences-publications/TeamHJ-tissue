@@ -420,7 +420,7 @@ namespace WallGrowth {
       size_t lengthIndex = variableIndex(0,0);
       size_t lengthStartIndex = lengthIndex+3;//assuming 3D
       
-      for (size_t i=0; i<T.numCell(); ++i) {
+      for (size_t i=0; i<numCells; ++i) {
 	for (size_t k=0; k<T.cell(i).numVertex(); ++k) {
 	  double arg = parameter(0);
 	  if (parameter(1)==1) {//linearFlag (prop to length)
@@ -626,7 +626,6 @@ namespace WallGrowth {
 
       static double growthtime=0;
       static double deltat=0;
-      size_t printit=0;
       deltat +=h; 
             
       bool equil=true;
@@ -2090,7 +2089,7 @@ derivs(Tissue &T,
   size_t numVertices = T.numVertex();
   size_t s_i = 0; // spatial index
   double fac=parameter(0);
-  size_t dimension=vertexData[s_i].size();
+  //size_t dimension=vertexData[s_i].size();
   size_t growth_mode = parameter(1);
 
   for( size_t i=0 ; i<numVertices ; ++i ) {
@@ -2123,7 +2122,7 @@ void MoveVerteX::derivsWithAbs(Tissue &T,
   size_t numVertices = T.numVertex();
   size_t s_i = 0; // spatial index
   double fac=parameter(0);
-  size_t dimension=vertexData[s_i].size();
+  //size_t dimension=vertexData[s_i].size();
   size_t growth_mode = parameter(1);
 
   for( size_t i=0 ; i<numVertices ; ++i ) {
@@ -2187,7 +2186,7 @@ derivs(Tissue &T,
   
   size_t numVertices = T.numVertex();
   size_t s_i = 1; // spatial index
-  size_t dimension=vertexData[s_i].size();
+  //size_t dimension=vertexData[s_i].size();
   double fac=parameter(0);
   size_t growth_mode = parameter(1);
   //std::cout <<  "fac = " << fac << "\n";
@@ -2221,7 +2220,7 @@ derivsWithAbs(Tissue &T,
   
   size_t numVertices = T.numVertex();
   size_t s_i = 1; // spatial index
-  size_t dimension=vertexData[s_i].size();
+  //size_t dimension=vertexData[s_i].size();
   double fac=parameter(0);
   size_t growth_mode = parameter(1);
   //std::cout <<  "fac = " << fac << "\n";
