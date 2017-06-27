@@ -1364,11 +1364,10 @@ void BaseSolver::print(std::ostream &os)
   //
   //
   else if( printFlag_==48 ) {
-
     size_t Nc = cellData_.size();
     size_t NcM = {Nc -1};
     //os << Nc << " " << numPrintVar << std::endl;
-    for( size_t i=1 ; i<Nc-1 ; ++i ) 
+    for( size_t i=1 ; i<NcM ; ++i ) 
       os << cellData_[i][4] <<" ";
     for( size_t i=Nc-1 ; i<Nc ; ++i ) 
       os << cellData_[i][4] <<std::endl;
@@ -1377,7 +1376,7 @@ void BaseSolver::print(std::ostream &os)
   //
   else if( printFlag_==49 ) {
     size_t Nc = cellData_.size();
-    size_t NcM = {Nc -1};
+    //size_t NcM = {Nc -1};
     //os << Nc << " " << numPrintVar << std::endl;    
     for( size_t i=0 ; i<Nc ; ++i ) {
       os << cellData_[i][4] << std::endl;
