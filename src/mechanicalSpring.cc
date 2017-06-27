@@ -118,7 +118,7 @@ derivs(Tissue &T,
   //Do the update for each wall
   size_t numWalls = T.numWall();
   size_t wallLengthIndex = variableIndex(0,0);
-  size_t InternalCellIndex = variableIndex(0,1);
+  //size_t InternalCellIndex = variableIndex(0,1);
   
   // internal wall indices aorta templates
   // std::cerr<<".............begin................"<<std::endl;
@@ -200,7 +200,6 @@ derivs(Tissue &T,
       // double coeff = 0.5*parameter(0)*
       //   ((1.0/(wallLength+wl1))-(1.0/distance)+
       //    (1.0/(wallLength+wl2))-(1.0/distance));
-      double coeff = parameter(0)*((1.0/(wallLength))-(1.0/distance));
     }
 
     //double coeff = parameter(0)*(distance-wallLength)*(distance-wallLength)*(distance-wallLength)/(distance*wallLength);
@@ -245,7 +244,7 @@ derivsWithAbs(Tissue &T,
   //Do the update for each wall
   size_t numWalls = T.numWall();
   size_t wallLengthIndex = variableIndex(0,0);
-  size_t InternalCellIndex = variableIndex(0,1);
+  //size_t InternalCellIndex = variableIndex(0,1);
   
   // internal wall indices aorta templates
   // std::cerr<<".............begin................"<<std::endl;
@@ -326,7 +325,6 @@ derivsWithAbs(Tissue &T,
       // double coeff = 0.5*parameter(0)*
       //   ((1.0/(wallLength+wl1))-(1.0/distance)+
       //    (1.0/(wallLength+wl2))-(1.0/distance));
-      double coeff = parameter(0)*((1.0/(wallLength))-(1.0/distance));
     }
 
     //double coeff = parameter(0)*(distance-wallLength)*(distance-wallLength)*(distance-wallLength)/(distance*wallLength);
@@ -3302,7 +3300,7 @@ printState(Tissue *T,
     for (size_t cellIndex=0 ; cellIndex< numCells ; cellIndex++){
       size_t numCellVertices= T->cell(cellIndex).numVertex();
       for (size_t vertexCellIndex1=0 ; vertexCellIndex1< numCellVertices ; vertexCellIndex1++){
-	size_t vertexIndex1 = T->cell(cellIndex).vertex(vertexCellIndex1)->index();
+	//size_t vertexIndex1 = T->cell(cellIndex).vertex(vertexCellIndex1)->index();
 	for (size_t vertexCellIndex2=0 ; vertexCellIndex2< numCellVertices ; vertexCellIndex2++)
 	  if (vertexCellIndex2!=vertexCellIndex1 && connections[cellIndex][vertexCellIndex1][vertexCellIndex2]!=0){
 	    counter++;
@@ -3577,18 +3575,14 @@ derivs(Tissue &T,
        DataMatrix &wallDerivs,
        DataMatrix &vertexDerivs ) 
 {  
-  
-  
-  size_t dimension=vertexData[0].size();
-  
+  //size_t dimension=vertexData[0].size();
   size_t numVertices = T.numVertex();
   for (size_t vertexIndex=0 ; vertexIndex< numVertices ; vertexIndex++)
     if (vertexVec[vertexIndex][3]==1)
       {
         double coeff=parameter(0);//*vertexVec[vertexIndex][4];
 	vertexDerivs[vertexIndex][0] += coeff*vertexVec[vertexIndex][0];
-	vertexDerivs[vertexIndex][1] += coeff*vertexVec[vertexIndex][1];
-	
+	vertexDerivs[vertexIndex][1] += coeff*vertexVec[vertexIndex][1];	
       }  
 }
 

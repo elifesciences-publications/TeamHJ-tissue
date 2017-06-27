@@ -839,7 +839,7 @@ class VertexFromExternalSpringFromPerpVertex : public BaseReaction {
  
  private: 
   
-  size_t Npairs;
+  //size_t Npairs;
   std:: vector<std::vector<std::vector<double> > >  connections;
   std:: vector<std::vector<double> >  vertexVec;
   
@@ -946,7 +946,7 @@ class VertexFromExternalSpringFromPerpVertexDynamic : public BaseReaction {
  
  private: 
   
-  size_t Npairs;
+  //size_t Npairs;
   std:: vector<std::vector<std::vector<double> > >  connections;
   std:: vector<std::vector<double> >  vertexVec;
   
@@ -1102,11 +1102,11 @@ class cellcellRepulsion : public BaseReaction {
 class vertexFromSubstrate : public BaseReaction {
  
  private: 
-  std:: vector<size_t> list;
-  std:: vector<std::vector<std::vector<double> > >  vertexVec;
+  std::vector<size_t> list;
+  std::vector<std::vector<std::vector<double> > >  vertexVec;
   //std:: vector<std::vector<double>>  vertexVec;
   size_t numAttachedCells;
-  size_t numAttachedVertices;
+  //size_t numAttachedVertices;
  public:
   ///
   /// @brief Main constructor
