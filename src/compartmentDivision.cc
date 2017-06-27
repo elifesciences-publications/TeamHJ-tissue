@@ -623,16 +623,15 @@ namespace Division {
     //
     // Find longest wall
     // 
-    size_t wI=0,w3I=brCell->numWall();
+    size_t wI=0, w3I=brCell->numWall();
     double maxLength = brCell->wall(0)->setLengthFromVertexPosition(vertexData);
-    for( size_t k=1 ; k<brCell->numWall() ; ++k ) {
+    for( size_t k=1 ; k<w3I ; ++k ) {
       double tmpLength = brCell->wall(k)->setLengthFromVertexPosition(vertexData);
       if( tmpLength > maxLength ) {
 	wI=k;
 	maxLength = tmpLength;
       }
     }   
-  
   
     std::vector<size_t> wallsBack; 
     // finding the walls that are facing the background
@@ -642,13 +641,13 @@ namespace Division {
   
     // randomly choose one of them if more than one wall is facing the background 
     size_t s=wallsBack.size();
-    if (wallsBack.size()==1)
+    if (s==1) {
       wI=wallsBack[0];
-    else{ 
-      size_t s=wallsBack.size();
+    }
+    else { 
       wI=wallsBack[rand() % s];
     }
-  
+    
     maxLength = brCell->wall(wI)->setLengthFromVertexPosition(vertexData);
   
     double minLength=brCell->wall((wI+1)%(brCell->numWall()))->setLengthFromVertexPosition(vertexData);  
@@ -740,15 +739,14 @@ namespace Division {
     //
     // Do the branching (add one cell, five walls, and four vertices)
     //
-    size_t numWallTmp=wallData.size();
     size_t numCellTmp=cellData.size();
-    assert( numWallTmp==T->numWall() );
+    assert( wallData.size()==T->numWall() );
  
    
     //branching
     T->branchCell(brCell,wI,v1Pos,v2Pos,v3Pos,v4Pos,cellData,wallData,vertexData,
 		  cellDeriv,wallDeriv,vertexDeriv, parameter(2));
-    assert( numWallTmp+5 == T->numWall() );
+    assert( wallData.size()+5 == T->numWall() );
   
     for(size_t kk=0; kk< cellData[0].size(); ++kk)
       cellData[numCellTmp][kk]=0;
@@ -2269,14 +2267,13 @@ namespace Division {
 	  best=i;
 	  minArea = std::abs( tmpArea-halfArea );
 	}
-      }
-    size_t e = (b+best)%(numV); // e is the index of the end vertex of division wall 
-  
+      }  
     // Divide the cell
     //size_t numWallTmp = T->numWall();
     //size_t numVertexTmp = T->numVertex();
     //size_t numCellTmp = T->numCell();
- 
+    //size_t e = (b+best)%(numV); // e is the index of the end vertex of division wall
+
     // T->divideCellCenterTriangulation(divCell,b,e,variableIndex(0,0),
     //       			   cellData,wallData,vertexData,
     //       			   cellDeriv,wallDeriv,vertexDeriv,
@@ -3020,10 +3017,8 @@ namespace Division {
     //           << " p = (" << winner.px << ", " << winner.py << ")" << std::endl
     //           << " q = (" << winner.qx << ", " << winner.qy << ")" << std::endl;
   
-    size_t numWallTmp = wallData.size();
-    assert(numWallTmp == T->numWall());
-  
-  
+    assert( wallData.size() == T->numWall());
+    
     std::vector<double> p(3);
     p[0] = winner.px;
     p[1] = winner.py;
@@ -3036,15 +3031,11 @@ namespace Division {
       double px=p[0],py=p[1],qx=q[0], qy=q[1];
       // p.resize(3);
       // q.resize(3);
-
-
-
-
       // size_t V1W1=(cell.wall(winner.wall1) -> vertex1()) -> index();
       // size_t V2W1=(cell.wall(winner.wall1) -> vertex2()) -> index();
       // size_t V1W2=(cell.wall(winner.wall2) -> vertex1()) -> index();
       // size_t V2W2=(cell.wall(winner.wall2) -> vertex2()) -> index();
-    
+   
       // std::cerr<<std::endl;
       // std::cerr<<" v1w1 "<<vertexData[V1W1][0]<<"  "<<vertexData[V1W1][1]<<"  "<<vertexData[V1W1][2]<<std::endl;
       // std::cerr<<" v2w1 "<<vertexData[V2W1][0]<<"  "<<vertexData[V2W1][1]<<"  "<<vertexData[V2W1][2]<<std::endl;
@@ -3087,8 +3078,6 @@ namespace Division {
 	cellData[i][variableIndex(2,0)+1]=COMTmp[1];
 	cellData[i][variableIndex(2,0)+2]=COMTmp[2];
       }
-    
-   
 
       size_t V1W1=(cell.wall(winner.wall1) -> vertex1()) -> index();
       size_t V2W1=(cell.wall(winner.wall1) -> vertex2()) -> index();
@@ -3112,7 +3101,6 @@ namespace Division {
 	  exit(0);
 	}
     
-
       // projecting the vector between first wall vertex and p on wall vector
       double norm1=tmpVec[0]*wallVec[0]+tmpVec[1]*wallVec[1]+tmpVec[2]*wallVec[2];
 
@@ -4791,14 +4779,15 @@ namespace Division {
     if (myMath::sign(u) == myMath::sign(v)) {
       return 0;
     }
-    for (size_t k = 0; k < 10; ++k) {
+    for (size_t k = 0; k < 10; ++k) {//HJ: ? Why the loop, it returns at first instance
       e = 0.5 * e;
       c = a + e;
       double w = f(c, sigma, A, B);   
       if (myMath::sign(w) != myMath::sign(u)) {
 	b = c;
 	v = w;
-      } else {
+      }
+      else {
 	a = c;
 	u = w;
       }
