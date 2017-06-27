@@ -232,7 +232,7 @@ namespace SisterVertex {
       }
       // Remove sistervertex pairs marked
       if (remove.size()) {
-	for (size_t k=remove.size()-1; (k>=0 && k<remove.size()); --k) {
+	for (int k=remove.size()-1; (k>=0 && k<remove.size()); --k) {
 	  size_t i = remove[k];
 	  size_t NN = T.numSisterVertex()-1;
 	  // If last element, remove it
@@ -297,7 +297,6 @@ namespace SisterVertex {
     // Go through all pairs of sistervertices and put the pairs with 
     // common nodes together in the private vector sisters
     size_t N=T.numSisterVertex();
-    double dimension = T.vertex(0).numPosition();
 
     std::vector<std::vector<double>> tmpsisters;
     tmpsisters.resize(N);
