@@ -543,7 +543,7 @@ bool ply::ply_parser::parse ( std::istream& istream )
     {
         for ( std::vector< C11NSPACE::shared_ptr<element> >::const_iterator element_iterator = elements.begin(); element_iterator != elements.end(); ++element_iterator )
         {
-            class element& element = * ( element_iterator->get() );
+            struct element& element = * ( element_iterator->get() );
             for ( std::size_t element_index = 0; element_index < element.count; ++element_index )
             {
                 if ( element.begin_element_callback )
@@ -564,7 +564,7 @@ bool ply::ply_parser::parse ( std::istream& istream )
                 stringstream >> std::ws;
                 for ( std::vector< C11NSPACE::shared_ptr<property> >::const_iterator property_iterator = element.properties.begin(); property_iterator != element.properties.end(); ++property_iterator )
                 {
-                    class property& property = * ( property_iterator->get() );
+                    struct property& property = * ( property_iterator->get() );
                     if ( property.parse ( *this, format, stringstream ) == false )
                     {
                         return false;
@@ -601,7 +601,7 @@ bool ply::ply_parser::parse ( std::istream& istream )
     {
         for ( std::vector< C11NSPACE::shared_ptr<element> >::const_iterator element_iterator = elements.begin(); element_iterator != elements.end(); ++element_iterator )
         {
-            class element& element = * ( element_iterator->get() );
+            struct element& element = * ( element_iterator->get() );
             for ( std::size_t element_index = 0; element_index < element.count; ++element_index )
             {
                 if ( element.begin_element_callback )
@@ -610,7 +610,7 @@ bool ply::ply_parser::parse ( std::istream& istream )
                 }
                 for ( std::vector< C11NSPACE::shared_ptr<property> >::const_iterator property_iterator = element.properties.begin(); property_iterator != element.properties.end(); ++property_iterator )
                 {
-                    class property& property = * ( property_iterator->get() );
+                    struct property& property = * ( property_iterator->get() );
                     if ( property.parse ( *this, format, istream ) == false )
                     {
                         return false;
