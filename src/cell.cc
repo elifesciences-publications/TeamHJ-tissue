@@ -729,102 +729,102 @@ positionFromVertex(const DataMatrix &vertexData)
 
 std::vector<double> Cell::randomPositionInCell(const DataMatrix &vertexData, const int numberOfTries) 
 {
-	typedef std::vector<double> Vector;
-
-	const size_t dimensions = vertexData[0].size();
-
-	if (dimensions != 2)
+  //typedef std::vector<double> Vector;
+  
+  const size_t dimensions = vertexData[0].size();
+  
+  if (dimensions != 2)
+    {
+      std::cerr << "Cell::randomPositionInCell only supports two dimensions.\n";
+      std::exit(EXIT_FAILURE);
+    }
+  
+  double xmin = std::numeric_limits<double>::max();
+  double xmax = std::numeric_limits<double>::min();
+  double ymin = std::numeric_limits<double>::max();
+  double ymax = std::numeric_limits<double>::min();
+  
+  for (size_t vertexIndex = 0; vertexIndex < numVertex(); ++vertexIndex)
+    {
+      const Vertex &v = *vertex(vertexIndex);
+      
+      const double &x = vertexData[v.index()][0];
+      
+      if (x < xmin)
 	{
-		std::cerr << "Cell::randomPositionInCell only supports two dimensions.\n";
-		std::exit(EXIT_FAILURE);
+	  xmin = x;
 	}
-
-	double xmin = std::numeric_limits<double>::max();
-	double xmax = std::numeric_limits<double>::min();
-	double ymin = std::numeric_limits<double>::max();
-	double ymax = std::numeric_limits<double>::min();
-
-	for (size_t vertexIndex = 0; vertexIndex < numVertex(); ++vertexIndex)
+      if (x > xmax)
 	{
-		const Vertex &v = *vertex(vertexIndex);
-
-		const double &x = vertexData[v.index()][0];
-
-		if (x < xmin)
-		{
-			xmin = x;
-		}
-		if (x > xmax)
-		{
-			xmax = x;
-		}
-
-		const double &y = vertexData[v.index()][1];
-
-		if (y < ymin)
-		{
-			ymin = y;
-		}
-		if (y > ymax)
-		{
-			ymax = y;
-		}
+	  xmax = x;
 	}
-
-	for (int tryCounter = 0; tryCounter < numberOfTries; ++tryCounter)
+      
+      const double &y = vertexData[v.index()][1];
+      
+      if (y < ymin)
 	{
-		double rx = xmin + (xmax - xmin) * myRandom::Rnd();
-		double ry = ymin + (ymax - ymin) * myRandom::Rnd();
-
-		const size_t numberOfVertices = numVertex();
-
-		signed int sign = 0;
-
-		bool success = true;
-
-		for (size_t vertexIndex = 0; vertexIndex < numberOfVertices; ++vertexIndex)
-		{
-			const Vertex &v1 = *vertex(vertexIndex);
-			const Vertex &v2 = *vertex((vertexIndex + 1) % numberOfVertices);
-
-			const double vx = vertexData[v2.index()][0] - vertexData[v1.index()][0];
-			const double vy = vertexData[v2.index()][1] - vertexData[v1.index()][1];
-				
-			const double dx = rx - vertexData[v1.index()][0];
-			const double dy = ry - vertexData[v1.index()][1];
-
-			const signed int s = myMath::sign(vx * dy - vy * dx);
-
-			if (!sign)
-			{
-				sign = s;
-			}
-			else
-			{
-				if (sign == s)
-				{
-					continue;
-				}
-				else
-				{
-					success = false;
-					break;
-				}
-			}
-		}
-
-		if (success)
-		{
-			std::vector<double> result(2);
-
-			result[0] = rx;
-			result[1] = ry;
-
-			return result;
-		}
+	  ymin = y;
 	}
-
-	throw FailedToFindRandomPositionInCellException();
+      if (y > ymax)
+	{
+	  ymax = y;
+	}
+    }
+  
+  for (int tryCounter = 0; tryCounter < numberOfTries; ++tryCounter)
+    {
+      double rx = xmin + (xmax - xmin) * myRandom::Rnd();
+      double ry = ymin + (ymax - ymin) * myRandom::Rnd();
+      
+      const size_t numberOfVertices = numVertex();
+      
+      signed int sign = 0;
+      
+      bool success = true;
+      
+      for (size_t vertexIndex = 0; vertexIndex < numberOfVertices; ++vertexIndex)
+	{
+	  const Vertex &v1 = *vertex(vertexIndex);
+	  const Vertex &v2 = *vertex((vertexIndex + 1) % numberOfVertices);
+	  
+	  const double vx = vertexData[v2.index()][0] - vertexData[v1.index()][0];
+	  const double vy = vertexData[v2.index()][1] - vertexData[v1.index()][1];
+	  
+	  const double dx = rx - vertexData[v1.index()][0];
+	  const double dy = ry - vertexData[v1.index()][1];
+	  
+	  const signed int s = myMath::sign(vx * dy - vy * dx);
+	  
+	  if (!sign)
+	    {
+	      sign = s;
+	    }
+	  else
+	    {
+	      if (sign == s)
+		{
+		  continue;
+		}
+	      else
+		{
+		  success = false;
+		  break;
+		}
+	    }
+	}
+      
+      if (success)
+	{
+	  std::vector<double> result(2);
+	  
+	  result[0] = rx;
+	  result[1] = ry;
+	  
+	  return result;
+	}
+    }
+  
+  throw FailedToFindRandomPositionInCellException();
 }
 
 void Cell::calculatePCAPlane(DataMatrix &vertexData)
