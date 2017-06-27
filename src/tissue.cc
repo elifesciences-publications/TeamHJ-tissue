@@ -4953,11 +4953,6 @@ divideCellCenterTriangulation( Cell *divCell, size_t wI, size_t w3I,
   updateDirectionDivision(cellIndex,cellData,wallData,vertexData,
 			  cellDeriv,wallDeriv,vertexDeriv);
   
-
-
-
-
-  size_t firstwall;
   // Update the volume dependent variables for each cell variable index 
   // given in volumeChangeList
   double fi;
