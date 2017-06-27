@@ -636,15 +636,14 @@ void RK4::simulate(size_t verbose)
   if (vertexData_.size()!=vertexDerivs_.size())
     vertexDerivs_.resize(vertexData_.size(),vertexDerivs_[0]);
   T_->initiateDirection(cellData_, wallData_, vertexData_, cellDerivs_, 
-												wallDerivs_, vertexDerivs_);
+			wallDerivs_, vertexDerivs_);
   
   assert( cellData_.size() == T_->numCell() && 
-					cellData_.size()==cellDerivs_.size() );
+	  cellData_.size()==cellDerivs_.size() );
   assert( wallData_.size() == T_->numWall() && 
-					wallData_.size()==wallDerivs_.size() );
+	  wallData_.size()==wallDerivs_.size() );
   assert( vertexData_.size() == T_->numVertex() && 
-					vertexData_.size()==vertexDerivs_.size() );
-  
+	  vertexData_.size()==vertexDerivs_.size() );
   //
   // Create all vectors that will be needed by rk4()!
   //
@@ -671,7 +670,6 @@ void RK4::simulate(size_t verbose)
     dytVertex[i].resize(vertexData_[i].size());
     dymVertex[i].resize(vertexData_[i].size());
   }
-  
   // Initiate print times
   //
   double tiny = 1e-10;
@@ -700,7 +698,7 @@ void RK4::simulate(size_t verbose)
     } 
     //Update the derivatives
     T_->derivs(cellData_,wallData_,vertexData_,cellDerivs_,wallDerivs_,
-							 vertexDerivs_);
+	       vertexDerivs_);
     
     //Print if applicable 
     if( doPrint && t_ >= printTime ) {
