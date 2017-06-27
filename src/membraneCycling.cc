@@ -660,92 +660,68 @@ derivs(Tissue &T,
   size_t pI = variableIndex(0,1);//pin
   size_t pwI = variableIndex(1,0);//pin (membrane/wall)
 
-
   assert( aI<cellData[0].size() &&
 	  pI<cellData[0].size() &&
 	  pwI<wallData[0].size() );
 
- for (size_t i=0; i<numCells; ++i) {
-	  
-   
-
-    
+ for (size_t i=0; i<numCells; ++i) {    
     //Auxin transport and protein cycling
-    size_t numWalls = T.cell(i).numWall();
-    for (size_t k=0; k<numWalls; ++k) {
-      size_t j = T.cell(i).wall(k)->index();
-      if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
-	// cell-cell transport
-	size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
-	double fac = parameter(0)*cellData[i][aI] + parameter(1)*cellData[i][aI]*wallData[j][pwI]; //p_2 A_i + p_4 A_i P_ij
-	
-	cellDerivs[i][aI] -= fac;
-	cellDerivs[iNeighbor][aI] += fac;
-	if (parameter(0)*cellData[i][aI]+parameter(1)*cellData[i][aI]*wallData[j][pwI]-parameter(0)*cellData[iNeighbor][aI]-parameter(1)*cellData[iNeighbor][aI]*wallData[j][pwI+1]>=0) {
+   size_t numWalls = T.cell(i).numWall();
+   for (size_t k=0; k<numWalls; ++k) {
+     size_t j = T.cell(i).wall(k)->index();
+     if( T.cell(i).wall(k)->cell1()->index() == i && T.cell(i).wall(k)->cell2() != T.background() ) {
+       // cell-cell transport
+       size_t iNeighbor = T.cell(i).wall(k)->cell2()->index();
+       double fac = parameter(0)*cellData[i][aI] + parameter(1)*cellData[i][aI]*wallData[j][pwI]; //p_2 A_i + p_4 A_i P_ij
+       
+       cellDerivs[i][aI] -= fac;
+       cellDerivs[iNeighbor][aI] += fac;
+       if (parameter(0)*cellData[i][aI]+parameter(1)*cellData[i][aI]*wallData[j][pwI]-parameter(0)*
+	   cellData[iNeighbor][aI]-parameter(1)*cellData[iNeighbor][aI]*wallData[j][pwI+1]>=0) {
+	 //PIN cycling
+	 double fac =  - parameter(2)*cellData[i][pI]*std::pow(parameter(0)*cellData[i][aI]+parameter(1)*cellData[i][aI]*wallData[j][pwI] -
+							       parameter(0)*cellData[iNeighbor][aI] -
+							       parameter(1)*cellData[iNeighbor][aI]*wallData[j][pwI+1],2);
+	 wallDerivs[j][pwI] -= fac;
+	 cellDerivs[i][pI] += fac;}
+       else if (parameter(0)*cellData[i][aI]+parameter(1)*cellData[i][aI]*wallData[j][pwI] -
+		parameter(0)*cellData[iNeighbor][aI] -
+		parameter(1)*cellData[iNeighbor][aI]*wallData[j][pwI+1]<0){
 	//PIN cycling
-	double fac =  - parameter(2)*cellData[i][pI]* std::pow(parameter(0)*cellData[i][aI]+parameter(1)*cellData[i][aI]*wallData[j][pwI]-parameter(0)*cellData[iNeighbor][aI]-parameter(1)*cellData[iNeighbor][aI]*wallData[j][pwI+1],2);
-	wallDerivs[j][pwI] -= fac;
-	cellDerivs[i][pI] += fac;}
-
-	else if (parameter(0)*cellData[i][aI]+parameter(1)*cellData[i][aI]*wallData[j][pwI]-parameter(0)*cellData[iNeighbor][aI]-parameter(1)*cellData[iNeighbor][aI]*wallData[j][pwI+1]<0){
-	//PIN cycling
-        double	fac =0;
-	wallDerivs[j][pwI] -= 0;
-	cellDerivs[i][pI] += 0;}
-
-
-
-
+	 wallDerivs[j][pwI] -= 0;
+	 cellDerivs[i][pI] += 0;
+       }
       }
       else if( T.cell(i).wall(k)->cell2()->index() == i && T.cell(i).wall(k)->cell1() != T.background() ) {
 	// cell-cell transport
 	size_t iNeighbor = T.cell(i).wall(k)->cell1()->index();
 	// cell-cell transport
 	double fac = parameter(0)*cellData[i][aI] + parameter(1)*cellData[i][aI]*wallData[j][pwI+1]; //p_2 A_i + p_4 A_i P_ij
-	
 	cellDerivs[i][aI] -= fac;
 	cellDerivs[iNeighbor][aI] += fac;
-
-      
+	
 	//PIN cycling
-	if (parameter(0)*cellData[i][aI]+parameter(1)*cellData[i][aI]*wallData[j][pwI+1]-parameter(0)*cellData[iNeighbor][aI]-parameter(1)*cellData[iNeighbor][aI]*wallData[j][pwI]>=0) {
+	if (parameter(0)*cellData[i][aI]+parameter(1)*cellData[i][aI]*wallData[j][pwI+1] -
+	    parameter(0)*cellData[iNeighbor][aI] -
+	    parameter(1)*cellData[iNeighbor][aI]*wallData[j][pwI]>=0) {
 
-	  double fac = -parameter(2)*cellData[i][pI]*std::pow(parameter(0)*cellData[i][aI]+parameter(1)*cellData[i][aI]*wallData[j][pwI+1]-parameter(0)*cellData[iNeighbor][aI]-parameter(1)*cellData[iNeighbor][aI]*wallData[j][pwI],2);
-	wallDerivs[j][pwI+1] -= fac;
-	cellDerivs[i][pI] += fac;}
-	else if (parameter(0)*cellData[i][aI]+parameter(1)*cellData[i][aI]*wallData[j][pwI+1]-parameter(0)*cellData[iNeighbor][aI]-parameter(1)*cellData[iNeighbor][aI]*wallData[j][pwI]<0) {
-
-	double fac = 0;
-	wallDerivs[j][pwI+1] -= 0;
-	cellDerivs[i][pI] += 0;}
-      
+	  double fac = -parameter(2)*cellData[i][pI]*std::pow(parameter(0)*cellData[i][aI] +
+							      parameter(1)*cellData[i][aI]*wallData[j][pwI+1] -
+							      parameter(0)*cellData[iNeighbor][aI] -
+							      parameter(1)*cellData[iNeighbor][aI]*wallData[j][pwI],2);
+	  wallDerivs[j][pwI+1] -= fac;
+	  cellDerivs[i][pI] += fac;
+	}
+	else if (parameter(0)*cellData[i][aI]+parameter(1)*cellData[i][aI]*wallData[j][pwI+1] -
+		 parameter(0)*cellData[iNeighbor][aI] -
+		 parameter(1)*cellData[iNeighbor][aI]*wallData[j][pwI]<0) {
+	  wallDerivs[j][pwI+1] -= 0;
+	  cellDerivs[i][pI] += 0;
+	}	
       }
-    }
-  }
+   }
+ }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 InternalCellNonLinear::
 InternalCellNonLinear(std::vector<double> &paraValue, 
