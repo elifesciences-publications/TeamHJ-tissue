@@ -10053,24 +10053,19 @@ void FiberModel::update(Tissue &T,
       
       cellData[cellIndex][fiberLIndex] =
         0.5*(1+(std::pow(anisotropy,Nh)
-                /(std::pow((1-anisotropy),Nh)*std::pow(Kh,Nh)+std::pow(anisotropy,Nh))))* youngFiber;
-      
+                /(std::pow((1-anisotropy),Nh)*std::pow(Kh,Nh)+std::pow(anisotropy,Nh))))* youngFiber;      
     }
-
-
   }
 }
-
-
-
 
 FiberDeposition::FiberDeposition(std::vector<double> &paraValue,
 				     std::vector< std::vector<size_t> > &indValue)
 {
-  if (paraValue.size() != 6) {
+  if (paraValue.size() != 7) {
     std::cerr << "FiberDeposition::FiberDeposition() " 
-	      << "Uses six parameters: k_rate, initial fiber strength(young_fiber),"
+	      << "Uses seven parameters: k_rate, initial randomness(percent),"
               << "velocity threshold, initiation flag(0/1), k_hill and n_hill" 
+              << "fiber strength" 
               << std::endl;
     exit(EXIT_FAILURE);
   }
@@ -10080,7 +10075,7 @@ FiberDeposition::FiberDeposition(std::vector<double> &paraValue,
 	      << "First index: anisotropy." 
               << "second index:  misses stress." 
               << "third index: cell area."
-	      << "fourth index: young fiber." 
+	      << "fourth index: fiber." 
               << "fifth index: longitudinal young fiber"
               << "fourth index: velocity"
               << std::endl;
@@ -10093,11 +10088,12 @@ FiberDeposition::FiberDeposition(std::vector<double> &paraValue,
   
   std::vector<std::string> tmp(numParameter());
   tmp[0] = "k_rate";
-  tmp[1] = "youngFiber";
+  tmp[1] = "randomness";
   tmp[2] = "velocity_threshold";
   tmp[3] = "init_flag";
   tmp[4] = "k_Hill";
   tmp[5] = "n_Hill";
+  tmp[6] = "fiber";
   
   setParameterId(tmp);
 }
@@ -10109,17 +10105,29 @@ void FiberDeposition::initiate(Tissue &T,
                                DataMatrix &cellDerivs,
                                DataMatrix &wallDerivs,
                                DataMatrix &vertexDerivs) {
-  size_t numCell=cellData.size();
+  size_t numCells=cellData.size();
   size_t YoungFiberIndex=variableIndex(0,3);
+  size_t YoungFiberLIndex=variableIndex(0,4);
   
-  double youngFiber=parameter(1);
+  double randCoef=parameter(1);
+  double youngFiber=parameter(6);
   size_t initFlag=parameter(3);  
 
   if (initFlag==1) // initialize with uniform material
-    for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex)  
+    for (size_t cellIndex=0; cellIndex<numCells; ++cellIndex){ 
       cellData[cellIndex][YoungFiberIndex] = youngFiber; 
-  return;
-  
+      cellData[cellIndex][YoungFiberLIndex] = youngFiber/2; 
+    }
+  if (initFlag==2 || initFlag==3){ // initialize with random material stiffness
+    srand((unsigned)time(NULL));
+    for (size_t cellIndex=0; cellIndex<numCells; ++cellIndex){ 
+      cellData[cellIndex][YoungFiberIndex] = youngFiber*(1+randCoef*2*(0.5-((double) rand()/(RAND_MAX)))); 
+      cellData[cellIndex][YoungFiberLIndex] = cellData[cellIndex][YoungFiberIndex]/2; 
+
+      std::cerr<<cellData[cellIndex][YoungFiberIndex]<<"  "<<cellData[cellIndex][YoungFiberLIndex]<<std::endl;
+    }
+  }
+  return;  
 }
 
 void FiberDeposition::derivs(Tissue &T,
@@ -10137,7 +10145,7 @@ void FiberDeposition::update(Tissue &T,
                         DataMatrix &vertexData, 
                         double h) 
 { 
-  size_t numCell=cellData.size();
+  size_t numCells=cellData.size();
 
   size_t AnisoIndex=variableIndex(0,0);
   size_t MstressIndex=variableIndex(0,1);
@@ -10147,49 +10155,123 @@ void FiberDeposition::update(Tissue &T,
   size_t velocityIndex=variableIndex(0,5);
 
   double k_rate=parameter(0);
+  double randCoef=parameter(1);
   double vThresh=parameter(2);
   double Kh=parameter(4);
   double Nh=parameter(5);
-
+  double YoungFiber=parameter(6);
   if (parameter(0)==0.0)
     return;
-  double totalStressArea=0;
-  double totalFiber=0;
-  double tmp;
-  for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex)
-    totalStressArea+=cellData[cellIndex][MstressIndex]*cellData[cellIndex][areaIndex];
-  //std::cerr<<"total    "<<totalStressArea<<std::endl;
+
+  double smax=14;//28;
+  double smin=8;//;
+
+  bool equil=true;
+  for (size_t cellIndex=0 ; cellIndex<numCells ; ++cellIndex) 
+    if(cellData[cellIndex][velocityIndex]>vThresh)
+      equil=false;
   
-  if(totalStressArea !=0){
-    for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex){ 
-      tmp=h*k_rate*cellData[cellIndex][YoungFiberIndex];
-      cellData[cellIndex][YoungFiberIndex]-=tmp;
-      totalFiber+=tmp*cellData[cellIndex][areaIndex];
+  if(equil){
+    double totalStressArea=0;
+    double totalArea=0;
+
+    for (size_t cellIndex=0; cellIndex<numCells; ++cellIndex){
+      if(cellData[cellIndex][MstressIndex]<smax && cellData[cellIndex][MstressIndex]>smin){
+        totalStressArea+=(cellData[cellIndex][MstressIndex]-smin)
+          *cellData[cellIndex][areaIndex];
+      }
+      else if(cellData[cellIndex][MstressIndex]>smax){
+        totalStressArea+=(smax-smin)
+          *cellData[cellIndex][areaIndex];
+      }
+      totalArea+=cellData[cellIndex][areaIndex];
     }
     
-    
-    for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) {
-      double anisotropy= cellData[cellIndex][AnisoIndex];
-      cellData[cellIndex][YoungFiberIndex]+=(totalFiber*cellData[cellIndex][MstressIndex])/totalStressArea;
-      cellData[cellIndex][YoungFiberLIndex] =
-        0.5*(1+(std::pow(anisotropy,Nh)
-                /(std::pow((1-anisotropy),Nh)*std::pow(Kh,Nh)
-                  +std::pow(anisotropy,Nh))))* cellData[cellIndex][YoungFiberIndex];
+    for (size_t cellIndex=0; cellIndex<numCells; ++cellIndex){
+      double targetFiber=0;
+      if(cellData[cellIndex][MstressIndex]<smax && cellData[cellIndex][MstressIndex]>smin){
+        targetFiber=(YoungFiber*totalArea*(cellData[cellIndex][MstressIndex]-smin))
+          /totalStressArea;      
+      }
+      else if(cellData[cellIndex][MstressIndex]>smax ){
+        targetFiber=(YoungFiber*totalArea*(smax-smin))
+          /totalStressArea;      
+      }
+      else if(cellData[cellIndex][MstressIndex]<smin ){
+        targetFiber=0;      
+      }
+      cellData[cellIndex][YoungFiberIndex]+=k_rate*
+        (targetFiber
+         -cellData[cellIndex][YoungFiberIndex]);
+       
+      if (parameter(3)==3){      
+        double anisotropy= cellData[cellIndex][AnisoIndex];
+        cellData[cellIndex][YoungFiberLIndex]+=k_rate*
+          ((0.5*(1+(std::pow(anisotropy,Nh)
+                    /(std::pow((1-anisotropy),Nh)*std::pow(Kh,Nh)
+                      +std::pow(anisotropy,Nh))))* cellData[cellIndex][YoungFiberIndex])
+           -cellData[cellIndex][YoungFiberLIndex]);
+      }
+      else
+        cellData[cellIndex][YoungFiberLIndex]=cellData[cellIndex][YoungFiberIndex]/2;
     }
+    // for (size_t cellIndex=0; cellIndex<numCells; ++cellIndex){
+    //   totalStressArea+=cellData[cellIndex][MstressIndex]
+    //     *cellData[cellIndex][areaIndex];
+    //   totalArea+=cellData[cellIndex][areaIndex];
+    // }
+    // for (size_t cellIndex=0; cellIndex<numCells; ++cellIndex){
+    //   cellData[cellIndex][YoungFiberIndex]+=k_rate*
+    //     ((YoungFiber*totalArea*cellData[cellIndex][MstressIndex])
+    //      /totalStressArea
+    //      -cellData[cellIndex][YoungFiberIndex]);
+    //   cellData[cellIndex][YoungFiberLIndex]=cellData[cellIndex][YoungFiberIndex]/2;
+    //   // double anisotropy= cellData[cellIndex][AnisoIndex];
+    //   // cellData[cellIndex][YoungFiberLIndex]+=k_rate*
+    //   //   ((0.5*(1+(std::pow(anisotropy,Nh)
+    //   //           /(std::pow((1-anisotropy),Nh)*std::pow(Kh,Nh)
+    //   //             +std::pow(anisotropy,Nh))))* cellData[cellIndex][YoungFiberIndex])
+    //   //   -cellData[cellIndex][YoungFiberLIndex]);
+    // }
+    // for (size_t cellIndex=0; cellIndex<numCells; ++cellIndex){
+    //   totalStressArea+=cellData[cellIndex][MstressIndex]*cellData[cellIndex][areaIndex];
+    //   totalArea+=cellData[cellIndex][areaIndex];
+    // }
+    // for (size_t cellIndex=0; cellIndex<numCells; ++cellIndex){
+    //   cellData[cellIndex][YoungFiberIndex]+=k_rate*
+    //     ((YoungFiber*totalArea*cellData[cellIndex][MstressIndex])/totalStressArea
+    //      -cellData[cellIndex][YoungFiberIndex]);
+    //   cellData[cellIndex][YoungFiberLIndex]=cellData[cellIndex][YoungFiberIndex]/2;
+    //   // double anisotropy= cellData[cellIndex][AnisoIndex];
+    //   // cellData[cellIndex][YoungFiberLIndex]+=k_rate*
+    //   //   ((0.5*(1+(std::pow(anisotropy,Nh)
+    //   //           /(std::pow((1-anisotropy),Nh)*std::pow(Kh,Nh)
+    //   //             +std::pow(anisotropy,Nh))))* cellData[cellIndex][YoungFiberIndex])
+    //   //   -cellData[cellIndex][YoungFiberLIndex]);
+    // }  
   }
+  // double tmp;
+  // //std::cerr<<"total    "<<totalStressArea<<std::endl;
+  
+  // if(totalStressArea !=0){
+  //   for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex){ 
+  //     tmp=h*k_rate*cellData[cellIndex][YoungFiberIndex];
+  //     cellData[cellIndex][YoungFiberIndex]-=tmp;
+  //     totalFiber+=tmp*cellData[cellIndex][areaIndex];
+  //   }
+    
+    
+  //   for (size_t cellIndex=0; cellIndex<numCell; ++cellIndex) {
+  //     double anisotropy= cellData[cellIndex][AnisoIndex];
+  //     cellData[cellIndex][YoungFiberIndex]+=(totalFiber*cellData[cellIndex][MstressIndex])/totalStressArea;
+  //     cellData[cellIndex][YoungFiberLIndex] =
+  //       0.5*(1+(std::pow(anisotropy,Nh)
+  //               /(std::pow((1-anisotropy),Nh)*std::pow(Kh,Nh)
+  //                 +std::pow(anisotropy,Nh))))* cellData[cellIndex][YoungFiberIndex];
+  //   }
+  // }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 VertexFromTRBScenterTriangulationMTOpt::
 VertexFromTRBScenterTriangulationMTOpt(std::vector<double> &paraValue, 
