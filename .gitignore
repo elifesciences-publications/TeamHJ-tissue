@@ -1,0 +1,18 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.o
+bin/*
+
+doc/html/*
+doc/latex/*
+
+tools/plot/doc/html/*
+tools/plot/doc/latex/*
+
+tools/auto/auto
+
+# Editor files
+*.swp
+src/tags
