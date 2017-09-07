@@ -6,7 +6,7 @@ biochemical as well as mechanical and cell proliferation rules for numerically s
 
 The software is currently divided into two separate codes:
 
-<h2>Organism <a href="https://gitlab.com/slcu/teamHJ/organism"> [main git repository] </a>: </h2> used for simulating cells with geometries that can be described by a fixed number of variables and parameters. 
+<h2>Organism <a href="https://gitlab.com/slcu/teamHJ/Organism"> [main git repository] </a>: </h2> used for simulating cells with geometries that can be described by a fixed number of variables and parameters. 
 Examples are cells described by Spheres, Capped cylinders for rod-shaped cells, and Budding (yeast) shapes. It also can be used for simulations on geometries extracted from confocal data, where it uses information on cell volumes cell-cell connections (walls) and their areas. Example papers using these different approaches are:
 <br></br>
 Jönsson et al (2006) <i>PNAS</i>
@@ -114,6 +114,6 @@ Documentation is generated via Doxygen (http://www.doxygen.org) and a Makefile i
 <h2>Contact</h2>
 
 The latest version of the code is avialiable via the 
-<a href="https://gitlab.com/slcu/teamHJ/organism"> Organism </a> and 
+<a href="https://gitlab.com/slcu/teamHJ/Organism"> Organism </a> and 
 <a href="https://gitlab.com/slcu/teamHJ/tissue"> Tissue </a> gitlab repositories. 
 Main contact: henrik.jonsson@slcu.cam.ac.uk.
